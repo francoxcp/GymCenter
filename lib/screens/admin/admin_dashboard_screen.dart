@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../config/theme/app_theme.dart';
+import '../meal_plans/create_meal_plan_screen.dart';
+import '../workouts/create_workout_screen.dart';
+import 'user_management_screen.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -152,10 +155,33 @@ class AdminDashboardScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               _QuickActionButton(
+                icon: Icons.people,
+                iconColor: Colors.blue,
+                title: 'Gestión de Usuarios',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const UserManagementScreen(),
+                    ),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 12),
+
+              _QuickActionButton(
                 icon: Icons.restaurant_menu,
                 iconColor: AppColors.primary,
                 title: 'Crear Nuevo Plan Alimenticio',
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CreateMealPlanScreen(),
+                    ),
+                  );
+                },
               ),
 
               const SizedBox(height: 12),
@@ -163,7 +189,14 @@ class AdminDashboardScreen extends StatelessWidget {
               _QuickActionButton(
                 icon: Icons.fitness_center,
                 title: 'Nueva Rutina de Entrenamiento',
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CreateWorkoutScreen(),
+                    ),
+                  );
+                },
               ),
 
               const SizedBox(height: 32),

@@ -12,6 +12,7 @@ import 'providers/user_provider.dart';
 import 'providers/body_measurement_provider.dart';
 import 'providers/preferences_provider.dart';
 import 'providers/achievements_provider.dart';
+import 'providers/workout_session_provider.dart';
 import 'services/notification_service.dart';
 
 void main() async {
@@ -49,6 +50,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => BodyMeasurementProvider()),
         ChangeNotifierProvider(create: (_) => PreferencesProvider()),
         ChangeNotifierProvider(create: (_) => AchievementsProvider()),
+        ChangeNotifierProvider(create: (_) => WorkoutSessionProvider()),
       ],
       child: MaterialApp.router(
         title: 'Chamos Fitness Center',

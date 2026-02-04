@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'create_meal_plan_screen.dart';
+import 'edit_meal_plan_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme/app_theme.dart';
 import '../../providers/meal_plan_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/filter_chip_button.dart';
 
@@ -42,6 +45,9 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final isAdmin = authProvider.isAdmin;
+
     return Scaffold(
       appBar: AppBar(
         title: const Column(
@@ -152,8 +158,22 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: GestureDetector(
-                        onTap: () =>
-                            context.push('/meal-plan-detail/${plan.id}'),
+                        onTap: isAdmin
+                            ? () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        EditMealPlanScreen(mealPlan: plan),
+                                  ),
+                                );
+                                if (result == true) {
+                                  mealPlanProvider.loadMealPlans(
+                                      forceRefresh: true);
+                                }
+                              }
+                            : () =>
+                                context.push('/meal-plan-detail/${plan.id}'),
                         child: _MealPlanCard(
                           name: plan.name,
                           description: plan.description,
@@ -187,7 +207,21 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () async {
+          final navigator = Navigator.of(context);
+          final mealPlanProvider =
+              Provider.of<MealPlanProvider>(context, listen: false);
+
+          final result = await navigator.push(
+            MaterialPageRoute(
+              builder: (context) => const CreateMealPlanScreen(),
+            ),
+          );
+
+          if (result == true) {
+            await mealPlanProvider.loadMealPlans(forceRefresh: true);
+          }
+        },
         backgroundColor: AppColors.primary,
         child: const Icon(
           Icons.add,

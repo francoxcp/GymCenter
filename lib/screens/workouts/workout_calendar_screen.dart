@@ -27,10 +27,9 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
   }
 
   void _loadWorkoutEvents() {
-    // TODO: Cargar desde Supabase
     final now = DateTime.now();
 
-    // Datos de ejemplo
+    // Datos de ejemplo - conectar con WorkoutSessionProvider para datos reales
     _workoutEvents[DateTime(now.year, now.month, now.day)] = [
       WorkoutEvent('Entrenamiento Completo', true, 45),
     ];

@@ -133,6 +133,68 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> updateWorkout(String workoutId, Workout workout) async {
+    try {
+      // Actualizar rutina
+      await SupabaseConfig.client.from('workouts').update({
+        'name': workout.name,
+        'duration': workout.duration,
+        'level': workout.level,
+        'image_url': workout.imageUrl,
+        'description': workout.description,
+      }).eq('id', workoutId);
+
+      // Eliminar ejercicios anteriores
+      await SupabaseConfig.client
+          .from('exercises')
+          .delete()
+          .eq('workout_id', workoutId);
+
+      // Insertar ejercicios actualizados
+      if (workout.exercises.isNotEmpty) {
+        final exercisesData = workout.exercises
+            .asMap()
+            .entries
+            .map((entry) => {
+                  'workout_id': workoutId,
+                  'name': entry.value.name,
+                  'sets': entry.value.sets,
+                  'reps': entry.value.reps.toString(),
+                  'rest_time': entry.value.restSeconds,
+                  'muscle_group': entry.value.muscleGroup,
+                  'instructions': entry.value.description,
+                  'order_index': entry.key,
+                })
+            .toList();
+
+        await SupabaseConfig.client.from('exercises').insert(exercisesData);
+      }
+
+      await loadWorkouts(forceRefresh: true);
+    } catch (e) {
+      debugPrint('Error updating workout: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteWorkout(String workoutId) async {
+    try {
+      // Eliminar ejercicios primero (CASCADE debe hacerlo automático, pero por si acaso)
+      await SupabaseConfig.client
+          .from('exercises')
+          .delete()
+          .eq('workout_id', workoutId);
+
+      // Eliminar rutina
+      await SupabaseConfig.client.from('workouts').delete().eq('id', workoutId);
+
+      await loadWorkouts(forceRefresh: true);
+    } catch (e) {
+      debugPrint('Error deleting workout: $e');
+      rethrow;
+    }
+  }
+
   Future<Workout?> loadWorkoutWithExercises(String workoutId) async {
     try {
       final response = await SupabaseConfig.client

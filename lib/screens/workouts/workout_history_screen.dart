@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../config/theme/app_theme.dart';
 import '../../models/workout_session.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/workout_session_provider.dart';
 import 'package:intl/intl.dart';
 
 class WorkoutHistoryScreen extends StatefulWidget {
@@ -24,13 +27,22 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
   Future<void> _loadHistory() async {
     setState(() => _isLoading = true);
 
-    // TODO: Load from Supabase
-    // final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    // final sessions = await loadWorkoutSessions(authProvider.currentUser!.id);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final sessionProvider =
+        Provider.of<WorkoutSessionProvider>(context, listen: false);
 
-    // Datos de ejemplo
-    await Future.delayed(const Duration(seconds: 1));
-    _sessions = _getExampleSessions();
+    if (authProvider.currentUser != null) {
+      await sessionProvider.loadSessions(
+        authProvider.currentUser!.id,
+        forceRefresh: true,
+      );
+      setState(() {
+        _sessions = sessionProvider.sessions;
+      });
+    } else {
+      // Datos de ejemplo si no hay usuario
+      _sessions = _getExampleSessions();
+    }
 
     setState(() => _isLoading = false);
   }
@@ -264,7 +276,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Entrenamiento Completo', // TODO: Get workout name
+                      'Entrenamiento Completo',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

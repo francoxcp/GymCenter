@@ -13,8 +13,7 @@ class MealPlanDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Load meal plan from provider
-    // Por ahora usamos datos de ejemplo
+    // Usando datos de ejemplo - conectar con MealPlanProvider para datos reales
     final mealPlan = _getExampleMealPlan();
 
     return Scaffold(

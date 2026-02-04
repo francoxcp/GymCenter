@@ -54,6 +54,7 @@ CREATE TABLE users (
   completed_workouts INT DEFAULT 0,
   assigned_workout_id UUID REFERENCES workouts(id) ON DELETE SET NULL,
   assigned_meal_plan_id UUID REFERENCES meal_plans(id) ON DELETE SET NULL,
+  is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -162,6 +163,8 @@ CREATE TABLE user_achievements (
 -- ============================================
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_is_active ON users(is_active);
+CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at);
 CREATE INDEX IF NOT EXISTS idx_users_assigned_workout ON users(assigned_workout_id);
 CREATE INDEX IF NOT EXISTS idx_exercises_workout_id ON exercises(workout_id);
 CREATE INDEX IF NOT EXISTS idx_exercises_order ON exercises(workout_id, order_index);
@@ -351,21 +354,26 @@ AFTER INSERT OR DELETE ON exercises
 FOR EACH ROW
 EXECUTE FUNCTION update_workout_exercise_count();
 
--- Trigger para actualizar completed_workouts del usuario
-CREATE OR REPLACE FUNCTION update_user_completed_workouts()
-RETURNS TRIGGER AS $$
-BEGIN
-  UPDATE users
-  SET completed_workouts = completed_workouts + 1
-  WHERE id = NEW.user_id;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+-- ============================================
+-- NOTA: El contador completed_workouts se actualiza desde la app
+-- No usamos trigger automático para evitar inconsistencias
+-- ============================================
 
-CREATE TRIGGER trigger_update_completed_workouts
-AFTER INSERT ON workout_sessions
-FOR EACH ROW
-EXECUTE FUNCTION update_user_completed_workouts();
+-- Trigger DESHABILITADO - La app maneja este contador manualmente
+-- CREATE OR REPLACE FUNCTION update_user_completed_workouts()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--   UPDATE users
+--   SET completed_workouts = completed_workouts + 1
+--   WHERE id = NEW.user_id;
+--   RETURN NEW;
+-- END;
+-- $$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER trigger_update_completed_workouts
+-- AFTER INSERT ON workout_sessions
+-- FOR EACH ROW
+-- EXECUTE FUNCTION update_user_completed_workouts();
 
 -- ============================================
 -- VERIFICACIÓN

@@ -91,18 +91,56 @@ class MealPlanProvider extends ChangeNotifier {
     return _mealPlans.where((p) => p.category == _selectedFilter).toList();
   }
 
-  Future<void> addMealPlan(MealPlan plan) async {
+  Future<void> addMealPlan(MealPlan plan,
+      {List<Map<String, dynamic>>? meals}) async {
     try {
       await SupabaseConfig.client.from('meal_plans').insert({
         'name': plan.name,
         'description': plan.description,
         'calories': plan.calories,
+        'meals': meals, // Guardar las comidas como JSONB
       });
 
-      await loadMealPlans();
+      await loadMealPlans(forceRefresh: true);
     } catch (e) {
       debugPrint('Error adding meal plan: $e');
       rethrow;
+    }
+  }
+
+  Future<void> updateMealPlan(String planId, MealPlan plan,
+      {List<Map<String, dynamic>>? meals}) async {
+    try {
+      await SupabaseConfig.client.from('meal_plans').update({
+        'name': plan.name,
+        'description': plan.description,
+        'calories': plan.calories,
+        'meals': meals,
+      }).eq('id', planId);
+
+      await loadMealPlans(forceRefresh: true);
+    } catch (e) {
+      debugPrint('Error updating meal plan: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteMealPlan(String planId) async {
+    try {
+      await SupabaseConfig.client.from('meal_plans').delete().eq('id', planId);
+
+      await loadMealPlans(forceRefresh: true);
+    } catch (e) {
+      debugPrint('Error deleting meal plan: $e');
+      rethrow;
+    }
+  }
+
+  MealPlan? getMealPlanById(String planId) {
+    try {
+      return _mealPlans.firstWhere((p) => p.id == planId);
+    } catch (e) {
+      return null;
     }
   }
 }

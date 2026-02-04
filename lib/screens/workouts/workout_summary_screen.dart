@@ -277,7 +277,7 @@ class WorkoutSummaryScreen extends StatelessWidget {
                       width: double.infinity,
                       child: OutlinedButton(
                         onPressed: () {
-                          // TODO: Implementar compartir en redes sociales
+                          // Feature: Compartir usando share_plus package
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content:

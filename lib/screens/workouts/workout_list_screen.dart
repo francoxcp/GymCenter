@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'create_workout_screen.dart';
+import 'edit_workout_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme/app_theme.dart';
@@ -135,15 +137,27 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                       padding: const EdgeInsets.only(bottom: 16),
                       child: InkWell(
                         onTap: isAdmin
-                            ? () =>
-                                context.push('/workout-detail/${workout.id}')
-                            : null,
+                            ? () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        EditWorkoutScreen(workout: workout),
+                                  ),
+                                );
+                                if (result == true) {
+                                  workoutProvider.loadWorkouts(
+                                      forceRefresh: true);
+                                }
+                              }
+                            : () =>
+                                context.push('/workout-detail/${workout.id}'),
                         child: _WorkoutCard(
                           title: workout.name,
                           duration: workout.duration,
                           exerciseCount: workout.exerciseCount,
                           level: workout.level,
-                          isClickable: isAdmin,
+                          isClickable: true,
                         ),
                       ),
                     );
@@ -166,17 +180,31 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigate to add workout
-        },
-        backgroundColor: AppColors.primary,
-        child: const Icon(
-          Icons.add,
-          color: Colors.black,
-          size: 32,
-        ),
-      ),
+      floatingActionButton: isAdmin
+          ? FloatingActionButton(
+              onPressed: () async {
+                final navigator = Navigator.of(context);
+                final workoutProvider =
+                    Provider.of<WorkoutProvider>(context, listen: false);
+
+                final result = await navigator.push(
+                  MaterialPageRoute(
+                    builder: (context) => const CreateWorkoutScreen(),
+                  ),
+                );
+
+                if (result == true) {
+                  await workoutProvider.loadWorkouts(forceRefresh: true);
+                }
+              },
+              backgroundColor: AppColors.primary,
+              child: const Icon(
+                Icons.add,
+                color: Colors.black,
+                size: 32,
+              ),
+            )
+          : null,
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {
@@ -222,12 +250,15 @@ class _WorkoutCard extends StatelessWidget {
     return Container(
       height: 180,
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        image: const DecorationImage(
-          image: AssetImage('assets/images/workout_placeholder.jpg'),
-          fit: BoxFit.cover,
-          opacity: 0.3,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.cardBackground,
+            AppColors.cardBackground.withOpacity(0.6),
+            AppColors.primary.withOpacity(0.1),
+          ],
         ),
       ),
       child: Stack(

@@ -159,4 +159,55 @@ class UserProvider extends ChangeNotifier {
       return null;
     }
   }
+
+  Future<void> updateUser(
+    String userId, {
+    String? name,
+    String? photoUrl,
+    String? role,
+  }) async {
+    try {
+      final Map<String, dynamic> updates = {};
+      if (name != null) updates['name'] = name;
+      if (photoUrl != null) updates['photo_url'] = photoUrl;
+      if (role != null) updates['role'] = role;
+
+      if (updates.isEmpty) return;
+
+      await SupabaseConfig.client
+          .from('users')
+          .update(updates)
+          .eq('id', userId);
+
+      await loadUsers();
+    } catch (e) {
+      debugPrint('Error updating user: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> toggleUserStatus(String userId, bool isActive) async {
+    try {
+      await SupabaseConfig.client
+          .from('users')
+          .update({'is_active': isActive}).eq('id', userId);
+
+      await loadUsers();
+    } catch (e) {
+      debugPrint('Error toggling user status: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteUser(String userId) async {
+    try {
+      // Esto también eliminará el usuario de auth.users debido a CASCADE
+      await SupabaseConfig.client.from('users').delete().eq('id', userId);
+
+      await loadUsers();
+    } catch (e) {
+      debugPrint('Error deleting user: $e');
+      rethrow;
+    }
+  }
 }

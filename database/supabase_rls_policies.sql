@@ -358,33 +358,6 @@ CREATE POLICY "admins_select_all_user_achievements"
   );
 
 -- ============================================
--- 🔟 POLÍTICAS PARA TABLA: user_achievements
--- ============================================
-
--- Los usuarios pueden ver SOLO sus propios logros desbloqueados
-CREATE POLICY "user_achievements_select_own"
-  ON user_achievements
-  FOR SELECT
-  USING (auth.uid() = user_id);
-
--- Los usuarios pueden insertar sus propios logros (cuando los desbloquean)
-CREATE POLICY "user_achievements_insert_own"
-  ON user_achievements
-  FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
--- Los admins pueden ver TODOS los logros de usuarios
-CREATE POLICY "admins_select_all_user_achievements"
-  ON user_achievements
-  FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
-
--- ============================================
 -- FUNCIONES HELPER
 -- ============================================
 

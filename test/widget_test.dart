@@ -37,7 +37,7 @@ void main() {
     testWidgets('PrimaryButton should handle disabled state',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: PrimaryButton(
               text: 'Disabled Button',

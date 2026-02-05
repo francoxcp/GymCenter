@@ -21,7 +21,7 @@ dependencies:
   go_router: ^13.0.0
   
   # Backend (Supabase)
-  supabase_flutter: ^2.3.4
+  supabase_flutter: ^2.6.0
   
   # Local Storage
   shared_preferences: ^2.2.2
@@ -51,6 +51,11 @@ dependencies:
   # Security & Storage
   path_provider: ^2.1.5
   crypto: ^3.0.7
+
+dependency_overrides:
+  app_links: ^6.4.1
+  file_picker: ^8.1.6
+  flutter_inappwebview: ^6.0.0
 
 dev_dependencies:
   flutter_test:

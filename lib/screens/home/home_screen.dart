@@ -5,7 +5,6 @@ import '../../config/theme/app_theme.dart';
 import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/workout_provider.dart';
-import '../../widgets/bottom_nav_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,32 +14,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
-
-  void _handleNavigation(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-
-    switch (index) {
-      case 0:
-        // Ya estamos en Home, no hacer nada
-        break;
-      case 1:
-        context.push('/workouts');
-        break;
-      case 2:
-        context.push('/meal-plans');
-        break;
-      case 3:
-        context.push('/progress');
-        break;
-      case 4:
-        context.push('/profile');
-        break;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -125,10 +98,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: _handleNavigation,
       ),
     );
   }

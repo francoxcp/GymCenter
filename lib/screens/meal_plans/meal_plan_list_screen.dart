@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import '../../config/theme/app_theme.dart';
 import '../../providers/meal_plan_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/filter_chip_button.dart';
 
 class MealPlanListScreen extends StatefulWidget {
@@ -18,7 +17,6 @@ class MealPlanListScreen extends StatefulWidget {
 
 class _MealPlanListScreenState extends State<MealPlanListScreen> {
   final _searchController = TextEditingController();
-  int _currentIndex = 2;
 
   @override
   void dispose() {
@@ -158,27 +156,96 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: GestureDetector(
-                        onTap: isAdmin
-                            ? () async {
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        EditMealPlanScreen(mealPlan: plan),
-                                  ),
-                                );
-                                if (result == true) {
-                                  mealPlanProvider.loadMealPlans(
-                                      forceRefresh: true);
-                                }
-                              }
-                            : () =>
-                                context.push('/meal-plan-detail/${plan.id}'),
+                        onTap: () =>
+                            context.push('/meal-plan-detail/${plan.id}'),
                         child: _MealPlanCard(
                           name: plan.name,
                           description: plan.description,
                           calories: plan.calories,
                           icon: _getIconForType(plan.iconType),
+                          isAdmin: isAdmin,
+                          onEdit: isAdmin
+                              ? () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          EditMealPlanScreen(mealPlan: plan),
+                                    ),
+                                  );
+                                  if (result == true) {
+                                    mealPlanProvider.loadMealPlans(
+                                        forceRefresh: true);
+                                  }
+                                }
+                              : null,
+                          onDelete: isAdmin
+                              ? () async {
+                                  final shouldDelete = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      backgroundColor: AppColors.surface,
+                                      title: const Text(
+                                        '¿Eliminar plan?',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      content: Text(
+                                        '¿Estás seguro de eliminar "${plan.name}"? Esta acción no se puede deshacer.',
+                                        style: const TextStyle(
+                                            color: AppColors.textSecondary),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: const Text(
+                                            'Cancelar',
+                                            style: TextStyle(
+                                                color: AppColors.textSecondary),
+                                          ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: const Text(
+                                            'Eliminar',
+                                            style: TextStyle(
+                                                color: Colors.redAccent),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (shouldDelete == true) {
+                                    try {
+                                      await mealPlanProvider
+                                          .deleteMealPlan(plan.id);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'Plan eliminado correctamente'),
+                                            backgroundColor: AppColors.primary,
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content:
+                                                Text('Error al eliminar: $e'),
+                                            backgroundColor: Colors.redAccent,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  }
+                                }
+                              : null,
                         ),
                       ),
                     );
@@ -229,14 +296,6 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
           size: 32,
         ),
       ),
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-      ),
     );
   }
 }
@@ -246,12 +305,18 @@ class _MealPlanCard extends StatelessWidget {
   final String description;
   final int calories;
   final IconData icon;
+  final bool isAdmin;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const _MealPlanCard({
     required this.name,
     required this.description,
     required this.calories,
     required this.icon,
+    this.isAdmin = false,
+    this.onEdit,
+    this.onDelete,
   });
 
   @override
@@ -315,10 +380,54 @@ class _MealPlanCard extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(
-            Icons.chevron_right,
-            color: AppColors.textSecondary,
-          ),
+          if (isAdmin)
+            PopupMenuButton<String>(
+              icon: const Icon(
+                Icons.more_vert,
+                color: AppColors.textSecondary,
+              ),
+              color: AppColors.surface,
+              onSelected: (value) {
+                if (value == 'edit' && onEdit != null) {
+                  onEdit!();
+                } else if (value == 'delete' && onDelete != null) {
+                  onDelete!();
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, color: AppColors.primary, size: 20),
+                      SizedBox(width: 12),
+                      Text(
+                        'Editar',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                      SizedBox(width: 12),
+                      Text(
+                        'Eliminar',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          else
+            const Icon(
+              Icons.chevron_right,
+              color: AppColors.textSecondary,
+            ),
         ],
       ),
     );

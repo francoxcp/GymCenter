@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../config/theme/app_theme.dart';
+import '../../config/app_constants.dart';
 import '../../models/workout.dart';
 import '../../models/exercise.dart';
 import '../../providers/workout_provider.dart';
@@ -22,7 +23,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  String _selectedLevel = 'beginner';
+  String _selectedLevel = AppConstants.beginnerLevel;
   final List<Exercise> _exercises = [];
   bool _isLoading = false;
 
@@ -95,10 +96,11 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
         Navigator.pop(context, true);
       }
     } catch (e) {
+      debugPrint('Error al crear rutina: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al crear rutina: $e'),
+          const SnackBar(
+            content: Text('No se pudo crear la rutina. Intenta de nuevo.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -188,12 +190,15 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                 border: OutlineInputBorder(),
               ),
               items: const [
-                DropdownMenuItem(
-                    value: 'beginner', child: Text('Principiante')),
-                DropdownMenuItem(
-                    value: 'intermediate', child: Text('Intermedio')),
-                DropdownMenuItem(value: 'advanced', child: Text('Avanzado')),
-              ],
+                AppConstants.beginnerLevel,
+                AppConstants.intermediateLevel,
+                AppConstants.advancedLevel,
+              ]
+                  .map((level) => DropdownMenuItem(
+                        value: level,
+                        child: Text(level),
+                      ))
+                  .toList(),
               onChanged: (value) {
                 if (value != null) {
                   setState(() => _selectedLevel = value);

@@ -26,15 +26,6 @@ class _ProgressScreenState extends State<ProgressScreen> {
           onPressed: () => context.pop(),
         ),
         title: const Text('Mi Progreso'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_today),
-            onPressed: () {
-              // Navegar al calendario
-              context.push('/workout-calendar');
-            },
-          ),
-        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),

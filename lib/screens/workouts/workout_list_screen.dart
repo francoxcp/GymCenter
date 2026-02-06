@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'create_workout_screen.dart';
 import 'edit_workout_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import '../../config/theme/app_theme.dart';
 import '../../providers/workout_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/filter_chip_button.dart';
 
 class WorkoutListScreen extends StatefulWidget {
@@ -18,7 +17,6 @@ class WorkoutListScreen extends StatefulWidget {
 
 class _WorkoutListScreenState extends State<WorkoutListScreen> {
   final _searchController = TextEditingController();
-  int _currentIndex = 1;
 
   @override
   void dispose() {
@@ -136,28 +134,86 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 16),
                       child: InkWell(
-                        onTap: isAdmin
-                            ? () async {
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        EditWorkoutScreen(workout: workout),
-                                  ),
-                                );
-                                if (result == true) {
-                                  workoutProvider.loadWorkouts(
-                                      forceRefresh: true);
-                                }
-                              }
-                            : () =>
-                                context.push('/workout-detail/${workout.id}'),
+                        onTap: () =>
+                            context.push('/workout-detail/${workout.id}'),
                         child: _WorkoutCard(
                           title: workout.name,
                           duration: workout.duration,
                           exerciseCount: workout.exerciseCount,
                           level: workout.level,
                           isClickable: true,
+                          onEdit: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    EditWorkoutScreen(workout: workout),
+                              ),
+                            );
+                            if (result == true) {
+                              workoutProvider.loadWorkouts(forceRefresh: true);
+                            }
+                          },
+                          onDelete: () async {
+                            final shouldDelete = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                backgroundColor: AppColors.surface,
+                                title: const Text(
+                                  '¿Eliminar rutina?',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                content: Text(
+                                  '¿Estás seguro de eliminar "${workout.name}"? Esta acción no se puede deshacer.',
+                                  style: const TextStyle(
+                                      color: AppColors.textSecondary),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
+                                    child: const Text(
+                                      'Cancelar',
+                                      style: TextStyle(
+                                          color: AppColors.textSecondary),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
+                                    child: const Text(
+                                      'Eliminar',
+                                      style: TextStyle(color: Colors.redAccent),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (shouldDelete == true) {
+                              try {
+                                await workoutProvider.deleteWorkout(workout.id);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'Rutina eliminada correctamente'),
+                                      backgroundColor: AppColors.primary,
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Error al eliminar: $e'),
+                                      backgroundColor: Colors.redAccent,
+                                    ),
+                                  );
+                                }
+                              }
+                            }
+                          },
                         ),
                       ),
                     );
@@ -205,14 +261,6 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
               ),
             )
           : null,
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-      ),
     );
   }
 }
@@ -223,6 +271,8 @@ class _WorkoutCard extends StatelessWidget {
   final int exerciseCount;
   final String level;
   final bool isClickable;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const _WorkoutCard({
     required this.title,
@@ -230,6 +280,8 @@ class _WorkoutCard extends StatelessWidget {
     required this.exerciseCount,
     required this.level,
     this.isClickable = false,
+    this.onEdit,
+    this.onDelete,
   });
 
   Color _getLevelColor() {
@@ -248,124 +300,136 @@ class _WorkoutCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 180,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
+        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.cardBackground,
-            AppColors.cardBackground.withOpacity(0.6),
-            AppColors.primary.withOpacity(0.1),
-          ],
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.2),
+          width: 1,
         ),
       ),
-      child: Stack(
+      child: Row(
         children: [
-          Positioned(
-            top: 16,
-            left: 16,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
-              decoration: BoxDecoration(
-                color: _getLevelColor(),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                level.toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                  letterSpacing: 1,
-                ),
-              ),
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.fitness_center,
+              color: AppColors.primary,
+              size: 28,
             ),
           ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.8),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  level.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: _getLevelColor(),
+                    letterSpacing: 0.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.access_time,
+                      size: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$duration min',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Icon(
+                      Icons.fitness_center,
+                      size: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$exerciseCount ejercicios',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(16),
-                  bottomRight: Radius.circular(16),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.access_time,
-                              size: 16,
-                              color: AppColors.textSecondary,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '$duration min',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            const Icon(
-                              Icons.fitness_center,
-                              size: 16,
-                              color: AppColors.textSecondary,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '$exerciseCount ejercicios',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (isClickable)
-                    const Icon(
-                      Icons.chevron_right,
-                      color: AppColors.primary,
-                      size: 32,
-                    ),
-                ],
-              ),
+              ],
             ),
           ),
+          if (onEdit != null || onDelete != null)
+            PopupMenuButton<String>(
+              icon: const Icon(
+                Icons.more_vert,
+                color: AppColors.textSecondary,
+              ),
+              color: AppColors.surface,
+              onSelected: (value) {
+                if (value == 'edit' && onEdit != null) {
+                  onEdit!();
+                } else if (value == 'delete' && onDelete != null) {
+                  onDelete!();
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, color: AppColors.primary, size: 20),
+                      SizedBox(width: 12),
+                      Text(
+                        'Editar',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                      SizedBox(width: 12),
+                      Text(
+                        'Eliminar',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          else if (isClickable)
+            const Icon(
+              Icons.chevron_right,
+              color: AppColors.textSecondary,
+            ),
         ],
       ),
     );

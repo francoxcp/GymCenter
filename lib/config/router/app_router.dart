@@ -1,11 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../screens/auth/login_screen.dart';
 import '../../screens/auth/register_screen.dart';
 import '../../screens/auth/forgot_password_screen.dart';
 import '../../screens/home/home_screen.dart';
 import '../../screens/workouts/workout_list_screen.dart';
 import '../../screens/workouts/today_workout_screen.dart';
-import '../../screens/workouts/workout_detail_screen.dart';
+import '../../screens/workouts/workout_detail_readonly_screen.dart';
 import '../../screens/workouts/workout_history_screen.dart';
 import '../../screens/workouts/workout_calendar_screen.dart';
 import '../../screens/meal_plans/meal_plan_list_screen.dart';
@@ -17,6 +19,36 @@ import '../../screens/progress/body_measurements_screen.dart';
 import '../../screens/settings/settings_screen.dart';
 import '../../screens/onboarding/onboarding_screen.dart';
 import '../../screens/admin/admin_dashboard_screen.dart';
+import '../../providers/auth_provider.dart';
+import '../../widgets/bottom_nav_bar.dart';
+
+int _locationToIndex(String location) {
+  if (location.startsWith('/workouts') ||
+      location.startsWith('/workout-detail') ||
+      location.startsWith('/today-workout') ||
+      location.startsWith('/workout-history') ||
+      location.startsWith('/workout-calendar')) {
+    return 1;
+  }
+
+  if (location.startsWith('/meal-plans') ||
+      location.startsWith('/meal-plan-detail')) {
+    return 2;
+  }
+
+  if (location.startsWith('/progress') ||
+      location.startsWith('/body-measurements')) {
+    return 3;
+  }
+
+  if (location.startsWith('/settings') ||
+      location.startsWith('/profile') ||
+      location.startsWith('/edit-profile')) {
+    return 4;
+  }
+
+  return 0;
+}
 
 final appRouter = GoRouter(
   initialLocation: '/login',
@@ -39,80 +71,115 @@ final appRouter = GoRouter(
       builder: (context, state) => const OnboardingScreen(),
     ),
 
-    // Main routes
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => const HomeScreen(),
-    ),
+    ShellRoute(
+      builder: (context, state, child) {
+        final authProvider = Provider.of<AuthProvider>(context);
+        final isAdmin = authProvider.isAdmin;
+        final location = state.uri.path;
 
-    // Workout routes
-    GoRoute(
-      path: '/workouts',
-      builder: (context, state) => const WorkoutListScreen(),
-    ),
-    GoRoute(
-      path: '/workout-detail/:id',
-      builder: (context, state) {
-        final workoutId = state.pathParameters['id']!;
-        return WorkoutDetailScreen(workoutId: workoutId);
+        return Scaffold(
+          body: child,
+          bottomNavigationBar: BottomNavBar(
+            currentIndex: _locationToIndex(location),
+            onTap: (index) {
+              switch (index) {
+                case 0:
+                  context.go(isAdmin ? '/admin' : '/home');
+                  break;
+                case 1:
+                  context.go('/workouts');
+                  break;
+                case 2:
+                  context.go('/meal-plans');
+                  break;
+                case 3:
+                  context.go('/progress');
+                  break;
+                case 4:
+                  context.go('/settings');
+                  break;
+              }
+            },
+          ),
+        );
       },
-    ),
-    GoRoute(
-      path: '/today-workout',
-      builder: (context, state) => const TodayWorkoutScreen(),
-    ),
-    GoRoute(
-      path: '/workout-history',
-      builder: (context, state) => const WorkoutHistoryScreen(),
-    ),
-    GoRoute(
-      path: '/workout-calendar',
-      builder: (context, state) => const WorkoutCalendarScreen(),
-    ),
+      routes: [
+        // Main routes
+        GoRoute(
+          path: '/home',
+          builder: (context, state) => const HomeScreen(),
+        ),
 
-    // Meal plan routes
-    GoRoute(
-      path: '/meal-plans',
-      builder: (context, state) => const MealPlanListScreen(),
-    ),
-    GoRoute(
-      path: '/meal-plan-detail/:id',
-      builder: (context, state) {
-        final mealPlanId = state.pathParameters['id']!;
-        return MealPlanDetailScreen(mealPlanId: mealPlanId);
-      },
-    ),
+        // Workout routes
+        GoRoute(
+          path: '/workouts',
+          builder: (context, state) => const WorkoutListScreen(),
+        ),
+        GoRoute(
+          path: '/workout-detail/:id',
+          builder: (context, state) {
+            final workoutId = state.pathParameters['id']!;
+            return WorkoutDetailReadonlyScreen(workoutId: workoutId);
+          },
+        ),
+        GoRoute(
+          path: '/today-workout',
+          builder: (context, state) => const TodayWorkoutScreen(),
+        ),
+        GoRoute(
+          path: '/workout-history',
+          builder: (context, state) => const WorkoutHistoryScreen(),
+        ),
+        GoRoute(
+          path: '/workout-calendar',
+          builder: (context, state) => const WorkoutCalendarScreen(),
+        ),
 
-    // Profile routes
-    GoRoute(
-      path: '/profile',
-      builder: (context, state) => const ProfileScreen(),
-    ),
-    GoRoute(
-      path: '/edit-profile',
-      builder: (context, state) => const EditProfileScreen(),
-    ),
+        // Meal plan routes
+        GoRoute(
+          path: '/meal-plans',
+          builder: (context, state) => const MealPlanListScreen(),
+        ),
+        GoRoute(
+          path: '/meal-plan-detail/:id',
+          builder: (context, state) {
+            final mealPlanId = state.pathParameters['id']!;
+            return MealPlanDetailScreen(mealPlanId: mealPlanId);
+          },
+        ),
 
-    // Progress routes
-    GoRoute(
-      path: '/progress',
-      builder: (context, state) => const ProgressScreen(),
-    ),
-    GoRoute(
-      path: '/body-measurements',
-      builder: (context, state) => const BodyMeasurementsScreen(),
-    ),
+        // Profile routes
+        GoRoute(
+          path: '/profile',
+          builder: (context, state) => const ProfileScreen(),
+        ),
+        GoRoute(
+          path: '/edit-profile',
+          builder: (context, state) => const EditProfileScreen(),
+        ),
 
-    // Settings routes
-    GoRoute(
-      path: '/settings',
-      builder: (context, state) => const SettingsScreen(),
-    ),
+        // Progress routes
+        GoRoute(
+          path: '/progress',
+          builder: (context, state) => const ProgressScreen(),
+        ),
+        GoRoute(
+          path: '/body-measurements',
+          builder: (context, state) => const BodyMeasurementsScreen(),
+        ),
 
-    // Admin routes
-    GoRoute(
-      path: '/admin',
-      builder: (context, state) => const AdminDashboardScreen(),
+        // Settings routes
+        GoRoute(
+          path: '/settings',
+          builder: (context, state) => const SettingsScreen(),
+        ),
+
+        // Admin routes
+        GoRoute(
+          path: '/admin',
+          builder: (context, state) => const AdminDashboardScreen(),
+        ),
+      ],
     ),
   ],
 );

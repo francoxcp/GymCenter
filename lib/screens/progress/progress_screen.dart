@@ -5,6 +5,8 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../config/theme/app_theme.dart';
 import '../../providers/body_measurement_provider.dart';
 import '../../providers/achievements_provider.dart';
+import '../../providers/workout_session_provider.dart';
+import '../../providers/user_provider.dart';
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -17,15 +19,35 @@ class _ProgressScreenState extends State<ProgressScreen> {
   String _selectedPeriod = 'Mes';
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final measurementProvider =
+          Provider.of<BodyMeasurementProvider>(context, listen: false);
+      final sessionProvider =
+          Provider.of<WorkoutSessionProvider>(context, listen: false);
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+      measurementProvider.loadMeasurements();
+      if (userProvider.currentUser?.id != null) {
+        sessionProvider.loadSessions(userProvider.currentUser!.id);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-        title: const Text('Mi Progreso'),
+        title: const Text('Mi Perfil'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => context.push('/settings'),
+            tooltip: 'Ajustes',
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
@@ -91,6 +113,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
   }
 
   Widget _buildStreakCard() {
+    final sessionProvider = Provider.of<WorkoutSessionProvider>(context);
+    final currentStreak = sessionProvider.getCurrentStreak();
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -104,9 +129,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
         ),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.local_fire_department, color: Colors.orange, size: 40),
@@ -120,10 +145,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
               ),
             ],
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Text(
-            '7',
-            style: TextStyle(
+            '$currentStreak',
+            style: const TextStyle(
               fontSize: 60,
               fontWeight: FontWeight.bold,
               color: Colors.white,
@@ -131,16 +156,22 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ),
           ),
           Text(
-            'días consecutivos',
-            style: TextStyle(
+            currentStreak == 1 ? 'día consecutivo' : 'días consecutivos',
+            style: const TextStyle(
               fontSize: 16,
               color: AppColors.textSecondary,
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
-            '¡Sigue así! 🎉',
-            style: TextStyle(
+            currentStreak == 0
+                ? 'Comienza tu racha hoy 💪'
+                : currentStreak < 7
+                    ? '¡Sigue así! 🎉'
+                    : currentStreak < 30
+                        ? '¡Increíble racha! 🔥'
+                        : '¡Eres imparable! 🏆',
+            style: const TextStyle(
               fontSize: 14,
               color: Colors.orange,
               fontWeight: FontWeight.bold,
@@ -152,6 +183,40 @@ class _ProgressScreenState extends State<ProgressScreen> {
   }
 
   Widget _buildStatsGrid() {
+    final sessionProvider = Provider.of<WorkoutSessionProvider>(context);
+    final measurementProvider = Provider.of<BodyMeasurementProvider>(context);
+
+    // Calcular estadísticas del período seleccionado
+    final days = _selectedPeriod == 'Semana'
+        ? 7
+        : _selectedPeriod == 'Mes'
+            ? 30
+            : _selectedPeriod == 'Año'
+                ? 365
+                : 10000;
+
+    final cutoffDate = DateTime.now().subtract(Duration(days: days));
+    final periodSessions = sessionProvider.sessions
+        .where((s) => s.date.isAfter(cutoffDate))
+        .toList();
+
+    final totalWorkouts = periodSessions.length;
+    final totalMinutes =
+        periodSessions.fold<int>(0, (sum, s) => sum + s.durationMinutes);
+    final totalHours = (totalMinutes / 60).toStringAsFixed(1);
+
+    // Calcular calorías (estimado: 5 cal/min)
+    final totalCalories = totalMinutes * 5;
+
+    // Obtener peso actual y cambio de peso
+    final currentWeight = measurementProvider.latestMeasurement?.weight;
+    final firstMeasurement = measurementProvider.measurements.isNotEmpty
+        ? measurementProvider.measurements.last.weight
+        : null;
+    final totalWeightChange = currentWeight != null && firstMeasurement != null
+        ? currentWeight - firstMeasurement
+        : null;
+
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -162,31 +227,41 @@ class _ProgressScreenState extends State<ProgressScreen> {
       children: [
         _buildStatCard(
           'Entrenamientos',
-          '28',
+          '$totalWorkouts',
           Icons.fitness_center,
           Colors.blue,
-          '+5 vs mes anterior',
+          totalWorkouts > 0
+              ? 'en ${_selectedPeriod.toLowerCase()}'
+              : 'Comienza tu primer entrenamiento',
         ),
         _buildStatCard(
           'Tiempo Total',
-          '21.5h',
+          totalMinutes > 0 ? '${totalHours}h' : '0h',
           Icons.access_time,
           Colors.orange,
-          '+3.2h vs mes anterior',
+          totalMinutes > 0
+              ? 'en ${_selectedPeriod.toLowerCase()}'
+              : 'Aún no has entrenado',
         ),
         _buildStatCard(
           'Calorías',
-          '14,250',
+          totalCalories > 0 ? totalCalories.toString() : '0',
           Icons.local_fire_department,
           Colors.red,
-          'quemadas este mes',
+          totalCalories > 0
+              ? 'quemadas en ${_selectedPeriod.toLowerCase()}'
+              : 'Comienza a quemar calorías',
         ),
         _buildStatCard(
           'Peso',
-          '72.5 kg',
+          currentWeight != null
+              ? '${currentWeight.toStringAsFixed(1)} kg'
+              : '--',
           Icons.monitor_weight,
           Colors.green,
-          '-2.5 kg desde inicio',
+          totalWeightChange != null
+              ? '${totalWeightChange > 0 ? '+' : ''}${totalWeightChange.toStringAsFixed(1)} kg desde inicio'
+              : 'Agrega medidas para seguimiento',
         ),
       ],
     );

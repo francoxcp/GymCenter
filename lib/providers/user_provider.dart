@@ -5,15 +5,36 @@ import '../config/app_constants.dart';
 
 class UserProvider extends ChangeNotifier {
   List<User> _users = [];
+  User? _currentUser;
   String _searchQuery = '';
   bool _isLoading = false;
 
   List<User> get users => _users;
+  User? get currentUser => _currentUser;
   String get searchQuery => _searchQuery;
   bool get isLoading => _isLoading;
 
   UserProvider() {
     loadUsers();
+    loadCurrentUser();
+  }
+
+  Future<void> loadCurrentUser() async {
+    try {
+      final currentUserId = SupabaseConfig.client.auth.currentUser?.id;
+      if (currentUserId == null) return;
+
+      final response = await SupabaseConfig.client
+          .from(AppConstants.usersTable)
+          .select()
+          .eq('id', currentUserId)
+          .single();
+
+      _currentUser = User.fromJson(response);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading current user: $e');
+    }
   }
 
   Future<void> loadUsers() async {

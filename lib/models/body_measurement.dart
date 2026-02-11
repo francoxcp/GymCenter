@@ -45,8 +45,7 @@ class BodyMeasurement {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
+    final json = <String, dynamic>{
       'user_id': userId,
       'date': date.toIso8601String(),
       'weight': weight,
@@ -59,6 +58,13 @@ class BodyMeasurement {
       'photo_url': photoUrl,
       'notes': notes,
     };
+
+    // Solo incluir id si no está vacío (para updates)
+    if (id.isNotEmpty) {
+      json['id'] = id;
+    }
+
+    return json;
   }
 
   BodyMeasurement copyWith({

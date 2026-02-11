@@ -34,7 +34,7 @@ class BodyMeasurementProvider with ChangeNotifier {
           .from('body_measurements')
           .select()
           .eq('user_id', userId)
-          .order('recorded_at', ascending: false);
+          .order('date', ascending: false);
 
       _measurements = (response as List)
           .map((json) => BodyMeasurement.fromJson(json))

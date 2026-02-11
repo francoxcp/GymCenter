@@ -127,19 +127,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
           const SizedBox(height: 24),
 
-          // Apariencia
-          _buildSectionTitle('Apariencia'),
-          _buildSwitchTile(
-            title: 'Tema oscuro',
-            subtitle: 'Usar modo oscuro',
-            icon: Icons.dark_mode_outlined,
-            value: prefs.theme == 'dark',
-            onChanged: (value) {
-              preferencesProvider.changeTheme(value ? 'dark' : 'light');
-            },
-          ),
-          const SizedBox(height: 24),
-
           // Unidades
           _buildSectionTitle('Unidades'),
           _buildOptionTile(

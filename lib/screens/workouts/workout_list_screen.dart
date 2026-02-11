@@ -95,7 +95,8 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
               ),
 
               // Filters
-              Padding(
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   children: [
@@ -117,6 +118,12 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                       isSelected:
                           workoutProvider.selectedFilter == 'Intermedio',
                       onTap: () => workoutProvider.setFilter('Intermedio'),
+                    ),
+                    const SizedBox(width: 8),
+                    FilterChipButton(
+                      label: 'Avanzado',
+                      isSelected: workoutProvider.selectedFilter == 'Avanzado',
+                      onTap: () => workoutProvider.setFilter('Avanzado'),
                     ),
                   ],
                 ),

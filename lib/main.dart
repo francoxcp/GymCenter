@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'config/theme/app_theme.dart';
+import 'config/theme/dark_theme.dart';
 import 'config/router/app_router.dart';
 import 'config/supabase_config.dart';
 import 'providers/auth_provider.dart';
@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp.router(
         title: 'Chamos Fitness Center',
         debugShowCheckedModeBanner: false,
-        theme: AppTheme.darkTheme,
+        theme: darkTheme,
         routerConfig: appRouter,
       ),
     );

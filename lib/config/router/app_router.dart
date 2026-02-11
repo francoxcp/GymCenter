@@ -37,14 +37,11 @@ int _locationToIndex(String location) {
   }
 
   if (location.startsWith('/progress') ||
-      location.startsWith('/body-measurements')) {
-    return 3;
-  }
-
-  if (location.startsWith('/settings') ||
+      location.startsWith('/body-measurements') ||
+      location.startsWith('/settings') ||
       location.startsWith('/profile') ||
       location.startsWith('/edit-profile')) {
-    return 4;
+    return 3;
   }
 
   return 0;
@@ -94,9 +91,6 @@ final appRouter = GoRouter(
                   break;
                 case 3:
                   context.go('/progress');
-                  break;
-                case 4:
-                  context.go('/settings');
                   break;
               }
             },

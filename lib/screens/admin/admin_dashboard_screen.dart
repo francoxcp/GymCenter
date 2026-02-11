@@ -323,7 +323,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final maxSessions = _dailySessions.isEmpty
         ? 1
         : _dailySessions.reduce((a, b) => a > b ? a : b);
-    final maxHeight = 160.0;
+    const maxHeight = 160.0;
     final now = DateTime.now();
     final todayIndex = (now.weekday - 1) % 7; // 0 = Lunes, 6 = Domingo
 

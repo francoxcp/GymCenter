@@ -245,7 +245,7 @@ class _UploadExerciseVideoScreenState extends State<UploadExerciseVideoScreen> {
 
   Future<void> _pickVideo() async {
     try {
-      final result = await FilePicker.pickFiles(
+      final result = await FilePicker.platform.pickFiles(
         type: FileType.video,
         allowMultiple: false,
       );

@@ -445,11 +445,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: true,
-      onPopInvoked: (didPop) {
-        if (didPop) {
-          // El diálogo se cerró correctamente
-        }
-      },
+      // Diálogo puede siempre cerrarse
       child: AlertDialog(
         title: const Text('Agregar Ejercicio'),
         content: Form(

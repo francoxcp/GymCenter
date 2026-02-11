@@ -140,7 +140,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               const SizedBox(height: 8),
               CustomTextField(
                 controller: _newPasswordController,
-                hintText: 'Mínimo 6 caracteres',
+                hintText: 'Mínimo 8 caracteres',
                 prefixIcon: Icons.lock,
                 obscureText: _obscureNewPassword,
                 suffixIcon: IconButton(
@@ -162,7 +162,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
               // Confirmar contraseña
               const Text(
-                'Confirmar Nueva Contraseña',
+                'Confirmar nueva contraseña',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -214,8 +214,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _buildRequirement('Mínimo 6 caracteres'),
-                    _buildRequirement('Máximo 50 caracteres'),
+                    _buildRequirement('Mínimo 8 caracteres'),
+                    _buildRequirement('Máximo 15 caracteres'),
                     _buildRequirement(
                         'Se recomienda usar letras, números y símbolos'),
                   ],
@@ -359,7 +359,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           // Mostrar éxito
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('✅ Contraseña cambiada exitosamente'),
+              content: Text('Contraseña cambiada exitosamente ✅'),
               backgroundColor: AppColors.success,
               duration: Duration(seconds: 3),
             ),

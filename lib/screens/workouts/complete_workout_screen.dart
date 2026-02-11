@@ -45,6 +45,7 @@ class _CompleteWorkoutScreenState extends State<CompleteWorkoutScreen> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final goalsProvider = Provider.of<UserGoalsProvider>(context, listen: false);
       final userId = authProvider.currentUser?.id;
 
       if (userId == null) {
@@ -64,20 +65,21 @@ class _CompleteWorkoutScreenState extends State<CompleteWorkoutScreen> {
       });
 
       // Recalcular metas automáticamente
-      final goalsProvider =
-          Provider.of<UserGoalsProvider>(context, listen: false);
       await goalsProvider.recalculateAllGoals(userId);
 
-      if (mounted) {
-        Navigator.pop(context, true); // Retornar true indicando éxito
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('¡Entrenamiento completado! 💪'),
-            backgroundColor: AppColors.success,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
+      // Verificar que el widget sigue montado antes de usar context
+      if (!mounted) return;
+      
+      // ignore: use_build_context_synchronously
+      Navigator.pop(context, true); // Retornar true indicando éxito
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('¡Entrenamiento completado! 💪'),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 2),
+        ),
+      );
     } catch (e) {
       debugPrint('Error al completar entrenamiento: $e');
       if (mounted) {

@@ -37,9 +37,7 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio
-*.jks
-*.keystore
-*.properties
+local.properties
 captures/
 *.gradle
 gradlew
@@ -49,8 +47,13 @@ gradle-wrapper.jar
 gradle-wrapper.properties
 gradle/
 
-# Supabase credentials - IMPORTANTE NO SUBIR
+# Supabase credentials - IMPORTANTE NO SUBIR NUNCA
 .env
+
+# Android signing keys - NUNCA SUBIR
+key.properties
+*.jks
+*.keystore
 
 # Temporary files and logs
 *.txt

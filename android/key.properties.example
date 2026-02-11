@@ -1,0 +1,38 @@
+# ============================================
+# ANDROID SIGNING KEY PROPERTIES - EXAMPLE
+# ============================================
+#
+# INSTRUCCIONES PARA GENERAR TU KEYSTORE:
+# 1. Ejecuta este comando en tu terminal:
+#
+#    keytool -genkey -v -keystore chamos-release-key.jks \
+#    -keyalg RSA -keysize 2048 -validity 10000 \
+#    -alias chamos-key-alias
+#
+# 2. Responde las preguntas (nombre, organización, etc.)
+# 3. Guarda la contraseña en un lugar seguro (password manager)
+# 4. Copia este archivo a "key.properties" (sin .example)
+# 5. Completa los valores abajo con tus datos reales
+# 6. NUNCA subas key.properties ni el .jks a git
+#
+# ============================================
+
+# Ruta absoluta o relativa al archivo .jks
+storeFile=D:/ChamosFitnessCenter/android/chamos-release-key.jks
+
+# Contraseña del keystore
+storePassword=TU_CONTRASEÑA_DEL_KEYSTORE_AQUI
+
+# Alias de la key
+keyAlias=chamos-key-alias
+
+# Contraseña de la key (puede ser la misma que storePassword)
+keyPassword=TU_CONTRASEÑA_DE_LA_KEY_AQUI
+
+# ============================================
+# IMPORTANTE:
+# - Guarda el archivo .jks en un lugar seguro
+# - Haz backup del .jks (si lo pierdes, no podrás actualizar la app)
+# - Las contraseñas deben ser fuertes y únicas
+# - Usa un password manager para guardar las contraseñas
+# ============================================

@@ -161,7 +161,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
             _buildSection(
               '9. Menores de Edad',
-              'Nuestra aplicación está dirigida a personas mayores de 16 años. '
+              'Nuestra aplicación está dirigida a personas mayores de 18 años. '
                   'Los menores entre 13-16 años requieren consentimiento parental. '
                   'No recopilamos intencionalmente datos de menores de 13 años.',
             ),

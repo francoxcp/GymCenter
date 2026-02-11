@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../config/theme/app_theme.dart';
 import '../../models/workout.dart';
 
@@ -276,16 +277,7 @@ class WorkoutSummaryScreen extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton(
-                        onPressed: () {
-                          // Feature: Compartir usando share_plus package
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text('Función de compartir próximamente'),
-                              backgroundColor: AppColors.primary,
-                            ),
-                          );
-                        },
+                        onPressed: () => _shareWorkout(context),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.primary,
                           side: const BorderSide(
@@ -347,6 +339,27 @@ class WorkoutSummaryScreen extends StatelessWidget {
     if (name.contains('dominada') || name.contains('pull')) return 0;
     if (name.contains('burpee') || name.contains('jumping')) return 0;
     return 50; // peso por defecto
+  }
+
+  void _shareWorkout(BuildContext context) {
+    final shareText = '''
+🏋️ ¡Entrenamiento Completado en Chamos Fitness Center! 💪
+
+📋 Rutina: ${workout.name}
+⏱️ Duración: $durationMinutes minutos
+🔥 Calorías: $caloriesBurned kcal
+💪 Volumen Total: ${totalVolume.toStringAsFixed(1)} kg
+
+${workout.description}
+
+#ChamosFitnessCenter #Fitness #Workout #Training
+    '''
+        .trim();
+
+    Share.share(
+      shareText,
+      subject: '¡Completé mi entrenamiento! 💪',
+    );
   }
 }
 

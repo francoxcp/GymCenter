@@ -19,6 +19,8 @@ import '../../screens/progress/body_measurements_screen.dart';
 import '../../screens/settings/settings_screen.dart';
 import '../../screens/onboarding/onboarding_screen.dart';
 import '../../screens/admin/admin_dashboard_screen.dart';
+import '../../screens/legal/terms_and_conditions_screen.dart';
+import '../../screens/legal/privacy_policy_screen.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
@@ -166,6 +168,16 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/settings',
           builder: (context, state) => const SettingsScreen(),
+        ),
+
+        // Legal routes
+        GoRoute(
+          path: '/terms-and-conditions',
+          builder: (context, state) => const TermsAndConditionsScreen(),
+        ),
+        GoRoute(
+          path: '/privacy-policy',
+          builder: (context, state) => const PrivacyPolicyScreen(),
         ),
 
         // Admin routes

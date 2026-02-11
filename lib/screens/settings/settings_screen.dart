@@ -174,13 +174,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'Términos y condiciones',
             subtitle: 'Leer los términos de uso',
             icon: Icons.description_outlined,
-            onTap: () {},
+            onTap: () => context.push('/terms-and-conditions'),
           ),
           _buildOptionTile(
             title: 'Política de privacidad',
             subtitle: 'Nuestra política de datos',
             icon: Icons.policy_outlined,
-            onTap: () {},
+            onTap: () => context.push('/privacy-policy'),
           ),
           _buildOptionTile(
             title: 'Acerca de',

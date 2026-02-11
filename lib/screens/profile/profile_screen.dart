@@ -230,7 +230,8 @@ class ProfileScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               TextButton(
-                                onPressed: () {},
+                                onPressed: () =>
+                                    _showSpecialtiesDialog(context),
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                   minimumSize: const Size(0, 0),
@@ -313,6 +314,170 @@ class ProfileScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showSpecialtiesDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: AppColors.cardBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Especialidades',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Fuerza
+              _buildSpecialtyItem(
+                icon: Icons.fitness_center,
+                color: Colors.red,
+                title: 'Fuerza',
+                description:
+                    'Entrenamiento enfocado en aumentar la fuerza máxima mediante ejercicios compuestos con pesos pesados y bajas repeticiones. Ideal para desarrollar potencia y masa muscular.',
+              ),
+
+              const SizedBox(height: 16),
+
+              // Volumen
+              _buildSpecialtyItem(
+                icon: Icons.trending_up,
+                color: Colors.blue,
+                title: 'Volumen',
+                description:
+                    'Rutinas diseñadas para hipertrofia muscular con mayor cantidad de series y repeticiones moderadas. Perfecto para quienes buscan aumentar el tamaño muscular.',
+              ),
+
+              const SizedBox(height: 16),
+
+              // Resistencia
+              _buildSpecialtyItem(
+                icon: Icons.timer,
+                color: Colors.green,
+                title: 'Resistencia',
+                description:
+                    'Programas de alta intensidad con descansos cortos para mejorar la capacidad cardiovascular y la resistencia muscular. Combina fuerza con acondicionamiento físico.',
+              ),
+
+              const SizedBox(height: 20),
+
+              // Nota informativa
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.3),
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Estas especialidades definen el enfoque de tus rutinas de entrenamiento.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSpecialtyItem({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String description,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

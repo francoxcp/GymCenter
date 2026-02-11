@@ -17,6 +17,7 @@ import '../../screens/profile/edit_profile_screen.dart';
 import '../../screens/progress/progress_screen.dart';
 import '../../screens/progress/body_measurements_screen.dart';
 import '../../screens/settings/settings_screen.dart';
+import '../../screens/settings/change_password_screen.dart';
 import '../../screens/onboarding/onboarding_screen.dart';
 import '../../screens/admin/admin_dashboard_screen.dart';
 import '../../screens/legal/terms_and_conditions_screen.dart';
@@ -168,6 +169,10 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/settings',
           builder: (context, state) => const SettingsScreen(),
+        ),
+        GoRoute(
+          path: '/change-password',
+          builder: (context, state) => const ChangePasswordScreen(),
         ),
 
         // Legal routes

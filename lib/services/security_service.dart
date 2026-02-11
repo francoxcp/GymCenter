@@ -257,6 +257,79 @@ class SecurityService {
     };
   }
 
+  /// Verifica la contraseña actual del usuario
+  /// 
+  /// [email] - Email del usuario
+  /// [password] - Contraseña a verificar
+  Future<Map<String, dynamic>> verifyCurrentPassword(
+    String email,
+    String password,
+  ) async {
+    try {
+      // Intentar iniciar sesión con las credenciales
+      final response = await _supabase.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      if (response.user != null) {
+        return {
+          'success': true,
+          'message': 'Contraseña verificada',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'Contraseña incorrecta',
+        };
+      }
+    } catch (e) {
+      debugPrint('Error al verificar contraseña: $e');
+      return {
+        'success': false,
+        'message': 'Contraseña incorrecta',
+      };
+    }
+  }
+
+  /// Actualiza la contraseña del usuario autenticado
+  ///
+  /// [newPassword] - Nueva contraseña
+  Future<Map<String, dynamic>> updatePassword(String newPassword) async {
+    try {
+      // Validar nueva contraseña
+      final validation = _validatePassword(newPassword);
+      if (!validation['isValid']) {
+        return {
+          'success': false,
+          'message': validation['message'],
+        };
+      }
+
+      final response = await _supabase.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+
+      if (response.user != null) {
+        return {
+          'success': true,
+          'message': 'Contraseña actualizada exitosamente',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'No se pudo actualizar la contraseña',
+        };
+      }
+    } catch (e) {
+      debugPrint('Error al actualizar contraseña: $e');
+      return {
+        'success': false,
+        'message': 'Error al actualizar contraseña: ${e.toString()}',
+      };
+    }
+  }
+
   /// Verifica si la sesión actual es válida
   Future<bool> isSessionValid() async {
     try {

@@ -283,14 +283,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               // Botón cambiar contraseña
               OutlinedButton(
-                onPressed: () {
-                  // Feature: Cambio de contraseña con Supabase Auth
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Funcionalidad próximamente'),
-                    ),
-                  );
-                },
+                onPressed: () => context.push('/change-password'),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: AppColors.primary),
                   padding: const EdgeInsets.symmetric(vertical: 16),

@@ -104,10 +104,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
-          ),
           Container(
             margin: const EdgeInsets.only(right: 16, left: 8),
             width: 40,
@@ -130,7 +126,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: RefreshIndicator(
+          onRefresh: _loadDashboardData,
+          color: AppColors.primary,
+          child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,44 +274,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   );
                 },
               ),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'PLANES RECIENTES',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text(
-                      'Ver todos',
-                      style: TextStyle(color: AppColors.primary),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _RecentPlanCard(
-                imageUrl: '',
-                title: 'Definición Pro - Keto',
-                subtitle: 'Plan nutricional',
-                onTap: () {},
-              ),
-              const SizedBox(height: 12),
-              _RecentPlanCard(
-                imageUrl: '',
-                title: 'Hipertrofia Nivel 3',
-                subtitle: 'Programa de entrenamiento',
-                onTap: () {},
-              ),
             ],
           ),
+        ),
         ),
       ),
     );
@@ -521,79 +485,6 @@ class _QuickActionButton extends StatelessWidget {
                 color: Colors.white,
                 size: 20,
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _RecentPlanCard extends StatelessWidget {
-  final String imageUrl;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  const _RecentPlanCard({
-    required this.imageUrl,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.cardBackground,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.fastfood,
-                color: AppColors.primary,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              color: AppColors.textSecondary,
             ),
           ],
         ),

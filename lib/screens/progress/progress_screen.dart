@@ -21,6 +21,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
   @override
   void initState() {
     super.initState();
+    _loadData();
+  }
+
+  void _loadData() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final measurementProvider =
           Provider.of<BodyMeasurementProvider>(context, listen: false);
@@ -33,6 +37,20 @@ class _ProgressScreenState extends State<ProgressScreen> {
         sessionProvider.loadSessions(userProvider.currentUser!.id);
       }
     });
+  }
+
+  Future<void> _refreshData() async {
+    final measurementProvider =
+        Provider.of<BodyMeasurementProvider>(context, listen: false);
+    final sessionProvider =
+        Provider.of<WorkoutSessionProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    await Future.wait([
+      measurementProvider.loadMeasurements(),
+      if (userProvider.currentUser?.id != null)
+        sessionProvider.loadSessions(userProvider.currentUser!.id),
+    ]);
   }
 
   @override
@@ -49,9 +67,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
+      body: RefreshIndicator(
+        onRefresh: _refreshData,
+        color: AppColors.primary,
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
           // Período selector
           _buildPeriodSelector(),
           const SizedBox(height: 24),
@@ -75,6 +96,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
           // Botón para medidas corporales
           _buildBodyMeasurementsButton(),
         ],
+      ),
       ),
     );
   }

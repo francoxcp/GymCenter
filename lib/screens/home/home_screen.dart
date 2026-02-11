@@ -14,6 +14,16 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  Future<void> _refreshData() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final workoutProvider = Provider.of<WorkoutProvider>(context, listen: false);
+    
+    await Future.wait([
+      authProvider.refreshUser(),
+      workoutProvider.loadWorkouts(forceRefresh: true),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -30,7 +40,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: RefreshIndicator(
+          onRefresh: _refreshData,
+          color: AppColors.primary,
+          child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,6 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 _UserHomeContent(currentUser: currentUser),
             ],
           ),
+        ),
         ),
       ),
     );

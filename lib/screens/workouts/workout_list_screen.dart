@@ -133,10 +133,13 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
 
               // Workout List
               Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: workoutProvider.filteredWorkouts.length,
-                  itemBuilder: (context, index) {
+                child: RefreshIndicator(
+                  onRefresh: () => workoutProvider.loadWorkouts(forceRefresh: true),
+                  color: AppColors.primary,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: workoutProvider.filteredWorkouts.length,
+                    itemBuilder: (context, index) {
                     final workout = workoutProvider.filteredWorkouts[index];
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 16),
@@ -225,6 +228,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                       ),
                     );
                   },
+                ),
                 ),
               ),
 

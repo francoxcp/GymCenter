@@ -148,10 +148,13 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
 
               // Meal Plan List
               Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: mealPlanProvider.filteredMealPlans.length,
-                  itemBuilder: (context, index) {
+                child: RefreshIndicator(
+                  onRefresh: () => mealPlanProvider.loadMealPlans(forceRefresh: true),
+                  color: AppColors.primary,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: mealPlanProvider.filteredMealPlans.length,
+                    itemBuilder: (context, index) {
                     final plan = mealPlanProvider.filteredMealPlans[index];
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
@@ -250,6 +253,7 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
                       ),
                     );
                   },
+                ),
                 ),
               ),
 

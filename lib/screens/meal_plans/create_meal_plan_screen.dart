@@ -103,9 +103,54 @@ class _CreateMealPlanScreenState extends State<CreateMealPlanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Nuevo Plan Alimenticio'),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool didPop) async {
+        if (didPop) return;
+        
+        // Si hay comidas o texto escrito, confirmar antes de salir
+        final hasContent = _meals.isNotEmpty ||
+            _nameController.text.trim().isNotEmpty ||
+            _descriptionController.text.trim().isNotEmpty ||
+            _caloriesController.text != '2000';
+
+        if (!hasContent) {
+          // No hay cambios, permitir salir
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
+          return;
+        }
+
+        // Confirmar si quiere salir sin guardar
+        final shouldPop = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('¿Descartar cambios?'),
+            content: const Text(
+              '¿Estás seguro de que quieres salir sin guardar el plan alimenticio?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Salir'),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldPop == true && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Nuevo Plan Alimenticio'),
         actions: [
           if (_isLoading)
             const Center(
@@ -304,6 +349,7 @@ class _CreateMealPlanScreenState extends State<CreateMealPlanScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -366,8 +412,53 @@ class _AddMealDialogState extends State<_AddMealDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Agregar Comida'),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool didPop) async {
+        if (didPop) return;
+
+        // Verificar si hay datos escritos
+        final hasContent = _nameController.text.trim().isNotEmpty ||
+            _caloriesController.text.isNotEmpty ||
+            _descriptionController.text.trim().isNotEmpty ||
+            _selectedTime != 'Desayuno';
+
+        if (!hasContent) {
+          // No hay cambios, cerrar directamente
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
+          return;
+        }
+
+        // Preguntar si desea descartar la comida
+        final shouldPop = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('¿Descartar comida?'),
+            content: const Text(
+              '¿Estás seguro de que quieres salir sin agregar esta comida?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Descartar'),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldPop == true && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: AlertDialog(
+        title: const Text('Agregar Comida'),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -444,6 +535,7 @@ class _AddMealDialogState extends State<_AddMealDialog> {
           child: const Text('Agregar'),
         ),
       ],
+      ),
     );
   }
 }

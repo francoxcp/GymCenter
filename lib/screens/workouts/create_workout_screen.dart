@@ -114,7 +114,51 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool didPop) async {
+        if (didPop) return;
+        
+        // Si hay ejercicios o texto escrito, confirmar antes de salir
+        final hasContent = _exercises.isNotEmpty ||
+            _nameController.text.trim().isNotEmpty ||
+            _descriptionController.text.trim().isNotEmpty;
+
+        if (!hasContent) {
+          // No hay cambios, permitir salir
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
+          return;
+        }
+
+        // Confirmar si quiere salir sin guardar
+        final shouldPop = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('¿Descartar cambios?'),
+            content: const Text(
+              '¿Estás seguro de que quieres salir sin guardar la rutina?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Salir'),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldPop == true && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: const Text('Nueva Rutina'),
         actions: [
@@ -444,8 +488,52 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: true,
-      // Diálogo puede siempre cerrarse
+      canPop: false,
+      onPopInvoked: (bool didPop) async {
+        if (didPop) return;
+
+        // Verificar si hay datos escritos
+        final hasContent = _nameController.text.trim().isNotEmpty ||
+            _setsController.text != '3' ||
+            _repsController.text != '12' ||
+            _restController.text != '60' ||
+            _videoFile != null ||
+            _videoUrl != null;
+
+        if (!hasContent) {
+          // No hay cambios, cerrar directamente
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
+          return;
+        }
+
+        // Preguntar si desea descartar el ejercicio
+        final shouldPop = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('¿Descartar ejercicio?'),
+            content: const Text(
+              '¿Estás seguro de que quieres salir sin agregar este ejercicio?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Descartar'),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldPop == true && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
       child: AlertDialog(
         title: const Text('Agregar Ejercicio'),
         content: Form(

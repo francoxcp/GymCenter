@@ -1,4 +1,4 @@
-package com.chamosfitness.chamos_fitness_center_temp
+package com.chamosfitness.app
 
 import io.flutter.embedding.android.FlutterActivity
 

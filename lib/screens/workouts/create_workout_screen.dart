@@ -116,7 +116,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) async {
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (didPop) return;
         
         // Si hay ejercicios o texto escrito, confirmar antes de salir
@@ -159,8 +159,8 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
         }
       },
       child: Scaffold(
-      appBar: AppBar(
-        title: const Text('Nueva Rutina'),
+        appBar: AppBar(
+          title: const Text('Nueva Rutina'),
         actions: [
           if (_isLoading)
             const Center(
@@ -343,6 +343,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 }
@@ -489,7 +490,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) async {
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (didPop) return;
 
         // Verificar si hay datos escritos

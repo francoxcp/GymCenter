@@ -105,9 +105,9 @@ class _CreateMealPlanScreenState extends State<CreateMealPlanScreen> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) async {
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (didPop) return;
-        
+
         // Si hay comidas o texto escrito, confirmar antes de salir
         final hasContent = _meals.isNotEmpty ||
             _nameController.text.trim().isNotEmpty ||
@@ -151,204 +151,205 @@ class _CreateMealPlanScreenState extends State<CreateMealPlanScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Nuevo Plan Alimenticio'),
-        actions: [
-          if (_isLoading)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(AppColors.primary),
-                  ),
-                ),
-              ),
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.check),
-              onPressed: _saveMealPlan,
-            ),
-        ],
-      ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // Nombre
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nombre del plan',
-                hintText: 'Ej: Definición Pro - Keto',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Ingresa un nombre';
-                }
-                return null;
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // Descripción
-            TextFormField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Descripción',
-                hintText: 'Describe los objetivos de este plan...',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Ingresa una descripción';
-                }
-                return null;
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            // Tipo
-            DropdownButtonFormField<String>(
-              value: _selectedType,
-              decoration: const InputDecoration(
-                labelText: 'Tipo de plan',
-                border: OutlineInputBorder(),
-              ),
-              items: const [
-                DropdownMenuItem(
-                    value: 'masa_muscular', child: Text('Masa muscular')),
-                DropdownMenuItem(
-                    value: 'definicion', child: Text('Definición')),
-                DropdownMenuItem(
-                    value: 'mantenimiento', child: Text('Mantenimiento')),
-                DropdownMenuItem(
-                    value: 'perdida_peso', child: Text('Pérdida de peso')),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _selectedType = value);
-                }
-              },
-            ),
-
-            const SizedBox(height: 24),
-
-            // Calorías
-            TextFormField(
-              controller: _caloriesController,
-              decoration: const InputDecoration(
-                labelText: 'Calorías totales diarias',
-                suffixText: 'kcal',
-                border: OutlineInputBorder(),
-                helperText: 'Total de calorías del plan completo',
-              ),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) return 'Requerido';
-                if (int.tryParse(value) == null) return 'Inválido';
-                return null;
-              },
-            ),
-
-            const SizedBox(height: 24),
-
-            // Comidas
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Comidas',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: _addMeal,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Agregar'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.black,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            if (_meals.isEmpty)
-              Container(
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: AppColors.cardBackground,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white24),
-                ),
-                child: const Column(
-                  children: [
-                    Icon(
-                      Icons.restaurant_menu,
-                      size: 48,
-                      color: Colors.white24,
+          actions: [
+            if (_isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(AppColors.primary),
                     ),
-                    SizedBox(height: 12),
-                    Text(
-                      'No hay comidas',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 16,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Agrega comidas para crear el plan',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               )
             else
-              ...List.generate(_meals.length, (index) {
-                final meal = _meals[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  color: AppColors.cardBackground,
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: AppColors.primary.withOpacity(0.2),
-                      child: Icon(
-                        _getMealIcon(meal['time'] as String),
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    title: Text(meal['name'] as String),
-                    subtitle: Text(
-                      '${meal['time']} • ${meal['calories']} kcal',
-                      style: const TextStyle(color: AppColors.textSecondary),
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                      onPressed: () => _removeMeal(index),
-                    ),
-                  ),
-                );
-              }),
+              IconButton(
+                icon: const Icon(Icons.check),
+                onPressed: _saveMealPlan,
+              ),
           ],
         ),
-      ),
+        body: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              // Nombre
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre del plan',
+                  hintText: 'Ej: Definición Pro - Keto',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Ingresa un nombre';
+                  }
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: 16),
+
+              // Descripción
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Descripción',
+                  hintText: 'Describe los objetivos de este plan...',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Ingresa una descripción';
+                  }
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: 16),
+
+              // Tipo
+              DropdownButtonFormField<String>(
+                value: _selectedType,
+                decoration: const InputDecoration(
+                  labelText: 'Tipo de plan',
+                  border: OutlineInputBorder(),
+                ),
+                items: const [
+                  DropdownMenuItem(
+                      value: 'masa_muscular', child: Text('Masa muscular')),
+                  DropdownMenuItem(
+                      value: 'definicion', child: Text('Definición')),
+                  DropdownMenuItem(
+                      value: 'mantenimiento', child: Text('Mantenimiento')),
+                  DropdownMenuItem(
+                      value: 'perdida_peso', child: Text('Pérdida de peso')),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => _selectedType = value);
+                  }
+                },
+              ),
+
+              const SizedBox(height: 24),
+
+              // Calorías
+              TextFormField(
+                controller: _caloriesController,
+                decoration: const InputDecoration(
+                  labelText: 'Calorías totales diarias',
+                  suffixText: 'kcal',
+                  border: OutlineInputBorder(),
+                  helperText: 'Total de calorías del plan completo',
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) return 'Requerido';
+                  if (int.tryParse(value) == null) return 'Inválido';
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: 24),
+
+              // Comidas
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Comidas',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: _addMeal,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Agregar'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              if (_meals.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardBackground,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Column(
+                    children: [
+                      Icon(
+                        Icons.restaurant_menu,
+                        size: 48,
+                        color: Colors.white24,
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        'No hay comidas',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 16,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Agrega comidas para crear el plan',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                ...List.generate(_meals.length, (index) {
+                  final meal = _meals[index];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    color: AppColors.cardBackground,
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: AppColors.primary.withOpacity(0.2),
+                        child: Icon(
+                          _getMealIcon(meal['time'] as String),
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      title: Text(meal['name'] as String),
+                      subtitle: Text(
+                        '${meal['time']} • ${meal['calories']} kcal',
+                        style: const TextStyle(color: AppColors.textSecondary),
+                      ),
+                      trailing: IconButton(
+                        icon:
+                            const Icon(Icons.delete_outline, color: Colors.red),
+                        onPressed: () => _removeMeal(index),
+                      ),
+                    ),
+                  );
+                }),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -414,7 +415,7 @@ class _AddMealDialogState extends State<_AddMealDialog> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) async {
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (didPop) return;
 
         // Verificar si hay datos escritos
@@ -459,82 +460,86 @@ class _AddMealDialogState extends State<_AddMealDialog> {
       },
       child: AlertDialog(
         title: const Text('Agregar Comida'),
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre de la comida',
-                  hintText: 'Ej: Avena con frutas',
+        content: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nombre de la comida',
+                    hintText: 'Ej: Avena con frutas',
+                  ),
+                  validator: (value) =>
+                      value?.trim().isEmpty ?? true ? 'Requerido' : null,
                 ),
-                validator: (value) =>
-                    value?.trim().isEmpty ?? true ? 'Requerido' : null,
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: _selectedTime,
-                decoration: const InputDecoration(labelText: 'Momento del día'),
-                items: const [
-                  DropdownMenuItem(value: 'Desayuno', child: Text('Desayuno')),
-                  DropdownMenuItem(
-                      value: 'Media mañana', child: Text('Media mañana')),
-                  DropdownMenuItem(value: 'Almuerzo', child: Text('Almuerzo')),
-                  DropdownMenuItem(value: 'Merienda', child: Text('Merienda')),
-                  DropdownMenuItem(value: 'Cena', child: Text('Cena')),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _selectedTime = value);
-                  }
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _caloriesController,
-                decoration: const InputDecoration(
-                  labelText: 'Calorías',
-                  suffixText: 'kcal',
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: _selectedTime,
+                  decoration:
+                      const InputDecoration(labelText: 'Momento del día'),
+                  items: const [
+                    DropdownMenuItem(
+                        value: 'Desayuno', child: Text('Desayuno')),
+                    DropdownMenuItem(
+                        value: 'Media mañana', child: Text('Media mañana')),
+                    DropdownMenuItem(
+                        value: 'Almuerzo', child: Text('Almuerzo')),
+                    DropdownMenuItem(
+                        value: 'Merienda', child: Text('Merienda')),
+                    DropdownMenuItem(value: 'Cena', child: Text('Cena')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _selectedTime = value);
+                    }
+                  },
                 ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Requerido';
-                  if (int.tryParse(value) == null) return 'Número inválido';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Descripción',
-                  hintText: 'Ingredientes, preparación...',
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _caloriesController,
+                  decoration: const InputDecoration(
+                    labelText: 'Calorías',
+                    suffixText: 'kcal',
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Requerido';
+                    if (int.tryParse(value) == null) return 'Número inválido';
+                    return null;
+                  },
                 ),
-                maxLines: 3,
-                validator: (value) =>
-                    value?.trim().isEmpty ?? true ? 'Requerido' : null,
-              ),
-            ],
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Descripción',
+                    hintText: 'Ingredientes, preparación...',
+                  ),
+                  maxLines: 3,
+                  validator: (value) =>
+                      value?.trim().isEmpty ?? true ? 'Requerido' : null,
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
-        ElevatedButton(
-          onPressed: _save,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.black,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
           ),
-          child: const Text('Agregar'),
-        ),
-      ],
+          ElevatedButton(
+            onPressed: _save,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.black,
+            ),
+            child: const Text('Agregar'),
+          ),
+        ],
       ),
     );
   }

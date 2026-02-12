@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../config/theme/app_theme.dart';
 import '../../config/supabase_config.dart';
 import '../../providers/user_provider.dart';
+import '../../widgets/shimmer_loading.dart';
 import '../meal_plans/create_meal_plan_screen.dart';
 import '../workouts/create_workout_screen.dart';
 import 'user_management_screen.dart';
@@ -130,153 +131,158 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           onRefresh: _loadDashboardData,
           color: AppColors.primary,
           child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Actividad Semanal',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    'Últimos 7 días',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              _isLoading
-                  ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(32.0),
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
-                  : Row(
-                      children: [
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.people,
-                            title: 'USUARIOS',
-                            value: _totalUsers.toString(),
-                            change: '',
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _StatCard(
-                            icon: Icons.bolt,
-                            iconColor: AppColors.primary,
-                            title: 'SESIONES',
-                            value: _totalSessions.toString(),
-                            change: 'Últimos 7 días',
-                            isNegative: false,
-                          ),
-                        ),
-                      ],
-                    ),
-              const SizedBox(height: 24),
-              _isLoading
-                  ? Container(
-                      height: 200,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.cardBackground,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Center(child: CircularProgressIndicator()),
-                    )
-                  : Container(
-                      height: 200,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.cardBackground,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: _buildChartBars(),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Actividad Semanal',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
-              const SizedBox(height: 32),
-              const Text(
-                'GESTIÓN RÁPIDA',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                  letterSpacing: 1.5,
+                    Text(
+                      'Últimos 7 días',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              _QuickActionButton(
-                icon: Icons.people,
-                iconColor: Colors.blue,
-                title: 'Gestión de Usuarios',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const UserManagementScreen(),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              _QuickActionButton(
-                icon: Icons.assignment_ind,
-                iconColor: Colors.orange,
-                title: 'Asignaciones de Usuarios',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const UserAssignmentsListScreen(),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              _QuickActionButton(
-                icon: Icons.restaurant_menu,
-                iconColor: AppColors.primary,
-                title: 'Crear Nuevo Plan Alimenticio',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CreateMealPlanScreen(),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              _QuickActionButton(
-                icon: Icons.fitness_center,
-                title: 'Nueva Rutina de Entrenamiento',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CreateWorkoutScreen(),
-                    ),
-                  );
-                },
-              ),
-            ],
+                const SizedBox(height: 20),
+                _isLoading
+                    ? Row(
+                        children: [
+                          Expanded(
+                            child: ShimmerCard(height: 100),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: ShimmerCard(height: 100),
+                          ),
+                        ],
+                      )
+                    : Row(
+                        children: [
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.people,
+                              title: 'USUARIOS',
+                              value: _totalUsers.toString(),
+                              change: '',
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _StatCard(
+                              icon: Icons.bolt,
+                              iconColor: AppColors.primary,
+                              title: 'SESIONES',
+                              value: _totalSessions.toString(),
+                              change: 'Últimos 7 días',
+                              isNegative: false,
+                            ),
+                          ),
+                        ],
+                      ),
+                const SizedBox(height: 24),
+                _isLoading
+                    ? Container(
+                        height: 200,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardBackground,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const ShimmerCard(height: 180),
+                      )
+                    : Container(
+                        height: 200,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardBackground,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: _buildChartBars(),
+                        ),
+                      ),
+                const SizedBox(height: 32),
+                const Text(
+                  'GESTIÓN RÁPIDA',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _QuickActionButton(
+                  icon: Icons.people,
+                  iconColor: Colors.blue,
+                  title: 'Gestión de Usuarios',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const UserManagementScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _QuickActionButton(
+                  icon: Icons.assignment_ind,
+                  iconColor: Colors.orange,
+                  title: 'Asignaciones de Usuarios',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const UserAssignmentsListScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _QuickActionButton(
+                  icon: Icons.restaurant_menu,
+                  iconColor: AppColors.primary,
+                  title: 'Crear Nuevo Plan Alimenticio',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CreateMealPlanScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _QuickActionButton(
+                  icon: Icons.fitness_center,
+                  title: 'Nueva Rutina de Entrenamiento',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CreateWorkoutScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );

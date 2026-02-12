@@ -4,6 +4,7 @@ import '../../config/theme/app_theme.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user.dart';
+import '../../widgets/shimmer_loading.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
@@ -135,7 +136,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               // Users List
               Expanded(
                 child: userProvider.isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: 10,
+                        itemBuilder: (context, index) =>
+                            const ShimmerListTile(),
+                      )
                     : _buildUsersList(userProvider),
               ),
             ],

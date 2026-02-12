@@ -7,6 +7,7 @@ import '../../config/theme/app_theme.dart';
 import '../../providers/workout_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/filter_chip_button.dart';
+import '../../widgets/assigned_workout_card.dart';
 
 class WorkoutListScreen extends StatefulWidget {
   const WorkoutListScreen({super.key});
@@ -28,6 +29,9 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final isAdmin = authProvider.isAdmin;
+    final currentUser = authProvider.currentUser;
+    final hasAssignedWorkout =
+        !isAdmin && currentUser?.assignedWorkoutId != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -71,6 +75,10 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
       ),
       body: Consumer<WorkoutProvider>(
         builder: (context, workoutProvider, child) {
+          final assignedWorkout = hasAssignedWorkout
+              ? workoutProvider.getWorkoutById(currentUser!.assignedWorkoutId!)
+              : null;
+
           return Column(
             children: [
               // Search Bar
@@ -129,106 +137,156 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                 ),
               ),
 
-              const SizedBox(height: 16),
+              // Assigned Workout Hero Card
+              if (hasAssignedWorkout && assignedWorkout != null) ...[
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: AssignedWorkoutCard(
+                    workout: assignedWorkout,
+                    onStart: () => context.push('/today-workout'),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Divider
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 1,
+                          color: AppColors.textSecondary.withOpacity(0.3),
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'Todas las Rutinas',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          height: 1,
+                          color: AppColors.textSecondary.withOpacity(0.3),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ] else
+                const SizedBox(height: 16),
 
               // Workout List
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => workoutProvider.loadWorkouts(forceRefresh: true),
+                  onRefresh: () =>
+                      workoutProvider.loadWorkouts(forceRefresh: true),
                   color: AppColors.primary,
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: workoutProvider.filteredWorkouts.length,
                     itemBuilder: (context, index) {
-                    final workout = workoutProvider.filteredWorkouts[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: InkWell(
-                        onTap: () =>
-                            context.push('/workout-detail/${workout.id}'),
-                        child: _WorkoutCard(
-                          title: workout.name,
-                          duration: workout.duration,
-                          exerciseCount: workout.exerciseCount,
-                          level: workout.level,
-                          isClickable: true,
-                          onEdit: () async {
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    EditWorkoutScreen(workout: workout),
-                              ),
-                            );
-                            if (result == true) {
-                              workoutProvider.loadWorkouts(forceRefresh: true);
-                            }
-                          },
-                          onDelete: () async {
-                            final shouldDelete = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                backgroundColor: AppColors.surface,
-                                title: const Text(
-                                  '¿Eliminar rutina?',
-                                  style: TextStyle(color: Colors.white),
+                      final workout = workoutProvider.filteredWorkouts[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: InkWell(
+                          onTap: () =>
+                              context.push('/workout-detail/${workout.id}'),
+                          child: _WorkoutCard(
+                            title: workout.name,
+                            duration: workout.duration,
+                            exerciseCount: workout.exerciseCount,
+                            level: workout.level,
+                            isClickable: true,
+                            onEdit: () async {
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      EditWorkoutScreen(workout: workout),
                                 ),
-                                content: Text(
-                                  '¿Estás seguro de eliminar "${workout.name}"? Esta acción no se puede deshacer.',
-                                  style: const TextStyle(
-                                      color: AppColors.textSecondary),
+                              );
+                              if (result == true) {
+                                workoutProvider.loadWorkouts(
+                                    forceRefresh: true);
+                              }
+                            },
+                            onDelete: () async {
+                              final shouldDelete = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  backgroundColor: AppColors.surface,
+                                  title: const Text(
+                                    '¿Eliminar rutina?',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  content: Text(
+                                    '¿Estás seguro de eliminar "${workout.name}"? Esta acción no se puede deshacer.',
+                                    style: const TextStyle(
+                                        color: AppColors.textSecondary),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      child: const Text(
+                                        'Cancelar',
+                                        style: TextStyle(
+                                            color: AppColors.textSecondary),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
+                                      child: const Text(
+                                        'Eliminar',
+                                        style:
+                                            TextStyle(color: Colors.redAccent),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, false),
-                                    child: const Text(
-                                      'Cancelar',
-                                      style: TextStyle(
-                                          color: AppColors.textSecondary),
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, true),
-                                    child: const Text(
-                                      'Eliminar',
-                                      style: TextStyle(color: Colors.redAccent),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
+                              );
 
-                            if (shouldDelete == true) {
-                              try {
-                                await workoutProvider.deleteWorkout(workout.id);
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                          'Rutina eliminada correctamente'),
-                                      backgroundColor: AppColors.primary,
-                                    ),
-                                  );
-                                }
-                              } catch (e) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Error al eliminar: $e'),
-                                      backgroundColor: Colors.redAccent,
-                                    ),
-                                  );
+                              if (shouldDelete == true) {
+                                try {
+                                  await workoutProvider
+                                      .deleteWorkout(workout.id);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            'Rutina eliminada correctamente'),
+                                        backgroundColor: AppColors.primary,
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Error al eliminar: $e'),
+                                        backgroundColor: Colors.redAccent,
+                                      ),
+                                    );
+                                  }
                                 }
                               }
-                            }
-                          },
+                            },
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
                 ),
               ),
 

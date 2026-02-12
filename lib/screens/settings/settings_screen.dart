@@ -5,6 +5,7 @@ import '../../config/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/preferences_provider.dart';
 import '../../services/security_service.dart';
+import '../../widgets/shimmer_loading.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -40,8 +41,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           title: const Text('Configuración'),
         ),
-        body: const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+        body: ListView.builder(
+          padding: const EdgeInsets.all(20),
+          itemCount: 8,
+          itemBuilder: (context, index) => const Padding(
+            padding: EdgeInsets.only(bottom: 16),
+            child: ShimmerCard(height: 80),
+          ),
         ),
       );
     }

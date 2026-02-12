@@ -5,6 +5,7 @@ import '../../models/user.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/workout_provider.dart';
 import '../../providers/meal_plan_provider.dart';
+import '../../widgets/shimmer_loading.dart';
 
 class AssignPlansScreen extends StatefulWidget {
   final User user;
@@ -55,7 +56,11 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: 5,
+              itemBuilder: (context, index) => const ShimmerCard(height: 120),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -133,7 +138,15 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                   Consumer<WorkoutProvider>(
                     builder: (context, workoutProvider, child) {
                       if (workoutProvider.isLoading) {
-                        return const Center(child: CircularProgressIndicator());
+                        return Column(
+                          children: List.generate(
+                            3,
+                            (index) => const Padding(
+                              padding: EdgeInsets.only(bottom: 12),
+                              child: ShimmerCard(height: 80),
+                            ),
+                          ),
+                        );
                       }
 
                       return Column(
@@ -174,7 +187,15 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                   Consumer<MealPlanProvider>(
                     builder: (context, mealPlanProvider, child) {
                       if (mealPlanProvider.isLoading) {
-                        return const Center(child: CircularProgressIndicator());
+                        return Column(
+                          children: List.generate(
+                            3,
+                            (index) => const Padding(
+                              padding: EdgeInsets.only(bottom: 12),
+                              child: ShimmerCard(height: 80),
+                            ),
+                          ),
+                        );
                       }
 
                       return Column(

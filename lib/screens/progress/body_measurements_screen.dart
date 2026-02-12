@@ -5,6 +5,7 @@ import '../../config/theme/app_theme.dart';
 import '../../providers/body_measurement_provider.dart';
 import '../../models/body_measurement.dart';
 import '../../widgets/primary_button.dart';
+import '../../widgets/shimmer_loading.dart';
 import 'package:intl/intl.dart';
 
 class BodyMeasurementsScreen extends StatefulWidget {
@@ -45,8 +46,11 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
         ],
       ),
       body: measurementProvider.isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primary))
+          ? ListView.builder(
+              padding: const EdgeInsets.all(20),
+              itemCount: 6,
+              itemBuilder: (context, index) => const ShimmerCard(height: 140),
+            )
           : measurements.isEmpty
               ? _buildEmptyState()
               : ListView(

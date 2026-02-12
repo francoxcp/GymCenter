@@ -149,127 +149,113 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
               // Meal Plan List
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => mealPlanProvider.loadMealPlans(forceRefresh: true),
+                  onRefresh: () =>
+                      mealPlanProvider.loadMealPlans(forceRefresh: true),
                   color: AppColors.primary,
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: mealPlanProvider.filteredMealPlans.length,
                     itemBuilder: (context, index) {
-                    final plan = mealPlanProvider.filteredMealPlans[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: GestureDetector(
-                        onTap: () =>
-                            context.push('/meal-plan-detail/${plan.id}'),
-                        child: _MealPlanCard(
-                          name: plan.name,
-                          description: plan.description,
-                          calories: plan.calories,
-                          icon: _getIconForType(plan.iconType),
-                          isAdmin: isAdmin,
-                          onEdit: isAdmin
-                              ? () async {
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          EditMealPlanScreen(mealPlan: plan),
-                                    ),
-                                  );
-                                  if (result == true) {
-                                    mealPlanProvider.loadMealPlans(
-                                        forceRefresh: true);
+                      final plan = mealPlanProvider.filteredMealPlans[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: GestureDetector(
+                          onTap: () =>
+                              context.push('/meal-plan-detail/${plan.id}'),
+                          child: _MealPlanCard(
+                            name: plan.name,
+                            description: plan.description,
+                            calories: plan.calories,
+                            icon: _getIconForType(plan.iconType),
+                            isAdmin: isAdmin,
+                            onEdit: isAdmin
+                                ? () async {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            EditMealPlanScreen(mealPlan: plan),
+                                      ),
+                                    );
+                                    if (result == true) {
+                                      mealPlanProvider.loadMealPlans(
+                                          forceRefresh: true);
+                                    }
                                   }
-                                }
-                              : null,
-                          onDelete: isAdmin
-                              ? () async {
-                                  final shouldDelete = await showDialog<bool>(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      backgroundColor: AppColors.surface,
-                                      title: const Text(
-                                        '¿Eliminar plan?',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                      content: Text(
-                                        '¿Estás seguro de eliminar "${plan.name}"? Esta acción no se puede deshacer.',
-                                        style: const TextStyle(
-                                            color: AppColors.textSecondary),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context, false),
-                                          child: const Text(
-                                            'Cancelar',
-                                            style: TextStyle(
-                                                color: AppColors.textSecondary),
-                                          ),
+                                : null,
+                            onDelete: isAdmin
+                                ? () async {
+                                    final shouldDelete = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        backgroundColor: AppColors.surface,
+                                        title: const Text(
+                                          '¿Eliminar plan?',
+                                          style: TextStyle(color: Colors.white),
                                         ),
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context, true),
-                                          child: const Text(
-                                            'Eliminar',
-                                            style: TextStyle(
-                                                color: Colors.redAccent),
-                                          ),
+                                        content: Text(
+                                          '¿Estás seguro de eliminar "${plan.name}"? Esta acción no se puede deshacer.',
+                                          style: const TextStyle(
+                                              color: AppColors.textSecondary),
                                         ),
-                                      ],
-                                    ),
-                                  );
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, false),
+                                            child: const Text(
+                                              'Cancelar',
+                                              style: TextStyle(
+                                                  color:
+                                                      AppColors.textSecondary),
+                                            ),
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, true),
+                                            child: const Text(
+                                              'Eliminar',
+                                              style: TextStyle(
+                                                  color: Colors.redAccent),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
 
-                                  if (shouldDelete == true) {
-                                    try {
-                                      await mealPlanProvider
-                                          .deleteMealPlan(plan.id);
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                                'Plan eliminado correctamente'),
-                                            backgroundColor: AppColors.primary,
-                                          ),
-                                        );
-                                      }
-                                    } catch (e) {
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content:
-                                                Text('Error al eliminar: $e'),
-                                            backgroundColor: Colors.redAccent,
-                                          ),
-                                        );
+                                    if (shouldDelete == true) {
+                                      try {
+                                        await mealPlanProvider
+                                            .deleteMealPlan(plan.id);
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                  'Plan eliminado correctamente'),
+                                              backgroundColor:
+                                                  AppColors.primary,
+                                            ),
+                                          );
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content:
+                                                  Text('Error al eliminar: $e'),
+                                              backgroundColor: Colors.redAccent,
+                                            ),
+                                          );
+                                        }
                                       }
                                     }
                                   }
-                                }
-                              : null,
+                                : null,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-                ),
-              ),
-
-              // New Plan Button
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: TextButton(
-                  onPressed: () {},
-                  child: const Text(
-                    'NUEVO PLAN',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
-                      letterSpacing: 1,
-                    ),
+                      );
+                    },
                   ),
                 ),
               ),

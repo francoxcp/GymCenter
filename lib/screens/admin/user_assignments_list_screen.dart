@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../config/theme/app_theme.dart';
 import '../../providers/user_provider.dart';
 import '../../models/user.dart';
+import '../../widgets/shimmer_loading.dart';
 import 'assign_plans_screen.dart';
 
 class UserAssignmentsListScreen extends StatefulWidget {
@@ -123,7 +124,12 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
               // User List
               Expanded(
                 child: userProvider.isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: 10,
+                        itemBuilder: (context, index) =>
+                            const ShimmerListTile(),
+                      )
                     : userProvider.filteredUsers.isEmpty
                         ? const Center(
                             child: Text(

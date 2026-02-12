@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/theme/app_theme.dart';
+import '../../config/supabase_config.dart';
 import '../../models/workout.dart';
+import '../../providers/auth_provider.dart';
+import '../../widgets/rating_dialog.dart';
 
-class WorkoutSummaryScreen extends StatelessWidget {
+class WorkoutSummaryScreen extends StatefulWidget {
   final Workout workout;
   final int durationMinutes;
   final int caloriesBurned;
@@ -17,6 +21,89 @@ class WorkoutSummaryScreen extends StatelessWidget {
     required this.caloriesBurned,
     required this.totalVolume,
   });
+
+  @override
+  State<WorkoutSummaryScreen> createState() => _WorkoutSummaryScreenState();
+}
+
+class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
+  bool _hasShownRatingDialog = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Mostrar rating dialog después de 2 segundos
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted && !_hasShownRatingDialog) {
+        _showRatingDialog();
+      }
+    });
+  }
+
+  Future<void> _showRatingDialog() async {
+    if (_hasShownRatingDialog) return;
+
+    setState(() => _hasShownRatingDialog = true);
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => RatingDialog(
+        title: '¿Cómo te fue?',
+        subtitle: 'Califica tu entrenamiento de ${widget.workout.name}',
+        onSubmit: (rating, comment) async {
+          await _saveRating(rating, comment);
+        },
+      ),
+    );
+
+    if (result == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('¡Gracias por tu feedback! 💪'),
+          backgroundColor: AppColors.primary,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _saveRating(int rating, String? comment) async {
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userId = authProvider.currentUser?.id;
+
+      if (userId == null) {
+        throw Exception('Usuario no autenticado');
+      }
+
+      // Buscar la última sesión de workout de este usuario para este workout
+      final sessionResponse = await SupabaseConfig.client
+          .from('workout_sessions')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('workout_id', widget.workout.id)
+          .order('completed_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+
+      final sessionId = sessionResponse?['id'];
+
+      // Guardar rating
+      await SupabaseConfig.client.from('workout_ratings').insert({
+        'user_id': userId,
+        'workout_id': widget.workout.id,
+        'session_id': sessionId,
+        'rating': rating,
+        'comment': comment,
+      });
+
+      debugPrint('✅ Rating guardado: $rating estrellas');
+    } catch (e) {
+      debugPrint('❌ Error al guardar rating: $e');
+      rethrow;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +203,7 @@ class WorkoutSummaryScreen extends StatelessWidget {
                           child: _StatCard(
                             icon: Icons.timer,
                             label: 'TIEMPO',
-                            value: _formatDuration(durationMinutes),
+                            value: _formatDuration(widget.durationMinutes),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -124,7 +211,7 @@ class WorkoutSummaryScreen extends StatelessWidget {
                           child: _StatCard(
                             icon: Icons.local_fire_department,
                             label: 'CALORÍAS',
-                            value: '$caloriesBurned',
+                            value: '${widget.caloriesBurned}',
                             unit: 'kcal',
                           ),
                         ),
@@ -133,7 +220,7 @@ class WorkoutSummaryScreen extends StatelessWidget {
                           child: _StatCard(
                             icon: Icons.fitness_center,
                             label: 'VOLUMEN',
-                            value: _formatVolume(totalVolume),
+                            value: _formatVolume(widget.totalVolume),
                             unit: 'kg',
                           ),
                         ),
@@ -165,7 +252,7 @@ class WorkoutSummaryScreen extends StatelessWidget {
                             border: Border.all(color: AppColors.primary),
                           ),
                           child: Text(
-                            '${workout.exercises.length} TOTAL',
+                            '${widget.workout.exercises.length} TOTAL',
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
@@ -180,7 +267,7 @@ class WorkoutSummaryScreen extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // Lista de ejercicios completados
-                    ...workout.exercises.map((exercise) {
+                    ...widget.workout.exercises.map((exercise) {
                       // Calcular volumen aproximado
                       final estimatedWeight = _estimateWeight(exercise.name);
                       return Padding(
@@ -237,6 +324,34 @@ class WorkoutSummaryScreen extends StatelessWidget {
                     }),
 
                     const SizedBox(height: 32),
+
+                    // Botón Calificar Entrenamiento
+                    if (!_hasShownRatingDialog)
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _showRatingDialog,
+                          icon: const Icon(Icons.star, color: Colors.black),
+                          label: const Text(
+                            'Calificar Entrenamiento',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: const RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(12)),
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (!_hasShownRatingDialog) const SizedBox(height: 16),
 
                     // Botón Volver al Inicio
                     SizedBox(
@@ -345,12 +460,12 @@ class WorkoutSummaryScreen extends StatelessWidget {
     final shareText = '''
 🏋️ ¡Entrenamiento Completado en Chamos Fitness Center! 💪
 
-📋 Rutina: ${workout.name}
-⏱️ Duración: $durationMinutes minutos
-🔥 Calorías: $caloriesBurned kcal
-💪 Volumen Total: ${totalVolume.toStringAsFixed(1)} kg
+📋 Rutina: ${widget.workout.name}
+⏱️ Duración: ${widget.durationMinutes} minutos
+🔥 Calorías: ${widget.caloriesBurned} kcal
+💪 Volumen Total: ${widget.totalVolume.toStringAsFixed(1)} kg
 
-${workout.description}
+${widget.workout.description}
 
 #ChamosFitnessCenter #Fitness #Workout #Training
     '''

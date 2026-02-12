@@ -5,6 +5,7 @@ import '../../config/theme/app_theme.dart';
 import '../../models/workout_session.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/workout_session_provider.dart';
+import '../../widgets/shimmer_loading.dart';
 import 'package:intl/intl.dart';
 
 class WorkoutHistoryScreen extends StatefulWidget {
@@ -59,8 +60,11 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
         title: const Text('Historial de Entrenamientos'),
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primary))
+          ? ListView.builder(
+              padding: const EdgeInsets.all(20),
+              itemCount: 8,
+              itemBuilder: (context, index) => const ShimmerListTile(),
+            )
           : _sessions.isEmpty
               ? _buildEmptyState()
               : RefreshIndicator(

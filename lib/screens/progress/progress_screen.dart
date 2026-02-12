@@ -73,30 +73,30 @@ class _ProgressScreenState extends State<ProgressScreen> {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-          // Período selector
-          _buildPeriodSelector(),
-          const SizedBox(height: 24),
+            // Período selector
+            _buildPeriodSelector(),
+            const SizedBox(height: 24),
 
-          // Racha actual
-          _buildStreakCard(),
-          const SizedBox(height: 20),
+            // Racha actual
+            _buildStreakCard(),
+            const SizedBox(height: 20),
 
-          // Estadísticas generales
-          _buildStatsGrid(),
-          const SizedBox(height: 24),
+            // Estadísticas generales
+            _buildStatsGrid(),
+            const SizedBox(height: 24),
 
-          // Gráfico de peso (placeholder)
-          _buildWeightChart(),
-          const SizedBox(height: 24),
+            // Gráfico de peso (placeholder)
+            _buildWeightChart(),
+            const SizedBox(height: 24),
 
-          // Logros recientes
-          _buildRecentAchievements(),
-          const SizedBox(height: 24),
+            // Logros recientes
+            _buildRecentAchievements(),
+            const SizedBox(height: 24),
 
-          // Botón para medidas corporales
-          _buildBodyMeasurementsButton(),
-        ],
-      ),
+            // Botón para medidas corporales
+            _buildBodyMeasurementsButton(),
+          ],
+        ),
       ),
     );
   }
@@ -110,13 +110,23 @@ class _ProgressScreenState extends State<ProgressScreen> {
         return Expanded(
           child: GestureDetector(
             onTap: () => setState(() => _selectedPeriod = period),
-            child: Container(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
               margin: const EdgeInsets.symmetric(horizontal: 4),
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
                 color:
                     isSelected ? AppColors.primary : AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(12),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
               ),
               child: Text(
                 period,
@@ -215,7 +225,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ? 30
             : _selectedPeriod == 'Año'
                 ? 365
-                : 10000;
+                : 10000; // "Todo" = 10000 días (~27 años)
 
     final cutoffDate = DateTime.now().subtract(Duration(days: days));
     final periodSessions = sessionProvider.sessions
@@ -230,14 +240,21 @@ class _ProgressScreenState extends State<ProgressScreen> {
     // Calcular calorías (estimado: 5 cal/min)
     final totalCalories = totalMinutes * 5;
 
-    // Obtener peso actual y cambio de peso
+    // Obtener peso actual y cambio de peso del período seleccionado
+    final periodMeasurements = measurementProvider
+        .getMeasurementsByPeriod(days)
+        .where((m) => m.weight != null)
+        .toList();
+
     final currentWeight = measurementProvider.latestMeasurement?.weight;
-    final firstMeasurement = measurementProvider.measurements.isNotEmpty
-        ? measurementProvider.measurements.last.weight
-        : null;
-    final totalWeightChange = currentWeight != null && firstMeasurement != null
-        ? currentWeight - firstMeasurement
-        : null;
+    final firstWeightInPeriod =
+        periodMeasurements.isNotEmpty && periodMeasurements.last.weight != null
+            ? periodMeasurements.last.weight
+            : null;
+    final periodWeightChange =
+        currentWeight != null && firstWeightInPeriod != null
+            ? currentWeight - firstWeightInPeriod
+            : null;
 
     return GridView.count(
       shrinkWrap: true,
@@ -281,8 +298,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
               : '--',
           Icons.monitor_weight,
           Colors.green,
-          totalWeightChange != null
-              ? '${totalWeightChange > 0 ? '+' : ''}${totalWeightChange.toStringAsFixed(1)} kg desde inicio'
+          periodWeightChange != null
+              ? '${periodWeightChange > 0 ? '+' : ''}${periodWeightChange.toStringAsFixed(1)} kg en ${_selectedPeriod.toLowerCase()}'
               : 'Agrega medidas para seguimiento',
         ),
       ],
@@ -343,15 +360,15 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   Widget _buildWeightChart() {
     final measurementProvider = Provider.of<BodyMeasurementProvider>(context);
-    final measurements = measurementProvider.getMeasurementsByPeriod(
-      _selectedPeriod == 'Semana'
-          ? 7
-          : _selectedPeriod == 'Mes'
-              ? 30
-              : _selectedPeriod == 'Año'
-                  ? 365
-                  : 1000,
-    );
+    final days = _selectedPeriod == 'Semana'
+        ? 7
+        : _selectedPeriod == 'Mes'
+            ? 30
+            : _selectedPeriod == 'Año'
+                ? 365
+                : 10000; // "Todo" = 10000 días (~27 años)
+
+    final measurements = measurementProvider.getMeasurementsByPeriod(days);
 
     // Filtrar solo medidas con peso
     final weightData =

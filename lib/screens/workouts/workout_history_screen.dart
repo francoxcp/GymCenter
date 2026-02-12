@@ -227,7 +227,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
     } else if (difference < 7) {
       dateText = 'Hace $difference días';
     } else {
-      dateText = DateFormat('dd MMM yyyy', 'es').format(date);
+      dateText = '${date.day}/${date.month}/${date.year}';
     }
 
     return Text(

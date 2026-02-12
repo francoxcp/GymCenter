@@ -250,7 +250,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
     }
 
     final events = _getEventsForDay(_selectedDay!);
-    final dateStr = DateFormat('EEEE, d MMMM', 'es').format(_selectedDay!);
+    final dateStr = _formatDateInSpanish(_selectedDay!);
 
     return Container(
       margin: const EdgeInsets.all(16),
@@ -382,6 +382,36 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
         ],
       ),
     );
+  }
+
+  String _formatDateInSpanish(DateTime date) {
+    const days = [
+      'lunes',
+      'martes',
+      'miércoles',
+      'jueves',
+      'viernes',
+      'sábado',
+      'domingo'
+    ];
+    const months = [
+      'enero',
+      'febrero',
+      'marzo',
+      'abril',
+      'mayo',
+      'junio',
+      'julio',
+      'agosto',
+      'septiembre',
+      'octubre',
+      'noviembre',
+      'diciembre'
+    ];
+
+    final dayName = days[date.weekday - 1];
+    final monthName = months[date.month - 1];
+    return '${dayName[0].toUpperCase()}${dayName.substring(1)}, ${date.day} de $monthName';
   }
 }
 

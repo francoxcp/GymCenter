@@ -173,7 +173,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       crossAxisCount: 3,
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
-      childAspectRatio: 1.2,
+      childAspectRatio: 0.95,
       children: [
         _buildMeasurementTile('Pecho', measurement.chest, Icons.fitness_center),
         _buildMeasurementTile(
@@ -220,7 +220,8 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
   }
 
   Widget _buildMeasurementCard(BodyMeasurement measurement) {
-    final dateStr = DateFormat('dd MMM yyyy', 'es').format(measurement.date);
+    final date = measurement.date;
+    final dateStr = '${date.day}/${date.month}/${date.year}';
     final now = DateTime.now();
     final difference = now.difference(measurement.date).inDays;
 

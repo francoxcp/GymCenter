@@ -32,6 +32,7 @@ class _CreateMealPlanScreenState extends State<CreateMealPlanScreen> {
   void _addMeal() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => _AddMealDialog(
         onAdd: (meal) {
           setState(() {
@@ -411,54 +412,51 @@ class _AddMealDialogState extends State<_AddMealDialog> {
     Navigator.pop(context);
   }
 
+  Future<void> _handleCancel() async {
+    // Verificar si hay datos escritos
+    final hasContent = _nameController.text.trim().isNotEmpty ||
+        _caloriesController.text.isNotEmpty ||
+        _descriptionController.text.trim().isNotEmpty ||
+        _selectedTime != 'Desayuno';
+
+    if (!hasContent) {
+      // No hay cambios, cerrar directamente
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+      return;
+    }
+
+    // Preguntar si desea descartar la comida
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Descartar comida?'),
+        content: const Text(
+          '¿Estás seguro de que quieres salir sin agregar esta comida?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Descartar'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldPop == true && context.mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (bool didPop, Object? result) async {
-        if (didPop) return;
-
-        // Verificar si hay datos escritos
-        final hasContent = _nameController.text.trim().isNotEmpty ||
-            _caloriesController.text.isNotEmpty ||
-            _descriptionController.text.trim().isNotEmpty ||
-            _selectedTime != 'Desayuno';
-
-        if (!hasContent) {
-          // No hay cambios, cerrar directamente
-          if (context.mounted) {
-            Navigator.of(context).pop();
-          }
-          return;
-        }
-
-        // Preguntar si desea descartar la comida
-        final shouldPop = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('¿Descartar comida?'),
-            content: const Text(
-              '¿Estás seguro de que quieres salir sin agregar esta comida?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancelar'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('Descartar'),
-              ),
-            ],
-          ),
-        );
-
-        if (shouldPop == true && context.mounted) {
-          Navigator.of(context).pop();
-        }
-      },
-      child: AlertDialog(
+    return AlertDialog(
         title: const Text('Agregar Comida'),
         content: Form(
           key: _formKey,
@@ -528,7 +526,7 @@ class _AddMealDialogState extends State<_AddMealDialog> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: _handleCancel,
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
@@ -540,7 +538,6 @@ class _AddMealDialogState extends State<_AddMealDialog> {
             child: const Text('Agregar'),
           ),
         ],
-      ),
-    );
+      );
   }
 }

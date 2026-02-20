@@ -12,7 +12,29 @@ VALUES
   ('exercise-thumbnails', 'exercise-thumbnails', true)
 ON CONFLICT (id) DO NOTHING;
 
--- Políticas para profile-photos
+-- ============================================
+-- ELIMINAR POLÍTICAS EXISTENTES
+-- ============================================
+
+DROP POLICY IF EXISTS "Users can upload own profile photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update own profile photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete own profile photos" ON storage.objects;
+DROP POLICY IF EXISTS "Profile photos are publicly accessible" ON storage.objects;
+
+DROP POLICY IF EXISTS "Admins can upload exercise videos" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can update exercise videos" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can delete exercise videos" ON storage.objects;
+DROP POLICY IF EXISTS "Exercise videos are publicly accessible" ON storage.objects;
+
+DROP POLICY IF EXISTS "Admins can upload exercise thumbnails" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can update exercise thumbnails" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can delete exercise thumbnails" ON storage.objects;
+DROP POLICY IF EXISTS "Exercise thumbnails are publicly accessible" ON storage.objects;
+
+-- ============================================
+-- POLÍTICAS PARA PROFILE-PHOTOS
+-- ============================================
+
 -- Los usuarios pueden subir/actualizar/eliminar sus propias fotos
 CREATE POLICY "Users can upload own profile photos"
 ON storage.objects FOR INSERT
@@ -34,7 +56,10 @@ ON storage.objects FOR SELECT
 TO public
 USING (bucket_id = 'profile-photos');
 
--- Políticas para exercise-videos
+-- ============================================
+-- POLÍTICAS PARA EXERCISE-VIDEOS
+-- ============================================
+
 -- Solo entrenadores (admins) pueden subir videos
 CREATE POLICY "Admins can upload exercise videos"
 ON storage.objects FOR INSERT
@@ -74,7 +99,10 @@ ON storage.objects FOR SELECT
 TO public
 USING (bucket_id = 'exercise-videos');
 
--- Políticas para exercise-thumbnails
+-- ============================================
+-- POLÍTICAS PARA EXERCISE-THUMBNAILS
+-- ============================================
+
 CREATE POLICY "Admins can upload exercise thumbnails"
 ON storage.objects FOR INSERT
 TO authenticated

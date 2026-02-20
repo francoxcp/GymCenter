@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/models/workout_session.dart';
+import 'package:chamos_fitness_center/features/workouts/models/workout_session.dart';
 
 void main() {
   group('WorkoutSession Model Tests', () {

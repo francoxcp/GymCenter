@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/models/meal_plan.dart';
+import 'package:chamos_fitness_center/features/meal_plans/models/meal_plan.dart';
 
 void main() {
   group('MealPlan Model Tests', () {

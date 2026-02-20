@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/models/workout.dart';
-import 'package:chamos_fitness_center/models/exercise.dart';
+import 'package:chamos_fitness_center/features/workouts/models/workout.dart';
+import 'package:chamos_fitness_center/features/workouts/models/exercise.dart';
 
 void main() {
   group('Workout Model Tests', () {

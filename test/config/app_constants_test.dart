@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/config/app_constants.dart';
+import 'package:chamos_fitness_center/core/constants/app_constants.dart';
 
 void main() {
   group('AppConstants Tests', () {

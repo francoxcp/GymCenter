@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/models/body_measurement.dart';
+import 'package:chamos_fitness_center/features/progress/models/body_measurement.dart';
 
 void main() {
   group('BodyMeasurement Model Tests', () {

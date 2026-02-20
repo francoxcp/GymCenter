@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/models/user.dart';
+import 'package:chamos_fitness_center/features/auth/models/user.dart';
 
 void main() {
   group('User Model Tests', () {

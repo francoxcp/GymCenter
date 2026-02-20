@@ -159,6 +159,53 @@ CREATE TABLE user_achievements (
 );
 
 -- ============================================
+-- TABLA: user_workout_schedule (rutinas por usuario y día)
+-- ============================================
+CREATE TABLE IF NOT EXISTS user_workout_schedule (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  day_of_week INT NOT NULL CHECK (day_of_week BETWEEN 1 AND 6), -- 1=Lunes, 6=Sábado
+  workout_id UUID NOT NULL REFERENCES workouts(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Índices
+CREATE INDEX IF NOT EXISTS idx_user_workout_schedule_user_id ON user_workout_schedule(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_workout_schedule_day ON user_workout_schedule(day_of_week);
+CREATE INDEX IF NOT EXISTS idx_user_workout_schedule_workout_id ON user_workout_schedule(workout_id);
+
+-- Un usuario solo puede tener una rutina por día
+ALTER TABLE user_workout_schedule ADD CONSTRAINT unique_user_day UNIQUE (user_id, day_of_week);
+
+-- RLS Policies
+ALTER TABLE user_workout_schedule ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "user_workout_schedule_select_policy" ON user_workout_schedule;
+CREATE POLICY "user_workout_schedule_select_policy"
+  ON user_workout_schedule
+  FOR SELECT
+  USING (auth.uid() = user_id OR is_admin());
+
+DROP POLICY IF EXISTS "user_workout_schedule_insert_policy" ON user_workout_schedule;
+CREATE POLICY "user_workout_schedule_insert_policy"
+  ON user_workout_schedule
+  FOR INSERT
+  WITH CHECK (auth.uid() = user_id OR is_admin());
+
+DROP POLICY IF EXISTS "user_workout_schedule_update_policy" ON user_workout_schedule;
+CREATE POLICY "user_workout_schedule_update_policy"
+  ON user_workout_schedule
+  FOR UPDATE
+  USING (auth.uid() = user_id OR is_admin())
+  WITH CHECK (auth.uid() = user_id OR is_admin());
+
+DROP POLICY IF EXISTS "user_workout_schedule_delete_policy" ON user_workout_schedule;
+CREATE POLICY "user_workout_schedule_delete_policy"
+  ON user_workout_schedule
+  FOR DELETE
+  USING (auth.uid() = user_id OR is_admin());
+
+-- ============================================
 -- ÍNDICES PARA PERFORMANCE
 -- ============================================
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);

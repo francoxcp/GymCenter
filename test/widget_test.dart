@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/config/theme/app_theme.dart';
-import 'package:chamos_fitness_center/widgets/primary_button.dart';
+import 'package:chamos_fitness_center/core/theme/app_theme.dart';
+import 'package:chamos_fitness_center/shared/widgets/primary_button.dart';
 
 void main() {
   group('Widget Tests', () {

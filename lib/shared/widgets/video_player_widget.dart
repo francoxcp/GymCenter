@@ -1,20 +1,25 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import '../../core/theme/app_theme.dart';
+import 'fullscreen_video_player.dart';
 
 /// Widget para reproducir videos de ejercicios
 class VideoPlayerWidget extends StatefulWidget {
   final String videoUrl;
   final bool autoPlay;
   final bool looping;
-  final double aspectRatio;
+  final double? aspectRatio;
+  final String? exerciseName;
+  final bool showFullscreenButton;
 
   const VideoPlayerWidget({
     super.key,
     required this.videoUrl,
     this.autoPlay = false,
     this.looping = true,
-    this.aspectRatio = 16 / 9,
+    this.aspectRatio,
+    this.exerciseName,
+    this.showFullscreenButton = true,
   });
 
   @override
@@ -156,7 +161,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
           alignment: Alignment.center,
           children: [
             AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
+              aspectRatio: widget.aspectRatio ?? _controller.value.aspectRatio,
               child: VideoPlayer(_controller),
             ),
 
@@ -187,6 +192,38 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                 ),
               ),
             ),
+
+            // Botón de pantalla completa
+            if (widget.showFullscreenButton)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FullscreenVideoPlayer(
+                          videoUrl: widget.videoUrl,
+                          exerciseName: widget.exerciseName ?? 'Video',
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: Colors.black54,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.fullscreen,
+                      color: AppColors.primary,
+                      size: 24,
+                    ),
+                  ),
+                ),
+              ),
 
             // Progress bar
             Positioned(

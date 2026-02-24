@@ -47,7 +47,13 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => WorkoutProvider()),
         ChangeNotifierProvider(create: (_) => MealPlanProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProxyProvider<AuthProvider, UserProvider>(
+          create: (_) => UserProvider(),
+          update: (_, authProvider, userProvider) {
+            userProvider!.setAuthProvider(authProvider);
+            return userProvider;
+          },
+        ),
         ChangeNotifierProvider(create: (_) => BodyMeasurementProvider()),
         ChangeNotifierProvider(create: (_) => PreferencesProvider()),
         ChangeNotifierProvider(create: (_) => AchievementsProvider()),

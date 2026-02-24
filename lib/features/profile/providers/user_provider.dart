@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../auth/models/user.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../../config/supabase_config.dart';
 import '../../../core/constants/app_constants.dart';
 
@@ -8,6 +9,7 @@ class UserProvider extends ChangeNotifier {
   User? _currentUser;
   String _searchQuery = '';
   bool _isLoading = false;
+  AuthProvider? _authProvider;
 
   List<User> get users => _users;
   User? get currentUser => _currentUser;
@@ -17,6 +19,10 @@ class UserProvider extends ChangeNotifier {
   UserProvider() {
     loadUsers();
     loadCurrentUser();
+  }
+
+  void setAuthProvider(AuthProvider authProvider) {
+    _authProvider = authProvider;
   }
 
   Future<void> loadCurrentUser() async {
@@ -93,6 +99,11 @@ class UserProvider extends ChangeNotifier {
         );
         notifyListeners();
       }
+
+      // Actualizar AuthProvider si es el usuario actual
+      if (_authProvider?.currentUser?.id == userId) {
+        await _authProvider!.refreshUser();
+      }
     } catch (e) {
       debugPrint('Error assigning workout: $e');
       rethrow;
@@ -112,6 +123,11 @@ class UserProvider extends ChangeNotifier {
           assignedMealPlanId: mealPlanId,
         );
         notifyListeners();
+      }
+
+      // Actualizar AuthProvider si es el usuario actual
+      if (_authProvider?.currentUser?.id == userId) {
+        await _authProvider!.refreshUser();
       }
     } catch (e) {
       debugPrint('Error assigning meal plan: $e');
@@ -135,6 +151,11 @@ class UserProvider extends ChangeNotifier {
           assignedMealPlanId: mealPlanId,
         );
         notifyListeners();
+      }
+
+      // Actualizar AuthProvider si es el usuario actual
+      if (_authProvider?.currentUser?.id == userId) {
+        await _authProvider!.refreshUser();
       }
     } catch (e) {
       debugPrint('Error assigning workout and meal plan: $e');
@@ -297,5 +318,10 @@ class UserProvider extends ChangeNotifier {
         .delete()
         .eq('user_id', userId);
     notifyListeners();
+
+    // Actualizar AuthProvider si es el usuario actual
+    if (_authProvider?.currentUser?.id == userId) {
+      await _authProvider!.refreshUser();
+    }
   }
 }

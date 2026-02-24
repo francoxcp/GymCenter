@@ -9,6 +9,7 @@ import '../providers/workout_provider.dart';
 import '../providers/workout_progress_provider.dart';
 import '../models/exercise.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../../shared/widgets/video_player_widget.dart';
 import 'workout_summary_screen.dart';
 import 'package:confetti/confetti.dart';
 
@@ -709,34 +710,48 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
           const SizedBox(height: 24),
 
-          // Video Placeholder
-          Container(
-            height: 220,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.play_circle_outline,
-                    size: 80,
-                    color: AppColors.primary,
-                  ),
-                  SizedBox(height: 12),
-                  Text(
-                    'Video Tutorial',
-                    style: TextStyle(
+          // Video del ejercicio
+          if (exercise.videoUrl != null && exercise.videoUrl!.isNotEmpty)
+            Container(
+              constraints: const BoxConstraints(
+                maxHeight: 400, // Máximo para videos muy largos
+              ),
+              child: VideoPlayerWidget(
+                videoUrl: exercise.videoUrl!,
+                autoPlay: false,
+                looping: true,
+                exerciseName: exercise.name,
+                showFullscreenButton: true,
+              ),
+            )
+          else
+            Container(
+              height: 220,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.videocam_off_outlined,
+                      size: 64,
                       color: AppColors.textSecondary,
-                      fontSize: 16,
                     ),
-                  ),
-                ],
+                    SizedBox(height: 12),
+                    Text(
+                      'Video no disponible',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
 
           const SizedBox(height: 24),
 

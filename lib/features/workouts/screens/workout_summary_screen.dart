@@ -2,11 +2,16 @@
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'dart:math' as math;
 import '../../../core/theme/app_theme.dart';
 import '../../../config/supabase_config.dart';
 import '../models/workout.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../profile/providers/user_provider.dart';
+import '../providers/workout_progress_provider.dart';
+import '../providers/workout_provider.dart';
 import '../../../shared/widgets/rating_dialog.dart';
+import 'package:intl/intl.dart';
 
 class WorkoutSummaryScreen extends StatefulWidget {
   final Workout workout;
@@ -28,16 +33,101 @@ class WorkoutSummaryScreen extends StatefulWidget {
 
 class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
   bool _hasShownRatingDialog = false;
+  Map<String, dynamic>? _nextWorkout;
+  bool _isLoadingNextWorkout = true;
+  String _motivationalMessage = '';
+
+  // Mensajes motivacionales aleatorios
+  final List<String> _motivationalMessages = [
+    '¡INCREÍBLE TRABAJO!',
+    '¡LO LOGRASTE!',
+    '¡EXCELENTE!',
+    '¡ERES IMPARABLE!',
+    '¡BRUTAL ENTRENAMIENTO!',
+    '¡SIGUE ASÍ CAMPEÓN!',
+    '¡ESPECTACULAR!',
+    '¡QUÉ MÁQUINA!',
+  ];
 
   @override
   void initState() {
     super.initState();
+    // Elegir mensaje motivacional aleatorio
+    _motivationalMessage = _motivationalMessages[
+        math.Random().nextInt(_motivationalMessages.length)];
+
+    // Guardar sesión y actualizar estadísticas
+    _saveWorkoutSession();
+
+    // Cargar próxima sesión programada
+    _loadNextWorkout();
+
     // Mostrar rating dialog después de 2 segundos
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted && !_hasShownRatingDialog) {
         _showRatingDialog();
       }
     });
+  }
+
+  Future<void> _saveWorkoutSession() async {
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final progressProvider =
+          Provider.of<WorkoutProgressProvider>(context, listen: false);
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final userId = authProvider.currentUser?.id;
+
+      if (userId == null) return;
+
+      // Guardar sesión en workout_sessions y actualizar estadísticas
+      await progressProvider.completeWorkout(
+        userId: userId,
+        workoutId: widget.workout.id,
+        durationMinutes: widget.durationMinutes,
+        exercisesCompleted: widget.workout.exercises.length,
+        totalExercises: widget.workout.exercises.length,
+      );
+
+      // Actualizar estadísticas del usuario
+      final currentUser = authProvider.currentUser!;
+      await userProvider.updateUserStats(
+        userId,
+        completedWorkouts: currentUser.completedWorkouts + 1,
+      );
+
+      // Refrescar usuario para obtener estadísticas actualizadas
+      await authProvider.refreshUser();
+
+      debugPrint('✅ Sesión guardada y estadísticas actualizadas');
+    } catch (e) {
+      debugPrint('❌ Error al guardar sesión: $e');
+    }
+  }
+
+  Future<void> _loadNextWorkout() async {
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final progressProvider =
+          Provider.of<WorkoutProgressProvider>(context, listen: false);
+      final userId = authProvider.currentUser?.id;
+
+      if (userId == null) {
+        setState(() => _isLoadingNextWorkout = false);
+        return;
+      }
+
+      final nextWorkoutData =
+          await progressProvider.getNextScheduledWorkout(userId);
+
+      setState(() {
+        _nextWorkout = nextWorkoutData;
+        _isLoadingNextWorkout = false;
+      });
+    } catch (e) {
+      debugPrint('❌ Error al cargar próxima sesión: $e');
+      setState(() => _isLoadingNextWorkout = false);
+    }
   }
 
   Future<void> _showRatingDialog() async {
@@ -166,9 +256,9 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   children: [
-                    const Text(
-                      '¡INCREÍBLE TRABAJO!',
-                      style: TextStyle(
+                    Text(
+                      _motivationalMessage,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
@@ -325,6 +415,64 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
 
                     const SizedBox(height: 32),
 
+                    // Próxima Sesión Programada
+                    if (!_isLoadingNextWorkout && _nextWorkout != null) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardBackground,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppColors.primary.withOpacity(0.3),
+                            width: 2,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.calendar_today,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                const Text(
+                                  'Próxima Sesión',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            _buildNextWorkoutInfo(),
+                            const SizedBox(height: 12),
+                            Text(
+                              _getNextWorkoutMessage(),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                    ],
+
                     // Botón Calificar Entrenamiento
                     if (!_hasShownRatingDialog)
                       SizedBox(
@@ -454,6 +602,125 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
     if (name.contains('dominada') || name.contains('pull')) return 0;
     if (name.contains('burpee') || name.contains('jumping')) return 0;
     return 50; // peso por defecto
+  }
+
+  Widget _buildNextWorkoutInfo() {
+    if (_nextWorkout == null) return const SizedBox.shrink();
+
+    final nextDate = _nextWorkout!['date'] as DateTime;
+    final daysUntil = _nextWorkout!['days_until'] as int;
+    final workoutProvider = Provider.of<WorkoutProvider>(context);
+    final nextWorkoutId = _nextWorkout!['workout_id'] as String;
+    final workout = workoutProvider.getWorkoutById(nextWorkoutId);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Fecha',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  DateFormat('EEEE, d MMM', 'es').format(nextDate),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.primary),
+              ),
+              child: Text(
+                daysUntil == 0
+                    ? 'Hoy'
+                    : daysUntil == 1
+                        ? 'Mañana'
+                        : 'En $daysUntil días',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (workout != null) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.fitness_center,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        workout.name,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${workout.exercises.length} ejercicios • ${workout.duration} min',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  String _getNextWorkoutMessage() {
+    if (_nextWorkout == null) return '';
+
+    final daysUntil = _nextWorkout!['days_until'] as int;
+
+    if (daysUntil == 0) {
+      return '¡Tienes otra sesión programada para hoy! 💪';
+    } else if (daysUntil == 1) {
+      return '¡Prepárate! Tu próximo entrenamiento es mañana 🔥';
+    } else {
+      return '¡Sigue así! Te vemos en $daysUntil días 💯';
+    }
   }
 
   void _shareWorkout(BuildContext context) {

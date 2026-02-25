@@ -320,9 +320,6 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   }
 
   void _showWorkoutSummary(workout) {
-    // Eliminar progreso guardado (rutina completada)
-    context.read<WorkoutProgressProvider>().deleteProgress();
-
     // Mostrar confetti de celebración
     _confettiController.play();
     HapticFeedback.heavyImpact();

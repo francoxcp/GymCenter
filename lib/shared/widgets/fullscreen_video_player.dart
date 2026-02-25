@@ -228,7 +228,7 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
           top: 16,
           left: 16,
           child: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.black54,
               shape: BoxShape.circle,
             ),

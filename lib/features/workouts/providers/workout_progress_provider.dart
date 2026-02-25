@@ -102,4 +102,97 @@ class WorkoutProgressProvider with ChangeNotifier {
   bool isProgressForWorkout(String workoutId) {
     return _currentProgress?.workoutId == workoutId && hasProgress;
   }
+
+  // Completar workout y guardarlo en workout_sessions
+  Future<void> completeWorkout({
+    required String userId,
+    required String workoutId,
+    required int durationMinutes,
+    required int exercisesCompleted,
+    required int totalExercises,
+  }) async {
+    try {
+      // Guardar sesión en workout_sessions
+      await _supabase.from('workout_sessions').insert({
+        'user_id': userId,
+        'workout_id': workoutId,
+        'completed_at': DateTime.now().toIso8601String(),
+        'duration_minutes': durationMinutes,
+        'exercises_completed': exercisesCompleted,
+        'total_exercises': totalExercises,
+      });
+
+      debugPrint('✅ Workout session guardada en base de datos');
+
+      // Eliminar progreso temporal
+      await deleteProgress();
+
+      return;
+    } catch (e) {
+      debugPrint('❌ Error al completar workout: $e');
+      rethrow;
+    }
+  }
+
+  // Obtener la próxima sesión programada
+  Future<Map<String, dynamic>?> getNextScheduledWorkout(String userId) async {
+    try {
+      // Obtener día de la semana actual (1 = Lunes, 7 = Domingo)
+      final today = DateTime.now();
+      final currentDayOfWeek = today.weekday;
+
+      // Buscar próxima sesión en user_workout_schedule
+      final scheduleResponse = await _supabase
+          .from('user_workout_schedule')
+          .select('day_of_week, workout_id')
+          .eq('user_id', userId)
+          .order('day_of_week');
+
+      if (scheduleResponse.isEmpty) return null;
+
+      final schedule = scheduleResponse as List;
+
+      // Encontrar el próximo día
+      int? nextDay;
+      String? nextWorkoutId;
+
+      // Buscar primer día mayor al actual
+      for (var item in schedule) {
+        final dayOfWeek = item['day_of_week'] as int;
+        if (dayOfWeek > currentDayOfWeek) {
+          nextDay = dayOfWeek;
+          nextWorkoutId = item['workout_id'];
+          break;
+        }
+      }
+
+      // Si no hay días mayores, tomar el primer día de la semana siguiente
+      if (nextDay == null && schedule.isNotEmpty) {
+        nextDay = schedule.first['day_of_week'] as int;
+        nextWorkoutId = schedule.first['workout_id'];
+      }
+
+      if (nextDay == null || nextWorkoutId == null) return null;
+
+      // Calcular cuántos días faltan
+      int daysUntilNext;
+      if (nextDay > currentDayOfWeek) {
+        daysUntilNext = nextDay - currentDayOfWeek;
+      } else {
+        daysUntilNext = (7 - currentDayOfWeek) + nextDay;
+      }
+
+      final nextDate = today.add(Duration(days: daysUntilNext));
+
+      return {
+        'day_of_week': nextDay,
+        'workout_id': nextWorkoutId,
+        'date': nextDate,
+        'days_until': daysUntilNext,
+      };
+    } catch (e) {
+      debugPrint('❌ Error al obtener próxima sesión: $e');
+      return null;
+    }
+  }
 }

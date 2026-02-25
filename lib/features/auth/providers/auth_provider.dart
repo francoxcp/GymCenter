@@ -49,6 +49,7 @@ class AuthProvider extends ChangeNotifier {
           .single();
 
       debugPrint('✅ User data loaded: ${response.toString()}');
+      debugPrint('📋 assigned_workout_id: ${response['assigned_workout_id']}');
       _currentUser = User.fromJson(response);
       _isAuthenticated = true;
       notifyListeners();

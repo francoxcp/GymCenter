@@ -76,6 +76,10 @@ class WorkoutProvider extends ChangeNotifier {
 
       _lastFetch = DateTime.now();
       _isLoading = false;
+      debugPrint('🏋️ WorkoutProvider: Loaded ${_workouts.length} workouts');
+      for (var workout in _workouts) {
+        debugPrint('  - Workout ID: ${workout.id}, Name: ${workout.name}');
+      }
       notifyListeners();
     } catch (e) {
       _isLoading = false;
@@ -146,9 +150,18 @@ class WorkoutProvider extends ChangeNotifier {
   }
 
   Workout? getWorkoutById(String workoutId) {
+    debugPrint(
+        '🔍 WorkoutProvider.getWorkoutById: Looking for workout ID: $workoutId');
+    debugPrint(
+        '🔍 WorkoutProvider.getWorkoutById: Current workouts count: ${_workouts.length}');
     try {
-      return _workouts.firstWhere((w) => w.id == workoutId);
+      final workout = _workouts.firstWhere((w) => w.id == workoutId);
+      debugPrint(
+          '✅ WorkoutProvider.getWorkoutById: Found workout: ${workout.name}');
+      return workout;
     } catch (e) {
+      debugPrint(
+          '❌ WorkoutProvider.getWorkoutById: Workout not found with ID: $workoutId');
       return null;
     }
   }

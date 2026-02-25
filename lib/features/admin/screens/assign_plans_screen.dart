@@ -27,14 +27,14 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
     super.initState();
     selectedWorkoutId = widget.user.assignedWorkoutId;
     selectedMealPlanId = widget.user.assignedMealPlanId;
-    
+
     // Cargar rutinas y planes de comida al iniciar
     Future.microtask(() {
       final workoutProvider =
           Provider.of<WorkoutProvider>(context, listen: false);
       final mealPlanProvider =
           Provider.of<MealPlanProvider>(context, listen: false);
-      
+
       workoutProvider.loadWorkouts();
       mealPlanProvider.loadMealPlans();
     });
@@ -281,20 +281,35 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                         final userProvider =
                             Provider.of<UserProvider>(context, listen: false);
                         try {
+                          debugPrint(
+                              '💾 Guardando asignaciones para usuario: ${widget.user.id}');
+                          debugPrint(
+                              '   - Rutina seleccionada: $selectedWorkoutId');
+                          debugPrint('   - Días seleccionados: $selectedDays');
+                          debugPrint(
+                              '   - Plan alimenticio: $selectedMealPlanId');
+
                           // Asignar rutina por días
                           if (selectedWorkoutId != null &&
                               selectedDays.isNotEmpty) {
+                            debugPrint('   ➡️ Asignando rutina por días...');
                             await userProvider.assignWorkoutByDay(
                                 widget.user.id,
                                 selectedWorkoutId!,
                                 selectedDays);
+                            debugPrint('   ✅ Rutina asignada');
+                          } else {
+                            debugPrint(
+                                '   ⚠️ No hay rutina o días seleccionados, saltando asignación de rutina');
                           }
                           // Asignar plan alimenticio (opcional, lógica actual)
                           if (selectedMealPlanId != null &&
                               selectedMealPlanId !=
                                   widget.user.assignedMealPlanId) {
+                            debugPrint('   ➡️ Asignando plan alimenticio...');
                             await userProvider.assignMealPlan(
                                 widget.user.id, selectedMealPlanId!);
+                            debugPrint('   ✅ Plan alimenticio asignado');
                           }
                           if (!mounted) return;
                           Navigator.pop(context);

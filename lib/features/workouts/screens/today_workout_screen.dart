@@ -26,7 +26,6 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   List<List<bool>> _completedSets = [];
   bool _isResting = false;
   int _remainingSeconds = 0;
-  int _totalRestSeconds = 0;
   Timer? _timer;
   DateTime? _startTime;
 
@@ -214,7 +213,6 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     setState(() {
       _isResting = true;
       _remainingSeconds = seconds;
-      _totalRestSeconds = seconds;
     });
 
     _timer?.cancel();
@@ -622,7 +620,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     final allSetsCompleted = completedSets.every((s) => s);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -805,7 +803,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           // Rest Timer Circular Mejorado
           if (_isResting && exerciseIndex == _currentExerciseIndex) ...[
             Container(
-              padding: const EdgeInsets.all(24),
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: AppColors.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
@@ -822,65 +821,33 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                       letterSpacing: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
 
-                  // Timer Circular
-                  SizedBox(
-                    width: 160,
-                    height: 160,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // CircularProgressIndicator animado
-                        TweenAnimationBuilder<double>(
-                          duration: const Duration(milliseconds: 300),
-                          tween: Tween<double>(
-                            begin: 0,
-                            end: _totalRestSeconds > 0
-                                ? _remainingSeconds / _totalRestSeconds
-                                : 0,
-                          ),
-                          builder: (context, value, _) =>
-                              CircularProgressIndicator(
-                            value: value,
-                            strokeWidth: 12,
-                            backgroundColor: AppColors.surface,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              _remainingSeconds <= 3
-                                  ? Colors.red
-                                  : AppColors.primary,
-                            ),
-                          ),
+                  // Tiempo restante
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _remainingSeconds.toString(),
+                        style: TextStyle(
+                          fontSize: 80,
+                          fontWeight: FontWeight.bold,
+                          color: _remainingSeconds <= 3
+                              ? Colors.red
+                              : AppColors.primary,
                         ),
-
-                        // Tiempo restante
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              _remainingSeconds.toString(),
-                              style: TextStyle(
-                                fontSize: 56,
-                                fontWeight: FontWeight.bold,
-                                color: _remainingSeconds <= 3
-                                    ? Colors.red
-                                    : AppColors.primary,
-                              ),
-                            ),
-                            const Text(
-                              'segundos',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
+                      ),
+                      const Text(
+                        'segundos',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
 
                   // Botón para saltar descanso
                   TextButton(

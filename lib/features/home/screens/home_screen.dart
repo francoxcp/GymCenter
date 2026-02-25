@@ -29,13 +29,13 @@ class _HomeScreenState extends State<HomeScreen> {
       final progressProvider =
           Provider.of<WorkoutProgressProvider>(context, listen: false);
       final userId = authProvider.currentUser?.id;
-      
+
       // Cargar rutinas para que estén disponibles
       workoutProvider.loadWorkouts(
         userId: userId,
         isAdmin: authProvider.isAdmin,
       );
-      
+
       // Cargar progreso pendiente
       if (userId != null) {
         progressProvider.loadProgress(userId);
@@ -344,6 +344,14 @@ class _UserHomeContent extends StatelessWidget {
         ? workoutProvider.getWorkoutById(currentUser.assignedWorkoutId!)
         : null;
 
+    // Debug info
+    debugPrint('🏠 HomeScreen: hasAssignedWorkout=$hasAssignedWorkout');
+    debugPrint(
+        '🏠 HomeScreen: assignedWorkoutId=${currentUser.assignedWorkoutId}');
+    debugPrint('🏠 HomeScreen: assignedWorkout=$assignedWorkout');
+    debugPrint(
+        '🏠 HomeScreen: workouts count=${workoutProvider.workouts.length}');
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -438,7 +446,42 @@ class _UserHomeContent extends StatelessWidget {
 
         const SizedBox(height: 16),
 
-        if (hasAssignedWorkout && assignedWorkout != null) ...[
+        // Mostrar loading si está cargando
+        if (workoutProvider.isLoading) ...[
+          FadeInCard(
+            delay: 200,
+            child: AnimatedCard(
+              padding: const EdgeInsets.all(20),
+              onTap: null,
+              enableAnimation: false,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.cardBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.surface),
+                ),
+                padding: const EdgeInsets.all(40),
+                child: const Center(
+                  child: Column(
+                    children: [
+                      CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Cargando rutinas...',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ] else if (hasAssignedWorkout && assignedWorkout != null) ...[
           FadeInCard(
             delay: 200,
             child: AnimatedCard(
@@ -535,7 +578,54 @@ class _UserHomeContent extends StatelessWidget {
               ),
             ),
           ),
+        ] else if (hasAssignedWorkout && assignedWorkout == null) ...[
+          // Tiene rutina asignada pero no se encontró
+          FadeInCard(
+            delay: 200,
+            child: AnimatedCard(
+              padding: const EdgeInsets.all(20),
+              onTap: null,
+              enableAnimation: false,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.cardBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                ),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      size: 56,
+                      color: Colors.orange,
+                    ),
+                    const SizedBox(height: 14),
+                    const Text(
+                      'Rutina no encontrada',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'La rutina asignada (ID: ${currentUser.assignedWorkoutId}) no está disponible.',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ] else ...[
+          // Sin rutina asignada
           FadeInCard(
             delay: 200,
             child: AnimatedCard(

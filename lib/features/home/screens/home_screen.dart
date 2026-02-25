@@ -21,12 +21,22 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Cargar progreso pendiente al iniciar
+    // Cargar datos al iniciar
     Future.microtask(() {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final workoutProvider =
+          Provider.of<WorkoutProvider>(context, listen: false);
       final progressProvider =
           Provider.of<WorkoutProgressProvider>(context, listen: false);
       final userId = authProvider.currentUser?.id;
+      
+      // Cargar rutinas para que estén disponibles
+      workoutProvider.loadWorkouts(
+        userId: userId,
+        isAdmin: authProvider.isAdmin,
+      );
+      
+      // Cargar progreso pendiente
       if (userId != null) {
         progressProvider.loadProgress(userId);
       }

@@ -27,6 +27,17 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
     super.initState();
     selectedWorkoutId = widget.user.assignedWorkoutId;
     selectedMealPlanId = widget.user.assignedMealPlanId;
+    
+    // Cargar rutinas y planes de comida al iniciar
+    Future.microtask(() {
+      final workoutProvider =
+          Provider.of<WorkoutProvider>(context, listen: false);
+      final mealPlanProvider =
+          Provider.of<MealPlanProvider>(context, listen: false);
+      
+      workoutProvider.loadWorkouts();
+      mealPlanProvider.loadMealPlans();
+    });
   }
 
   @override

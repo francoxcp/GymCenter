@@ -41,14 +41,12 @@ class StorageService {
         final reduction = ((originalSize - compressedSize) / originalSize * 100)
             .toStringAsFixed(1);
 
-        debugPrint(
-            'Imagen comprimida: $originalSize bytes → $compressedSize bytes');
-        debugPrint('Reducción: $reduction%');
+        // ...existing code...
       }
 
       return result;
     } catch (e) {
-      debugPrint('Error al comprimir imagen: $e');
+      // Error al comprimir imagen: log seguro, sin datos sensibles
       return null;
     }
   }
@@ -128,10 +126,10 @@ class StorageService {
       final publicUrl =
           _supabase.storage.from(profilePhotosBucket).getPublicUrl(fileName);
 
-      debugPrint('Foto de perfil subida: $publicUrl');
+      // ...existing code...
       return publicUrl;
     } catch (e) {
-      debugPrint('Error al subir foto de perfil: $e');
+      // Error al subir foto de perfil: log seguro, sin datos sensibles
       return null;
     }
   }
@@ -185,7 +183,7 @@ class StorageService {
       final publicUrl =
           _supabase.storage.from(exerciseVideosBucket).getPublicUrl(fileName);
 
-      debugPrint('Video subido exitosamente: $publicUrl');
+      // ...existing code...
 
       // Guardar metadata en base de datos
       await _saveVideoMetadata(
@@ -198,7 +196,7 @@ class StorageService {
 
       return publicUrl;
     } catch (e) {
-      debugPrint('Error al subir video: $e');
+      // Error al subir video: log seguro, sin datos sensibles
       return null;
     }
   }

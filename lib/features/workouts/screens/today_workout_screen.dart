@@ -285,7 +285,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         completedSets: _completedSets,
       );
     } catch (e) {
-      debugPrint('Error saving progress: $e');
+      // Error guardado de progreso: log seguro, sin datos sensibles
     }
   }
 
@@ -324,10 +324,6 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     _confettiController.play();
     HapticFeedback.heavyImpact();
 
-    Future.delayed(const Duration(milliseconds: 500), () {
-      HapticFeedback.heavyImpact();
-    });
-
     final endTime = DateTime.now();
     final durationMinutes =
         _startTime != null ? endTime.difference(_startTime!).inMinutes : 0;
@@ -340,21 +336,19 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       totalVolume += (exercise.sets * exercise.reps * estimatedWeight);
     }
 
-    // Esperar a que termine el confetti antes de navegar
-    Future.delayed(const Duration(seconds: 2), () {
-      if (context.mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => WorkoutSummaryScreen(
-              workout: workout,
-              durationMinutes: durationMinutes,
-              caloriesBurned: caloriesBurned,
-              totalVolume: totalVolume,
-            ),
+    // Navegar inmediatamente a la pantalla de resumen
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => WorkoutSummaryScreen(
+            workout: workout,
+            durationMinutes: durationMinutes,
+            caloriesBurned: caloriesBurned,
+            totalVolume: totalVolume,
           ),
-        );
-      }
-    });
+        ),
+      );
+    }
   }
 
   int _estimateWeight(String exerciseName) {

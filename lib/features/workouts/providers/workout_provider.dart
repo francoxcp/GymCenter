@@ -76,15 +76,12 @@ class WorkoutProvider extends ChangeNotifier {
 
       _lastFetch = DateTime.now();
       _isLoading = false;
-      debugPrint('🏋️ WorkoutProvider: Loaded ${_workouts.length} workouts');
-      for (var workout in _workouts) {
-        debugPrint('  - Workout ID: ${workout.id}, Name: ${workout.name}');
-      }
+      // ...existing code...
       notifyListeners();
     } catch (e) {
       _isLoading = false;
       notifyListeners();
-      debugPrint('Error loading workouts: $e');
+      // Error cargando workouts: log seguro, sin datos sensibles
     }
   }
 

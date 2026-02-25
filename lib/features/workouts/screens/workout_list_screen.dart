@@ -310,18 +310,6 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                   ),
                 ),
               ),
-
-              // End of List
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Text(
-                  'Fin de la lista',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ),
             ],
           );
         },

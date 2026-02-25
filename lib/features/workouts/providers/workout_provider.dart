@@ -47,12 +47,8 @@ class WorkoutProvider extends ChangeNotifier {
       var query =
           SupabaseConfig.client.from('workouts').select('*, exercises(*)');
 
-      // Filtrar según el rol del usuario
-      // Usuarios normales: solo ven rutinas que ellos crearon
-      // Admins: ven todas las rutinas
-      if (!isAdmin && userId != null) {
-        query = query.eq('created_by', userId);
-      }
+      // Todos los usuarios (admin y normales) ven todas las rutinas
+      // Esto permite que usuarios sin rutina asignada puedan ver las rutinas del admin
 
       final response = await query.order('created_at', ascending: false);
 

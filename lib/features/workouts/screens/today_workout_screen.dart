@@ -2,16 +2,16 @@
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-import 'dart:math' as math;
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/workout_provider.dart';
 import '../providers/workout_progress_provider.dart';
 import '../models/exercise.dart';
+import '../models/workout.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/video_player_widget.dart';
 import 'workout_summary_screen.dart';
-import 'package:confetti/confetti.dart';
+import '../../../features/progress/providers/body_measurement_provider.dart';
 
 class TodayWorkoutScreen extends StatefulWidget {
   const TodayWorkoutScreen({super.key});
@@ -30,23 +30,30 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   DateTime? _startTime;
 
   late PageController _pageController;
-  late ConfettiController _confettiController;
   late AnimationController _celebrationController;
 
   int _lastCompletedSet = -1;
   Timer? _saveDebouncer;
   bool _hasCheckedProgress = false;
 
+  // Estado de resumen al completar rutina
+  bool _workoutCompleted = false;
+  Workout? _summaryWorkout;
+  int _summaryDurationMinutes = 0;
+  int _summaryCaloriesBurned = 0;
+  double _summaryTotalVolume = 0;
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
-    _confettiController =
-        ConfettiController(duration: const Duration(seconds: 3));
     _celebrationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
+
+    // Registrar el momento exacto en que el usuario inicia la rutina
+    _startTime = DateTime.now();
 
     // Verificar progreso pendiente después de que se construya el widget
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -59,7 +66,6 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     _timer?.cancel();
     _saveDebouncer?.cancel();
     _pageController.dispose();
-    _confettiController.dispose();
     _celebrationController.dispose();
     super.dispose();
   }
@@ -82,7 +88,27 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           .getWorkoutById(authProvider.currentUser!.assignedWorkoutId!);
 
       if (workout != null && progress.workoutId == workout.id) {
-        _showRestoreDialog(progress, workout.name);
+        // Verificar si el progreso es del mismo día
+        final progressDate = DateTime(
+          progress.updatedAt.year,
+          progress.updatedAt.month,
+          progress.updatedAt.day,
+        );
+        final today = DateTime(
+          DateTime.now().year,
+          DateTime.now().month,
+          DateTime.now().day,
+        );
+
+        if (progressDate.isBefore(today)) {
+          // El progreso es de un día anterior, eliminarlo automáticamente
+          debugPrint('🗑️ Progreso del día anterior detectado, eliminando...');
+          await progressProvider.deleteProgress();
+          debugPrint('✅ Progreso anterior eliminado');
+        } else {
+          // El progreso es del mismo día, mostrar diálogo
+          _showRestoreDialog(progress, workout.name);
+        }
       } else {
         // Si el progreso es de otra rutina, eliminarlo
         await progressProvider.deleteProgress();
@@ -290,7 +316,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   }
 
   void _nextExercise(Exercise currentExercise, workout) {
+    debugPrint(
+        '🔄 _nextExercise: currentIndex=$_currentExerciseIndex, total=${_completedSets.length}');
+
     if (_currentExerciseIndex < _completedSets.length - 1) {
+      debugPrint('➡️ Avanzando al siguiente ejercicio');
       HapticFeedback.mediumImpact();
       setState(() {
         _currentExerciseIndex++;
@@ -301,6 +331,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         curve: Curves.easeOutCubic,
       );
     } else {
+      debugPrint('✅ Último ejercicio completado, mostrando resumen');
       _showWorkoutSummary(workout);
     }
   }
@@ -319,16 +350,25 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     }
   }
 
-  void _showWorkoutSummary(workout) {
-    // Mostrar confetti de celebración
-    _confettiController.play();
+  void _showWorkoutSummary(Workout workout) {
     HapticFeedback.heavyImpact();
 
     final endTime = DateTime.now();
     final durationMinutes =
         _startTime != null ? endTime.difference(_startTime!).inMinutes : 0;
 
-    final caloriesBurned = (durationMinutes * 5).toInt();
+    // Obtener peso del usuario desde medidas corporales (default 70kg)
+    final measurementProvider = context.read<BodyMeasurementProvider>();
+    final userWeightKg = measurementProvider.latestMeasurement?.weight ?? 70.0;
+
+    // Cálculo de calorías con valores MET (estándar de fisiología del ejercicio)
+    // MET cardio ~8, MET fuerza ~5
+    // Fórmula: kcal = MET × peso_kg × horas
+    final caloriesBurned = _estimateCalories(
+      workout,
+      durationMinutes,
+      userWeightKg,
+    );
 
     double totalVolume = 0;
     for (var exercise in workout.exercises) {
@@ -336,19 +376,46 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       totalVolume += (exercise.sets * exercise.reps * estimatedWeight);
     }
 
-    // Navegar inmediatamente a la pantalla de resumen
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => WorkoutSummaryScreen(
-            workout: workout,
-            durationMinutes: durationMinutes,
-            caloriesBurned: caloriesBurned,
-            totalVolume: totalVolume,
-          ),
-        ),
-      );
+    setState(() {
+      _workoutCompleted = true;
+      _summaryWorkout = workout;
+      _summaryDurationMinutes = durationMinutes;
+      _summaryCaloriesBurned = caloriesBurned;
+      _summaryTotalVolume = totalVolume;
+    });
+  }
+
+  int _estimateCalories(Workout workout, int durationMinutes, double weightKg) {
+    if (durationMinutes == 0) return 0;
+
+    int cardioCount = 0;
+    int totalExercises = workout.exercises.length;
+
+    for (var exercise in workout.exercises) {
+      final name = exercise.name.toLowerCase();
+      if (name.contains('burpee') ||
+          name.contains('jumping') ||
+          name.contains('salto') ||
+          name.contains('carrera') ||
+          name.contains('bicicleta') ||
+          name.contains('cuerda') ||
+          name.contains('cardio') ||
+          name.contains('hiit') ||
+          name.contains('sprint') ||
+          name.contains('trote') ||
+          name.contains('mountain')) {
+        cardioCount++;
+      }
     }
+
+    // MET promedio según proporción de ejercicios cardio
+    // Fuerza pura: MET 5 | Cardio puro: MET 8
+    final cardioRatio = totalExercises > 0 ? cardioCount / totalExercises : 0.0;
+    final avgMet = 5.0 + (cardioRatio * 3.0);
+
+    // kcal = MET × peso_kg × horas
+    final calories = avgMet * weightKg * (durationMinutes / 60.0);
+    return calories.round();
   }
 
   int _estimateWeight(String exerciseName) {
@@ -364,6 +431,16 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Si la rutina fue completada, mostrar la pantalla de resumen directamente
+    if (_workoutCompleted && _summaryWorkout != null) {
+      return WorkoutSummaryScreen(
+        workout: _summaryWorkout!,
+        durationMinutes: _summaryDurationMinutes,
+        caloriesBurned: _summaryCaloriesBurned,
+        totalVolume: _summaryTotalVolume,
+      );
+    }
+
     final authProvider = Provider.of<AuthProvider>(context);
     final workoutProvider = Provider.of<WorkoutProvider>(context);
     final currentUser = authProvider.currentUser;
@@ -432,7 +509,6 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       _completedSets = workout.exercises
           .map((e) => List.generate(e.sets, (_) => false))
           .toList();
-      _startTime = DateTime.now();
     }
 
     final currentExercise = workout.exercises[_currentExerciseIndex];
@@ -580,25 +656,6 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
-
-        // Confetti de celebración
-        Align(
-          alignment: Alignment.topCenter,
-          child: ConfettiWidget(
-            confettiController: _confettiController,
-            blastDirection: math.pi / 2,
-            emissionFrequency: 0.05,
-            numberOfParticles: 50,
-            gravity: 0.3,
-            colors: const [
-              AppColors.primary,
-              Colors.blue,
-              Colors.green,
-              Colors.orange,
-              Colors.pink,
             ],
           ),
         ),

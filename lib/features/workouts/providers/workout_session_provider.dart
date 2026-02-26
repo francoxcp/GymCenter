@@ -39,6 +39,8 @@ class WorkoutSessionProvider extends ChangeNotifier {
           'workoutId': json['workout_id'],
           'date': json['completed_at'],
           'durationMinutes': json['duration_minutes'],
+          'caloriesBurned': json['calories_burned'] ?? 0,
+          'totalVolumeKg': (json['total_volume_kg'] ?? 0).toDouble(),
           'exercisesCompleted': json['exercises_completed'] ?? [],
           'isCompleted': true,
         });

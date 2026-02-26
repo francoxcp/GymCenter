@@ -110,6 +110,8 @@ class WorkoutProgressProvider with ChangeNotifier {
     required int durationMinutes,
     required int exercisesCompleted,
     required int totalExercises,
+    int caloriesBurned = 0,
+    double totalVolumeKg = 0,
   }) async {
     try {
       // Guardar sesión en workout_sessions
@@ -120,6 +122,8 @@ class WorkoutProgressProvider with ChangeNotifier {
         'duration_minutes': durationMinutes,
         'exercises_completed': exercisesCompleted,
         'total_exercises': totalExercises,
+        'calories_burned': caloriesBurned,
+        'total_volume_kg': totalVolumeKg,
       });
 
       debugPrint('✅ Workout session guardada en base de datos');

@@ -237,8 +237,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
         periodSessions.fold<int>(0, (sum, s) => sum + s.durationMinutes);
     final totalHours = (totalMinutes / 60).toStringAsFixed(1);
 
-    // Calcular calorías (estimado: 5 cal/min)
-    final totalCalories = totalMinutes * 5;
+    // Sumar calorías reales guardadas en cada sesión (calculadas con MET + peso real)
+    final totalCalories =
+        periodSessions.fold<int>(0, (sum, s) => sum + s.caloriesBurned);
 
     // Obtener peso actual y cambio de peso del período seleccionado
     final periodMeasurements = measurementProvider

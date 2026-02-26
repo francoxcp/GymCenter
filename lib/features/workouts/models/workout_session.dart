@@ -4,6 +4,8 @@ class WorkoutSession {
   final String workoutId;
   final DateTime date;
   final int durationMinutes;
+  final int caloriesBurned;
+  final double totalVolumeKg;
   final List<ExerciseProgress> exercisesCompleted;
   final bool isCompleted;
 
@@ -13,6 +15,8 @@ class WorkoutSession {
     required this.workoutId,
     required this.date,
     this.durationMinutes = 0,
+    this.caloriesBurned = 0,
+    this.totalVolumeKg = 0,
     this.exercisesCompleted = const [],
     this.isCompleted = false,
   });
@@ -24,6 +28,8 @@ class WorkoutSession {
       workoutId: json['workoutId'],
       date: DateTime.parse(json['date']),
       durationMinutes: json['durationMinutes'] ?? 0,
+      caloriesBurned: json['caloriesBurned'] ?? 0,
+      totalVolumeKg: (json['totalVolumeKg'] ?? 0).toDouble(),
       exercisesCompleted: (json['exercisesCompleted'] as List?)
               ?.map((e) => ExerciseProgress.fromJson(e))
               .toList() ??
@@ -39,6 +45,8 @@ class WorkoutSession {
       'workoutId': workoutId,
       'date': date.toIso8601String(),
       'durationMinutes': durationMinutes,
+      'caloriesBurned': caloriesBurned,
+      'totalVolumeKg': totalVolumeKg,
       'exercisesCompleted': exercisesCompleted.map((e) => e.toJson()).toList(),
       'isCompleted': isCompleted,
     };

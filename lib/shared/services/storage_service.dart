@@ -36,11 +36,7 @@ class StorageService {
       );
 
       if (result != null) {
-        final originalSize = await imageFile.length();
-        final compressedSize = result.length;
-        final reduction = ((originalSize - compressedSize) / originalSize * 100)
-            .toStringAsFixed(1);
-
+        // Imagen comprimida exitosamente
         // ...existing code...
       }
 

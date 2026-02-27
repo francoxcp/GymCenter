@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía de Publicación — Chamos Fitness Center</title>
+<style>
+  @page { margin: 18mm 20mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #1a1a2e;
+    background: #fff;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px;
+  }
+
+  /* COVER */
+  .cover {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #fff;
+    padding: 50px 40px 40px;
+    border-radius: 12px;
+    margin-bottom: 36px;
+    page-break-after: always;
+  }
+  .cover h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #FFD700;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .cover .subtitle { font-size: 16px; color: #ccc; margin-bottom: 24px; }
+  .cover .meta { display: flex; gap: 32px; flex-wrap: wrap; margin-top: 20px; }
+  .cover .meta-item { }
+  .cover .meta-item .label { font-size: 10px; color: #FFD700; text-transform: uppercase; letter-spacing: 1px; }
+  .cover .meta-item .value { font-size: 13px; color: #eee; font-weight: 600; }
+
+  /* INDEX */
+  .index-box {
+    background: #f8f9fc;
+    border-left: 4px solid #FFD700;
+    padding: 20px 24px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 32px;
+    page-break-inside: avoid;
+  }
+  .index-box h2 { font-size: 14px; color: #0f3460; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .index-box ol { padding-left: 20px; }
+  .index-box ol li { margin-bottom: 5px; color: #333; font-size: 13px; }
+
+  /* SECTIONS */
+  h2.section-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(90deg, #0f3460, #16213e);
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin: 36px 0 18px;
+    page-break-after: avoid;
+  }
+  h2.section-title span { color: #FFD700; }
+
+  h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f3460;
+    margin: 22px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid #e8ecf4;
+    page-break-after: avoid;
+  }
+
+  p { margin-bottom: 10px; }
+
+  /* CODE BLOCKS */
+  pre {
+    background: #1a1a2e;
+    color: #e2e8f0;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 12px;
+    overflow-x: auto;
+    margin: 12px 0;
+    border-left: 3px solid #FFD700;
+    page-break-inside: avoid;
+  }
+  code {
+    background: #eef0f7;
+    color: #c0392b;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'Consolas', monospace;
+    font-size: 12px;
+  }
+  pre code { background: none; color: inherit; padding: 0; }
+
+  /* TABLES */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 12.5px;
+    page-break-inside: avoid;
+  }
+  thead tr { background: #0f3460; color: #fff; }
+  thead th { padding: 9px 12px; text-align: left; font-weight: 600; }
+  tbody tr:nth-child(even) { background: #f4f6fb; }
+  tbody tr:nth-child(odd) { background: #fff; }
+  tbody td { padding: 8px 12px; border-bottom: 1px solid #e0e4ef; vertical-align: top; }
+
+  /* CALLOUTS */
+  .warning {
+    background: #fff8e1;
+    border-left: 4px solid #f59e0b;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    margin: 12px 0;
+    font-size: 12.5px;
+    page-break-inside: avoid;
+  }
+  .warning strong { color: #b45309; }
+  .info {
+    background: #e8f4fd;
+    border-left: 4px solid #3b82f6;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    margin: 12px 0;
+    font-size: 12.5px;
+    page-break-inside: avoid;
+  }
+  .info strong { color: #1d4ed8; }
+
+  /* STEP BOXES */
+  .step {
+    background: #fff;
+    border: 1px solid #dde2f0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 10px 0;
+    position: relative;
+    page-break-inside: avoid;
+  }
+  .step-num {
+    display: inline-block;
+    background: #FFD700;
+    color: #1a1a2e;
+    font-weight: 800;
+    font-size: 11px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 22px;
+    margin-right: 8px;
+  }
+  .step-title { font-weight: 700; color: #0f3460; font-size: 13px; }
+
+  ul, ol { padding-left: 22px; margin-bottom: 10px; }
+  li { margin-bottom: 4px; }
+
+  .page-break { page-break-before: always; }
+  .footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid #dde2f0;
+    text-align: center;
+    color: #999;
+    font-size: 11px;
+  }
+
+  @media print {
+    body { padding: 0; }
+    .cover { border-radius: 0; }
+    pre { white-space: pre-wrap; word-break: break-all; }
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <h1>Chamos Fitness Center</h1>
+  <div class="subtitle">Guía Completa de Publicación en Tiendas</div>
+  <p style="color:#aaa;font-size:12px;margin-top:6px;">Google Play Store &amp; Apple App Store — Paso a paso desde cero</p>
+  <div class="meta">
+    <div class="meta-item"><div class="label">Paquete / Bundle ID</div><div class="value">com.chamosfitness.app</div></div>
+    <div class="meta-item"><div class="label">Versión inicial</div><div class="value">1.0.0 (build 1)</div></div>
+    <div class="meta-item"><div class="label">Generada</div><div class="value">Febrero 2026</div></div>
+    <div class="meta-item"><div class="label">Framework</div><div class="value">Flutter 3.x</div></div>
+  </div>
+</div>
+
+<!-- INDEX -->
+<div class="index-box">
+  <h2>Índice</h2>
+  <ol>
+    <li>Prerequisitos generales</li>
+    <li>Configuración de credenciales Supabase (obligatorio)</li>
+    <li>Configuración del ícono y nombre de la app</li>
+    <li>Preparar la política de privacidad pública</li>
+    <li>ANDROID — Google Play Store (10 pasos)</li>
+    <li>iOS — Apple App Store (9 pasos)</li>
+    <li>Cómo publicar actualizaciones</li>
+    <li>Solución de problemas frecuentes</li>
+    <li>Resumen de costos y archivos importantes</li>
+  </ol>
+</div>
+
+<!-- SECTION 1 -->
+<h2 class="section-title"><span>1.</span> Prerequisitos generales</h2>
+
+<h3>Software necesario</h3>
+<table>
+  <thead><tr><th>Herramienta</th><th>Versión mínima</th><th>Para qué</th></tr></thead>
+  <tbody>
+    <tr><td>Flutter SDK</td><td>3.x</td><td>Compilar la app</td></tr>
+    <tr><td>Java JDK</td><td>17 o 21</td><td>Build de Android</td></tr>
+    <tr><td>Android Studio</td><td>Cualquier reciente</td><td>Emulador y SDK tools</td></tr>
+    <tr><td>Xcode (solo Mac)</td><td>15+</td><td>Compilar iOS</td></tr>
+    <tr><td>Git</td><td>Cualquiera</td><td>Control de versiones</td></tr>
+  </tbody>
+</table>
+
+<h3>Verificar instalación</h3>
+<p>Abre PowerShell y ejecuta. Todos los ítems deben aparecer en verde o con advertencias menores. Si alguno está en rojo, sigue las instrucciones que el mismo comando indica.</p>
+<pre>flutter doctor -v</pre>
+
+<!-- SECTION 2 -->
+<h2 class="section-title page-break"><span>2.</span> Configuración de credenciales (obligatorio)</h2>
+
+<p>Las credenciales de Supabase <strong>no están</strong> dentro del código fuente (seguridad). Se inyectan en tiempo de compilación. Sin este paso la app no se conecta al backend.</p>
+
+<h3>2.1 Crear archivo de credenciales locales</h3>
+<div class="step"><span class="step-num">1</span><span class="step-title">Ve a la carpeta <code>scripts/</code> del proyecto</span></div>
+<div class="step"><span class="step-num">2</span><span class="step-title">Copia <code>local_credentials.bat.example</code> y renómbralo <code>local_credentials.bat</code></span></div>
+<div class="step"><span class="step-num">3</span><span class="step-title">Abre el archivo con el Bloc de Notas y rellena:</span></div>
+<pre>set SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
+set SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxx</pre>
+
+<h3>2.2 Dónde encontrar las credenciales</h3>
+<ol>
+  <li>Ve a <strong>supabase.com</strong> e inicia sesión</li>
+  <li>Selecciona tu proyecto <em>Chamos Fitness Center</em></li>
+  <li>Menú izquierdo: <strong>Settings → API</strong></li>
+  <li>Copia <strong>Project URL</strong> → es el <code>SUPABASE_URL</code></li>
+  <li>Copia <strong>anon (public)</strong> key → es el <code>SUPABASE_ANON_KEY</code></li>
+</ol>
+<div class="warning"><strong>⚠️ Importante:</strong> Nunca uses la clave <code>service_role</code> en la app móvil. Usa solo la <code>anon</code>.</div>
+
+<!-- SECTION 3 -->
+<h2 class="section-title"><span>3.</span> Configuración del ícono y nombre</h2>
+
+<h3>3.1 Ícono de la app</h3>
+<p>El ícono fuente está en <code>assets/icons/app_icon.png</code>.</p>
+<table>
+  <thead><tr><th>Requisito</th><th>Valor</th></tr></thead>
+  <tbody>
+    <tr><td>Tamaño</td><td>1024×1024 px mínimo recomendado</td></tr>
+    <tr><td>Formato</td><td>PNG</td></tr>
+    <tr><td>Fondo</td><td>Negro (#000000) — sin transparencia en Android</td></tr>
+  </tbody>
+</table>
+<p>Para regenerar todos los tamaños automáticamente:</p>
+<pre>flutter pub run flutter_launcher_icons</pre>
+
+<h3>3.2 Nombre visible de la app</h3>
+<ul>
+  <li><strong>Android:</strong> editar <code>android/app/src/main/AndroidManifest.xml</code> → atributo <code>android:label</code></li>
+  <li><strong>iOS:</strong> editar <code>ios/Runner/Info.plist</code> → clave <code>CFBundleDisplayName</code></li>
+</ul>
+
+<!-- SECTION 4 -->
+<h2 class="section-title"><span>4.</span> Política de privacidad pública</h2>
+<p>Ambas tiendas <strong>exigen</strong> una URL pública. El archivo ya existe en <code>web_deploy/privacy.html</code>.</p>
+
+<h3>Opción A — GitHub Pages (gratis, 10 min)</h3>
+<ol>
+  <li>Crea cuenta en <strong>github.com</strong></li>
+  <li>Crea repositorio nuevo llamado <code>chamos-legal</code></li>
+  <li>Sube <code>web_deploy/privacy.html</code> como <code>index.html</code></li>
+  <li>En el repo: <strong>Settings → Pages → Source: main → Save</strong></li>
+  <li>Tu URL: <code>https://TU_USUARIO.github.io/chamos-legal/</code></li>
+</ol>
+
+<h3>Opción B — Netlify (gratis, 5 min)</h3>
+<ol>
+  <li>Ve a <strong>netlify.com</strong></li>
+  <li>Arrastra la carpeta <code>web_deploy/</code> al área de drop</li>
+  <li>Obtienes URL tipo <code>https://nombre.netlify.app</code></li>
+</ol>
+<div class="info"><strong>ℹ️</strong> Guarda esta URL — la necesitarás al completar el listing en ambas tiendas.</div>
+
+<!-- ANDROID SECTION -->
+<h2 class="section-title page-break"><span>5.</span> ANDROID — Google Play Store</h2>
+
+<h3>5.1 Crear cuenta de desarrollador (pago único)</h3>
+<ol>
+  <li>Ve a <strong>play.google.com/console</strong></li>
+  <li>Inicia sesión con cuenta Google del negocio</li>
+  <li>Paga el registro: <strong>US$25 pago único</strong></li>
+  <li>Completa el perfil: nombre, dirección, teléfono</li>
+  <li>La verificación tarda 24–48 horas</li>
+</ol>
+
+<h3>5.2 Crear el Keystore de firma (una sola vez en la vida del proyecto)</h3>
+<div class="warning"><strong>⚠️ CRÍTICO:</strong> Si pierdes este archivo, no puedes publicar actualizaciones jamás. Guárdalo en Google Drive, USB y otro lugar seguro.</div>
+<p>Abre PowerShell y ejecuta:</p>
+<pre>keytool -genkey -v ^
+  -keystore chamos-release.jks ^
+  -keyalg RSA -keysize 2048 -validity 10000 ^
+  -alias chamos</pre>
+<p>El comando pedirá:</p>
+<ul>
+  <li><strong>Contraseña del keystore:</strong> elige una segura y anótala</li>
+  <li><strong>Nombre y apellido:</strong> nombre de la empresa</li>
+  <li><strong>Organización:</strong> Chamos Fitness Center</li>
+  <li><strong>Ciudad / Estado / País:</strong> los tuyos (ej: Caracas / Miranda / VE)</li>
+  <li><strong>Contraseña del alias:</strong> puede ser la misma que la del keystore</li>
+</ul>
+<p>Mueve el archivo generado:</p>
+<pre>move chamos-release.jks d:\ChamosFitnessCenter\android\app\chamos-release.jks</pre>
+
+<h3>5.3 Crear <code>android/key.properties</code></h3>
+<p>Crea el archivo <code>android/key.properties</code> (ya está en <code>.gitignore</code>) con:</p>
+<pre>storePassword=LA_CONTRASEÑA_DEL_KEYSTORE
+keyPassword=LA_CONTRASEÑA_DEL_ALIAS
+keyAlias=chamos
+storeFile=chamos-release.jks</pre>
+
+<h3>5.4 Compilar el App Bundle (AAB)</h3>
+<div class="info"><strong>ℹ️</strong> Google Play solo acepta formato AAB desde 2021. No subas APK sueltos.</div>
+<pre>flutter build appbundle --release ^
+  --dart-define=SUPABASE_URL=https://tu-proyecto.supabase.co ^
+  --dart-define=SUPABASE_ANON_KEY=tu-anon-key ^
+  --obfuscate ^
+  --split-debug-info=build/debug-info</pre>
+<p>O usa el script automático (selecciona opción 2):</p>
+<pre>cd d:\ChamosFitnessCenter\scripts
+build_production.bat</pre>
+<p>Archivo generado en: <code>build\app\outputs\bundle\release\app-release.aab</code></p>
+
+<h3>5.5 Crear la app en Play Console</h3>
+<ol>
+  <li>Clic en <strong>"Crear app"</strong></li>
+  <li>Nombre: <code>Chamos Fitness Center</code></li>
+  <li>Idioma: Español (Latinoamérica)</li>
+  <li>Tipo: App | Gratis</li>
+  <li>Acepta las declaraciones → <strong>"Crear app"</strong></li>
+</ol>
+
+<h3>5.6 Completar el listing</h3>
+<table>
+  <thead><tr><th>Campo</th><th>Qué poner</th></tr></thead>
+  <tbody>
+    <tr><td>Nombre de la app</td><td>Chamos Fitness Center</td></tr>
+    <tr><td>Descripción corta (máx 80 chars)</td><td>Rutinas, nutrición y seguimiento para tu transformación fitness</td></tr>
+    <tr><td>Descripción larga</td><td>Descripción detallada de todas las funciones (mín. 500 chars)</td></tr>
+    <tr><td>Ícono</td><td>PNG 512×512 px, sin transparencia</td></tr>
+    <tr><td>Gráfico de función</td><td>JPG/PNG 1024×500 px</td></tr>
+    <tr><td>Capturas de pantalla</td><td>Mínimo 2, máximo 8 — 1080×1920 px recomendado</td></tr>
+    <tr><td>Categoría</td><td>Salud y forma física</td></tr>
+    <tr><td>Email de contacto</td><td>Tu email</td></tr>
+    <tr><td>Política de privacidad</td><td>URL del Paso 4</td></tr>
+  </tbody>
+</table>
+
+<h3>5.7 Configurar contenido de la app</h3>
+<ul>
+  <li><strong>Calificación de contenido:</strong> responde el cuestionario (probablemente PEGI 3 / Everyone)</li>
+  <li><strong>Público objetivo:</strong> 18+</li>
+  <li><strong>Acceso a la app:</strong> crea usuario de prueba y proporciona credenciales a los revisores</li>
+  <li><strong>Anuncios:</strong> "No contiene anuncios"</li>
+  <li><strong>Seguridad de los datos:</strong> declara: nombre, email, fotos de perfil, datos de fitness</li>
+</ul>
+
+<h3>5.8 Subir el AAB y enviar a revisión</h3>
+<ol>
+  <li>Ve a <strong>Versiones de la app → Producción → Crear nueva versión</strong></li>
+  <li>Acepta <strong>Play App Signing</strong> cuando lo ofrezca (recomendado)</li>
+  <li>Sube el archivo <code>app-release.aab</code></li>
+  <li>Novedades: <em>"Versión inicial de Chamos Fitness Center"</em></li>
+  <li>Clic en <strong>Guardar</strong> → <strong>Revisar versión</strong> → <strong>Enviar a producción</strong></li>
+</ol>
+<div class="info"><strong>ℹ️</strong> La revisión tarda 3–7 días hábiles la primera vez. Recibirás email con el resultado.</div>
+
+<!-- iOS SECTION -->
+<h2 class="section-title page-break"><span>6.</span> iOS — Apple App Store</h2>
+
+<div class="warning"><strong>⚠️ Requiere Mac con Xcode.</strong> No se puede compilar para iOS desde Windows. Sin Mac, usa <strong>Codemagic</strong> (codemagic.io) que tiene plan gratuito para Flutter.</div>
+
+<h3>6.1 Crear cuenta Apple Developer (renovación anual)</h3>
+<ol>
+  <li>Ve a <strong>developer.apple.com/programs/enroll</strong></li>
+  <li>Inicia sesión con Apple ID (o crea uno)</li>
+  <li>Selecciona <strong>"Individual"</strong> o "Organization"</li>
+  <li>Paga: <strong>US$99 al año</strong></li>
+  <li>La verificación tarda 24–48 horas</li>
+</ol>
+
+<h3>6.2 Registrar el Bundle Identifier</h3>
+<ol>
+  <li>Ve a <strong>developer.apple.com/account</strong></li>
+  <li><strong>Certificates, Identifiers &amp; Profiles → Identifiers → (+)</strong></li>
+  <li>Selecciona <strong>"App IDs"</strong> → <strong>"App"</strong></li>
+  <li>Bundle ID: <code>com.chamosfitness.app</code> (modo Explicit)</li>
+  <li>Registrar</li>
+</ol>
+
+<h3>6.3 Crear certificado de distribución</h3>
+<ol>
+  <li>En <strong>Certificates → (+)</strong> selecciona <strong>"Apple Distribution"</strong></li>
+  <li>En tu Mac: abre Keychain Access → Certificate Assistant → Request a Certificate from a CA</li>
+  <li>Sube el CSR generado y descarga el <code>.cer</code></li>
+  <li>Doble clic en el <code>.cer</code> para instalarlo en tu Mac</li>
+</ol>
+
+<h3>6.4 Crear Provisioning Profile</h3>
+<ol>
+  <li>En <strong>Profiles → (+)</strong> selecciona <strong>"App Store Connect"</strong></li>
+  <li>Selecciona App ID: <code>com.chamosfitness.app</code></li>
+  <li>Selecciona tu certificado de distribución</li>
+  <li>Nombre: <code>ChamosFitness AppStore</code></li>
+  <li>Descarga e instala el <code>.mobileprovision</code> (doble clic)</li>
+</ol>
+
+<h3>6.5 Crear la app en App Store Connect</h3>
+<ol>
+  <li>Ve a <strong>appstoreconnect.apple.com</strong></li>
+  <li><strong>Mis apps → (+) → Nueva app</strong></li>
+  <li>Plataformas: iOS | Nombre: <code>Chamos Fitness Center</code></li>
+  <li>Bundle ID: selecciona <code>com.chamosfitness.app</code></li>
+  <li>SKU: <code>chamosfitnesscenter</code></li>
+</ol>
+
+<h3>6.6 Completar el listing</h3>
+<table>
+  <thead><tr><th>Campo</th><th>Qué poner</th></tr></thead>
+  <tbody>
+    <tr><td>Nombre</td><td>Chamos Fitness Center</td></tr>
+    <tr><td>Subtítulo</td><td>Tu gym en el bolsillo</td></tr>
+    <tr><td>Categoría principal</td><td>Salud y forma física</td></tr>
+    <tr><td>Palabras clave</td><td>gym,fitness,rutinas,ejercicios,nutrición (máx 100 chars)</td></tr>
+    <tr><td>URL de privacidad</td><td>URL del Paso 4</td></tr>
+    <tr><td>Capturas iPhone 6.5"</td><td>1284×2778 px — obligatorio</td></tr>
+    <tr><td>Capturas iPhone 5.5"</td><td>1242×2208 px — obligatorio</td></tr>
+  </tbody>
+</table>
+
+<h3>6.7 Compilar y subir el IPA (desde Mac)</h3>
+<pre>flutter build ipa --release \
+  --dart-define=SUPABASE_URL=https://tu-proyecto.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=tu-anon-key \
+  --obfuscate \
+  --split-debug-info=build/debug-info</pre>
+<p>Luego desde Xcode: <strong>Product → Archive → Distribute App → App Store Connect → Upload</strong></p>
+
+<h3>6.8 TestFlight — pruebas antes de publicar</h3>
+<ol>
+  <li>El build aparece en TestFlight procesándose (~10 min)</li>
+  <li>Agrega testers internos (máx 100 personas)</li>
+  <li>Prueba la app durante unos días antes de publicar</li>
+</ol>
+
+<h3>6.9 Enviar a revisión de App Store</h3>
+<ol>
+  <li>En App Store Connect → selecciona el build de TestFlight</li>
+  <li>Completa <strong>"Sign-In Information"</strong>: usuario y contraseña de prueba para el revisor</li>
+  <li>Clic en <strong>"Agregar a revisión"</strong> → <strong>"Enviar para revisión"</strong></li>
+</ol>
+<div class="info"><strong>ℹ️</strong> La revisión tarda 1–3 días hábiles. Actualizaciones posteriores son más rápidas.</div>
+
+<!-- SECTION 7 -->
+<h2 class="section-title page-break"><span>7.</span> Cómo publicar actualizaciones</h2>
+
+<h3>Paso 1 — Subir la versión en pubspec.yaml</h3>
+<pre># Antes
+version: 1.0.0+1
+
+# Después (ejemplo)
+version: 1.0.1+2</pre>
+<p>El número <strong>antes del +</strong> es la versión visible al usuario. El número <strong>después del +</strong> es el código interno — debe subir siempre y nunca repetirse.</p>
+
+<h3>Paso 2 — Compilar</h3>
+<pre># Android
+flutter build appbundle --release ^
+  --dart-define=SUPABASE_URL=... ^
+  --dart-define=SUPABASE_ANON_KEY=...
+
+# iOS (desde Mac)
+flutter build ipa --release \
+  --dart-define=SUPABASE_URL=... \
+  --dart-define=SUPABASE_ANON_KEY=...</pre>
+
+<h3>Paso 3 — Subir</h3>
+<ul>
+  <li><strong>Android:</strong> Play Console → Producción → Crear nueva versión → subir nuevo <code>.aab</code></li>
+  <li><strong>iOS:</strong> App Store Connect → nueva versión → subir build desde Xcode</li>
+</ul>
+
+<h3>Paso 4 — Revisión</h3>
+<ul>
+  <li>Google: 1–3 días (actualizaciones más rápidas que la primera publicación)</li>
+  <li>Apple: 1–2 días</li>
+</ul>
+
+<!-- SECTION 8 -->
+<h2 class="section-title"><span>8.</span> Solución de problemas frecuentes</h2>
+
+<h3>Android</h3>
+<table>
+  <thead><tr><th>Error</th><th>Solución</th></tr></thead>
+  <tbody>
+    <tr><td><code>keystore file not found</code></td><td>Verifica que <code>android/app/chamos-release.jks</code> existe y que <code>storeFile</code> en <code>key.properties</code> es correcto</td></tr>
+    <tr><td><code>SUPABASE_URL is empty</code></td><td>El build se hizo sin <code>--dart-define</code>. Incluye ambas variables en el comando</td></tr>
+    <tr><td>"You uploaded an APK..."</td><td>Usa <code>flutter build appbundle</code>, no <code>flutter build apk</code></td></tr>
+    <tr><td><code>versionCode already used</code></td><td>Incrementa el número después del <code>+</code> en <code>pubspec.yaml</code></td></tr>
+  </tbody>
+</table>
+
+<h3>iOS</h3>
+<table>
+  <thead><tr><th>Error</th><th>Solución</th></tr></thead>
+  <tbody>
+    <tr><td><code>No signing certificate</code></td><td>El certificado de distribución no está instalado. Descárgalo de developer.apple.com y haz doble clic</td></tr>
+    <tr><td><code>Provisioning profile not found</code></td><td>Verifica que el Bundle ID en Xcode es exactamente <code>com.chamosfitness.app</code></td></tr>
+    <tr><td>Rechazo: "Missing privacy usage"</td><td>Agrega la descripción del permiso en <code>ios/Runner/Info.plist</code></td></tr>
+    <tr><td>Rechazo: "App uses encryption"</td><td>Declara uso de cifrado estándar (HTTPS/TLS) en App Store Connect y marca la exención</td></tr>
+  </tbody>
+</table>
+
+<!-- SECTION 9 -->
+<h2 class="section-title"><span>9.</span> Resumen de costos y archivos importantes</h2>
+
+<h3>Costos</h3>
+<table>
+  <thead><tr><th>Servicio</th><th>Costo</th><th>Periodicidad</th></tr></thead>
+  <tbody>
+    <tr><td>Google Play Console</td><td>US$25</td><td>Pago único</td></tr>
+    <tr><td>Apple Developer Program</td><td>US$99</td><td>Anual</td></tr>
+    <tr><td>Supabase (backend)</td><td>Gratis (Free tier)</td><td>Mensual</td></tr>
+    <tr><td>GitHub Pages (privacidad)</td><td>Gratis</td><td>—</td></tr>
+    <tr><td>Codemagic CI/CD (opcional)</td><td>Gratis (500 min/mes)</td><td>Mensual</td></tr>
+  </tbody>
+</table>
+
+<h3>Archivos importantes del proyecto</h3>
+<table>
+  <thead><tr><th>Archivo</th><th>Para qué</th><th>¿En Git?</th></tr></thead>
+  <tbody>
+    <tr><td><code>pubspec.yaml</code></td><td>Versión de la app (<code>version: 1.0.0+1</code>)</td><td>✅ Sí</td></tr>
+    <tr><td><code>android/app/build.gradle</code></td><td>Package name, versionCode, configuración de firma</td><td>✅ Sí</td></tr>
+    <tr><td><code>android/key.properties</code></td><td>Contraseñas del keystore</td><td>❌ NO subir</td></tr>
+    <tr><td><code>android/app/chamos-release.jks</code></td><td>Keystore de firma Android</td><td>❌ NO subir</td></tr>
+    <tr><td><code>ios/Runner/Info.plist</code></td><td>Bundle ID, nombre, permisos iOS</td><td>✅ Sí</td></tr>
+    <tr><td><code>assets/icons/app_icon.png</code></td><td>Ícono fuente de la app</td><td>✅ Sí</td></tr>
+    <tr><td><code>web_deploy/privacy.html</code></td><td>Política de privacidad para subir online</td><td>✅ Sí</td></tr>
+    <tr><td><code>scripts/local_credentials.bat</code></td><td>Credenciales Supabase locales</td><td>❌ NO subir</td></tr>
+    <tr><td><code>scripts/build_production.bat</code></td><td>Script de compilación todo-en-uno</td><td>✅ Sí</td></tr>
+  </tbody>
+</table>
+
+<div class="footer">
+  Guía generada para el proyecto Chamos Fitness Center — Febrero 2026 &nbsp;|&nbsp; com.chamosfitness.app
+</div>
+
+</body>
+</html>

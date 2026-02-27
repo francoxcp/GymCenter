@@ -19,11 +19,38 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _isLoading = false;
 
+  late final AuthProvider _authProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    _authProvider = context.read<AuthProvider>();
+    // Escuchar cambios de auth para redirigir automáticamente cuando
+    // Supabase restaura la sesión persistida (sin que el usuario tenga que
+    // volver a escribir sus credenciales)
+    _authProvider.addListener(_onAuthChanged);
+    // Verificar por si la sesión ya está cargada en este momento
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkSession());
+  }
+
   @override
   void dispose() {
+    _authProvider.removeListener(_onAuthChanged);
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _onAuthChanged() {
+    if (_authProvider.isAuthenticated && mounted) {
+      context.go(_authProvider.initialRoute);
+    }
+  }
+
+  void _checkSession() {
+    if (_authProvider.isAuthenticated && mounted) {
+      context.go(_authProvider.initialRoute);
+    }
   }
 
   Future<void> _handleLogin() async {

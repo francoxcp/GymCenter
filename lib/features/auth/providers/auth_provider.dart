@@ -25,14 +25,17 @@ class AuthProvider extends ChangeNotifier {
       final session = data.session;
       if (session != null) {
         _loadCurrentUser(session.user.id);
-      } else {
+      } else if (data.event == AuthChangeEvent.signedOut) {
+        // Solo limpiar sesión cuando el cierre es explícito (logout manual)
         _isAuthenticated = false;
         _currentUser = null;
         notifyListeners();
       }
+      // Otros eventos con session==null (ej: tokenRefreshFailed momentáneo)
+      // no cierran la sesión — Supabase reintentará el refresh automáticamente
     });
 
-    // Verificar si ya hay sesión activa
+    // Verificar si ya hay sesión activa al arrancar
     final session = SupabaseConfig.auth.currentSession;
     if (session != null) {
       _loadCurrentUser(session.user.id);

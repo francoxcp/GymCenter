@@ -445,7 +445,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
     final workoutProvider = Provider.of<WorkoutProvider>(context);
     final sessionProvider = Provider.of<WorkoutSessionProvider>(context);
     // Escuchar también WorkoutProgressProvider para capturar el flag en memoria
-    final progressProviderWatch = Provider.of<WorkoutProgressProvider>(context);
+    Provider.of<WorkoutProgressProvider>(context); // listen:true para rebuild
     final hasAssignedWorkout = widget.currentUser.assignedWorkoutId != null;
     final assignedWorkout = hasAssignedWorkout
         ? workoutProvider.getWorkoutById(widget.currentUser.assignedWorkoutId!)

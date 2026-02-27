@@ -5,6 +5,7 @@ import 'edit_workout_screen.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/workout_provider.dart';
+import '../models/workout.dart';
 import '../providers/workout_session_provider.dart';
 import '../providers/workout_progress_provider.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -135,6 +136,104 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
         Provider.of<WorkoutProgressProvider>(context, listen: false);
     final next = await progressProvider.getNextScheduledWorkout(userId);
     if (mounted) setState(() => _nextSchedule = next);
+  }
+
+  /// Construye un tile de rutina con permisos correctos según el rol y dueño.
+  Widget _buildWorkoutTile(
+    BuildContext context, {
+    required Workout workout,
+    required bool isOfficial,
+    required bool isAdmin,
+    required String? currentUserId,
+    required String? assignedWorkoutId,
+    required WorkoutProvider workoutProvider,
+    required WorkoutProgressProvider progressProvider,
+  }) {
+    final canManage = isAdmin || workout.createdBy == currentUserId;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        onTap: () => context.push('/workout-detail/${workout.id}'),
+        borderRadius: BorderRadius.circular(16),
+        child: _WorkoutCard(
+          title: workout.name,
+          duration: workout.duration,
+          exerciseCount: workout.exerciseCount,
+          level: workout.level,
+          isOfficial: isOfficial,
+          onEdit: canManage
+              ? () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EditWorkoutScreen(workout: workout),
+                    ),
+                  );
+                  if (result == true && context.mounted) {
+                    workoutProvider.loadWorkouts(
+                      forceRefresh: true,
+                      userId: currentUserId,
+                      isAdmin: isAdmin,
+                    );
+                  }
+                }
+              : null,
+          onDelete: canManage
+              ? () async {
+                  final shouldDelete = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      backgroundColor: AppColors.surface,
+                      title: const Text('¿Eliminar rutina?',
+                          style: TextStyle(color: Colors.white)),
+                      content: Text(
+                        '¿Estás seguro de eliminar "${workout.name}"? Esta acción no se puede deshacer.',
+                        style: const TextStyle(color: AppColors.textSecondary),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: const Text('Cancelar',
+                              style: TextStyle(color: AppColors.textSecondary)),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text('Eliminar',
+                              style: TextStyle(color: Colors.redAccent)),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (shouldDelete == true && context.mounted) {
+                    try {
+                      await workoutProvider.deleteWorkout(workout.id);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Rutina eliminada correctamente'),
+                            backgroundColor: AppColors.primary,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error al eliminar: $e'),
+                            backgroundColor: Colors.redAccent,
+                          ),
+                        );
+                      }
+                    }
+                  }
+                }
+              : null,
+          onPlay: workout.id != assignedWorkoutId
+              ? () => _startExtraWorkout(context, workout.id, progressProvider)
+              : null,
+        ),
+      ),
+    );
   }
 
   @override
@@ -329,7 +428,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
               ] else
                 const SizedBox(height: 16),
 
-              // Workout List
+              // Workout List — dividido en secciones por origen
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () => workoutProvider.loadWorkouts(
@@ -338,110 +437,81 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                     isAdmin: isAdmin,
                   ),
                   color: AppColors.primary,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: workoutProvider.filteredWorkouts.length,
-                    itemBuilder: (context, index) {
-                      final workout = workoutProvider.filteredWorkouts[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: InkWell(
-                          onTap: () =>
-                              context.push('/workout-detail/${workout.id}'),
-                          child: _WorkoutCard(
-                            title: workout.name,
-                            duration: workout.duration,
-                            exerciseCount: workout.exerciseCount,
-                            level: workout.level,
-                            isClickable: true,
-                            onEdit: () async {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      EditWorkoutScreen(workout: workout),
-                                ),
-                              );
-                              if (result == true) {
-                                workoutProvider.loadWorkouts(
-                                  forceRefresh: true,
-                                  userId: currentUser?.id,
-                                  isAdmin: isAdmin,
-                                );
-                              }
-                            },
-                            onDelete: () async {
-                              final shouldDelete = await showDialog<bool>(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  backgroundColor: AppColors.surface,
-                                  title: const Text(
-                                    '¿Eliminar rutina?',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  content: Text(
-                                    '¿Estás seguro de eliminar "${workout.name}"? Esta acción no se puede deshacer.',
-                                    style: const TextStyle(
-                                        color: AppColors.textSecondary),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, false),
-                                      child: const Text(
-                                        'Cancelar',
-                                        style: TextStyle(
-                                            color: AppColors.textSecondary),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, true),
-                                      child: const Text(
-                                        'Eliminar',
-                                        style:
-                                            TextStyle(color: Colors.redAccent),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
+                  child: Builder(builder: (context) {
+                    final officialWorkouts = workoutProvider.filteredWorkouts
+                        .where((w) => w.createdBy == null)
+                        .toList();
+                    final userWorkouts = workoutProvider.filteredWorkouts
+                        .where((w) => w.createdBy != null)
+                        .toList();
 
-                              if (shouldDelete == true) {
-                                try {
-                                  await workoutProvider
-                                      .deleteWorkout(workout.id);
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                            'Rutina eliminada correctamente'),
-                                        backgroundColor: AppColors.primary,
-                                      ),
-                                    );
-                                  }
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Error al eliminar: $e'),
-                                        backgroundColor: Colors.redAccent,
-                                      ),
-                                    );
-                                  }
-                                }
-                              }
-                            },
-                            // Play solo en rutinas que NO son la asignada
-                            onPlay: workout.id != currentUser?.assignedWorkoutId
-                                ? () => _startExtraWorkout(
-                                    context, workout.id, progressProvider)
-                                : null,
+                    if (officialWorkouts.isEmpty && userWorkouts.isEmpty) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(32),
+                          child: Text(
+                            'No hay rutinas disponibles',
+                            style: TextStyle(color: AppColors.textSecondary),
                           ),
                         ),
                       );
-                    },
-                  ),
+                    }
+
+                    return ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                      children: [
+                        // ── Rutinas Oficiales ──
+                        if (officialWorkouts.isNotEmpty) ...[
+                          _SectionHeader(
+                            label: 'Rutinas Oficiales',
+                            icon: Icons.verified_rounded,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(height: 12),
+                          ...officialWorkouts.map(
+                            (w) => _buildWorkoutTile(
+                              context,
+                              workout: w,
+                              isOfficial: true,
+                              isAdmin: isAdmin,
+                              currentUserId: currentUser?.id,
+                              assignedWorkoutId: currentUser?.assignedWorkoutId,
+                              workoutProvider: workoutProvider,
+                              progressProvider: progressProvider,
+                            ),
+                          ),
+                        ],
+                        // ── Mis Rutinas / Rutinas de Usuarios ──
+                        if (userWorkouts.isNotEmpty) ...[
+                          if (officialWorkouts.isNotEmpty)
+                            const SizedBox(height: 8),
+                          _SectionHeader(
+                            label:
+                                isAdmin ? 'Rutinas de Usuarios' : 'Mis Rutinas',
+                            icon: isAdmin
+                                ? Icons.people_alt_rounded
+                                : Icons.star_rounded,
+                            color: isAdmin
+                                ? AppColors.textSecondary
+                                : Colors.amber,
+                          ),
+                          const SizedBox(height: 12),
+                          ...userWorkouts.map(
+                            (w) => _buildWorkoutTile(
+                              context,
+                              workout: w,
+                              isOfficial: false,
+                              isAdmin: isAdmin,
+                              currentUserId: currentUser?.id,
+                              assignedWorkoutId: currentUser?.assignedWorkoutId,
+                              workoutProvider: workoutProvider,
+                              progressProvider: progressProvider,
+                            ),
+                          ),
+                        ],
+                      ],
+                    );
+                  }),
                 ),
               ),
             ],
@@ -484,6 +554,7 @@ class _WorkoutCard extends StatelessWidget {
   final int duration;
   final int exerciseCount;
   final String level;
+  final bool isOfficial;
   final bool isClickable;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
@@ -494,6 +565,7 @@ class _WorkoutCard extends StatelessWidget {
     required this.duration,
     required this.exerciseCount,
     required this.level,
+    this.isOfficial = false,
     this.isClickable = false,
     this.onEdit,
     this.onDelete,
@@ -554,14 +626,46 @@ class _WorkoutCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  level.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: _getLevelColor(),
-                    letterSpacing: 0.5,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      level.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: _getLevelColor(),
+                        letterSpacing: 0.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (isOfficial) ...[
+                      const SizedBox(width: 7),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(5),
+                          border: Border.all(
+                              color: AppColors.primary.withOpacity(0.45),
+                              width: 0.8),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.verified_rounded,
+                                size: 9, color: AppColors.primary),
+                            SizedBox(width: 3),
+                            Text('OFICIAL',
+                                style: TextStyle(
+                                    fontSize: 9,
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.4)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -669,6 +773,56 @@ class _WorkoutCard extends StatelessWidget {
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Header de sección para separar rutinas oficiales de las del usuario.
+class _SectionHeader extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const _SectionHeader({
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 16, color: color),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: color,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Container(
+              height: 1,
+              color: color.withOpacity(0.25),
+            ),
+          ),
         ],
       ),
     );

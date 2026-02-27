@@ -19,6 +19,15 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
   final _searchController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // Carga lazy: se dispara al abrir la pantalla por primera vez
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<MealPlanProvider>(context, listen: false).loadMealPlans();
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();

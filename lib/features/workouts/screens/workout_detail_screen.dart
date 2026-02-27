@@ -554,6 +554,15 @@ class _UserSearchDialogState extends State<_UserSearchDialog> {
   final _searchController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // Carga lazy de usuarios — solo cuando el admin abre el diálogo
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<UserProvider>(context, listen: false).loadUsers();
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();

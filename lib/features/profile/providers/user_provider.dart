@@ -16,10 +16,7 @@ class UserProvider extends ChangeNotifier {
   String get searchQuery => _searchQuery;
   bool get isLoading => _isLoading;
 
-  UserProvider() {
-    loadUsers();
-    loadCurrentUser();
-  }
+  // No cargar en el constructor — los datos se cargan de forma lazy en las pantallas
 
   void setAuthProvider(AuthProvider authProvider) {
     _authProvider = authProvider;
@@ -45,7 +42,6 @@ class UserProvider extends ChangeNotifier {
 
   Future<void> loadUsers() async {
     try {
-      debugPrint('🔄 Cargando usuarios desde Supabase...');
       _isLoading = true;
       notifyListeners();
 
@@ -55,11 +51,6 @@ class UserProvider extends ChangeNotifier {
           .order(AppConstants.createdAtField, ascending: false);
 
       _users = (response as List).map((json) => User.fromJson(json)).toList();
-
-      debugPrint('✅ Usuarios cargados: ${_users.length}');
-      for (var user in _users) {
-        debugPrint('   - ${user.name} (${user.email}) - Role: ${user.role}');
-      }
 
       _isLoading = false;
       notifyListeners();

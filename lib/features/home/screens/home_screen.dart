@@ -43,11 +43,11 @@ class _HomeScreenState extends State<HomeScreen> {
       if (userId != null) {
         progressProvider.loadProgress(userId);
 
-        // Forzar recarga de sesiones siempre (ignorar caché)
-        // para detectar correctamente si la rutina de hoy ya fue completada
+      // Cargar sesiones usando caché (5 min) al cambiar de tab.
+        // Solo el pull-to-refresh obliga a re-descargar desde red.
         final sessionProvider =
             Provider.of<WorkoutSessionProvider>(context, listen: false);
-        sessionProvider.loadSessions(userId, forceRefresh: true);
+        sessionProvider.loadSessions(userId);
       }
     });
   }

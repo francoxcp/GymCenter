@@ -12,10 +12,7 @@ class MealPlanProvider extends ChangeNotifier {
   String get selectedFilter => _selectedFilter;
   bool get isLoading => _isLoading;
 
-  MealPlanProvider() {
-    loadMealPlans();
-  }
-
+  // No cargar en el constructor — la pantalla de planes solicita los datos al abrirse
   // Cache por 10 minutos (los meal plans cambian menos frecuentemente)
   bool get _shouldRefresh {
     if (_lastFetch == null) return true;

@@ -6,7 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../providers/body_measurement_provider.dart';
 import '../providers/achievements_provider.dart';
 import '../../workouts/providers/workout_session_provider.dart';
-import '../../profile/providers/user_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -30,11 +30,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
           Provider.of<BodyMeasurementProvider>(context, listen: false);
       final sessionProvider =
           Provider.of<WorkoutSessionProvider>(context, listen: false);
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
       measurementProvider.loadMeasurements();
-      if (userProvider.currentUser?.id != null) {
-        sessionProvider.loadSessions(userProvider.currentUser!.id);
+      if (authProvider.currentUser?.id != null) {
+        sessionProvider.loadSessions(authProvider.currentUser!.id);
       }
     });
   }
@@ -44,12 +44,13 @@ class _ProgressScreenState extends State<ProgressScreen> {
         Provider.of<BodyMeasurementProvider>(context, listen: false);
     final sessionProvider =
         Provider.of<WorkoutSessionProvider>(context, listen: false);
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     await Future.wait([
       measurementProvider.loadMeasurements(),
-      if (userProvider.currentUser?.id != null)
-        sessionProvider.loadSessions(userProvider.currentUser!.id),
+      if (authProvider.currentUser?.id != null)
+        sessionProvider.loadSessions(authProvider.currentUser!.id,
+            forceRefresh: true),
     ]);
   }
 

@@ -136,36 +136,32 @@ class WorkoutSessionProvider extends ChangeNotifier {
       ..sort((a, b) => b.date.compareTo(a.date));
 
     int streak = 0;
-    DateTime? lastDate;
+    DateTime? lastDay; // solo fecha (sin hora)
+
+    final now = DateTime.now();
+    final todayDay = DateTime(now.year, now.month, now.day);
+    // DateTime con day-1 es correcto: Dart normaliza automáticamente cambios de mes
+    final yesterdayDay = DateTime(now.year, now.month, now.day - 1);
 
     for (var session in sortedSessions) {
-      if (lastDate == null) {
-        // Primera sesión
-        final today = DateTime.now();
-        final sessionDate = session.date;
+      final sessionDay =
+          DateTime(session.date.year, session.date.month, session.date.day);
 
-        // Verificar si es de hoy o ayer
-        if (sessionDate.year == today.year &&
-            sessionDate.month == today.month &&
-            sessionDate.day == today.day) {
+      if (lastDay == null) {
+        // Primera sesión: debe ser hoy o ayer para iniciar racha
+        if (sessionDay == todayDay || sessionDay == yesterdayDay) {
           streak = 1;
-          lastDate = sessionDate;
-        } else if (sessionDate.year == today.year &&
-            sessionDate.month == today.month &&
-            sessionDate.day == today.day - 1) {
-          streak = 1;
-          lastDate = sessionDate;
+          lastDay = sessionDay;
         } else {
-          break;
+          break; // Racha rota
         }
       } else {
-        // Verificar si es el día anterior
-        final expectedDate = lastDate.subtract(const Duration(days: 1));
-        if (session.date.year == expectedDate.year &&
-            session.date.month == expectedDate.month &&
-            session.date.day == expectedDate.day) {
+        // Sesión siguiente: debe ser exactamente el día anterior a lastDay
+        final expectedDay =
+            DateTime(lastDay.year, lastDay.month, lastDay.day - 1);
+        if (sessionDay == expectedDay) {
           streak++;
-          lastDate = session.date;
+          lastDay = sessionDay;
         } else {
           break;
         }

@@ -76,7 +76,6 @@ class WorkoutProvider extends ChangeNotifier {
 
       _lastFetch = DateTime.now();
       _isLoading = false;
-      // ...existing code...
       notifyListeners();
     } catch (e) {
       _isLoading = false;

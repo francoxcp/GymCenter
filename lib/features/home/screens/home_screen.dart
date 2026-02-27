@@ -8,6 +8,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../workouts/providers/workout_provider.dart';
 import '../../workouts/providers/workout_progress_provider.dart';
 import '../../workouts/providers/workout_session_provider.dart';
+import '../../profile/providers/user_provider.dart';
 import '../../../shared/widgets/animated_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/coming_soon_workout_card.dart';
@@ -272,33 +273,41 @@ class _AdminHomeContent extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // Quick Stats - Using fade-in animation
-        const Row(
-          children: [
-            Expanded(
-              child: FadeInCard(
-                delay: 0,
-                child: _StatCard(
-                  icon: Icons.people,
-                  title: 'USUARIOS',
-                  value: '24',
-                  color: AppColors.primary,
+        // Quick Stats — datos reales de los providers
+        Consumer2<UserProvider, WorkoutProvider>(
+          builder: (context, userProvider, workoutProvider, _) {
+            final userCount = userProvider.users
+                .where((u) => u.role != 'admin')
+                .length;
+            final workoutCount = workoutProvider.workouts.length;
+            return Row(
+              children: [
+                Expanded(
+                  child: FadeInCard(
+                    delay: 0,
+                    child: _StatCard(
+                      icon: Icons.people,
+                      title: 'USUARIOS',
+                      value: userCount.toString(),
+                      color: AppColors.primary,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              child: FadeInCard(
-                delay: 100,
-                child: _StatCard(
-                  icon: Icons.fitness_center,
-                  title: 'RUTINAS',
-                  value: '12',
-                  color: AppColors.primary,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FadeInCard(
+                    delay: 100,
+                    child: _StatCard(
+                      icon: Icons.fitness_center,
+                      title: 'RUTINAS',
+                      value: workoutCount.toString(),
+                      color: AppColors.primary,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
 
         const SizedBox(height: 28),

@@ -54,11 +54,12 @@ class User {
       id: json['id'],
       email: json['email'],
       name: json['name'],
-      photoUrl: json['photoUrl'],
-      role: json['role'],
+      photoUrl: json['photo_url'] ?? json['photoUrl'],
+      role: json['role'] ?? 'user',
       level: json['level'] ?? 'Principiante',
-      activeDays: json['activeDays'] ?? 0,
-      completedWorkouts: json['completedWorkouts'] ?? 0,
+      activeDays: json['active_days'] ?? json['activeDays'] ?? 0,
+      completedWorkouts:
+          json['completed_workouts'] ?? json['completedWorkouts'] ?? 0,
       assignedWorkoutId: json['assigned_workout_id'],
       assignedMealPlanId: json['assigned_meal_plan_id'],
     );

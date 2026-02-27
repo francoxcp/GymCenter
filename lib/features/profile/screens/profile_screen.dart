@@ -56,9 +56,9 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: AppColors.primary),
-            onPressed: () {
-              authProvider.logout();
-              context.go('/login');
+            onPressed: () async {
+              await authProvider.logout();
+              if (context.mounted) context.go('/login');
             },
           ),
         ],
@@ -316,7 +316,11 @@ class ProfileScreen extends StatelessWidget {
 
               // Logout Button
               OutlinedButton.icon(
-                onPressed: () => context.go('/login'),
+                onPressed: () async {
+                  final auth = context.read<AuthProvider>();
+                  await auth.logout();
+                  if (context.mounted) context.go('/login');
+                },
                 icon: const Icon(Icons.logout, color: Colors.red),
                 label: const Text(
                   'CERRAR SESIÓN',

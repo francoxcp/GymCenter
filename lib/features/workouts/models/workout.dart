@@ -28,11 +28,11 @@ class Workout {
       id: json['id'],
       name: json['name'],
       duration: json['duration'],
-      exerciseCount: json['exerciseCount'],
-      level: json['level'],
-      imageUrl: json['imageUrl'] ?? '',
+      exerciseCount: json['exercise_count'] ?? json['exerciseCount'] ?? 0,
+      level: json['level'] ?? 'Principiante',
+      imageUrl: json['image_url'] ?? json['imageUrl'] ?? '',
       description: json['description'],
-      createdBy: json['createdBy'],
+      createdBy: json['created_by'] ?? json['createdBy'],
       exercises: (json['exercises'] as List?)
               ?.map((e) => Exercise.fromJson(e))
               .toList() ??

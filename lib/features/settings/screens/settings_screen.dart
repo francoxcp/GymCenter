@@ -537,7 +537,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               authProvider.logout();
               Navigator.pop(context);
               context.go('/login');

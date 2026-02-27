@@ -285,10 +285,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       // Iniciar descanso si no es la última serie
       final totalSets = _completedSets[exerciseIndex].length;
       if (setIndex < totalSets - 1) {
-        final _effectiveId = widget.extraWorkoutId ??
+        final effectiveId = widget.extraWorkoutId ??
             context.read<AuthProvider>().currentUser?.assignedWorkoutId;
-        final workout = _effectiveId != null
-            ? context.read<WorkoutProvider>().getWorkoutById(_effectiveId)
+        final workout = effectiveId != null
+            ? context.read<WorkoutProvider>().getWorkoutById(effectiveId)
             : null;
         final restSeconds = workout?.exercises[exerciseIndex].restSeconds ?? 60;
         _startRestTimer(restSeconds);

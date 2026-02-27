@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../models/workout.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/user_provider.dart';
+import '../providers/workout_provider.dart';
 import '../providers/workout_progress_provider.dart';
 import '../providers/workout_session_provider.dart';
 
@@ -127,13 +128,25 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
       final nextWorkoutData =
           await progressProvider.getNextScheduledWorkout(userId);
 
-      setState(() {
-        _nextWorkout = nextWorkoutData;
-        _isLoadingNextWorkout = false;
-      });
+      if (nextWorkoutData != null && mounted) {
+        // Enriquecer el mapa con el nombre de la rutina
+        final workoutProvider =
+            Provider.of<WorkoutProvider>(context, listen: false);
+        final workoutName = workoutProvider
+            .getWorkoutById(nextWorkoutData['workout_id'] as String)
+            ?.name;
+        nextWorkoutData['name'] = workoutName ?? 'Próxima Rutina';
+      }
+
+      if (mounted) {
+        setState(() {
+          _nextWorkout = nextWorkoutData;
+          _isLoadingNextWorkout = false;
+        });
+      }
     } catch (e) {
       debugPrint('❌ Error al cargar próxima sesión: $e');
-      setState(() => _isLoadingNextWorkout = false);
+      if (mounted) setState(() => _isLoadingNextWorkout = false);
     }
   }
 
@@ -161,10 +174,17 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
 
   Widget _buildNextWorkoutInfo() {
     if (_nextWorkout == null) return const SizedBox();
-    final name = _nextWorkout?['name'] ?? 'Rutina';
-    final date = _nextWorkout?['scheduled_at'] != null
-        ? '${DateTime.parse(_nextWorkout!['scheduled_at']).day}/${DateTime.parse(_nextWorkout!['scheduled_at']).month}/${DateTime.parse(_nextWorkout!['scheduled_at']).year}'
+    final name = (_nextWorkout?['name'] as String?) ?? 'Próxima Rutina';
+    final date = _nextWorkout?['date'] as DateTime?;
+    final daysUntil = (_nextWorkout?['days_until'] as int?) ?? 1;
+    final dateStr = date != null
+        ? '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}'
         : 'Próximamente';
+    final daysLabel = daysUntil == 0
+        ? 'Hoy'
+        : daysUntil == 1
+            ? 'Mañana'
+            : 'En $daysUntil días ($dateStr)';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -174,7 +194,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                 fontWeight: FontWeight.bold,
                 color: Colors.white)),
         const SizedBox(height: 4),
-        Text(date,
+        Text(daysLabel,
             style:
                 const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
       ],
@@ -519,8 +539,6 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                                       letterSpacing: 0.5,
                                     ),
                                   ),
-                                  SizedBox(width: 8),
-                                  Icon(Icons.home, size: 20),
                                 ],
                               ),
                       ),

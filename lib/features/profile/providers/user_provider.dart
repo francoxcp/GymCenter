@@ -182,7 +182,7 @@ class UserProvider extends ChangeNotifier {
         });
       }
 
-      // 2. Actualizar assigned_workout_id en la tabla users
+      // 3. Actualizar assigned_workout_id en la tabla users
       await SupabaseConfig.client
           .from(AppConstants.usersTable)
           .update({'assigned_workout_id': workoutId}).eq('id', userId);

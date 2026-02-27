@@ -26,9 +26,6 @@ dependencies:
   # Local Storage
   shared_preferences: ^2.2.2
   
-  # Environment Variables
-  flutter_dotenv: ^5.1.0
-  
   # Utils
   intl: ^0.19.0
   path: ^1.9.0
@@ -73,7 +70,6 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
-    - .env
 
 # Configuración del icono de la app
 flutter_launcher_icons:

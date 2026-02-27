@@ -48,8 +48,7 @@ class AppConstants {
   static const String errorAssigning = 'Error al asignar';
   static const String successAssigned = 'Asignado correctamente';
 
-  // Configuración de Supabase
-  static const String envFileName = '.env';
+  // Configuración de Supabase (claves usadas con --dart-define)
   static const String supabaseUrlKey = 'SUPABASE_URL';
   static const String supabaseAnonKeyKey = 'SUPABASE_ANON_KEY';
 

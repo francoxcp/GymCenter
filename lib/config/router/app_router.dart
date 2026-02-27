@@ -50,9 +50,25 @@ int _locationToIndex(String location) {
   return 0;
 }
 
-final appRouter = GoRouter(
-  initialLocation: '/login',
-  routes: [
+GoRouter createAppRouter(AuthProvider authProvider) {
+  return GoRouter(
+    initialLocation: '/login',
+    refreshListenable: authProvider,
+    redirect: (context, state) {
+      final isAuth = authProvider.isAuthenticated;
+      final path = state.uri.path;
+      const publicRoutes = {
+        '/login',
+        '/register',
+        '/forgot-password',
+        '/onboarding',
+      };
+
+      if (!isAuth && !publicRoutes.contains(path)) return '/login';
+      if (isAuth && path == '/login') return authProvider.initialRoute;
+      return null;
+    },
+    routes: [
     // Auth routes
     GoRoute(
       path: '/login',
@@ -196,4 +212,5 @@ final appRouter = GoRouter(
       ],
     ),
   ],
-);
+  );
+}

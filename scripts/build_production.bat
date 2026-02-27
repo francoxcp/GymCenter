@@ -52,15 +52,26 @@ echo [5/7] Formateando código...
 call dart format lib/ test/
 echo.
 
-REM 6. Verificar archivo .env
-echo [6/7] Verificando configuración...
-if not exist .env (
-    echo ERROR: Archivo .env no encontrado
-    echo Copia .env.example a .env y configura las credenciales de producción
+REM 6. Verificar credenciales (--dart-define)
+echo [6/7] Verificando credenciales...
+REM Carga credenciales desde un archivo local (no versionado) si existe
+if exist "%~dp0local_credentials.bat" call "%~dp0local_credentials.bat"
+
+if "%SUPABASE_URL%"=="" (
+    echo ERROR: Variable de entorno SUPABASE_URL no definida
+    echo Copia scripts\local_credentials.bat.example a scripts\local_credentials.bat
+    echo y rellena tus credenciales de Supabase.
     pause
     exit /b 1
 )
-echo Archivo .env encontrado
+if "%SUPABASE_ANON_KEY%"=="" (
+    echo ERROR: Variable de entorno SUPABASE_ANON_KEY no definida
+    echo Copia scripts\local_credentials.bat.example a scripts\local_credentials.bat
+    echo y rellena tus credenciales de Supabase.
+    pause
+    exit /b 1
+)
+echo Credenciales verificadas
 echo.
 
 REM 7. Build opciones
@@ -77,7 +88,7 @@ set /p BUILD_TYPE="Ingresa opción (1-5): "
 if "%BUILD_TYPE%"=="1" (
     echo.
     echo Compilando APK para Android...
-    call flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/debug-info
+    call flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/debug-info --dart-define=SUPABASE_URL=%SUPABASE_URL% --dart-define=SUPABASE_ANON_KEY=%SUPABASE_ANON_KEY%
     if %errorlevel% neq 0 (
         echo ERROR: Build falló
         pause
@@ -95,7 +106,7 @@ if "%BUILD_TYPE%"=="1" (
 if "%BUILD_TYPE%"=="2" (
     echo.
     echo Compilando App Bundle para Google Play...
-    call flutter build appbundle --release --obfuscate --split-debug-info=build/debug-info
+    call flutter build appbundle --release --obfuscate --split-debug-info=build/debug-info --dart-define=SUPABASE_URL=%SUPABASE_URL% --dart-define=SUPABASE_ANON_KEY=%SUPABASE_ANON_KEY%
     if %errorlevel% neq 0 (
         echo ERROR: Build falló
         pause
@@ -123,7 +134,7 @@ if "%BUILD_TYPE%"=="3" (
 if "%BUILD_TYPE%"=="4" (
     echo.
     echo Compilando versión Web...
-    call flutter build web --release --web-renderer canvaskit
+    call flutter build web --release --web-renderer canvaskit --dart-define=SUPABASE_URL=%SUPABASE_URL% --dart-define=SUPABASE_ANON_KEY=%SUPABASE_ANON_KEY%
     if %errorlevel% neq 0 (
         echo ERROR: Build falló
         pause

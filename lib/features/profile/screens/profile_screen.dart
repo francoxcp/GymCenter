@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../workouts/providers/workout_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -35,6 +36,12 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final currentUser = authProvider.currentUser;
+    final workoutProvider = Provider.of<WorkoutProvider>(context, listen: false);
+    final assignedWorkout = currentUser?.assignedWorkoutId != null
+        ? workoutProvider.getWorkoutById(currentUser!.assignedWorkoutId!)
+        : null;
+    final planName = assignedWorkout?.name ?? 'Sin rutina asignada';
+    final planDesc = assignedWorkout?.description ?? 'Contacta a tu entrenador';
 
     if (currentUser == null) {
       return Scaffold(
@@ -235,18 +242,18 @@ class ProfileScreen extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
-                                'Hipertrofia Avanzada',
-                                style: TextStyle(
+                              Text(
+                                planName,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
-                                'Fuerza, Volumen, Resistencia',
-                                style: TextStyle(
+                              Text(
+                                planDesc,
+                                style: const TextStyle(
                                   fontSize: 12,
                                   color: AppColors.textSecondary,
                                 ),

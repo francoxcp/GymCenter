@@ -1,33 +1,30 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'app_constants.dart';
 
 /// Configuración centralizada de Supabase
 class SupabaseConfig {
   // Singleton pattern para evitar múltiples instancias
   SupabaseConfig._();
 
+  // Credenciales inyectadas en tiempo de compilación con --dart-define
+  static const String _supabaseUrl =
+      String.fromEnvironment('SUPABASE_URL');
+  static const String _supabaseAnonKey =
+      String.fromEnvironment('SUPABASE_ANON_KEY');
+
   /// Inicializa la conexión con Supabase
-  /// Debe llamarse antes de runApp() en main.dart
+  /// Las credenciales deben pasarse al compilar:
+  ///   flutter build apk --dart-define=SUPABASE_URL=xxx --dart-define=SUPABASE_ANON_KEY=yyy
   static Future<void> initialize() async {
-    await dotenv.load(fileName: AppConstants.envFileName);
-
-    final supabaseUrl = dotenv.env[AppConstants.supabaseUrlKey];
-    final supabaseAnonKey = dotenv.env[AppConstants.supabaseAnonKeyKey];
-
-    if (supabaseUrl == null ||
-        supabaseUrl.isEmpty ||
-        supabaseAnonKey == null ||
-        supabaseAnonKey.isEmpty) {
+    if (_supabaseUrl.isEmpty || _supabaseAnonKey.isEmpty) {
       throw Exception(
-        '${AppConstants.supabaseUrlKey} y ${AppConstants.supabaseAnonKeyKey} '
-        'deben estar definidos en ${AppConstants.envFileName}',
+        'SUPABASE_URL y SUPABASE_ANON_KEY deben estar definidos '
+        'como --dart-define en el comando de compilación.',
       );
     }
 
     await Supabase.initialize(
-      url: supabaseUrl,
-      anonKey: supabaseAnonKey,
+      url: _supabaseUrl,
+      anonKey: _supabaseAnonKey,
       authOptions: const FlutterAuthClientOptions(
         authFlowType: AuthFlowType.pkce,
       ),

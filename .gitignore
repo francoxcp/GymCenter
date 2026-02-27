@@ -49,6 +49,7 @@ gradle/
 
 # Supabase credentials - IMPORTANTE NO SUBIR NUNCA
 .env
+scripts/local_credentials.bat
 
 # Android signing keys - NUNCA SUBIR
 key.properties

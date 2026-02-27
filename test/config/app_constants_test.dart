@@ -82,7 +82,6 @@ void main() {
 
     group('Supabase Configuration', () {
       test('has Supabase config keys', () {
-        expect(AppConstants.envFileName, '.env');
         expect(AppConstants.supabaseUrlKey, 'SUPABASE_URL');
         expect(AppConstants.supabaseAnonKeyKey, 'SUPABASE_ANON_KEY');
       });

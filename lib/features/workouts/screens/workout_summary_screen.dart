@@ -7,6 +7,7 @@ import '../models/workout.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/user_provider.dart';
 import '../providers/workout_progress_provider.dart';
+import '../providers/workout_session_provider.dart';
 
 class WorkoutSummaryScreen extends StatefulWidget {
   final Workout workout;
@@ -29,6 +30,7 @@ class WorkoutSummaryScreen extends StatefulWidget {
 class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
   Map<String, dynamic>? _nextWorkout;
   bool _isLoadingNextWorkout = true;
+  bool _isSaving = true; // bloquea el botón hasta que la sesión quede guardada
   String _motivationalMessage = '';
 
   // Mensajes motivacionales aleatorios
@@ -74,12 +76,20 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         workoutId: widget.workout.id,
         durationMinutes: widget.durationMinutes,
         exercisesCompleted: widget.workout.exercises.length,
-        totalExercises: widget.workout.exercises.length,
         caloriesBurned: widget.caloriesBurned,
         totalVolumeKg: widget.totalVolume,
       );
 
+      // Refrescar WorkoutSessionProvider solo si el widget sigue montado
+      // (el usuario puede haber navegado a inicio antes de que terminara)
+      if (mounted) {
+        final sessionProvider =
+            Provider.of<WorkoutSessionProvider>(context, listen: false);
+        await sessionProvider.loadSessions(userId, forceRefresh: true);
+      }
+
       // Actualizar estadísticas del usuario
+      if (!mounted) return;
       final currentUser = authProvider.currentUser!;
       await userProvider.updateUserStats(
         userId,
@@ -92,6 +102,10 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
       debugPrint('✅ Sesión guardada y estadísticas actualizadas');
     } catch (e) {
       debugPrint('❌ Error al guardar sesión: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     }
   }
 
@@ -453,7 +467,24 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () => context.go('/home'),
+                        onPressed: _isSaving
+                            ? null // bloqueado mientras guarda
+                            : () async {
+                                // Recarga final de sesiones antes de navegar
+                                // por si el contexto estaba desmontado antes
+                                final userId = Provider.of<AuthProvider>(
+                                        context,
+                                        listen: false)
+                                    .currentUser
+                                    ?.id;
+                                if (userId != null) {
+                                  await Provider.of<WorkoutSessionProvider>(
+                                          context,
+                                          listen: false)
+                                      .loadSessions(userId, forceRefresh: true);
+                                }
+                                if (mounted) context.go('/home');
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.black,
@@ -462,23 +493,33 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                             borderRadius: BorderRadius.all(Radius.circular(12)),
                           ),
                         ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.home, color: Colors.black, size: 20),
-                            SizedBox(width: 8),
-                            Text(
-                              'Volver al Inicio',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
+                        child: _isSaving
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Colors.black,
+                                ),
+                              )
+                            : const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.home,
+                                      color: Colors.black, size: 20),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Volver al Inicio',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.home, size: 20),
+                                ],
                               ),
-                            ),
-                            SizedBox(width: 8),
-                            Icon(Icons.home, size: 20),
-                          ],
-                        ),
                       ),
                     ),
                     const SizedBox(height: 32),

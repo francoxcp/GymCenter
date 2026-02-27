@@ -7,8 +7,10 @@ import '../../auth/models/user.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../workouts/providers/workout_provider.dart';
 import '../../workouts/providers/workout_progress_provider.dart';
+import '../../workouts/providers/workout_session_provider.dart';
 import '../../../shared/widgets/animated_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/coming_soon_workout_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -39,6 +41,12 @@ class _HomeScreenState extends State<HomeScreen> {
       // Cargar progreso pendiente
       if (userId != null) {
         progressProvider.loadProgress(userId);
+
+        // Forzar recarga de sesiones siempre (ignorar caché)
+        // para detectar correctamente si la rutina de hoy ya fue completada
+        final sessionProvider =
+            Provider.of<WorkoutSessionProvider>(context, listen: false);
+        sessionProvider.loadSessions(userId, forceRefresh: true);
       }
     });
   }
@@ -50,6 +58,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final progressProvider =
         Provider.of<WorkoutProgressProvider>(context, listen: false);
 
+    final sessionProvider =
+        Provider.of<WorkoutSessionProvider>(context, listen: false);
+
     await Future.wait([
       authProvider.refreshUser(),
       workoutProvider.loadWorkouts(
@@ -57,6 +68,11 @@ class _HomeScreenState extends State<HomeScreen> {
         userId: authProvider.currentUser?.id,
         isAdmin: authProvider.isAdmin,
       ),
+      if (authProvider.currentUser?.id != null)
+        sessionProvider.loadSessions(
+          authProvider.currentUser!.id,
+          forceRefresh: true,
+        ),
     ]);
 
     // Cargar progreso si hay usuario autenticado
@@ -331,26 +347,89 @@ class _AdminHomeContent extends StatelessWidget {
 }
 
 // Contenido para el Usuario
-class _UserHomeContent extends StatelessWidget {
+class _UserHomeContent extends StatefulWidget {
   final User currentUser;
 
   const _UserHomeContent({required this.currentUser});
 
   @override
+  State<_UserHomeContent> createState() => _UserHomeContentState();
+}
+
+class _UserHomeContentState extends State<_UserHomeContent> {
+  Map<String, dynamic>? _nextSchedule;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNextWorkout();
+  }
+
+  Future<void> _loadNextWorkout() async {
+    final progressProvider =
+        Provider.of<WorkoutProgressProvider>(context, listen: false);
+    final userId =
+        Provider.of<AuthProvider>(context, listen: false).currentUser?.id;
+    if (userId == null) return;
+    final next = await progressProvider.getNextScheduledWorkout(userId);
+    if (mounted) {
+      setState(() => _nextSchedule = next);
+    }
+  }
+
+  bool _isTodayCompleted(WorkoutSessionProvider sessionProvider) {
+    if (widget.currentUser.assignedWorkoutId == null) return false;
+    final today = DateTime.now();
+    return sessionProvider.sessions.any((s) {
+      // Convertir a hora local por si la fecha viene en UTC desde Supabase
+      final localDate = s.date.toLocal();
+      return s.workoutId == widget.currentUser.assignedWorkoutId &&
+          localDate.year == today.year &&
+          localDate.month == today.month &&
+          localDate.day == today.day;
+    });
+  }
+
+  String _dayName(int dayOfWeek) {
+    const days = [
+      'lunes',
+      'martes',
+      'miércoles',
+      'jueves',
+      'viernes',
+      'sábado',
+      'domingo',
+    ];
+    return days[(dayOfWeek - 1).clamp(0, 6)];
+  }
+
+  String get _availableLabel {
+    if (_nextSchedule == null) return 'Disponible mañana';
+    final daysUntil = _nextSchedule!['days_until'] as int? ?? 1;
+    if (daysUntil == 1) return 'Disponible mañana';
+    final nextDay = _nextSchedule!['day_of_week'] as int?;
+    if (nextDay != null) return 'Disponible el ${_dayName(nextDay)}';
+    return 'Disponible en $daysUntil días';
+  }
+
+  @override
   Widget build(BuildContext context) {
     final workoutProvider = Provider.of<WorkoutProvider>(context);
-    final hasAssignedWorkout = currentUser.assignedWorkoutId != null;
+    final sessionProvider = Provider.of<WorkoutSessionProvider>(context);
+    final hasAssignedWorkout = widget.currentUser.assignedWorkoutId != null;
     final assignedWorkout = hasAssignedWorkout
-        ? workoutProvider.getWorkoutById(currentUser.assignedWorkoutId!)
+        ? workoutProvider.getWorkoutById(widget.currentUser.assignedWorkoutId!)
         : null;
+    final todayCompleted = _isTodayCompleted(sessionProvider);
 
     // Debug info
     debugPrint('🏠 HomeScreen: hasAssignedWorkout=$hasAssignedWorkout');
     debugPrint(
-        '🏠 HomeScreen: assignedWorkoutId=${currentUser.assignedWorkoutId}');
+        '🏠 HomeScreen: assignedWorkoutId=${widget.currentUser.assignedWorkoutId}');
     debugPrint('🏠 HomeScreen: assignedWorkout=$assignedWorkout');
     debugPrint(
         '🏠 HomeScreen: workouts count=${workoutProvider.workouts.length}');
+    debugPrint('🏠 HomeScreen: todayCompleted=$todayCompleted');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,7 +453,7 @@ class _UserHomeContent extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '${currentUser.activeDays}',
+                        '${widget.currentUser.activeDays}',
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -410,7 +489,7 @@ class _UserHomeContent extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '${currentUser.completedWorkouts}',
+                        '${widget.currentUser.completedWorkouts}',
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -435,9 +514,9 @@ class _UserHomeContent extends StatelessWidget {
         const SizedBox(height: 28),
 
         // Today's Workout
-        const Text(
-          'Tu Rutina Asignada',
-          style: TextStyle(
+        Text(
+          todayCompleted ? 'Próxima Rutina' : 'Tu Rutina Asignada',
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -480,6 +559,14 @@ class _UserHomeContent extends StatelessWidget {
                 ),
               ),
             ),
+          ),
+        ] else if (hasAssignedWorkout &&
+            assignedWorkout != null &&
+            todayCompleted) ...[
+          // Workout de hoy completado → mostrar próxima rutina en estilo "próximamente"
+          ComingSoonWorkoutCard(
+            workout: assignedWorkout,
+            availableLabel: _availableLabel,
           ),
         ] else if (hasAssignedWorkout && assignedWorkout != null) ...[
           FadeInCard(
@@ -612,7 +699,7 @@ class _UserHomeContent extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'La rutina asignada (ID: ${currentUser.assignedWorkoutId}) no está disponible.',
+                      'La rutina asignada (ID: ${widget.currentUser.assignedWorkoutId}) no está disponible.',
                       style: const TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,

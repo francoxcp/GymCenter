@@ -109,7 +109,6 @@ class WorkoutProgressProvider with ChangeNotifier {
     required String workoutId,
     required int durationMinutes,
     required int exercisesCompleted,
-    required int totalExercises,
     int caloriesBurned = 0,
     double totalVolumeKg = 0,
   }) async {
@@ -121,7 +120,6 @@ class WorkoutProgressProvider with ChangeNotifier {
         'completed_at': DateTime.now().toIso8601String(),
         'duration_minutes': durationMinutes,
         'exercises_completed': exercisesCompleted,
-        'total_exercises': totalExercises,
         'calories_burned': caloriesBurned,
         'total_volume_kg': totalVolumeKg,
       });

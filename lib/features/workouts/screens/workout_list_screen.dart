@@ -5,9 +5,12 @@ import 'edit_workout_screen.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/workout_provider.dart';
+import '../providers/workout_session_provider.dart';
+import '../providers/workout_progress_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../shared/widgets/filter_chip_button.dart';
 import '../../../shared/widgets/assigned_workout_card.dart';
+import '../../../shared/widgets/coming_soon_workout_card.dart';
 
 class WorkoutListScreen extends StatefulWidget {
   const WorkoutListScreen({super.key});
@@ -18,19 +21,49 @@ class WorkoutListScreen extends StatefulWidget {
 
 class _WorkoutListScreenState extends State<WorkoutListScreen> {
   final _searchController = TextEditingController();
+  Map<String, dynamic>? _nextSchedule;
+
+  static String _dayName(int dayOfWeek) {
+    const days = [
+      'lunes',
+      'martes',
+      'miércoles',
+      'jueves',
+      'viernes',
+      'sábado',
+      'domingo',
+    ];
+    return days[(dayOfWeek - 1).clamp(0, 6)];
+  }
+
+  String get _availableLabel {
+    if (_nextSchedule == null) return 'Disponible mañana';
+    final daysUntil = _nextSchedule!['days_until'] as int? ?? 1;
+    if (daysUntil == 1) return 'Disponible mañana';
+    final nextDay = _nextSchedule!['day_of_week'] as int?;
+    if (nextDay != null) return 'Disponible el ${_dayName(nextDay)}';
+    return 'Disponible en $daysUntil días';
+  }
 
   @override
   void initState() {
     super.initState();
-    // Cargar rutinas al iniciar la pantalla
+    // Cargar rutinas y sesiones al iniciar la pantalla
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final workoutProvider =
           Provider.of<WorkoutProvider>(context, listen: false);
+      final sessionProvider =
+          Provider.of<WorkoutSessionProvider>(context, listen: false);
       workoutProvider.loadWorkouts(
         userId: authProvider.currentUser?.id,
         isAdmin: authProvider.isAdmin,
       );
+      if (authProvider.currentUser?.id != null) {
+        sessionProvider.loadSessions(authProvider.currentUser!.id,
+            forceRefresh: true);
+        _loadNextSchedule(authProvider.currentUser!.id);
+      }
     });
   }
 
@@ -38,6 +71,13 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadNextSchedule(String userId) async {
+    final progressProvider =
+        Provider.of<WorkoutProgressProvider>(context, listen: false);
+    final next = await progressProvider.getNextScheduledWorkout(userId);
+    if (mounted) setState(() => _nextSchedule = next);
   }
 
   @override
@@ -93,6 +133,17 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
           final assignedWorkout = hasAssignedWorkout
               ? workoutProvider.getWorkoutById(currentUser!.assignedWorkoutId!)
               : null;
+          final sessionProvider = Provider.of<WorkoutSessionProvider>(context);
+          final today = DateTime.now();
+          final todayCompleted = hasAssignedWorkout &&
+              currentUser?.assignedWorkoutId != null &&
+              sessionProvider.sessions.any((s) {
+                final d = s.date.toLocal();
+                return s.workoutId == currentUser!.assignedWorkoutId &&
+                    d.year == today.year &&
+                    d.month == today.month &&
+                    d.day == today.day;
+              });
 
           return Column(
             children: [
@@ -152,8 +203,10 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                 ),
               ),
 
-              // Assigned Workout Hero Card
-              if (hasAssignedWorkout && assignedWorkout != null) ...[
+              // Assigned Workout Hero Card (ocultar si ya se completó hoy)
+              if (hasAssignedWorkout &&
+                  assignedWorkout != null &&
+                  !todayCompleted) ...[
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -162,8 +215,21 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                     onStart: () => context.push('/today-workout'),
                   ),
                 ),
+              ] else if (hasAssignedWorkout &&
+                  assignedWorkout != null &&
+                  todayCompleted) ...[
+                // Rutina de hoy completada → mostrar próxima en estilo "próximamente"
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ComingSoonWorkoutCard(
+                    workout: assignedWorkout,
+                    availableLabel: _availableLabel,
+                  ),
+                ),
+              ],
+              if (hasAssignedWorkout && assignedWorkout != null) ...[
                 const SizedBox(height: 24),
-
                 // Divider
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),

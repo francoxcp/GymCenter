@@ -41,16 +41,12 @@ class WorkoutSessionProvider extends ChangeNotifier {
           'durationMinutes': json['duration_minutes'],
           'caloriesBurned': json['calories_burned'] ?? 0,
           'totalVolumeKg': (json['total_volume_kg'] ?? 0).toDouble(),
-          'exercisesCompleted': json['exercises_completed'] ?? [],
+          'exercisesCompleted': (json['exercises_completed'] is List)
+              ? json['exercises_completed']
+              : [],
           'isCompleted': true,
         });
       }).toList();
-
-      debugPrint(
-          '📊 loadSessions: cargadas ${_sessions.length} sesiones para userId=$userId');
-      for (final s in _sessions) {
-        debugPrint('📊   workoutId=${s.workoutId}  date=${s.date.toLocal()}');
-      }
 
       _lastFetch = DateTime.now();
       _isLoading = false;

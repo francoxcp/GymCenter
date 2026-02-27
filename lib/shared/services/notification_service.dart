@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 
 /// Servicio centralizado para gestionar notificaciones locales
 class NotificationService {
@@ -19,9 +19,15 @@ class NotificationService {
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    // Inicializar zonas horarias
+    // Inicializar zonas horarias (solo las necesarias — mucho más rápido)
     tz.initializeTimeZones();
-    tz.setLocalLocation(tz.getLocation('America/Costa_Rica'));
+    // Usar la zona local del dispositivo si está disponible, si no Caracas
+    try {
+      final localName = DateTime.now().timeZoneName;
+      tz.setLocalLocation(tz.getLocation(localName));
+    } catch (_) {
+      tz.setLocalLocation(tz.getLocation('America/Caracas'));
+    }
 
     // Configuración para Android
     const androidSettings =

@@ -441,8 +441,12 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                     final officialWorkouts = workoutProvider.filteredWorkouts
                         .where((w) => w.createdBy == null)
                         .toList();
+                    // Usuarios normales ven solo sus propias rutinas.
+                    // El admin ve todas las rutinas creadas por usuarios.
                     final userWorkouts = workoutProvider.filteredWorkouts
-                        .where((w) => w.createdBy != null)
+                        .where((w) =>
+                            w.createdBy != null &&
+                            (isAdmin || w.createdBy == currentUser?.id))
                         .toList();
 
                     if (officialWorkouts.isEmpty && userWorkouts.isEmpty) {

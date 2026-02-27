@@ -45,21 +45,17 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> _loadCurrentUser(String userId) async {
     try {
-      debugPrint('🔍 Loading user with ID: $userId');
       final response = await SupabaseConfig.client
           .from('users')
           .select()
           .eq('id', userId)
           .single();
 
-      debugPrint('✅ User data loaded: ${response.toString()}');
-      debugPrint('📋 assigned_workout_id: ${response['assigned_workout_id']}');
       _currentUser = User.fromJson(response);
       _isAuthenticated = true;
       notifyListeners();
-    } catch (e, stackTrace) {
+    } catch (e) {
       debugPrint('❌ ERROR loading user: $e');
-      debugPrint('Stack trace: $stackTrace');
     }
   }
 
@@ -76,14 +72,12 @@ class AuthProvider extends ChangeNotifier {
       );
 
       if (response.user != null) {
-        debugPrint('✅ Login successful, loading user data...');
         await _loadCurrentUser(response.user!.id);
         _isLoading = false;
         notifyListeners();
         return true;
       }
 
-      debugPrint('⚠️ Login failed: No user returned');
       _isLoading = false;
       notifyListeners();
       return false;

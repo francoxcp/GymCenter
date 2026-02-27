@@ -22,9 +22,6 @@ void main() async {
   // Inicializar Supabase (credenciales compiladas con --dart-define)
   await SupabaseConfig.initialize();
 
-  // Inicializar notificaciones
-  await NotificationService().initialize();
-
   // Bloquear orientación a portrait
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -32,6 +29,9 @@ void main() async {
   ]);
 
   runApp(const MyApp());
+
+  // Inicializar notificaciones DESPUÉS de runApp — no bloquea el arranque
+  NotificationService().initialize();
 }
 
 class MyApp extends StatefulWidget {

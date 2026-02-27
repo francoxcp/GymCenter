@@ -400,31 +400,17 @@ class _UserHomeContentState extends State<_UserHomeContent> {
     // 1️⃣ Primero revisar el flag en memoria (instantáneo, sin red)
     final progressProvider =
         Provider.of<WorkoutProgressProvider>(context, listen: false);
-    if (progressProvider.completedWorkoutIdToday == assignedId) {
-      debugPrint('✅ _isTodayCompleted: true (flag en memoria)');
-      return true;
-    }
+    if (progressProvider.completedWorkoutIdToday == assignedId) return true;
 
     // 2️⃣ Verificar las sesiones cargadas de Supabase
     final today = DateTime.now();
-    debugPrint('🔍 _isTodayCompleted: assignedWorkoutId=$assignedId');
-    debugPrint(
-        '🔍 _isTodayCompleted: sessions.length=${sessionProvider.sessions.length}');
-    for (final s in sessionProvider.sessions) {
-      final d = s.date.toLocal();
-      debugPrint(
-          '🔍   session workoutId=${s.workoutId} date=${d.year}-${d.month}-${d.day} (hoy: ${today.year}-${today.month}-${today.day})');
-    }
-
-    final result = sessionProvider.sessions.any((s) {
+    return sessionProvider.sessions.any((s) {
       final localDate = s.date.toLocal();
       return s.workoutId == assignedId &&
           localDate.year == today.year &&
           localDate.month == today.month &&
           localDate.day == today.day;
     });
-    debugPrint('🔍 _isTodayCompleted: result=$result');
-    return result;
   }
 
   String _dayName(int dayOfWeek) {
@@ -460,15 +446,6 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         ? workoutProvider.getWorkoutById(widget.currentUser.assignedWorkoutId!)
         : null;
     final todayCompleted = _isTodayCompleted(sessionProvider);
-
-    // Debug info
-    debugPrint('🏠 HomeScreen: hasAssignedWorkout=$hasAssignedWorkout');
-    debugPrint(
-        '🏠 HomeScreen: assignedWorkoutId=${widget.currentUser.assignedWorkoutId}');
-    debugPrint('🏠 HomeScreen: assignedWorkout=$assignedWorkout');
-    debugPrint(
-        '🏠 HomeScreen: workouts count=${workoutProvider.workouts.length}');
-    debugPrint('🏠 HomeScreen: todayCompleted=$todayCompleted');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

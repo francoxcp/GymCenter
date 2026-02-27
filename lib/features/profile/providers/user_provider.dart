@@ -166,9 +166,16 @@ class UserProvider extends ChangeNotifier {
   Future<void> assignWorkoutByDay(
       String userId, String workoutId, List<int> days) async {
     try {
-      // 1. Guardar en la tabla de horarios
+      // 1. Borrar TODOS los días previos del usuario para este schedule
+      //    (evita que días des-seleccionados queden como datos huérfanos)
+      await SupabaseConfig.client
+          .from('user_workout_schedule')
+          .delete()
+          .eq('user_id', userId);
+
+      // 2. Insertar exactamente los días seleccionados
       for (final day in days) {
-        await SupabaseConfig.client.from('user_workout_schedule').upsert({
+        await SupabaseConfig.client.from('user_workout_schedule').insert({
           'user_id': userId,
           'day_of_week': day,
           'workout_id': workoutId,

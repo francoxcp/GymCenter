@@ -28,15 +28,24 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
     selectedWorkoutId = widget.user.assignedWorkoutId;
     selectedMealPlanId = widget.user.assignedMealPlanId;
 
-    // Cargar rutinas y planes de comida al iniciar
-    Future.microtask(() {
+    // Cargar rutinas, planes y días ya asignados al iniciar
+    Future.microtask(() async {
       final workoutProvider =
           Provider.of<WorkoutProvider>(context, listen: false);
       final mealPlanProvider =
           Provider.of<MealPlanProvider>(context, listen: false);
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
 
       workoutProvider.loadWorkouts();
       mealPlanProvider.loadMealPlans();
+
+      // Pre-cargar días que ya tienen rutina asignada
+      final weekWorkouts = await userProvider.getWeekWorkouts(widget.user.id);
+      if (mounted) {
+        setState(() {
+          selectedDays = weekWorkouts.keys.toList()..sort();
+        });
+      }
     });
   }
 

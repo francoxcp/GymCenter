@@ -70,6 +70,9 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
 
       if (userId == null) return;
 
+      debugPrint(
+          '💾 _saveWorkoutSession: userId=$userId workoutId=${widget.workout.id}');
+
       // Guardar sesión en workout_sessions y actualizar estadísticas
       await progressProvider.completeWorkout(
         userId: userId,

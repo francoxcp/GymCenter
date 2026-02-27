@@ -14,7 +14,10 @@ import 'workout_summary_screen.dart';
 import '../../../features/progress/providers/body_measurement_provider.dart';
 
 class TodayWorkoutScreen extends StatefulWidget {
-  const TodayWorkoutScreen({super.key});
+  /// Si se pasa, se ejecuta esta rutina en lugar de la asignada (modo extra).
+  final String? extraWorkoutId;
+
+  const TodayWorkoutScreen({super.key, this.extraWorkoutId});
 
   @override
   State<TodayWorkoutScreen> createState() => _TodayWorkoutScreenState();
@@ -77,6 +80,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     final authProvider = context.read<AuthProvider>();
     final progressProvider = context.read<WorkoutProgressProvider>();
     final workoutProvider = context.read<WorkoutProvider>();
+
+    // Si es rutina extra, no restaurar progreso guardado de la rutina asignada
+    if (widget.extraWorkoutId != null) return;
 
     if (authProvider.currentUser?.assignedWorkoutId == null) return;
 
@@ -279,8 +285,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       // Iniciar descanso si no es la última serie
       final totalSets = _completedSets[exerciseIndex].length;
       if (setIndex < totalSets - 1) {
-        final workout = context.read<WorkoutProvider>().getWorkoutById(
-            context.read<AuthProvider>().currentUser!.assignedWorkoutId!);
+        final _effectiveId = widget.extraWorkoutId ??
+            context.read<AuthProvider>().currentUser?.assignedWorkoutId;
+        final workout = _effectiveId != null
+            ? context.read<WorkoutProvider>().getWorkoutById(_effectiveId)
+            : null;
         final restSeconds = workout?.exercises[exerciseIndex].restSeconds ?? 60;
         _startRestTimer(restSeconds);
       }
@@ -300,13 +309,15 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     final authProvider = context.read<AuthProvider>();
     final progressProvider = context.read<WorkoutProgressProvider>();
 
-    if (authProvider.currentUser?.assignedWorkoutId == null) return;
+    final effectiveSaveId =
+        widget.extraWorkoutId ?? authProvider.currentUser?.assignedWorkoutId;
+    if (effectiveSaveId == null) return;
     if (_completedSets.isEmpty) return;
 
     try {
       await progressProvider.saveProgress(
         userId: authProvider.currentUser!.id,
-        workoutId: authProvider.currentUser!.assignedWorkoutId!,
+        workoutId: effectiveSaveId,
         exerciseIndex: _currentExerciseIndex,
         completedSets: _completedSets,
       );
@@ -445,7 +456,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     final workoutProvider = Provider.of<WorkoutProvider>(context);
     final currentUser = authProvider.currentUser;
 
-    if (currentUser?.assignedWorkoutId == null) {
+    final effectiveWorkoutId =
+        widget.extraWorkoutId ?? currentUser?.assignedWorkoutId;
+
+    if (effectiveWorkoutId == null) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Mi Rutina de Hoy'),
@@ -487,8 +501,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       );
     }
 
-    final workout =
-        workoutProvider.getWorkoutById(currentUser!.assignedWorkoutId!);
+    final workout = workoutProvider.getWorkoutById(effectiveWorkoutId);
 
     if (workout == null || workout.exercises.isEmpty) {
       return Scaffold(

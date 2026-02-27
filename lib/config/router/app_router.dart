@@ -121,7 +121,10 @@ final appRouter = GoRouter(
         ),
         GoRoute(
           path: '/today-workout',
-          builder: (context, state) => const TodayWorkoutScreen(),
+          builder: (context, state) {
+            final extraId = state.uri.queryParameters['workoutId'];
+            return TodayWorkoutScreen(extraWorkoutId: extraId);
+          },
         ),
         GoRoute(
           path: '/workout-history',

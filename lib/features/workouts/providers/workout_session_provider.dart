@@ -46,6 +46,12 @@ class WorkoutSessionProvider extends ChangeNotifier {
         });
       }).toList();
 
+      debugPrint(
+          '📊 loadSessions: cargadas ${_sessions.length} sesiones para userId=$userId');
+      for (final s in _sessions) {
+        debugPrint('📊   workoutId=${s.workoutId}  date=${s.date.toLocal()}');
+      }
+
       _lastFetch = DateTime.now();
       _isLoading = false;
       notifyListeners();

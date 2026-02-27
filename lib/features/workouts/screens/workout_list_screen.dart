@@ -73,6 +73,63 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
     super.dispose();
   }
 
+  Future<void> _startExtraWorkout(
+    BuildContext context,
+    String workoutId,
+    WorkoutProgressProvider progressProvider,
+  ) async {
+    // Si hay una rutina en progreso, avisar al usuario
+    if (progressProvider.hasProgress) {
+      final choice = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: AppColors.surface,
+          title: const Text(
+            'Rutina en Progreso',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: const Text(
+            'Tienes una rutina en curso. ¿Quieres continuar esa o iniciar esta como extra?',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, 'cancel'),
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, 'continue_assigned'),
+              child: const Text(
+                'Continuar en progreso',
+                style: TextStyle(color: AppColors.primary),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, 'start_extra'),
+              child: const Text(
+                'Iniciar esta rutina',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (!context.mounted) return;
+      if (choice == 'continue_assigned') {
+        context.push('/today-workout');
+      } else if (choice == 'start_extra') {
+        context.push('/today-workout?workoutId=$workoutId');
+      }
+      // 'cancel' → no hace nada
+    } else {
+      context.push('/today-workout?workoutId=$workoutId');
+    }
+  }
+
   Future<void> _loadNextSchedule(String userId) async {
     final progressProvider =
         Provider.of<WorkoutProgressProvider>(context, listen: false);
@@ -134,16 +191,22 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
               ? workoutProvider.getWorkoutById(currentUser!.assignedWorkoutId!)
               : null;
           final sessionProvider = Provider.of<WorkoutSessionProvider>(context);
+          // Escuchar WorkoutProgressProvider para el flag en memoria
+          final progressProvider =
+              Provider.of<WorkoutProgressProvider>(context);
           final today = DateTime.now();
+          // Verificar flag en memoria primero, luego sesiones de Supabase
           final todayCompleted = hasAssignedWorkout &&
               currentUser?.assignedWorkoutId != null &&
-              sessionProvider.sessions.any((s) {
-                final d = s.date.toLocal();
-                return s.workoutId == currentUser!.assignedWorkoutId &&
-                    d.year == today.year &&
-                    d.month == today.month &&
-                    d.day == today.day;
-              });
+              (progressProvider.completedWorkoutIdToday ==
+                      currentUser!.assignedWorkoutId ||
+                  sessionProvider.sessions.any((s) {
+                    final d = s.date.toLocal();
+                    return s.workoutId == currentUser.assignedWorkoutId &&
+                        d.year == today.year &&
+                        d.month == today.month &&
+                        d.day == today.day;
+                  }));
 
           return Column(
             children: [
@@ -369,6 +432,11 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                                 }
                               }
                             },
+                            // Play solo en rutinas que NO son la asignada
+                            onPlay: workout.id != currentUser?.assignedWorkoutId
+                                ? () => _startExtraWorkout(
+                                    context, workout.id, progressProvider)
+                                : null,
                           ),
                         ),
                       );
@@ -419,6 +487,7 @@ class _WorkoutCard extends StatelessWidget {
   final bool isClickable;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final VoidCallback? onPlay;
 
   const _WorkoutCard({
     required this.title,
@@ -428,6 +497,7 @@ class _WorkoutCard extends StatelessWidget {
     this.isClickable = false,
     this.onEdit,
     this.onDelete,
+    this.onPlay,
   });
 
   Color _getLevelColor() {
@@ -575,6 +645,29 @@ class _WorkoutCard extends StatelessWidget {
             const Icon(
               Icons.chevron_right,
               color: AppColors.textSecondary,
+            ),
+          // Botón play para iniciar como rutina extra
+          if (onPlay != null)
+            GestureDetector(
+              onTap: onPlay,
+              child: Container(
+                width: 38,
+                height: 38,
+                margin: const EdgeInsets.only(left: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.6),
+                    width: 1,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.play_arrow_rounded,
+                  color: AppColors.primary,
+                  size: 24,
+                ),
+              ),
             ),
         ],
       ),

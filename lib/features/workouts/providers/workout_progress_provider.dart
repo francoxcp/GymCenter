@@ -12,6 +12,15 @@ class WorkoutProgressProvider with ChangeNotifier {
   bool get hasProgress =>
       _currentProgress != null && !_currentProgress!.isExpired;
 
+  // ID del workout completado HOY (flag en memoria, se resetea al reiniciar la app)
+  String? _completedWorkoutIdToday;
+  String? get completedWorkoutIdToday => _completedWorkoutIdToday;
+
+  void clearTodayCompletion() {
+    _completedWorkoutIdToday = null;
+    notifyListeners();
+  }
+
   // Cargar progreso del usuario actual
   Future<void> loadProgress(String userId) async {
     _isLoading = true;
@@ -126,8 +135,19 @@ class WorkoutProgressProvider with ChangeNotifier {
 
       debugPrint('✅ Workout session guardada en base de datos');
 
-      // Eliminar progreso temporal
-      await deleteProgress();
+      // Guardar el ID del progreso ANTES de borrarlo en memoria
+      final progressId = _currentProgress?.id;
+
+      // Limpiar TODO en memoria de forma atómica — el banner desaparece en el mismo rebuild
+      _completedWorkoutIdToday = workoutId;
+      _currentProgress = null;
+      notifyListeners();
+
+      // Eliminar progreso temporal de la BD (después del rebuild de UI)
+      if (progressId != null) {
+        await _supabase.from('workout_progress').delete().eq('id', progressId);
+        debugPrint('🗑️ Progreso temporal eliminado de BD (id=$progressId)');
+      }
 
       return;
     } catch (e) {
@@ -153,6 +173,20 @@ class WorkoutProgressProvider with ChangeNotifier {
       if (scheduleResponse.isEmpty) return null;
 
       final schedule = scheduleResponse as List;
+
+      debugPrint(
+          '📅 getNextScheduledWorkout: currentDayOfWeek=$currentDayOfWeek (hoy=${[
+        '',
+        'Lun',
+        'Mar',
+        'Mié',
+        'Jue',
+        'Vie',
+        'Sáb',
+        'Dom'
+      ][currentDayOfWeek]})');
+      debugPrint(
+          '📅 Días en BD: ${schedule.map((s) => '${s['day_of_week']}').join(', ')}');
 
       // Encontrar el próximo día
       int? nextDay;

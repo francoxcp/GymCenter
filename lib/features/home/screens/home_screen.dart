@@ -212,8 +212,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Banner de progreso pendiente
                 Consumer<WorkoutProgressProvider>(
                   builder: (context, progressProvider, _) {
-                    if (!isAdmin && progressProvider.hasProgress) {
-                      final progress = progressProvider.currentProgress!;
+                    final progress = progressProvider.currentProgress;
+                    // No mostrar si no hay progreso, si es admin,
+                    // o si ese workout ya fue completado hoy (evita race condition
+                    // entre el delete en BD y la recarga de loadProgress)
+                    if (!isAdmin &&
+                        progressProvider.hasProgress &&
+                        progress != null &&
+                        progressProvider.completedWorkoutIdToday !=
+                            progress.workoutId) {
                       final workoutProvider =
                           Provider.of<WorkoutProvider>(context);
                       final workout =
@@ -379,15 +386,36 @@ class _UserHomeContentState extends State<_UserHomeContent> {
 
   bool _isTodayCompleted(WorkoutSessionProvider sessionProvider) {
     if (widget.currentUser.assignedWorkoutId == null) return false;
+    final assignedId = widget.currentUser.assignedWorkoutId!;
+
+    // 1️⃣ Primero revisar el flag en memoria (instantáneo, sin red)
+    final progressProvider =
+        Provider.of<WorkoutProgressProvider>(context, listen: false);
+    if (progressProvider.completedWorkoutIdToday == assignedId) {
+      debugPrint('✅ _isTodayCompleted: true (flag en memoria)');
+      return true;
+    }
+
+    // 2️⃣ Verificar las sesiones cargadas de Supabase
     final today = DateTime.now();
-    return sessionProvider.sessions.any((s) {
-      // Convertir a hora local por si la fecha viene en UTC desde Supabase
+    debugPrint('🔍 _isTodayCompleted: assignedWorkoutId=$assignedId');
+    debugPrint(
+        '🔍 _isTodayCompleted: sessions.length=${sessionProvider.sessions.length}');
+    for (final s in sessionProvider.sessions) {
+      final d = s.date.toLocal();
+      debugPrint(
+          '🔍   session workoutId=${s.workoutId} date=${d.year}-${d.month}-${d.day} (hoy: ${today.year}-${today.month}-${today.day})');
+    }
+
+    final result = sessionProvider.sessions.any((s) {
       final localDate = s.date.toLocal();
-      return s.workoutId == widget.currentUser.assignedWorkoutId &&
+      return s.workoutId == assignedId &&
           localDate.year == today.year &&
           localDate.month == today.month &&
           localDate.day == today.day;
     });
+    debugPrint('🔍 _isTodayCompleted: result=$result');
+    return result;
   }
 
   String _dayName(int dayOfWeek) {
@@ -416,6 +444,8 @@ class _UserHomeContentState extends State<_UserHomeContent> {
   Widget build(BuildContext context) {
     final workoutProvider = Provider.of<WorkoutProvider>(context);
     final sessionProvider = Provider.of<WorkoutSessionProvider>(context);
+    // Escuchar también WorkoutProgressProvider para capturar el flag en memoria
+    final progressProviderWatch = Provider.of<WorkoutProgressProvider>(context);
     final hasAssignedWorkout = widget.currentUser.assignedWorkoutId != null;
     final assignedWorkout = hasAssignedWorkout
         ? workoutProvider.getWorkoutById(widget.currentUser.assignedWorkoutId!)

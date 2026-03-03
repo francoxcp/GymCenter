@@ -256,7 +256,21 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 // Contenido para el Admin (Entrenador)
-class _AdminHomeContent extends StatelessWidget {
+class _AdminHomeContent extends StatefulWidget {
+  @override
+  State<_AdminHomeContent> createState() => _AdminHomeContentState();
+}
+
+class _AdminHomeContentState extends State<_AdminHomeContent> {
+  @override
+  void initState() {
+    super.initState();
+    // Cargar usuarios de forma lazy cuando el admin ve el home
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<UserProvider>(context, listen: false).loadUsers();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -276,35 +290,60 @@ class _AdminHomeContent extends StatelessWidget {
         // Quick Stats — datos reales de los providers
         Consumer2<UserProvider, WorkoutProvider>(
           builder: (context, userProvider, workoutProvider, _) {
-            final userCount = userProvider.users
-                .where((u) => u.role != 'admin')
-                .length;
+            final regularUsers =
+                userProvider.users.where((u) => u.role != 'admin').toList();
+            final userCount = regularUsers.length;
             final workoutCount = workoutProvider.workouts.length;
-            return Row(
+            final usersWithoutWorkout = regularUsers
+                .where((u) => u.assignedWorkoutId == null)
+                .length;
+            return Column(
               children: [
-                Expanded(
-                  child: FadeInCard(
-                    delay: 0,
+                Row(
+                  children: [
+                    Expanded(
+                      child: FadeInCard(
+                        delay: 0,
+                        child: _StatCard(
+                          icon: Icons.people,
+                          title: 'USUARIOS',
+                          value: userCount.toString(),
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FadeInCard(
+                        delay: 100,
+                        child: _StatCard(
+                          icon: Icons.fitness_center,
+                          title: 'RUTINAS',
+                          value: workoutCount.toString(),
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (userCount > 0) ...[
+                  const SizedBox(height: 12),
+                  FadeInCard(
+                    delay: 150,
                     child: _StatCard(
-                      icon: Icons.people,
-                      title: 'USUARIOS',
-                      value: userCount.toString(),
-                      color: AppColors.primary,
+                      icon: Icons.person_off_outlined,
+                      title: 'SIN RUTINA ASIGNADA',
+                      value: usersWithoutWorkout.toString(),
+                      color: usersWithoutWorkout > 0
+                          ? Colors.orange
+                          : AppColors.primary,
+                      fullWidth: true,
+                      subtitle: usersWithoutWorkout == 0
+                          ? '✓ Todos tienen rutina'
+                          : 'Usuarios pendientes de asignación',
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FadeInCard(
-                    delay: 100,
-                    child: _StatCard(
-                      icon: Icons.fitness_center,
-                      title: 'RUTINAS',
-                      value: workoutCount.toString(),
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
+                ],
               ],
             );
           },
@@ -447,6 +486,21 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         : null;
     final todayCompleted = _isTodayCompleted(sessionProvider);
 
+    // Calcular stats reales desde sesiones cargadas (más precisos que los campos BD)
+    final realSessions = sessionProvider.sessions;
+    final realCompletedCount = realSessions.isNotEmpty
+        ? realSessions.length
+        : widget.currentUser.completedWorkouts;
+    final realActiveDays = realSessions.isNotEmpty
+        ? realSessions
+            .map((s) {
+              final d = s.date.toLocal();
+              return DateTime(d.year, d.month, d.day);
+            })
+            .toSet()
+            .length
+        : widget.currentUser.activeDays;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -469,7 +523,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '${widget.currentUser.activeDays}',
+                        '$realActiveDays',
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -505,7 +559,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '${widget.currentUser.completedWorkouts}',
+                        '$realCompletedCount',
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -826,51 +880,118 @@ class _StatCard extends StatelessWidget {
   final String title;
   final String value;
   final Color color;
+  final bool fullWidth;
+  final String? subtitle;
 
   const _StatCard({
     required this.icon,
     required this.title,
     required this.value,
     required this.color,
+    this.fullWidth = false,
+    this.subtitle,
   });
 
   @override
   Widget build(BuildContext context) {
+    final content = fullWidth
+        ? Row(
+            children: [
+              Icon(icon, color: color, size: 32),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0.0, end: double.tryParse(value) ?? 0.0),
+                      duration: const Duration(milliseconds: 800),
+                      curve: Curves.easeOut,
+                      builder: (context, animatedValue, child) {
+                        return Text(
+                          animatedValue.toStringAsFixed(0),
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        );
+                      },
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: color.withOpacity(0.8),
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          )
+        : Column(
+            children: [
+              Icon(icon, color: color, size: 30),
+              const SizedBox(height: 10),
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0.0, end: double.tryParse(value) ?? 0.0),
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeOut,
+                builder: (context, animatedValue, child) {
+                  return Text(
+                    animatedValue.toStringAsFixed(0),
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 10.5,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1,
+                ),
+              ),
+              if (subtitle != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  subtitle!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: color.withOpacity(0.8),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ],
+          );
+
     return AnimatedCard(
       padding: const EdgeInsets.all(16),
       onTap: null,
       enableAnimation: false,
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 30),
-          const SizedBox(height: 10),
-          TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.0, end: double.tryParse(value) ?? 0.0),
-            duration: const Duration(milliseconds: 800),
-            curve: Curves.easeOut,
-            builder: (context, animatedValue, child) {
-              return Text(
-                animatedValue.toStringAsFixed(0),
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 10.5,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1,
-            ),
-          ),
-        ],
-      ),
+      child: content,
     );
   }
 }

@@ -90,18 +90,29 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         final sessionProvider =
             Provider.of<WorkoutSessionProvider>(context, listen: false);
         await sessionProvider.loadSessions(userId, forceRefresh: true);
+
+        // Calcular stats reales desde las sesiones actualizadas
+        if (mounted) {
+          final sessions = sessionProvider.sessions;
+          final totalCompleted = sessions.length;
+          final uniqueDays = sessions
+              .map((s) {
+                final d = s.date.toLocal();
+                return DateTime(d.year, d.month, d.day);
+              })
+              .toSet()
+              .length;
+
+          await userProvider.updateUserStats(
+            userId,
+            completedWorkouts: totalCompleted,
+            activeDays: uniqueDays,
+          );
+        }
       }
 
-      // Actualizar estadísticas del usuario
-      if (!mounted) return;
-      final currentUser = authProvider.currentUser!;
-      await userProvider.updateUserStats(
-        userId,
-        completedWorkouts: currentUser.completedWorkouts + 1,
-      );
-
       // Refrescar usuario para obtener estadísticas actualizadas
-      await authProvider.refreshUser();
+      if (mounted) await authProvider.refreshUser();
 
       debugPrint('✅ Sesión guardada y estadísticas actualizadas');
     } catch (e) {

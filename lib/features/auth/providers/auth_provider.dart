@@ -8,11 +8,14 @@ class AuthProvider extends ChangeNotifier {
   bool _isAuthenticated = false;
   User? _currentUser;
   bool _isLoading = false;
+  // true mientras se verifica la sesión guardada al arrancar — evita el flash de login
+  bool _isInitializing = true;
 
   bool get isAuthenticated => _isAuthenticated;
   User? get currentUser => _currentUser;
   bool get isAdmin => _currentUser?.role == 'admin';
   bool get isLoading => _isLoading;
+  bool get isInitializing => _isInitializing;
   String get initialRoute =>
       isAdmin ? AppConstants.adminRoute : AppConstants.homeRoute;
 
@@ -40,6 +43,10 @@ class AuthProvider extends ChangeNotifier {
     final session = SupabaseConfig.auth.currentSession;
     if (session != null) {
       _loadCurrentUser(session.user.id);
+    } else {
+      // Sin sesión guardada: inicialización completa, mostrar login
+      _isInitializing = false;
+      notifyListeners();
     }
   }
 
@@ -53,9 +60,12 @@ class AuthProvider extends ChangeNotifier {
 
       _currentUser = User.fromJson(response);
       _isAuthenticated = true;
+      _isInitializing = false;
       notifyListeners();
     } catch (e) {
+      _isInitializing = false;
       debugPrint('❌ ERROR loading user: $e');
+      notifyListeners();
     }
   }
 

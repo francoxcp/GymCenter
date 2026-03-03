@@ -5,23 +5,23 @@ class SupabaseConfig {
   // Singleton pattern para evitar múltiples instancias
   SupabaseConfig._();
 
-  // Credenciales inyectadas en tiempo de compilación con --dart-define
-  static const String _supabaseUrl =
-      String.fromEnvironment('SUPABASE_URL');
-  static const String _supabaseAnonKey =
-      String.fromEnvironment('SUPABASE_ANON_KEY');
+  // Credenciales inyectadas en tiempo de compilación con --dart-define.
+  // El defaultValue permite correr con `flutter run` sin flags extra en desarrollo.
+  // En producción siempre se sobreescribirán con --dart-define.
+  static const String _supabaseUrl = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: 'https://njjurkgagfypwjqnsqfc.supabase.co',
+  );
+  static const String _supabaseAnonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qanVya2dhZ2Z5cHdqcW5zcWZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyMjYwNDUsImV4cCI6MjA4NTgwMjA0NX0.NigaukWUa7zwjUSWMBNq0wlefZlQNupYAaxfF8ZKwcc',
+  );
 
-  /// Inicializa la conexión con Supabase
-  /// Las credenciales deben pasarse al compilar:
+  /// Inicializa la conexión con Supabase.
+  /// En producción pasar las credenciales con --dart-define:
   ///   flutter build apk --dart-define=SUPABASE_URL=xxx --dart-define=SUPABASE_ANON_KEY=yyy
   static Future<void> initialize() async {
-    if (_supabaseUrl.isEmpty || _supabaseAnonKey.isEmpty) {
-      throw Exception(
-        'SUPABASE_URL y SUPABASE_ANON_KEY deben estar definidos '
-        'como --dart-define en el comando de compilación.',
-      );
-    }
-
     await Supabase.initialize(
       url: _supabaseUrl,
       anonKey: _supabaseAnonKey,

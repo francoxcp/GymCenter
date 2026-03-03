@@ -13,6 +13,8 @@ class WorkoutProvider extends ChangeNotifier {
   String? _currentUserId;
   bool _isAdmin = false;
 
+  String _searchQuery = '';
+
   List<Workout> get workouts => _workouts;
   String get selectedFilter => _selectedFilter;
   bool get isLoading => _isLoading;
@@ -89,11 +91,21 @@ class WorkoutProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setSearchQuery(String query) {
+    _searchQuery = query.trim().toLowerCase();
+    notifyListeners();
+  }
+
   List<Workout> get filteredWorkouts {
-    if (_selectedFilter == 'Todos') {
-      return _workouts;
+    var list = _selectedFilter == 'Todos'
+        ? _workouts
+        : _workouts.where((w) => w.level == _selectedFilter).toList();
+    if (_searchQuery.isNotEmpty) {
+      list = list
+          .where((w) => w.name.toLowerCase().contains(_searchQuery))
+          .toList();
     }
-    return _workouts.where((w) => w.level == _selectedFilter).toList();
+    return list;
   }
 
   Future<void> addWorkout(Workout workout, {String? userId}) async {

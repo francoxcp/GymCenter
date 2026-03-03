@@ -183,6 +183,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Mientras Supabase verifica la sesión guardada, mostrar splash en lugar de
+    // hacer flash del formulario de login y luego redirigir.
+    final authProvider = Provider.of<AuthProvider>(context);
+    if (authProvider.isInitializing) {
+      return const Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'CHAMOS FITNESS CENTER',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                  letterSpacing: 2,
+                ),
+              ),
+              SizedBox(height: 28),
+              CircularProgressIndicator(
+                color: AppColors.primary,
+                strokeWidth: 2.5,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(

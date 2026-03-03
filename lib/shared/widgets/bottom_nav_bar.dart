@@ -90,6 +90,26 @@ class _BottomNavBarState extends State<BottomNavBar> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Barra indicadora superior animada
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOut,
+                height: 3,
+                width: isSelected ? 32 : 0,
+                margin: const EdgeInsets.only(bottom: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(2),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.5),
+                            blurRadius: 6,
+                          )
+                        ]
+                      : null,
+                ),
+              ),
               TweenAnimationBuilder<double>(
                 tween: Tween(begin: 1.0, end: isSelected ? 1.15 : 1.0),
                 duration: const Duration(milliseconds: 200),

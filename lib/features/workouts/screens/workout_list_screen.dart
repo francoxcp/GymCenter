@@ -22,6 +22,7 @@ class WorkoutListScreen extends StatefulWidget {
 
 class _WorkoutListScreenState extends State<WorkoutListScreen> {
   final _searchController = TextEditingController();
+  bool _searchHasText = false;
   Map<String, dynamic>? _nextSchedule;
 
   static String _dayName(int dayOfWeek) {
@@ -49,6 +50,11 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
   @override
   void initState() {
     super.initState();
+    // Escuchar cambios en el campo de búsqueda
+    _searchController.addListener(() {
+      final hasText = _searchController.text.isNotEmpty;
+      if (hasText != _searchHasText) setState(() => _searchHasText = hasText);
+    });
     // Cargar rutinas y sesiones al iniciar la pantalla
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -314,12 +320,30 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                 padding: const EdgeInsets.all(16),
                 child: TextField(
                   controller: _searchController,
+                  onChanged: (value) =>
+                      Provider.of<WorkoutProvider>(context, listen: false)
+                          .setSearchQuery(value),
                   decoration: InputDecoration(
                     hintText: 'Buscar rutinas por nombre...',
                     prefixIcon: const Icon(
                       Icons.search,
                       color: AppColors.textSecondary,
                     ),
+                    suffixIcon: _searchHasText
+                        ? IconButton(
+                            icon: const Icon(
+                              Icons.clear,
+                              color: AppColors.textSecondary,
+                              size: 20,
+                            ),
+                            onPressed: () {
+                              _searchController.clear();
+                              Provider.of<WorkoutProvider>(context,
+                                      listen: false)
+                                  .setSearchQuery('');
+                            },
+                          )
+                        : null,
                     filled: true,
                     fillColor: AppColors.surface,
                     border: OutlineInputBorder(

@@ -385,50 +385,28 @@ class _ProgressScreenState extends State<ProgressScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Progreso de Peso',
-                style: TextStyle(
+                weightData.isEmpty ? 'Actividad Reciente' : 'Progreso de Peso',
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
-              Icon(Icons.show_chart, color: AppColors.primary, size: 24),
+              Icon(
+                weightData.isEmpty ? Icons.bar_chart : Icons.show_chart,
+                color: AppColors.primary,
+                size: 24,
+              ),
             ],
           ),
           const SizedBox(height: 20),
           // Gráfico real con fl_chart
           if (weightData.isEmpty)
-            Container(
-              height: 200,
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.insert_chart_outlined,
-                      size: 60,
-                      color: AppColors.textSecondary.withOpacity(0.3),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Agrega medidas para ver tu progreso',
-                      style: TextStyle(
-                        color: AppColors.textSecondary.withOpacity(0.6),
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
+            _buildSessionsFrequencyChart(days)
           else
             SizedBox(
               height: 200,
@@ -535,6 +513,196 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSessionsFrequencyChart(int days) {
+    final sessionProvider = Provider.of<WorkoutSessionProvider>(context);
+    final now = DateTime.now();
+    final cutoff = days >= 10000
+        ? DateTime(2000)
+        : now.subtract(Duration(days: days));
+
+    final periodSessions = sessionProvider.sessions
+        .where((s) => s.date.isAfter(cutoff))
+        .toList();
+
+    // Decide grouping: day (week), week (month), month (year/all)
+    final groupByDay = days <= 7;
+    final groupByWeek = days > 7 && days <= 31;
+
+    // Build frequency buckets
+    List<MapEntry<String, int>> buckets;
+    if (groupByDay) {
+      // Last 7 days, one bucket per day
+      buckets = List.generate(7, (i) {
+        final d = DateTime(now.year, now.month, now.day)
+            .subtract(Duration(days: 6 - i));
+        final count = periodSessions.where((s) {
+          final sd = s.date.toLocal();
+          return sd.year == d.year && sd.month == d.month && sd.day == d.day;
+        }).length;
+        final label = ['L', 'M', 'X', 'J', 'V', 'S', 'D'][d.weekday - 1];
+        return MapEntry(label, count);
+      });
+    } else if (groupByWeek) {
+      // Last 4-5 weeks
+      const weekCount = 5;
+      buckets = List.generate(weekCount, (i) {
+        final weekStart = DateTime(now.year, now.month, now.day)
+            .subtract(Duration(days: (weekCount - 1 - i) * 7 + now.weekday - 1));
+        final weekEnd = weekStart.add(const Duration(days: 6));
+        final count = periodSessions.where((s) {
+          final sd = DateTime(s.date.toLocal().year, s.date.toLocal().month,
+              s.date.toLocal().day);
+          return !sd.isBefore(weekStart) && !sd.isAfter(weekEnd);
+        }).length;
+        return MapEntry('S${i + 1}', count);
+      });
+    } else {
+      // Last 12 months
+      buckets = List.generate(12, (i) {
+        final month = DateTime(now.year, now.month - 11 + i);
+        final count = periodSessions.where((s) {
+          final sd = s.date.toLocal();
+          return sd.year == month.year && sd.month == month.month;
+        }).length;
+        final labels = [
+          'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+          'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+        ];
+        return MapEntry(labels[(month.month - 1) % 12], count);
+      });
+    }
+
+    final maxY = buckets.isEmpty
+        ? 1.0
+        : buckets.map((e) => e.value).reduce((a, b) => a > b ? a : b).toDouble();
+    final hasAny = periodSessions.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.bar_chart, color: AppColors.primary.withOpacity(0.7),
+                size: 16),
+            const SizedBox(width: 6),
+            Text(
+              'Frecuencia de Entrenos',
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary.withOpacity(0.8),
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              hasAny
+                  ? '${periodSessions.length} sesión${periodSessions.length == 1 ? '' : 'es'}'
+                  : 'Sin datos',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.primary.withOpacity(0.8),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 160,
+          child: hasAny
+              ? BarChart(
+                  BarChartData(
+                    alignment: BarChartAlignment.spaceAround,
+                    maxY: (maxY + 1).toDouble(),
+                    barTouchData: BarTouchData(enabled: false),
+                    gridData: FlGridData(
+                      show: true,
+                      drawVerticalLine: false,
+                      horizontalInterval: 1,
+                      getDrawingHorizontalLine: (value) => FlLine(
+                        color: AppColors.textSecondary.withOpacity(0.08),
+                        strokeWidth: 1,
+                      ),
+                    ),
+                    borderData: FlBorderData(show: false),
+                    titlesData: FlTitlesData(
+                      topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false)),
+                      rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false)),
+                      leftTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false)),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 28,
+                          getTitlesWidget: (value, meta) {
+                            final idx = value.toInt();
+                            if (idx < 0 || idx >= buckets.length) {
+                              return const Text('');
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                buckets[idx].key,
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    barGroups: List.generate(buckets.length, (i) {
+                      final count = buckets[i].value;
+                      return BarChartGroupData(
+                        x: i,
+                        barRods: [
+                          BarChartRodData(
+                            toY: count.toDouble(),
+                            color: count > 0
+                                ? AppColors.primary
+                                : AppColors.primary.withOpacity(0.15),
+                            width: groupByDay ? 20 : 14,
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(4)),
+                            backDrawRodData: BackgroundBarChartRodData(
+                              show: true,
+                              toY: maxY + 1,
+                              color: AppColors.textSecondary.withOpacity(0.05),
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
+                  ),
+                )
+              : Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.fitness_center,
+                          size: 48,
+                          color: AppColors.textSecondary.withOpacity(0.25)),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Completa un entreno para ver estadísticas',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.textSecondary.withOpacity(0.5),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+        ),
+      ],
     );
   }
 

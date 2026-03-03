@@ -224,8 +224,43 @@ class ProfileScreen extends StatelessWidget {
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(12),
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.primary.withOpacity(0.2),
+                                AppColors.primary.withOpacity(0.05),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: AppColors.primary.withOpacity(0.4),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.fitness_center,
+                                color: AppColors.primary,
+                                size: 30,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                assignedWorkout != null
+                                    ? assignedWorkout.level
+                                        .substring(0, 3)
+                                        .toUpperCase()
+                                    : '---',
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(width: 16),

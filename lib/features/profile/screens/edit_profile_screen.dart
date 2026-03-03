@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../config/supabase_config.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/services/storage_service.dart';
@@ -20,11 +21,8 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _weightController = TextEditingController();
-  final _heightController = TextEditingController();
 
   String _selectedLevel = 'Principiante';
-  String _selectedGoal = 'Mantenerme en forma';
   bool _isLoading = false;
   bool _isUploadingPhoto = false;
 
@@ -41,17 +39,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (user != null) {
       _nameController.text = user.name;
       _selectedLevel = user.level;
-      // Valores por defecto - extender modelo User para incluir weight/height
-      _weightController.text = '70.0';
-      _heightController.text = '170.0';
     }
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _weightController.dispose();
-    _heightController.dispose();
     super.dispose();
   }
 
@@ -60,9 +53,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     setState(() => _isLoading = true);
 
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final userId = authProvider.currentUser?.id;
+
     try {
-      // Simulación de guardado - extender con lógica real de Supabase
-      await Future.delayed(const Duration(seconds: 1));
+      if (userId == null) throw Exception('Usuario no autenticado');
+
+      await SupabaseConfig.client.from('users').update({
+        'name': _nameController.text.trim(),
+        'level': _selectedLevel,
+      }).eq('id', userId);
+
+      await authProvider.refreshUser();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -213,72 +215,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 16),
 
               _buildLevelSelector(),
-              const SizedBox(height: 32),
-
-              // Medidas
-              const Text(
-                'Medidas',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
               const SizedBox(height: 16),
 
-              Row(
-                children: [
-                  Expanded(
-                    child: CustomTextField(
-                      controller: _weightController,
-                      hintText: 'Peso (kg)',
-                      prefixIcon: Icons.monitor_weight_outlined,
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Requerido';
-                        }
-                        if (double.tryParse(value) == null) {
-                          return 'Número inválido';
-                        }
-                        return null;
-                      },
+              // Tip: medidas corporales disponibles en sección aparte
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                      color: AppColors.primary.withOpacity(0.25), width: 1),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.straighten,
+                        color: AppColors.primary, size: 18),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Registra tu peso, altura y medidas en la sección "Medidas Corporales".',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: CustomTextField(
-                      controller: _heightController,
-                      hintText: 'Altura (cm)',
-                      prefixIcon: Icons.height,
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Requerido';
-                        }
-                        if (double.tryParse(value) == null) {
-                          return 'Número inválido';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
-
-              // Objetivo
-              const Text(
-                'Objetivo',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
-
-              _buildGoalSelector(),
               const SizedBox(height: 32),
 
               // Botón cambiar contraseña
@@ -367,41 +331,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Widget _buildGoalSelector() {
-    final goals = [
-      'Perder peso',
-      'Ganar músculo',
-      'Mantenerme en forma',
-      'Mejorar resistencia',
-    ];
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: goals.map((goal) {
-        final isSelected = _selectedGoal == goal;
-        return GestureDetector(
-          onTap: () => setState(() => _selectedGoal = goal),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: isSelected ? AppColors.primary : AppColors.cardBackground,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              goal,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? Colors.white : AppColors.textSecondary,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
   // Manejar cambio de foto de perfil
   Future<void> _handleProfilePhotoChange() async {
     final ImagePicker picker = ImagePicker();
@@ -480,7 +409,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
 
       if (photoUrl != null) {
-        // Actualizar en base de datos cuando se guarde el perfil completo
+        // Guardar URL en la tabla users
+        await SupabaseConfig.client
+            .from('users')
+            .update({'photo_url': photoUrl})
+            .eq('id', userId);
+
+        // Actualizar estado local
+        authProvider.updateUser(
+          authProvider.currentUser!.copyWith(photoUrl: photoUrl),
+        );
 
         scaffoldMessenger.showSnackBar(
           const SnackBar(

@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../workouts/providers/workout_provider.dart';
+import '../../workouts/providers/workout_session_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -37,11 +38,27 @@ class ProfileScreen extends StatelessWidget {
     final authProvider = Provider.of<AuthProvider>(context);
     final currentUser = authProvider.currentUser;
     final workoutProvider = Provider.of<WorkoutProvider>(context, listen: false);
+    final sessionProvider = Provider.of<WorkoutSessionProvider>(context);
     final assignedWorkout = currentUser?.assignedWorkoutId != null
         ? workoutProvider.getWorkoutById(currentUser!.assignedWorkoutId!)
         : null;
     final planName = assignedWorkout?.name ?? 'Sin rutina asignada';
     final planDesc = assignedWorkout?.description ?? 'Contacta a tu entrenador';
+
+    // Usar datos reales de sesiones (igual que HomeScreen)
+    final realSessions = sessionProvider.sessions;
+    final realActiveDays = realSessions.isNotEmpty
+        ? realSessions
+            .map((s) {
+              final d = s.date.toLocal();
+              return DateTime(d.year, d.month, d.day);
+            })
+            .toSet()
+            .length
+        : currentUser?.activeDays ?? 0;
+    final realCompletedCount = realSessions.isNotEmpty
+        ? realSessions.length
+        : currentUser?.completedWorkouts ?? 0;
 
     if (currentUser == null) {
       return Scaffold(
@@ -60,15 +77,6 @@ class ProfileScreen extends StatelessWidget {
           onPressed: () => context.go('/home'),
         ),
         title: const Text('Perfil'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: AppColors.primary),
-            onPressed: () async {
-              await authProvider.logout();
-              if (context.mounted) context.go('/login');
-            },
-          ),
-        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -110,17 +118,20 @@ class ProfileScreen extends StatelessWidget {
                   Positioned(
                     bottom: 0,
                     right: 0,
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.camera_alt,
-                        color: Colors.black,
-                        size: 20,
+                    child: GestureDetector(
+                      onTap: () => context.push('/edit-profile'),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          color: Colors.black,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),
@@ -177,7 +188,7 @@ class ProfileScreen extends StatelessWidget {
                     onTap: () => context.push('/progress'),
                     child: _StatItem(
                       icon: Icons.event_available,
-                      value: '${currentUser.activeDays}',
+                      value: '$realActiveDays',
                       label: 'DÍAS ACTIVOS',
                     ),
                   ),
@@ -190,7 +201,7 @@ class ProfileScreen extends StatelessWidget {
                     onTap: () => context.push('/workout-history'),
                     child: _StatItem(
                       icon: Icons.fitness_center,
-                      value: '${currentUser.completedWorkouts}',
+                      value: '$realCompletedCount',
                       label: 'RUTINAS',
                     ),
                   ),

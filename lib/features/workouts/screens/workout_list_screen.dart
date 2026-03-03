@@ -411,6 +411,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                   child: ComingSoonWorkoutCard(
                     workout: assignedWorkout,
                     availableLabel: _availableLabel,
+                    compact: true,
                   ),
                 ),
               ],

@@ -11,10 +11,14 @@ class ComingSoonWorkoutCard extends StatelessWidget {
   /// o "Disponible el miércoles".
   final String availableLabel;
 
+  /// Si [compact] es true, muestra un card pequeño tipo fila (para listas).
+  final bool compact;
+
   const ComingSoonWorkoutCard({
     super.key,
     required this.workout,
     this.availableLabel = 'Disponible mañana',
+    this.compact = false,
   });
 
   @override
@@ -30,104 +34,289 @@ class ComingSoonWorkoutCard extends StatelessWidget {
           child: child,
         ),
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.cardBackground,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: AppColors.primary.withOpacity(0.18),
-            width: 1,
-          ),
+      child: compact ? _buildCompact() : _buildFull(),
+    );
+  }
+
+  Widget _buildCompact() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.18),
+          width: 1,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        child: Row(
-          children: [
-            // Ícono izquierdo con checkmark
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.12),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.green.withOpacity(0.4),
-                  width: 1.5,
-                ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.12),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.green.withOpacity(0.4),
+                width: 1.5,
               ),
-              child: const Icon(Icons.check, size: 20, color: Colors.green),
             ),
-            const SizedBox(width: 12),
-            // Texto central
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    workout.name,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white.withOpacity(0.65),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+            child: const Icon(Icons.check, size: 20, color: Colors.green),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  workout.name,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white.withOpacity(0.65),
                   ),
-                  const SizedBox(height: 3),
-                  Row(
-                    children: [
-                      Icon(Icons.timer_outlined,
-                          size: 12,
-                          color: AppColors.textSecondary.withOpacity(0.7)),
-                      const SizedBox(width: 3),
-                      Text(
-                        '${workout.duration} min',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textSecondary.withOpacity(0.8),
-                        ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 3),
+                Row(
+                  children: [
+                    Icon(Icons.timer_outlined,
+                        size: 12,
+                        color: AppColors.textSecondary.withOpacity(0.7)),
+                    const SizedBox(width: 3),
+                    Text(
+                      '${workout.duration} min',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary.withOpacity(0.8),
                       ),
-                      const SizedBox(width: 10),
-                      Icon(Icons.calendar_today_outlined,
-                          size: 12,
-                          color: AppColors.primary.withOpacity(0.7)),
-                      const SizedBox(width: 3),
-                      Text(
+                    ),
+                    const SizedBox(width: 10),
+                    Icon(Icons.calendar_today_outlined,
+                        size: 12,
+                        color: AppColors.primary.withOpacity(0.7)),
+                    const SizedBox(width: 3),
+                    Flexible(
+                      child: Text(
                         availableLabel,
                         style: TextStyle(
                           fontSize: 11,
                           color: AppColors.primary.withOpacity(0.85),
                           fontWeight: FontWeight.w500,
                         ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+            ),
+            child: Text(
+              '¡Buen trabajo!',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary.withOpacity(0.85),
+                letterSpacing: 0.3,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFull() {
+    return Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: AppColors.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.primary.withOpacity(0.22),
+            width: 1.2,
+          ),
+        ),
+        padding: const EdgeInsets.all(22),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Fila superior: ícono de logro + badge "¡Buen trabajo!"
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.14),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.green.withOpacity(0.45),
+                      width: 1.8,
+                    ),
+                  ),
+                  child: const Icon(Icons.check_circle_outline,
+                      size: 28, color: Colors.green),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '¡Entrenamiento completado!',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.green.withOpacity(0.85),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Descansa y prepárate para mañana',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary.withOpacity(0.7),
+                        ),
                       ),
                     ],
                   ),
-                ],
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.primary.withOpacity(0.35),
+                    ),
+                  ),
+                  child: Text(
+                    '¡Buen trabajo!',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary.withOpacity(0.9),
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+            const Divider(color: Colors.white10, height: 1),
+            const SizedBox(height: 20),
+
+            // Nombre de la rutina
+            Text(
+              'Próxima Rutina',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.primary.withOpacity(0.8),
+                fontWeight: FontWeight.w600,
+                letterSpacing: 1.2,
               ),
             ),
-            // Badge derecho
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: AppColors.primary.withOpacity(0.3),
-                ),
+            const SizedBox(height: 6),
+            Text(
+              workout.name,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white.withOpacity(0.75),
+                letterSpacing: 0.2,
               ),
-              child: Text(
-                '¡Buen trabajo!',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary.withOpacity(0.85),
-                  letterSpacing: 0.3,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+
+            const SizedBox(height: 16),
+
+            // Info de duración, ejercicios y cuándo disponible
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _InfoChip(
+                  icon: Icons.timer_outlined,
+                  label: '${workout.duration} min',
                 ),
-              ),
+                _InfoChip(
+                  icon: Icons.fitness_center,
+                  label: '${workout.exercises.length} ejercicios',
+                ),
+                _InfoChip(
+                  icon: Icons.calendar_today_outlined,
+                  label: availableLabel,
+                  highlight: true,
+                ),
+              ],
             ),
           ],
         ),
+    );
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool highlight;
+
+  const _InfoChip({
+    required this.icon,
+    required this.label,
+    this.highlight = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = highlight
+        ? AppColors.primary.withOpacity(0.85)
+        : AppColors.textSecondary.withOpacity(0.75);
+    final bg = highlight
+        ? AppColors.primary.withOpacity(0.1)
+        : Colors.white.withOpacity(0.05);
+    final border = highlight
+        ? AppColors.primary.withOpacity(0.3)
+        : Colors.white.withOpacity(0.08);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: color,
+              fontWeight: highlight ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+        ],
       ),
     );
   }

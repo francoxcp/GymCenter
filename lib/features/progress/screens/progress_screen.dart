@@ -1,4 +1,24 @@
-﻿Future<void> _refreshData() async {
+﻿import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:fl_chart/fl_chart.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../workouts/providers/workout_session_provider.dart';
+import '../providers/body_measurement_provider.dart';
+import '../providers/achievements_provider.dart';
+
+class ProgressScreen extends StatefulWidget {
+  const ProgressScreen({super.key});
+
+  @override
+  State<ProgressScreen> createState() => _ProgressScreenState();
+}
+
+class _ProgressScreenState extends State<ProgressScreen> {
+  String _selectedPeriod = 'Semana';
+
+  Future<void> _refreshData() async {
     final measurementProvider =
         Provider.of<BodyMeasurementProvider>(context, listen: false);
     final sessionProvider =
@@ -864,45 +884,46 @@
     );
   }
 
-  class _StatItem extends StatelessWidget {
-    final IconData icon;
-    final String value;
-    final String label;
+}
 
-    const _StatItem({
-      required this.icon,
-      required this.value,
-      required this.label,
-    });
+class _StatItem extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String label;
 
-    @override
-    Widget build(BuildContext context) {
-      return Column(
-        children: [
-          Icon(
-            icon,
-            size: 28,
-            color: AppColors.primary,
+  const _StatItem({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(
+          icon,
+          size: 28,
+          color: AppColors.primary,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 11,
+            color: AppColors.textSecondary,
+            letterSpacing: 0.5,
           ),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 11,
-              color: AppColors.textSecondary,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
-      );
-    }
+        ),
+      ],
+    );
   }
 }

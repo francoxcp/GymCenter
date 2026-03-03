@@ -109,7 +109,7 @@ GoRouter createAppRouter(AuthProvider authProvider) {
                   context.go('/meal-plans');
                   break;
                 case 3:
-                  context.go('/progress');
+                  context.go('/profile');
                   break;
               }
             },

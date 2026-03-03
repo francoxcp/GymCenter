@@ -143,56 +143,43 @@ class ComingSoonWorkoutCard extends StatelessWidget {
         width: double.infinity,
         decoration: BoxDecoration(
           color: AppColors.cardBackground,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: AppColors.primary.withOpacity(0.22),
             width: 1.2,
           ),
         ),
-        padding: const EdgeInsets.all(22),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Fila superior: ícono de logro + badge "¡Buen trabajo!"
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 38,
+                  height: 38,
                   decoration: BoxDecoration(
                     color: Colors.green.withOpacity(0.14),
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: Colors.green.withOpacity(0.45),
-                      width: 1.8,
+                      width: 1.5,
                     ),
                   ),
                   child: const Icon(Icons.check_circle_outline,
-                      size: 28, color: Colors.green),
+                      size: 22, color: Colors.green),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '¡Entrenamiento completado!',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.green.withOpacity(0.85),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Descansa y prepárate para mañana',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary.withOpacity(0.7),
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    '¡Entrenamiento completado!',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.green.withOpacity(0.85),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 Container(
@@ -218,34 +205,34 @@ class ComingSoonWorkoutCard extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             const Divider(color: Colors.white10, height: 1),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
             // Nombre de la rutina
             Text(
-              'Próxima Rutina',
+              'PRÓXIMA RUTINA',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 10,
                 color: AppColors.primary.withOpacity(0.8),
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.2,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
               workout.name,
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 17,
                 fontWeight: FontWeight.bold,
                 color: Colors.white.withOpacity(0.75),
                 letterSpacing: 0.2,
               ),
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
 
             // Info de duración, ejercicios y cuándo disponible
             Wrap(

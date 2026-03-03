@@ -38,7 +38,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Mi Perfil'),
+        title: const Text('Mi Progreso'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -67,10 +67,6 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
             // Gráfico de peso (placeholder)
             _buildWeightChart(),
-            const SizedBox(height: 24),
-
-            // Botón para medidas corporales
-            _buildBodyMeasurementsButton(),
           ],
         ),
       ),
@@ -494,13 +490,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
   Widget _buildSessionsFrequencyChart(int days) {
     final sessionProvider = Provider.of<WorkoutSessionProvider>(context);
     final now = DateTime.now();
-    final cutoff = days >= 10000
-        ? DateTime(2000)
-        : now.subtract(Duration(days: days));
+    final cutoff =
+        days >= 10000 ? DateTime(2000) : now.subtract(Duration(days: days));
 
-    final periodSessions = sessionProvider.sessions
-        .where((s) => s.date.isAfter(cutoff))
-        .toList();
+    final periodSessions =
+        sessionProvider.sessions.where((s) => s.date.isAfter(cutoff)).toList();
 
     // Decide grouping: day (week), week (month), month (year/all)
     final groupByDay = days <= 7;
@@ -524,8 +518,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
       // Last 4-5 weeks
       const weekCount = 5;
       buckets = List.generate(weekCount, (i) {
-        final weekStart = DateTime(now.year, now.month, now.day)
-            .subtract(Duration(days: (weekCount - 1 - i) * 7 + now.weekday - 1));
+        final weekStart = DateTime(now.year, now.month, now.day).subtract(
+            Duration(days: (weekCount - 1 - i) * 7 + now.weekday - 1));
         final weekEnd = weekStart.add(const Duration(days: 6));
         final count = periodSessions.where((s) {
           final sd = DateTime(s.date.toLocal().year, s.date.toLocal().month,
@@ -543,8 +537,18 @@ class _ProgressScreenState extends State<ProgressScreen> {
           return sd.year == month.year && sd.month == month.month;
         }).length;
         final labels = [
-          'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-          'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+          'Ene',
+          'Feb',
+          'Mar',
+          'Abr',
+          'May',
+          'Jun',
+          'Jul',
+          'Ago',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dic'
         ];
         return MapEntry(labels[(month.month - 1) % 12], count);
       });
@@ -552,7 +556,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
     final maxY = buckets.isEmpty
         ? 1.0
-        : buckets.map((e) => e.value).reduce((a, b) => a > b ? a : b).toDouble();
+        : buckets
+            .map((e) => e.value)
+            .reduce((a, b) => a > b ? a : b)
+            .toDouble();
     final hasAny = periodSessions.isNotEmpty;
 
     return Column(
@@ -560,8 +567,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
       children: [
         Row(
           children: [
-            Icon(Icons.bar_chart, color: AppColors.primary.withOpacity(0.7),
-                size: 16),
+            Icon(Icons.bar_chart,
+                color: AppColors.primary.withOpacity(0.7), size: 16),
             const SizedBox(width: 6),
             Text(
               'Frecuencia de Entrenos',
@@ -883,7 +890,6 @@ class _ProgressScreenState extends State<ProgressScreen> {
       ),
     );
   }
-
 }
 
 class _StatItem extends StatelessWidget {

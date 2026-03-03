@@ -140,6 +140,7 @@ class WorkoutProvider extends ChangeNotifier {
                   'muscle_group': entry.value.muscleGroup,
                   'instructions': entry.value.description,
                   'order_index': entry.key,
+                  'video_url': entry.value.videoUrl,
                 })
             .toList();
 
@@ -196,6 +197,7 @@ class WorkoutProvider extends ChangeNotifier {
                   'muscle_group': entry.value.muscleGroup,
                   'instructions': entry.value.description,
                   'order_index': entry.key,
+                  'video_url': entry.value.videoUrl,
                 })
             .toList();
 

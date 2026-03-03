@@ -464,7 +464,13 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
         text: widget.exercise?.restSeconds.toString() ?? '60');
     _descController =
         TextEditingController(text: widget.exercise?.description ?? '');
-    _muscleGroup = widget.exercise?.muscleGroup ?? 'Pecho';
+    // Normalize muscle group to capitalized form to handle legacy lowercase DB values
+    final rawGroup = widget.exercise?.muscleGroup ?? 'Pecho';
+    const validGroups = ['Pecho', 'Espalda', 'Piernas', 'Hombros', 'Brazos', 'Abdomen', 'Cardio'];
+    _muscleGroup = validGroups.firstWhere(
+      (g) => g.toLowerCase() == rawGroup.toLowerCase(),
+      orElse: () => 'Pecho',
+    );
     _videoUrl = widget.exercise?.videoUrl;
   }
 

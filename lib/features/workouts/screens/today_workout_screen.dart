@@ -282,9 +282,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       HapticFeedback.heavyImpact();
       _celebrationController.forward(from: 0);
 
-      // Iniciar descanso si no es la última serie
+      // Iniciar descanso al completar cualquier serie,
+      // excepto cuando es la última serie del último ejercicio
       final totalSets = _completedSets[exerciseIndex].length;
-      if (setIndex < totalSets - 1) {
+      final isLastExercise =
+          exerciseIndex == _completedSets.length - 1;
+      final isLastSet = setIndex == totalSets - 1;
+
+      if (!(isLastExercise && isLastSet)) {
         final effectiveId = widget.extraWorkoutId ??
             context.read<AuthProvider>().currentUser?.assignedWorkoutId;
         final workout = effectiveId != null

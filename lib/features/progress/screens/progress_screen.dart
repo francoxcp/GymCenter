@@ -1,45 +1,4 @@
-﻿import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:fl_chart/fl_chart.dart';
-import '../../../core/theme/app_theme.dart';
-import '../providers/body_measurement_provider.dart';
-import '../providers/achievements_provider.dart';
-import '../../workouts/providers/workout_session_provider.dart';
-import '../../auth/providers/auth_provider.dart';
-
-class ProgressScreen extends StatefulWidget {
-  const ProgressScreen({super.key});
-
-  @override
-  State<ProgressScreen> createState() => _ProgressScreenState();
-}
-
-class _ProgressScreenState extends State<ProgressScreen> {
-  String _selectedPeriod = 'Mes';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  void _loadData() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final measurementProvider =
-          Provider.of<BodyMeasurementProvider>(context, listen: false);
-      final sessionProvider =
-          Provider.of<WorkoutSessionProvider>(context, listen: false);
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-
-      measurementProvider.loadMeasurements();
-      if (authProvider.currentUser?.id != null) {
-        sessionProvider.loadSessions(authProvider.currentUser!.id);
-      }
-    });
-  }
-
-  Future<void> _refreshData() async {
+﻿Future<void> _refreshData() async {
     final measurementProvider =
         Provider.of<BodyMeasurementProvider>(context, listen: false);
     final sessionProvider =
@@ -88,10 +47,6 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
             // Gráfico de peso (placeholder)
             _buildWeightChart(),
-            const SizedBox(height: 24),
-
-            // Logros recientes
-            _buildRecentAchievements(),
             const SizedBox(height: 24),
 
             // Botón para medidas corporales
@@ -907,5 +862,47 @@ class _ProgressScreenState extends State<ProgressScreen> {
         ),
       ),
     );
+  }
+
+  class _StatItem extends StatelessWidget {
+    final IconData icon;
+    final String value;
+    final String label;
+
+    const _StatItem({
+      required this.icon,
+      required this.value,
+      required this.label,
+    });
+
+    @override
+    Widget build(BuildContext context) {
+      return Column(
+        children: [
+          Icon(
+            icon,
+            size: 28,
+            color: AppColors.primary,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              color: AppColors.textSecondary,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      );
+    }
   }
 }

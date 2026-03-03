@@ -377,7 +377,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
   final _repsController = TextEditingController(text: '12');
   final _restController = TextEditingController(text: '60');
 
-  String _selectedMuscleGroup = 'pecho';
+  String _selectedMuscleGroup = 'Pecho';
   String _selectedEquipment = 'barra';
 
   // Video handling
@@ -620,12 +620,13 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                 value: _selectedMuscleGroup,
                 decoration: const InputDecoration(labelText: 'Grupo muscular'),
                 items: const [
-                  DropdownMenuItem(value: 'pecho', child: Text('Pecho')),
-                  DropdownMenuItem(value: 'espalda', child: Text('Espalda')),
-                  DropdownMenuItem(value: 'piernas', child: Text('Piernas')),
-                  DropdownMenuItem(value: 'hombros', child: Text('Hombros')),
-                  DropdownMenuItem(value: 'brazos', child: Text('Brazos')),
-                  DropdownMenuItem(value: 'abdomen', child: Text('Abdomen')),
+                  DropdownMenuItem(value: 'Pecho', child: Text('Pecho')),
+                  DropdownMenuItem(value: 'Espalda', child: Text('Espalda')),
+                  DropdownMenuItem(value: 'Piernas', child: Text('Piernas')),
+                  DropdownMenuItem(value: 'Hombros', child: Text('Hombros')),
+                  DropdownMenuItem(value: 'Brazos', child: Text('Brazos')),
+                  DropdownMenuItem(value: 'Abdomen', child: Text('Abdomen')),
+                  DropdownMenuItem(value: 'Cardio', child: Text('Cardio')),
                 ],
                 onChanged: (value) {
                   if (value != null) {

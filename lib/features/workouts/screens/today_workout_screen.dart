@@ -46,6 +46,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   int _summaryCaloriesBurned = 0;
   double _summaryTotalVolume = 0;
 
+  // Pesos ingresados por el usuario (uno por ejercicio, en kg)
+  List<double> _exerciseWeights = [];
+  List<TextEditingController> _weightControllers = [];
+
   @override
   void initState() {
     super.initState();
@@ -70,6 +74,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     _saveDebouncer?.cancel();
     _pageController.dispose();
     _celebrationController.dispose();
+    for (final c in _weightControllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -387,9 +394,12 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     );
 
     double totalVolume = 0;
-    for (var exercise in workout.exercises) {
-      final estimatedWeight = _estimateWeight(exercise.name);
-      totalVolume += (exercise.sets * exercise.reps * estimatedWeight);
+    for (int i = 0; i < workout.exercises.length; i++) {
+      final exercise = workout.exercises[i];
+      final weight = (_exerciseWeights.length > i && _exerciseWeights[i] > 0)
+          ? _exerciseWeights[i]
+          : _estimateWeight(exercise.name).toDouble();
+      totalVolume += (exercise.sets * exercise.reps * weight);
     }
 
     setState(() {
@@ -522,11 +532,16 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       );
     }
 
-    // Inicializar sets completados
+    // Inicializar sets completados y pesos por ejercicio
     if (_completedSets.isEmpty) {
       _completedSets = workout.exercises
           .map((e) => List.generate(e.sets, (_) => false))
           .toList();
+      _exerciseWeights = List.generate(workout.exercises.length, (_) => 0.0);
+      _weightControllers = List.generate(
+        workout.exercises.length,
+        (_) => TextEditingController(text: ''),
+      );
     }
 
     final currentExercise = workout.exercises[_currentExerciseIndex];
@@ -864,7 +879,13 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             ],
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
+
+          // Input de peso para este ejercicio
+          if (_weightControllers.length > exerciseIndex)
+            _buildWeightInput(exerciseIndex),
+
+          const SizedBox(height: 16),
 
           // Rest Timer Circular Mejorado
           if (_isResting && exerciseIndex == _currentExerciseIndex) ...[
@@ -1049,6 +1070,149 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
           const SizedBox(height: 16),
         ],
+      ),
+    );
+  }
+
+  Widget _buildWeightInput(int exerciseIndex) {
+    final controller = _weightControllers[exerciseIndex];
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.3),
+          width: 1.2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.monitor_weight_outlined,
+                  size: 18, color: AppColors.primary),
+              const SizedBox(width: 8),
+              const Text(
+                'PESO A UTILIZAR',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                  letterSpacing: 1.1,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                _exerciseWeights[exerciseIndex] > 0
+                    ? '${_exerciseWeights[exerciseIndex].toStringAsFixed(1)} kg'
+                    : 'Sin peso / Peso corporal',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary.withOpacity(0.7),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              // Botón −
+              _WeightButton(
+                icon: Icons.remove,
+                onTap: () {
+                  setState(() {
+                    final cur = _exerciseWeights[exerciseIndex];
+                    final next = (cur - 2.5).clamp(0.0, 500.0);
+                    _exerciseWeights[exerciseIndex] = next;
+                    controller.text = next > 0 ? next.toStringAsFixed(1) : '';
+                  });
+                },
+              ),
+              const SizedBox(width: 10),
+              // Campo de texto
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: '0',
+                    hintStyle: TextStyle(
+                      fontSize: 22,
+                      color: Colors.white.withOpacity(0.2),
+                    ),
+                    suffixText: 'kg',
+                    suffixStyle: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary.withOpacity(0.7),
+                    ),
+                    filled: true,
+                    fillColor: AppColors.background,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 12),
+                  ),
+                  onChanged: (val) {
+                    final parsed = double.tryParse(val) ?? 0.0;
+                    setState(() {
+                      _exerciseWeights[exerciseIndex] = parsed;
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(width: 10),
+              // Botón +
+              _WeightButton(
+                icon: Icons.add,
+                onTap: () {
+                  setState(() {
+                    final cur = _exerciseWeights[exerciseIndex];
+                    final next = (cur + 2.5).clamp(0.0, 500.0);
+                    _exerciseWeights[exerciseIndex] = next;
+                    controller.text = next.toStringAsFixed(1);
+                  });
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WeightButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _WeightButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: AppColors.primary.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: AppColors.primary.withOpacity(0.4),
+          ),
+        ),
+        child: Icon(icon, color: AppColors.primary, size: 22),
       ),
     );
   }

@@ -58,11 +58,13 @@ class ExerciseProgress {
   final List<bool>
       setsCompleted; // cada elemento representa si se completó una serie
   final String? notes;
+  final double weightKg; // peso usado por el usuario en este ejercicio (kg)
 
   ExerciseProgress({
     required this.exerciseId,
     required this.setsCompleted,
     this.notes,
+    this.weightKg = 0,
   });
 
   factory ExerciseProgress.fromJson(Map<String, dynamic> json) {
@@ -70,6 +72,7 @@ class ExerciseProgress {
       exerciseId: json['exerciseId'],
       setsCompleted: List<bool>.from(json['setsCompleted']),
       notes: json['notes'],
+      weightKg: (json['weightKg'] ?? 0).toDouble(),
     );
   }
 
@@ -78,6 +81,7 @@ class ExerciseProgress {
       'exerciseId': exerciseId,
       'setsCompleted': setsCompleted,
       'notes': notes,
+      'weightKg': weightKg,
     };
   }
 }

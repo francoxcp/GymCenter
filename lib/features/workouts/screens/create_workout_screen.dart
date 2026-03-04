@@ -376,9 +376,9 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
   final _setsController = TextEditingController(text: '3');
   final _repsController = TextEditingController(text: '12');
   final _restController = TextEditingController(text: '60');
+  final _weightController = TextEditingController(text: '');
 
-  String _selectedMuscleGroup = 'Pecho';
-  String _selectedEquipment = 'barra';
+  String _selectedMuscleGroup = 'General';
 
   // Video handling
   final ImagePicker _picker = ImagePicker();
@@ -392,6 +392,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
     _setsController.dispose();
     _repsController.dispose();
     _restController.dispose();
+    _weightController.dispose();
     super.dispose();
   }
 
@@ -490,7 +491,8 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
       restSeconds: int.parse(_restController.text),
       muscleGroup: _selectedMuscleGroup,
       difficulty: 'Intermedio',
-      description: 'Equipo: $_selectedEquipment',
+      description: null,
+      weight: double.tryParse(_weightController.text.trim()) ?? 0,
       videoUrl: _videoUrl ?? '',
       thumbnailUrl: '',
     );
@@ -613,45 +615,6 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                   if (value == null || value.isEmpty) return 'Requerido';
                   if (int.tryParse(value) == null) return 'Número inválido';
                   return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: _selectedMuscleGroup,
-                decoration: const InputDecoration(labelText: 'Grupo muscular'),
-                items: const [
-                  DropdownMenuItem(value: 'Pecho', child: Text('Pecho')),
-                  DropdownMenuItem(value: 'Espalda', child: Text('Espalda')),
-                  DropdownMenuItem(value: 'Piernas', child: Text('Piernas')),
-                  DropdownMenuItem(value: 'Hombros', child: Text('Hombros')),
-                  DropdownMenuItem(value: 'Brazos', child: Text('Brazos')),
-                  DropdownMenuItem(value: 'Abdomen', child: Text('Abdomen')),
-                  DropdownMenuItem(value: 'Cardio', child: Text('Cardio')),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _selectedMuscleGroup = value);
-                  }
-                },
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: _selectedEquipment,
-                decoration: const InputDecoration(labelText: 'Equipo'),
-                items: const [
-                  DropdownMenuItem(value: 'barra', child: Text('Barra')),
-                  DropdownMenuItem(
-                      value: 'mancuernas', child: Text('Mancuernas')),
-                  DropdownMenuItem(value: 'maquina', child: Text('Máquina')),
-                  DropdownMenuItem(
-                      value: 'peso_corporal', child: Text('Peso corporal')),
-                  DropdownMenuItem(value: 'bandas', child: Text('Bandas')),
-                  DropdownMenuItem(value: 'otro', child: Text('Otro')),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _selectedEquipment = value);
-                  }
                 },
               ),
 

@@ -10,8 +10,6 @@ import '../../../shared/widgets/primary_button.dart';
 import '../../../config/supabase_config.dart';
 import '../../../shared/services/storage_service.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../workouts/providers/workout_provider.dart';
-import '../../workouts/providers/workout_session_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -248,8 +246,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final currentUser = authProvider.currentUser;
-    final workoutProvider = Provider.of<WorkoutProvider>(context, listen: false);
-    final sessionProvider = Provider.of<WorkoutSessionProvider>(context);
 
     if (currentUser == null) {
       return Scaffold(

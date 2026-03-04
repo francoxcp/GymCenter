@@ -9,6 +9,7 @@ class Exercise {
   final String? thumbnailUrl;
   final String muscleGroup; // grupo muscular
   final String difficulty;
+  final double weight; // peso sugerido en kg (0 = sin peso / peso corporal)
 
   Exercise({
     required this.id,
@@ -21,6 +22,7 @@ class Exercise {
     this.thumbnailUrl,
     required this.muscleGroup,
     this.difficulty = 'Intermedio',
+    this.weight = 0,
   });
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
@@ -35,6 +37,7 @@ class Exercise {
       thumbnailUrl: json['thumbnailUrl'],
       muscleGroup: json['muscle_group'] ?? json['muscleGroup'] ?? 'General',
       difficulty: json['difficulty'] ?? 'Intermedio',
+      weight: (json['weight'] ?? 0).toDouble(),
     );
   }
 
@@ -50,6 +53,7 @@ class Exercise {
       'thumbnailUrl': thumbnailUrl,
       'muscleGroup': muscleGroup,
       'difficulty': difficulty,
+      'weight': weight,
     };
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/dark_theme.dart';
@@ -78,11 +79,20 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => WorkoutSessionProvider()),
         ChangeNotifierProvider(create: (_) => WorkoutProgressProvider()),
       ],
-      child: MaterialApp.router(
-        title: 'Chamos Fitness Center',
-        debugShowCheckedModeBanner: false,
-        theme: darkTheme,
-        routerConfig: _router,
+      child: Consumer<PreferencesProvider>(
+        builder: (context, prefsProvider, _) => MaterialApp.router(
+          title: 'Chamos Fitness Center',
+          debugShowCheckedModeBanner: false,
+          theme: darkTheme,
+          locale: prefsProvider.appLocale,
+          supportedLocales: const [Locale('es'), Locale('en')],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          routerConfig: _router,
+        ),
       ),
     );
   }

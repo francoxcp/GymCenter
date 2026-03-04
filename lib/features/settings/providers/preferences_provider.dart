@@ -103,6 +103,12 @@ class PreferencesProvider with ChangeNotifier {
   String? get error => _error;
   bool get hasCompletedOnboarding => _preferences?.onboardingCompleted ?? false;
 
+  /// Locale actual derivada del idioma guardado en preferencias.
+  Locale get appLocale {
+    final lang = _preferences?.language ?? 'es';
+    return Locale(lang);
+  }
+
   /// Cargar preferencias del usuario actual
   Future<void> loadPreferences() async {
     _isLoading = true;

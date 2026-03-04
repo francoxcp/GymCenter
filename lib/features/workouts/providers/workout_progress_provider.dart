@@ -40,6 +40,34 @@ class WorkoutProgressProvider with ChangeNotifier {
         if (_currentProgress!.isExpired) {
           await deleteProgress();
           _currentProgress = null;
+        } else {
+          // Cross-check con workout_sessions: si el usuario ya completó esta
+          // rutina HOY el registro de progress es un residuo (la app se cerró
+          // antes de que el DELETE en BD pudiera ejecutarse). Se limpia aquí.
+          final now = DateTime.now();
+          final startOfDay =
+              DateTime(now.year, now.month, now.day).toIso8601String();
+          final endOfDay =
+              DateTime(now.year, now.month, now.day, 23, 59, 59)
+                  .toIso8601String();
+
+          final completedSession = await _supabase
+              .from('workout_sessions')
+              .select('id')
+              .eq('user_id', userId)
+              .eq('workout_id', _currentProgress!.workoutId)
+              .gte('completed_at', startOfDay)
+              .lte('completed_at', endOfDay)
+              .maybeSingle();
+
+          if (completedSession != null) {
+            // Rutina ya completada hoy → progreso residual, limpiar
+            debugPrint(
+                '🧹 Progreso residual detectado en loadProgress — eliminando');
+            _completedWorkoutIdToday = _currentProgress!.workoutId;
+            await deleteProgress();
+            _currentProgress = null;
+          }
         }
       } else {
         _currentProgress = null;

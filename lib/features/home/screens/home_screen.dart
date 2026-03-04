@@ -216,8 +216,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     final progress = progressProvider.currentProgress;
                     // No mostrar si no hay progreso, si es admin,
                     // o si ese workout ya fue completado hoy (evita race condition
-                    // entre el delete en BD y la recarga de loadProgress)
+                    // entre el delete en BD y la recarga de loadProgress),
+                    // ni mientras loadProgress está cargando (evita flash residual)
                     if (!isAdmin &&
+                        !progressProvider.isLoading &&
                         progressProvider.hasProgress &&
                         progress != null &&
                         progressProvider.completedWorkoutIdToday !=

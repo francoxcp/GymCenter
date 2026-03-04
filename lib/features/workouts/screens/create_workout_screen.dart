@@ -617,6 +617,25 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                   return null;
                 },
               ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _weightController,
+                decoration: const InputDecoration(
+                  labelText: 'Peso (kg)',
+                  hintText: 'Ej: 20  —  dejar vacío si es peso corporal',
+                  suffixText: 'kg',
+                ),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                validator: (value) {
+                  if (value != null && value.isNotEmpty) {
+                    if (double.tryParse(value) == null) {
+                      return 'Número inválido';
+                    }
+                  }
+                  return null;
+                },
+              ),
 
               // Video upload section - Solo para admins
               if (widget.isAdmin) ...[

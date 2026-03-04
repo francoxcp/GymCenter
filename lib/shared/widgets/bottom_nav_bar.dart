@@ -1,6 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/l10n/app_l10n.dart';
+import '../../features/settings/providers/preferences_provider.dart';
 
 class BottomNavBar extends StatefulWidget {
   final int currentIndex;
@@ -19,6 +22,9 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   @override
   Widget build(BuildContext context) {
+    // Escucha cambios de idioma para reconstruir las etiquetas
+    Provider.of<PreferencesProvider>(context);
+    final l10n = AppL10n.of(context);
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -42,25 +48,25 @@ class _BottomNavBarState extends State<BottomNavBar> {
               _buildNavItem(
                 icon: Icons.grid_view_outlined,
                 activeIcon: Icons.grid_view,
-                label: 'Panel',
+                label: l10n.navPanel,
                 index: 0,
               ),
               _buildNavItem(
                 icon: Icons.fitness_center_outlined,
                 activeIcon: Icons.fitness_center,
-                label: 'Rutinas',
+                label: l10n.navWorkouts,
                 index: 1,
               ),
               _buildNavItem(
                 icon: Icons.restaurant_menu_outlined,
                 activeIcon: Icons.restaurant_menu,
-                label: 'Planes',
+                label: l10n.navPlans,
                 index: 2,
               ),
               _buildNavItem(
                 icon: Icons.person_outline,
                 activeIcon: Icons.person,
-                label: 'Mi Perfil',
+                label: l10n.navProfile,
                 index: 3,
               ),
             ],

@@ -7,7 +7,7 @@ class AppColors {
   static const Color cardBackground = Color(0xFF1E1E1E);
 
   // Primary color
-  static const Color primary = Color(0xFFB4FE98);
+  static const Color primary = Color(0xFFFFEB00);
 
   // Text colors
   static const Color textPrimary = Colors.white;
@@ -26,10 +26,22 @@ class AppColors {
 
 final darkTheme = ThemeData(
   brightness: Brightness.dark,
+  useMaterial3: true,
   scaffoldBackgroundColor: AppColors.background,
   colorScheme: const ColorScheme.dark(
-    primary: AppColors.primary,
+    primary: Color(0xFFFFEB00),
+    secondary: Color(0xFFFFEB00),
+    tertiary: Color(0xFFFFEB00),
+    tertiaryContainer: AppColors.surface,
+    secondaryContainer: AppColors.surface,
     surface: AppColors.surface,
+    error: AppColors.error,
+    onPrimary: Colors.black,
+    onSecondary: Colors.black,
+    onTertiary: Colors.black,
+    onSurface: AppColors.textPrimary,
+    outline: Color(0x40FFFFFF),
+    outlineVariant: Color(0x28FFFFFF),
   ),
   appBarTheme: const AppBarTheme(
     backgroundColor: AppColors.background,
@@ -55,11 +67,33 @@ final darkTheme = ThemeData(
   ),
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
-    fillColor: AppColors.surface,
+    fillColor: const Color(0xFF252525),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide.none,
+      borderSide: BorderSide(color: Colors.white.withOpacity(0.25), width: 1.5),
     ),
-    hintStyle: const TextStyle(color: AppColors.textSecondary),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Colors.white.withOpacity(0.25), width: 1.5),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.primary, width: 2),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+    ),
+    disabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+    ),
+    hintStyle: TextStyle(color: Colors.white.withOpacity(0.25)),
+    labelStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+    floatingLabelStyle: const TextStyle(
+      color: AppColors.primary,
+      fontWeight: FontWeight.w600,
+    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
   ),
 );

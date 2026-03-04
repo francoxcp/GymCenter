@@ -2,6 +2,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/preferences_provider.dart';
 import '../../../shared/services/security_service.dart';
@@ -29,6 +30,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
     final preferencesProvider = Provider.of<PreferencesProvider>(context);
     final prefs = preferencesProvider.preferences;
+    final l10n = AppL10n.of(context);
 
     // Si no hay preferencias todavía, mostrar loading
     if (prefs == null) {
@@ -39,7 +41,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.pop(),
           ),
-          title: const Text('Configuración'),
+          title: Text(l10n.settings),
         ),
         body: ListView.builder(
           padding: const EdgeInsets.all(20),
@@ -59,16 +61,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Configuración'),
+        title: Text(l10n.settings),
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           // Notificaciones
-          _buildSectionTitle('Notificaciones'),
+          _buildSectionTitle(l10n.sectionNotifications),
           _buildSwitchTile(
-            title: 'Notificaciones',
-            subtitle: 'Activar/desactivar todas las notificaciones',
+            title: l10n.notifications,
+            subtitle: l10n.notificationsSubtitle,
             icon: Icons.notifications_outlined,
             value: prefs.notificationsEnabled,
             onChanged: (value) async {
@@ -77,8 +79,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(value
-                        ? 'Notificaciones activadas'
-                        : 'Notificaciones desactivadas'),
+                        ? l10n.notificationsEnabled
+                        : l10n.notificationsDisabled),
                   ),
                 );
               }
@@ -86,8 +88,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           if (prefs.notificationsEnabled) ...[
             _buildSwitchTile(
-              title: 'Recordatorios de entrenamiento',
-              subtitle: 'Recibe recordatorios diarios a las 6:00 PM',
+              title: l10n.workoutReminders,
+              subtitle: l10n.workoutRemindersSubtitle,
               icon: Icons.alarm,
               value: prefs.workoutReminders,
               onChanged: (value) async {
@@ -96,16 +98,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(value
-                          ? 'Recordatorios activados'
-                          : 'Recordatorios desactivados'),
+                          ? (l10n.isEn ? 'Reminders enabled' : 'Recordatorios activados')
+                          : (l10n.isEn ? 'Reminders disabled' : 'Recordatorios desactivados')),
                     ),
                   );
                 }
               },
             ),
             _buildSwitchTile(
-              title: 'Alertas de logros',
-              subtitle: 'Notificaciones al desbloquear logros',
+              title: l10n.achievementAlerts,
+              subtitle: l10n.achievementAlertsSubtitle,
               icon: Icons.emoji_events,
               value: prefs.achievementAlerts,
               onChanged: (value) async {
@@ -113,8 +115,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Reportes de progreso',
-              subtitle: 'Resumen semanal de tu progreso',
+              title: l10n.progressReports,
+              subtitle: l10n.progressReportsSubtitle,
               icon: Icons.bar_chart,
               value: prefs.progressReports,
               onChanged: (value) async {
@@ -123,8 +125,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(value
-                          ? 'Reportes semanales activados'
-                          : 'Reportes semanales desactivados'),
+                          ? (l10n.isEn ? 'Weekly reports enabled' : 'Reportes semanales activados')
+                          : (l10n.isEn ? 'Weekly reports disabled' : 'Reportes semanales desactivados')),
                     ),
                   );
                 }
@@ -134,81 +136,81 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // Unidades
-          _buildSectionTitle('Unidades'),
+          _buildSectionTitle(l10n.isEn ? 'Units' : 'Unidades'),
           _buildOptionTile(
-            title: 'Sistema de medidas',
-            subtitle: prefs.units == 'metric' ? 'Métrico' : 'Imperial',
+            title: l10n.measurementSystem,
+            subtitle: prefs.units == 'metric' ? l10n.metric : l10n.imperial,
             icon: Icons.straighten,
-            onTap: () => _showUnitSelector(preferencesProvider, prefs.units),
+            onTap: () => _showUnitSelector(preferencesProvider, prefs.units, l10n),
           ),
           const SizedBox(height: 24),
 
           // Idioma
-          _buildSectionTitle('Idioma'),
+          _buildSectionTitle(l10n.sectionLanguage),
           _buildOptionTile(
-            title: 'Idioma de la app',
+            title: l10n.appLanguage,
             subtitle: prefs.language == 'es' ? 'Español' : 'English',
             icon: Icons.language,
             onTap: () =>
-                _showLanguageSelector(preferencesProvider, prefs.language),
+                _showLanguageSelector(preferencesProvider, prefs.language, l10n),
           ),
           const SizedBox(height: 24),
 
           // Cuenta
-          _buildSectionTitle('Cuenta'),
+          _buildSectionTitle(l10n.sectionAccount),
           _buildOptionTile(
-            title: 'Cambiar contraseña',
-            subtitle: 'Actualizar tu contraseña',
+            title: l10n.changePassword,
+            subtitle: l10n.changePasswordSubtitle,
             icon: Icons.lock_outline,
-            onTap: () => _showChangePasswordDialog(),
+            onTap: () => _showChangePasswordDialog(l10n),
           ),
           _buildOptionTile(
-            title: 'Privacidad',
-            subtitle: 'Configuración de privacidad',
+            title: l10n.privacy,
+            subtitle: l10n.privacySubtitle,
             icon: Icons.privacy_tip_outlined,
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Funcionalidad próximamente')),
+                SnackBar(content: Text(l10n.comingSoon)),
               );
             },
           ),
           const SizedBox(height: 24),
 
           // Información
-          _buildSectionTitle('Información'),
+          _buildSectionTitle(l10n.sectionInformation),
           _buildOptionTile(
-            title: 'Términos y condiciones',
-            subtitle: 'Leer los términos de uso',
+            title: l10n.termsAndConditions,
+            subtitle: l10n.termsSubtitle,
             icon: Icons.description_outlined,
             onTap: () => context.push('/terms-and-conditions'),
           ),
           _buildOptionTile(
-            title: 'Política de privacidad',
-            subtitle: 'Nuestra política de datos',
+            title: l10n.privacyPolicy,
+            subtitle: l10n.privacyPolicySubtitle,
             icon: Icons.policy_outlined,
             onTap: () => context.push('/privacy-policy'),
           ),
           _buildOptionTile(
-            title: 'Acerca de',
-            subtitle: 'Versión 1.0.0',
+            title: l10n.about,
+            subtitle: l10n.version,
             icon: Icons.info_outline,
-            onTap: () => _showAboutDialog(),
+            onTap: () => _showAboutDialog(l10n),
           ),
           const SizedBox(height: 24),
 
           // Cerrar sesión
           _buildDangerButton(
-            'Cerrar Sesión',
+            l10n.logout,
             Icons.logout,
-            () => _confirmLogout(authProvider),
+            () => _confirmLogout(authProvider, l10n),
           ),
           const SizedBox(height: 12),
 
           // Eliminar cuenta
           _buildDangerButton(
-            'Eliminar Cuenta',
+            l10n.deleteAccount,
             Icons.delete_forever,
-            () => _confirmDeleteAccount(),
+            () => _confirmDeleteAccount(l10n),
             isDestructive: true,
           ),
           const SizedBox(height: 40),
@@ -371,7 +373,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showUnitSelector(PreferencesProvider provider, String currentUnit) {
+  void _showUnitSelector(PreferencesProvider provider, String currentUnit, AppL10n l10n) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.cardBackground,
@@ -383,9 +385,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Sistema de Medidas',
-              style: TextStyle(
+            Text(
+              l10n.selectMeasurementSystem,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -393,9 +395,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 20),
             _buildUnitOption(
-                'metric', 'Métrico', 'kg, cm', currentUnit, provider),
+                'metric', l10n.metric, 'kg, cm', currentUnit, provider),
             _buildUnitOption(
-                'imperial', 'Imperial', 'lb, in', currentUnit, provider),
+                'imperial', l10n.imperial, 'lb, in', currentUnit, provider),
           ],
         ),
       ),
@@ -432,7 +434,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showLanguageSelector(
-      PreferencesProvider provider, String currentLanguage) {
+      PreferencesProvider provider, String currentLanguage, AppL10n l10n) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.cardBackground,
@@ -444,9 +446,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Idioma',
-              style: TextStyle(
+            Text(
+              l10n.selectLanguage,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -489,7 +491,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showAboutDialog() {
+  void _showAboutDialog(AppL10n l10n) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -501,16 +503,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Text('Chamos Fitness', style: TextStyle(color: Colors.white)),
           ],
         ),
-        content: const Text(
-          'Versión 1.0.0\n\nTu compañero perfecto para alcanzar tus metas de fitness.\n\n© 2026 Chamos Fitness Center',
-          style: TextStyle(color: AppColors.textSecondary),
+        content: Text(
+          l10n.aboutContent,
+          style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cerrar',
-              style: TextStyle(color: AppColors.primary),
+            child: Text(
+              l10n.close,
+              style: const TextStyle(color: AppColors.primary),
             ),
           ),
         ],
@@ -518,23 +520,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _confirmLogout(AuthProvider authProvider) {
+  void _confirmLogout(AuthProvider authProvider, AppL10n l10n) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: const Text(
-          '¿Cerrar sesión?',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          l10n.confirmLogoutTitle,
+          style: const TextStyle(color: Colors.white),
         ),
-        content: const Text(
-          '¿Estás seguro de que deseas cerrar sesión?',
-          style: TextStyle(color: AppColors.textSecondary),
+        content: Text(
+          l10n.confirmLogoutBody,
+          style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -542,9 +544,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pop(context);
               context.go('/login');
             },
-            child: const Text(
-              'Cerrar sesión',
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              l10n.logout,
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -552,32 +554,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _confirmDeleteAccount() {
+  void _confirmDeleteAccount(AppL10n l10n) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: const Text(
-          '⚠️ ¿Eliminar cuenta?',
-          style: TextStyle(color: Colors.red),
+        title: Text(
+          l10n.confirmDeleteTitle,
+          style: const TextStyle(color: Colors.red),
         ),
-        content: const Text(
-          'Esta acción es permanente y no se puede deshacer. Todos tus datos serán eliminados.\n\n¿Estás completamente seguro?',
-          style: TextStyle(color: AppColors.textSecondary),
+        content: Text(
+          l10n.confirmDeleteBody,
+          style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _showPasswordConfirmDialog();
+              _showPasswordConfirmDialog(l10n);
             },
-            child: const Text(
-              'Eliminar',
-              style: TextStyle(
+            child: Text(
+              l10n.delete,
+              style: const TextStyle(
                 color: Colors.red,
                 fontWeight: FontWeight.bold,
               ),
@@ -589,7 +591,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   // Diálogo para cambiar contraseña
-  void _showChangePasswordDialog() {
+  void _showChangePasswordDialog(AppL10n l10n) {
     final currentPasswordController = TextEditingController();
     final newPasswordController = TextEditingController();
     final confirmPasswordController = TextEditingController();
@@ -603,7 +605,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
           backgroundColor: AppColors.cardBackground,
-          title: const Text('Cambiar Contraseña'),
+          title: Text(l10n.changePasswordTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -613,7 +615,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   obscureText: obscureCurrent,
                   style: const TextStyle(color: AppColors.textPrimary),
                   decoration: InputDecoration(
-                    labelText: 'Contraseña actual',
+                    labelText: l10n.currentPassword,
                     labelStyle: const TextStyle(color: AppColors.textSecondary),
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
@@ -634,7 +636,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   obscureText: obscureNew,
                   style: const TextStyle(color: AppColors.textPrimary),
                   decoration: InputDecoration(
-                    labelText: 'Nueva contraseña',
+                    labelText: l10n.newPassword,
                     labelStyle: const TextStyle(color: AppColors.textSecondary),
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
@@ -653,7 +655,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   obscureText: obscureConfirm,
                   style: const TextStyle(color: AppColors.textPrimary),
                   decoration: InputDecoration(
-                    labelText: 'Confirmar contraseña',
+                    labelText: l10n.confirmPassword,
                     labelStyle: const TextStyle(color: AppColors.textSecondary),
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
@@ -669,9 +671,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número',
-                  style: TextStyle(
+                Text(
+                  l10n.passwordHint,
+                  style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
                   ),
@@ -682,7 +684,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           actions: [
             TextButton(
               onPressed: isLoading ? null : () => Navigator.pop(context),
-              child: const Text('Cancelar'),
+              child: Text(l10n.cancel),
             ),
             ElevatedButton(
               onPressed: isLoading
@@ -691,8 +693,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       if (newPasswordController.text !=
                           confirmPasswordController.text) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Las contraseñas no coinciden')),
+                          SnackBar(
+                              content: Text(l10n.passwordsDontMatch)),
                         );
                         return;
                       }
@@ -724,7 +726,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Cambiar'),
+                  : Text(l10n.change),
             ),
           ],
         ),
@@ -733,7 +735,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   // Diálogo para confirmar eliminación con contraseña
-  void _showPasswordConfirmDialog() {
+  void _showPasswordConfirmDialog(AppL10n l10n) {
     final passwordController = TextEditingController();
     bool obscurePassword = true;
     bool isLoading = false;
@@ -743,16 +745,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
           backgroundColor: AppColors.cardBackground,
-          title: const Text(
-            '🔐 Confirmar Eliminación',
-            style: TextStyle(color: Colors.red),
+          title: Text(
+            l10n.confirmDeletePasswordTitle,
+            style: const TextStyle(color: Colors.red),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Ingresa tu contraseña para confirmar la eliminación de tu cuenta.',
-                style: TextStyle(color: AppColors.textSecondary),
+              Text(
+                l10n.confirmDeletePasswordBody,
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -760,7 +762,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 obscureText: obscurePassword,
                 style: const TextStyle(color: AppColors.textPrimary),
                 decoration: InputDecoration(
-                  labelText: 'Contraseña',
+                  labelText: l10n.password,
                   labelStyle: const TextStyle(color: AppColors.textSecondary),
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
@@ -780,7 +782,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           actions: [
             TextButton(
               onPressed: isLoading ? null : () => Navigator.pop(context),
-              child: const Text('Cancelar'),
+              child: Text(l10n.cancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -791,8 +793,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   : () async {
                       if (passwordController.text.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Ingresa tu contraseña')),
+                          SnackBar(
+                              content: Text(l10n.enterPassword)),
                         );
                         return;
                       }
@@ -837,7 +839,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('Eliminar Cuenta'),
+                  : Text(l10n.deleteAccount),
             ),
           ],
         ),

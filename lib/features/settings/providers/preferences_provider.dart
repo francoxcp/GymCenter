@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../shared/services/notification_service.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class UserPreferences {
   final String userId;
@@ -97,6 +98,7 @@ class PreferencesProvider with ChangeNotifier {
   UserPreferences? _preferences;
   bool _isLoading = false;
   String? _error;
+  String? _lastUserId; // para detectar cambios de usuario
 
   UserPreferences? get preferences => _preferences;
   bool get isLoading => _isLoading;
@@ -107,6 +109,20 @@ class PreferencesProvider with ChangeNotifier {
   Locale get appLocale {
     final lang = _preferences?.language ?? 'es';
     return Locale(lang);
+  }
+
+  /// Llamado por el ProxyProvider en main.dart cuando AuthProvider cambia.
+  /// Carga las preferencias automáticamente al iniciar sesión.
+  void onAuthChanged(AuthProvider auth) {
+    final userId = auth.currentUser?.id;
+    if (userId != null && userId != _lastUserId) {
+      _lastUserId = userId;
+      loadPreferences();
+    } else if (userId == null) {
+      _lastUserId = null;
+      _preferences = null;
+      notifyListeners();
+    }
   }
 
   /// Cargar preferencias del usuario actual
@@ -141,7 +157,10 @@ class PreferencesProvider with ChangeNotifier {
 
   /// Actualizar preferencias
   Future<bool> updatePreferences(UserPreferences newPreferences) async {
-    _isLoading = true;
+    // Actualización optimista: aplica el cambio en memoria YA para que la UI
+    // se actualice de forma instantánea sin esperar la red.
+    final previous = _preferences;
+    _preferences = newPreferences;
     _error = null;
     notifyListeners();
 
@@ -151,14 +170,12 @@ class PreferencesProvider with ChangeNotifier {
           .update(newPreferences.toJson())
           .eq('user_id', newPreferences.userId);
 
-      _preferences = newPreferences;
-      _isLoading = false;
-      notifyListeners();
       return true;
     } catch (e) {
+      // Si falla la red, revertir al estado anterior
+      _preferences = previous;
       _error = 'Error al actualizar preferencias: $e';
       debugPrint(_error);
-      _isLoading = false;
       notifyListeners();
       return false;
     }

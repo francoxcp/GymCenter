@@ -74,7 +74,13 @@ class _MyAppState extends State<MyApp> {
           },
         ),
         ChangeNotifierProvider(create: (_) => BodyMeasurementProvider()),
-        ChangeNotifierProvider(create: (_) => PreferencesProvider()),
+        ChangeNotifierProxyProvider<AuthProvider, PreferencesProvider>(
+          create: (_) => PreferencesProvider(),
+          update: (_, auth, prefs) {
+            prefs!.onAuthChanged(auth);
+            return prefs;
+          },
+        ),
         ChangeNotifierProvider(create: (_) => AchievementsProvider()),
         ChangeNotifierProvider(create: (_) => WorkoutSessionProvider()),
         ChangeNotifierProvider(create: (_) => WorkoutProgressProvider()),

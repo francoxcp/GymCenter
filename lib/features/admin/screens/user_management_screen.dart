@@ -40,7 +40,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               ),
             ),
             Text(
-              'Gestión de Usuarios',
+              'Gestión de usuarios',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -129,7 +129,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     Expanded(
                       child: _StatCard(
                         icon: Icons.people,
-                        label: 'Total Usuarios',
+                        label: 'Total usuarios',
                         value: userProvider.users.length.toString(),
                       ),
                     ),
@@ -270,7 +270,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               const SizedBox(height: 20),
               ListTile(
                 leading: const Icon(Icons.edit, color: Colors.blue),
-                title: const Text('Editar Usuario'),
+                title: const Text('Editar usuario'),
                 onTap: () {
                   Navigator.pop(context);
                   _showEditUserDialog(user);
@@ -281,7 +281,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   leading: const Icon(Icons.admin_panel_settings,
                       color: Colors.orange),
                   title: Text(
-                      user.role == 'admin' ? 'Quitar Admin' : 'Hacer Admin'),
+                      user.role == 'admin' ? 'Quitar admin' : 'Hacer admin'),
                   onTap: () {
                     Navigator.pop(context);
                     _toggleAdminRole(user);
@@ -290,7 +290,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               if (user.id != currentUserId)
                 ListTile(
                   leading: const Icon(Icons.delete, color: Colors.red),
-                  title: const Text('Eliminar Usuario',
+                  title: const Text('Eliminar usuario',
                       style: TextStyle(color: Colors.red)),
                   onTap: () {
                     Navigator.pop(context);
@@ -312,7 +312,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: const Text('Editar Usuario'),
+        title: const Text('Editar usuario'),
         content: TextField(
           controller: nameController,
           decoration: const InputDecoration(
@@ -387,7 +387,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: const Text('Confirmar Eliminación'),
+        title: const Text('Confirmar eliminación'),
         content: Text(
           '¿Estás seguro de eliminar a ${user.name}? Esta acción no se puede deshacer.',
         ),

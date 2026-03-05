@@ -200,6 +200,55 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
+  /// Asigna una rutina a un día específico (upsert instantáneo)
+  Future<void> assignWorkoutToDay(
+      String userId, int dayOfWeek, String workoutId) async {
+    try {
+      await SupabaseConfig.client.from('user_workout_schedule').upsert(
+        {
+          'user_id': userId,
+          'day_of_week': dayOfWeek,
+          'workout_id': workoutId,
+        },
+        onConflict: 'user_id,day_of_week',
+      );
+
+      // Actualizar assigned_workout_id con la rutina más reciente
+      await SupabaseConfig.client
+          .from(AppConstants.usersTable)
+          .update({'assigned_workout_id': workoutId}).eq('id', userId);
+
+      final userIndex = _users.indexWhere((u) => u.id == userId);
+      if (userIndex != -1) {
+        _users[userIndex] =
+            _users[userIndex].copyWith(assignedWorkoutId: workoutId);
+      }
+      if (_authProvider?.currentUser?.id == userId) {
+        await _authProvider!.refreshUser();
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('❌ Error assignWorkoutToDay: $e');
+      rethrow;
+    }
+  }
+
+  /// Quita la rutina de un día específico (lo pone en "Descanso")
+  Future<void> removeWorkoutFromDay(String userId, int dayOfWeek) async {
+    try {
+      await SupabaseConfig.client
+          .from('user_workout_schedule')
+          .delete()
+          .eq('user_id', userId)
+          .eq('day_of_week', dayOfWeek);
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('❌ Error removeWorkoutFromDay: $e');
+      rethrow;
+    }
+  }
+
   Future<void> updateUserStats(
     String userId, {
     int? activeDays,

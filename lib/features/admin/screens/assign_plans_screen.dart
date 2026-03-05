@@ -5,7 +5,6 @@ import '../../auth/models/user.dart';
 import '../../profile/providers/user_provider.dart';
 import '../../workouts/models/workout.dart';
 import '../../workouts/providers/workout_provider.dart';
-import '../../meal_plans/providers/meal_plan_provider.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 
 class AssignPlansScreen extends StatefulWidget {
@@ -18,8 +17,6 @@ class AssignPlansScreen extends StatefulWidget {
 }
 
 class _AssignPlansScreenState extends State<AssignPlansScreen> {
-  String? selectedMealPlanId;
-  bool _isSavingMealPlan = false;
   final Map<int, String?> _schedule = {};
   final Set<int> _savingDays = {};
 
@@ -44,26 +41,10 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
   @override
   void initState() {
     super.initState();
-    selectedMealPlanId = widget.user.assignedMealPlanId;
-
     Future.microtask(() async {
       final workoutProvider =
           Provider.of<WorkoutProvider>(context, listen: false);
-      final mealPlanProvider =
-          Provider.of<MealPlanProvider>(context, listen: false);
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-
       workoutProvider.loadWorkouts();
-      mealPlanProvider.loadMealPlans();
-
-      final weekWorkouts = await userProvider.getWeekWorkouts(widget.user.id);
-      if (mounted) {
-        setState(() {
-          for (int day = 1; day <= 6; day++) {
-            _schedule[day] = weekWorkouts[day];
-          }
-        });
-      }
     });
   }
 
@@ -172,7 +153,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                       children: [
                         // Descanso option
                         _BottomSheetTile(
-                          title: 'Descanso',
+                          title: 'Descanso de descanso',
                           subtitle: 'Sin rutina asignada',
                           icon: Icons.hotel,
                           isSelected: currentId == null,
@@ -249,7 +230,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
             Row(
               children: [
                 const Text(
-                  'HORARIO SEMANAL',
+                  'RUTINA SEMANAL',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -300,7 +281,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                     final workoutId = _schedule[day];
                     final isSaving = _savingDays.contains(day);
 
-                    String workoutName = 'Descanso';
+                    String workoutName = 'Día de descanso';
                     if (workoutId != null) {
                       final match = workouts
                           .where((w) => w.id == workoutId)
@@ -391,126 +372,6 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
               },
             ),
 
-            const SizedBox(height: 28),
-
-            // Meal plan section
-            const Text(
-              'PLAN ALIMENTICIO',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
-                letterSpacing: 1.5,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            Consumer<MealPlanProvider>(
-              builder: (context, mealPlanProvider, _) {
-                if (mealPlanProvider.isLoading) {
-                  return Column(
-                    children: List.generate(
-                      3,
-                      (_) => const Padding(
-                        padding: EdgeInsets.only(bottom: 12),
-                        child: ShimmerCard(height: 80),
-                      ),
-                    ),
-                  );
-                }
-
-                return Column(
-                  children: mealPlanProvider.mealPlans.map((plan) {
-                    final isSelected = selectedMealPlanId == plan.id;
-                    return _SelectableCard(
-                      title: plan.name,
-                      subtitle: '${plan.calories} kcal · ${plan.category}',
-                      icon: Icons.restaurant_menu,
-                      isSelected: isSelected,
-                      onTap: () {
-                        setState(() {
-                          selectedMealPlanId = isSelected ? null : plan.id;
-                        });
-                      },
-                    );
-                  }).toList(),
-                );
-              },
-            ),
-
-            const SizedBox(height: 24),
-
-            // Save meal plan button
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: _isSavingMealPlan
-                    ? null
-                    : () async {
-                        setState(() => _isSavingMealPlan = true);
-                        final userProvider =
-                            Provider.of<UserProvider>(context, listen: false);
-                        try {
-                          if (selectedMealPlanId != null &&
-                              selectedMealPlanId !=
-                                  widget.user.assignedMealPlanId) {
-                            await userProvider.assignMealPlan(
-                                widget.user.id, selectedMealPlanId!);
-                          }
-                          if (!mounted) return;
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Plan alimenticio guardado'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        } catch (e) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content:
-                                    Text('Error al guardar plan: $e'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        } finally {
-                          if (mounted) {
-                            setState(() => _isSavingMealPlan = false);
-                          }
-                        }
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  disabledBackgroundColor:
-                      AppColors.primary.withOpacity(0.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: _isSavingMealPlan
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: Colors.black,
-                        ),
-                      )
-                    : const Text(
-                        'Guardar Plan Alimenticio',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -641,69 +502,3 @@ class _BottomSheetTile extends StatelessWidget {
   }
 }
 
-class _SelectableCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _SelectableCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isSelected ? AppColors.primary : Colors.transparent,
-          width: 2,
-        ),
-      ),
-      child: ListTile(
-        onTap: onTap,
-        leading: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: isSelected
-                ? AppColors.primary.withOpacity(0.2)
-                : AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            icon,
-            color:
-                isSelected ? AppColors.primary : AppColors.textSecondary,
-          ),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: isSelected ? AppColors.primary : Colors.white,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 12,
-          ),
-        ),
-        trailing: isSelected
-            ? const Icon(Icons.check_circle, color: AppColors.primary)
-            : const Icon(
-                Icons.circle_outlined, color: AppColors.textSecondary),
-      ),
-    );
-  }
-}

@@ -119,7 +119,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Actividad Semanal',
+                      'Actividad semanal',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -209,7 +209,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 _QuickActionButton(
                   icon: Icons.people,
                   iconColor: Colors.blue,
-                  title: 'Gestión de Usuarios',
+                  title: 'Gestión de usuarios',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -223,7 +223,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 _QuickActionButton(
                   icon: Icons.assignment_ind,
                   iconColor: Colors.orange,
-                  title: 'Asignaciones de Usuarios',
+                  title: 'Asignaciones de usuarios',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -237,7 +237,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 _QuickActionButton(
                   icon: Icons.restaurant_menu,
                   iconColor: AppColors.primary,
-                  title: 'Crear Nuevo Plan Alimenticio',
+                  title: 'Crear nuevo plan alimenticio',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -250,7 +250,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const SizedBox(height: AppSpacing.sm),
                 _QuickActionButton(
                   icon: Icons.fitness_center,
-                  title: 'Nueva Rutina de Entrenamiento',
+                  iconColor: Colors.green,
+                  title: 'Nueva rutina de entrenamiento',
                   onTap: () {
                     Navigator.push(
                       context,

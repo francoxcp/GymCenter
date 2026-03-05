@@ -5,6 +5,7 @@ import '../../profile/providers/user_provider.dart';
 import '../../auth/models/user.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import 'assign_plans_screen.dart';
+import 'assign_meal_plan_screen.dart';
 
 class UserAssignmentsListScreen extends StatefulWidget {
   const UserAssignmentsListScreen({super.key});
@@ -49,7 +50,7 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
               ),
             ),
             Text(
-              'Asignaciones de Usuarios',
+              'Asignaciones de usuarios',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -110,7 +111,7 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
                           'Toca un usuario para ver o editar sus asignaciones',
                           style: TextStyle(
                             color: AppColors.primary,
-                            fontSize: 13,
+                            fontSize: 12,
                           ),
                         ),
                       ),
@@ -216,12 +217,11 @@ class _UserAssignmentCard extends StatelessWidget {
                       children: [
                         Text('Rutina asignada:',
                             style: TextStyle(fontWeight: FontWeight.w600)),
-                        Text('Nombre: ...'), // TODO: fetch workout name
+                        Text('Nombre: '), // TODO: fetch workout name
                         Text(
-                            'Descripción: ...'), // TODO: fetch workout description
-                        Text('Duración: ...'), // TODO: fetch workout duration
-                        Text(
-                            'Ejercicios: ...'), // TODO: fetch workout exercises
+                            'Descripción: '), // TODO: fetch workout description
+                        Text('Duración: '), // TODO: fetch workout duration
+                        Text('Ejercicios: '), // TODO: fetch workout exercises
                         SizedBox(height: 8),
                       ],
                     ),
@@ -231,11 +231,11 @@ class _UserAssignmentCard extends StatelessWidget {
                       children: [
                         Text('Plan de alimentación asignado:',
                             style: TextStyle(fontWeight: FontWeight.w600)),
-                        Text('Nombre: ...'), // TODO: fetch meal plan name
+                        Text('Nombre: '), // TODO: fetch meal plan name
                         Text(
-                            'Descripción: ...'), // TODO: fetch meal plan description
-                        Text('Días: ...'), // TODO: fetch meal plan days
-                        Text('Comidas: ...'), // TODO: fetch meal plan meals
+                            'Descripción: '), // TODO: fetch meal plan description
+                        Text('Días: '), // TODO: fetch meal plan days
+                        Text('Comidas: '), // TODO: fetch meal plan meals
                         SizedBox(height: 8),
                       ],
                     ),
@@ -325,14 +325,23 @@ class _UserAssignmentCard extends StatelessWidget {
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
               onSelected: (value) async {
-                if (value == 'edit') {
+                if (value == 'schedule') {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => AssignPlansScreen(user: user),
                     ),
                   ).then((_) {
-                    // Recargar usuarios después de editar
+                    Provider.of<UserProvider>(context, listen: false)
+                        .loadUsers();
+                  });
+                } else if (value == 'meal') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AssignMealPlanScreen(user: user),
+                    ),
+                  ).then((_) {
                     Provider.of<UserProvider>(context, listen: false)
                         .loadUsers();
                   });
@@ -354,12 +363,36 @@ class _UserAssignmentCard extends StatelessWidget {
               },
               itemBuilder: (context) => [
                 const PopupMenuItem(
-                  value: 'edit',
-                  child: Text('Editar asignaciones'),
+                  value: 'schedule',
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_month, size: 18),
+                      SizedBox(width: 8),
+                      Text('Horario semanal'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'meal',
+                  child: Row(
+                    children: [
+                      Icon(Icons.restaurant_menu, size: 18),
+                      SizedBox(width: 8),
+                      Text('Plan alimenticio'),
+                    ],
+                  ),
                 ),
                 const PopupMenuItem(
                   value: 'remove',
-                  child: Text('Quitar asignación'),
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_outline,
+                          size: 18, color: Colors.redAccent),
+                      SizedBox(width: 8),
+                      Text('Quitar asignación',
+                          style: TextStyle(color: Colors.redAccent)),
+                    ],
+                  ),
                 ),
               ],
             ),

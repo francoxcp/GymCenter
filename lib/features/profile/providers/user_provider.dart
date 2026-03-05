@@ -200,18 +200,23 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  /// Asigna una rutina a un día específico (upsert instantáneo)
+  /// Asigna una rutina a un día específico (delete + insert)
   Future<void> assignWorkoutToDay(
       String userId, int dayOfWeek, String workoutId) async {
     try {
-      await SupabaseConfig.client.from('user_workout_schedule').upsert(
-        {
-          'user_id': userId,
-          'day_of_week': dayOfWeek,
-          'workout_id': workoutId,
-        },
-        onConflict: 'user_id,day_of_week',
-      );
+      // Eliminar la asignación existente para ese día (si existe)
+      await SupabaseConfig.client
+          .from('user_workout_schedule')
+          .delete()
+          .eq('user_id', userId)
+          .eq('day_of_week', dayOfWeek);
+
+      // Insertar la nueva asignación
+      await SupabaseConfig.client.from('user_workout_schedule').insert({
+        'user_id': userId,
+        'day_of_week': dayOfWeek,
+        'workout_id': workoutId,
+      });
 
       // Actualizar assigned_workout_id con la rutina más reciente
       await SupabaseConfig.client

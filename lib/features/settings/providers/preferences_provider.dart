@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../shared/services/notification_service.dart';
+import '../../../shared/services/progress_report_service.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class UserPreferences {
@@ -170,6 +171,16 @@ class PreferencesProvider with ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+
+      // Si el usuario tiene reportes de progreso habilitados,
+      // verificar si corresponde enviar el resumen semanal.
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId != null && (_preferences?.progressReports ?? false)) {
+        ProgressReportService().checkAndSend(
+          userId: userId,
+          isEnglish: (_preferences?.language ?? 'es') == 'en',
+        );
+      }
     }
   }
 
@@ -275,7 +286,16 @@ class PreferencesProvider with ChangeNotifier {
     final notificationService = NotificationService();
 
     if (enabled && _preferences!.notificationsEnabled) {
+      // Programar la notificación semanal del domingo
       await notificationService.scheduleWeeklyProgressReport();
+      // Enviar un reporte inmediato para que el usuario vea que funciona
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId != null) {
+        ProgressReportService().sendNow(
+          userId: userId,
+          isEnglish: (_preferences?.language ?? 'es') == 'en',
+        );
+      }
     } else {
       await notificationService.cancelWeeklyProgressReport();
     }

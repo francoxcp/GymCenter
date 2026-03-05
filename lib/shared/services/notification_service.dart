@@ -224,6 +224,7 @@ class NotificationService {
   static const int morningReminderId = 2;
   static const int eveningReminderId = 3;
   static const int achievementId = 100; // Base ID para logros
+  static const int progressReportId = 50;
 
   /// Programa recordatorio de entrenamiento
   Future<void> scheduleWorkoutReminder({
@@ -256,19 +257,53 @@ class NotificationService {
     );
   }
 
-  /// Programa reporte de progreso semanal
+  /// Programa reporte de progreso semanal (cada domingo a las 9 AM)
   Future<void> scheduleWeeklyProgressReport() async {
-    await scheduleDailyNotification(
-      id: 4,
-      title: '📊 Reporte Semanal',
-      body: '¡Revisa tu progreso de la semana! Toca para ver tus estadísticas.',
-      time: const TimeOfDay(hour: 9, minute: 0), // 9:00 AM
-      payload: 'weekly_report',
+    // Calcular el próximo domingo
+    final now = DateTime.now();
+    final daysUntilSunday = (DateTime.sunday - now.weekday) % 7;
+    final nextSunday = DateTime(
+      now.year,
+      now.month,
+      now.day + (daysUntilSunday == 0 ? 7 : daysUntilSunday),
+      9,
+      0,
+    );
+
+    const androidDetails = AndroidNotificationDetails(
+      'chamos_progress_channel',
+      'Reportes de Progreso',
+      channelDescription: 'Reportes semanales de progreso de Chamos Fitness Center',
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: false,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.zonedSchedule(
+      progressReportId,
+      '📊 Reporte semanal',
+      'Abre la app para ver tu resumen de esta semana.',
+      tz.TZDateTime.from(nextSunday, tz.local),
+      details,
+      payload: 'progress_report',
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
     );
   }
 
   /// Cancela reporte semanal
   Future<void> cancelWeeklyProgressReport() async {
-    await cancelNotification(4);
+    await cancelNotification(progressReportId);
   }
 }

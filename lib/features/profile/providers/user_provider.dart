@@ -154,52 +154,6 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> assignWorkoutByDay(
-      String userId, String workoutId, List<int> days) async {
-    try {
-      // 1. Borrar TODOS los días previos del usuario para este schedule
-      //    (evita que días des-seleccionados queden como datos huérfanos)
-      await SupabaseConfig.client
-          .from('user_workout_schedule')
-          .delete()
-          .eq('user_id', userId);
-
-      // 2. Insertar exactamente los días seleccionados
-      for (final day in days) {
-        await SupabaseConfig.client.from('user_workout_schedule').insert({
-          'user_id': userId,
-          'day_of_week': day,
-          'workout_id': workoutId,
-        });
-      }
-
-      // 3. Actualizar assigned_workout_id en la tabla users
-      await SupabaseConfig.client
-          .from(AppConstants.usersTable)
-          .update({'assigned_workout_id': workoutId}).eq('id', userId);
-
-      // 3. Actualizar localmente
-      final userIndex = _users.indexWhere((u) => u.id == userId);
-      if (userIndex != -1) {
-        _users[userIndex] = _users[userIndex].copyWith(
-          assignedWorkoutId: workoutId,
-        );
-      }
-
-      // 4. Actualizar AuthProvider si es el usuario actual
-      if (_authProvider?.currentUser?.id == userId) {
-        await _authProvider!.refreshUser();
-      }
-
-      notifyListeners();
-      debugPrint(
-          '✅ Rutina asignada correctamente a usuario $userId: workout=$workoutId, días=$days');
-    } catch (e) {
-      debugPrint('❌ Error assigning workout by day: $e');
-      rethrow;
-    }
-  }
-
   /// Asigna una rutina a un día específico (delete + insert)
   Future<void> assignWorkoutToDay(
       String userId, int dayOfWeek, String workoutId) async {

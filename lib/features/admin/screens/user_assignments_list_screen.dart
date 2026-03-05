@@ -154,17 +154,6 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
                                 padding: const EdgeInsets.only(bottom: 12),
                                 child: _UserAssignmentCard(
                                   user: user,
-                                  onTap: () async {
-                                    await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            AssignPlansScreen(user: user),
-                                      ),
-                                    );
-                                    // Recargar usuarios después de asignar
-                                    userProvider.loadUsers();
-                                  },
                                 ),
                               );
                             },
@@ -180,72 +169,14 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
 
 class _UserAssignmentCard extends StatelessWidget {
   final User user;
-  final VoidCallback onTap;
 
   const _UserAssignmentCard({
     required this.user,
-    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        showModalBottomSheet(
-          context: context,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          builder: (context) {
-            return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    user.name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  if (user.assignedWorkoutId != null)
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Rutina asignada:',
-                            style: TextStyle(fontWeight: FontWeight.w600)),
-                        Text('Nombre: '), // TODO: fetch workout name
-                        Text(
-                            'Descripción: '), // TODO: fetch workout description
-                        Text('Duración: '), // TODO: fetch workout duration
-                        Text('Ejercicios: '), // TODO: fetch workout exercises
-                        SizedBox(height: 8),
-                      ],
-                    ),
-                  if (user.assignedMealPlanId != null)
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Plan de alimentación asignado:',
-                            style: TextStyle(fontWeight: FontWeight.w600)),
-                        Text('Nombre: '), // TODO: fetch meal plan name
-                        Text(
-                            'Descripción: '), // TODO: fetch meal plan description
-                        Text('Días: '), // TODO: fetch meal plan days
-                        Text('Comidas: '), // TODO: fetch meal plan meals
-                        SizedBox(height: 8),
-                      ],
-                    ),
-                  const Text('Estado: Activa'), // TODO: fetch assignment state
-                ],
-              ),
-            );
-          },
-        );
-      },
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -295,18 +226,6 @@ class _UserAssignmentCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      if (user.assignedWorkoutId != null) ...[
-                        const SizedBox(
-                          width: 0,
-                          child: null,
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      if (user.assignedMealPlanId != null)
-                        const SizedBox(
-                          width: 0,
-                          child: null,
-                        ),
                       if (user.assignedWorkoutId == null &&
                           user.assignedMealPlanId == null)
                         const Text(

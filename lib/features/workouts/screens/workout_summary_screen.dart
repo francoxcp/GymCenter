@@ -165,10 +165,6 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
     return '$h:$m';
   }
 
-  String _formatVolume(double volume) {
-    return volume.toStringAsFixed(1);
-  }
-
   int _estimateWeight(String exerciseName) {
     final name = exerciseName.toLowerCase();
     if (name.contains('sentadilla') || name.contains('squat')) return 85;

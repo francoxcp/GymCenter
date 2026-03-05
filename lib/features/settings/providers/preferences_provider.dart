@@ -64,6 +64,24 @@ class UserPreferences {
     };
   }
 
+  /// Usado para operaciones .update() de Supabase.
+  /// NOTA: progress_reports está excluido hasta que se ejecute en Supabase:
+  ///   ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS progress_reports BOOLEAN DEFAULT TRUE;
+  /// Una vez ejecutado, agrégalo de vuelta aquí.
+  Map<String, dynamic> toUpdateJson() {
+    return {
+      'onboarding_completed': onboardingCompleted,
+      'onboarding_data': onboardingData,
+      'notifications_enabled': notificationsEnabled,
+      'workout_reminders': workoutReminders,
+      'achievement_alerts': achievementAlerts,
+      'theme': theme,
+      'units': units,
+      'language': language,
+      'progress_reports': progressReports,
+    };
+  }
+
   UserPreferences copyWith({
     bool? onboardingCompleted,
     Map<String, dynamic>? onboardingData,
@@ -167,7 +185,7 @@ class PreferencesProvider with ChangeNotifier {
     try {
       await _supabase
           .from('user_preferences')
-          .update(newPreferences.toJson())
+          .update(newPreferences.toUpdateJson())
           .eq('user_id', newPreferences.userId);
 
       return true;

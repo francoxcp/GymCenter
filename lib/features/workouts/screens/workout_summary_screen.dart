@@ -3,9 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
+import '../../../core/utils/unit_converter.dart';
 import '../models/workout.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/user_provider.dart';
+import '../../settings/providers/preferences_provider.dart';
 import '../providers/workout_provider.dart';
 import '../providers/workout_progress_provider.dart';
 import '../providers/workout_session_provider.dart';
@@ -34,23 +37,17 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
   bool _isSaving = true; // bloquea el botón hasta que la sesión quede guardada
   String _motivationalMessage = '';
 
-  // Mensajes motivacionales aleatorios
-  final List<String> _motivationalMessages = [
-    '¡INCREÍBLE TRABAJO!',
-    '¡LO LOGRASTE!',
-    '¡EXCELENTE!',
-    '¡ERES IMPARABLE!',
-    '¡BRUTAL ENTRENAMIENTO!',
-    '¡SIGUE ASÍ CAMPEÓN!',
-    '¡ESPECTACULAR!',
-    '¡QUÉ MÁQUINA!',
+  // Mensajes motivacionales — se asignan en initState después de conocer el idioma
+  List<String> _motivationalMessages = [
+    '¡INCREÍBLE TRABAJO!', '¡LO LOGRASTE!', '¡EXCELENTE!', '¡ERES IMPARABLE!',
+    '¡BRUTAL ENTRENAMIENTO!', '¡SIGUE ASÍ CAMPEÓN!', '¡ESPECTACULAR!', '¡QUÉ MÁQUINA!',
   ];
 
   @override
   void initState() {
     super.initState();
 
-    // Elegir mensaje motivacional aleatorio
+    // Elegir mensaje motivacional aleatorio (se re-aplica en build si cambia idioma)
     _motivationalMessage = _motivationalMessages[
         math.Random().nextInt(_motivationalMessages.length)];
 
@@ -146,7 +143,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         final workoutName = workoutProvider
             .getWorkoutById(nextWorkoutData['workout_id'] as String)
             ?.name;
-        nextWorkoutData['name'] = workoutName ?? 'Próxima Rutina';
+        nextWorkoutData['name'] = workoutName; // null → fallback en _buildNextWorkoutInfo
       }
 
       if (mounted) {
@@ -185,17 +182,18 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
 
   Widget _buildNextWorkoutInfo() {
     if (_nextWorkout == null) return const SizedBox();
-    final name = (_nextWorkout?['name'] as String?) ?? 'Próxima Rutina';
+    final l10nDays = AppL10n.of(context);
+    final name = (_nextWorkout?['name'] as String?) ?? l10nDays.nextWorkoutDefault;
     final date = _nextWorkout?['date'] as DateTime?;
     final daysUntil = (_nextWorkout?['days_until'] as int?) ?? 1;
     final dateStr = date != null
         ? '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}'
-        : 'Próximamente';
+        : (l10nDays.isEn ? 'Coming soon' : 'Próximamente');
     final daysLabel = daysUntil == 0
-        ? 'Hoy'
+        ? l10nDays.todayLabel
         : daysUntil == 1
-            ? 'Mañana'
-            : 'En $daysUntil días ($dateStr)';
+            ? (l10nDays.isEn ? 'Tomorrow' : 'Mañana')
+            : (l10nDays.isEn ? 'In $daysUntil days ($dateStr)' : 'En $daysUntil días ($dateStr)');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -213,16 +211,22 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
   }
 
   String _getNextWorkoutMessage() {
-    if (_nextWorkout == null) return '¡Prepárate para tu próxima sesión!';
-    return '¡No olvides descansar y alimentarte bien antes de tu próxima rutina!';
+    final l10nMsg = AppL10n.of(context);
+    if (_nextWorkout == null) return l10nMsg.nextWorkoutMsg1;
+    return l10nMsg.nextWorkoutMsg2;
   }
 
   @override
   Widget build(BuildContext context) {
+    final prefs = Provider.of<PreferencesProvider>(context).preferences;
+    final units = prefs?.units ?? 'metric';
+    final l10n = AppL10n.of(context);
+    // Actualizar mensajes según idioma actual
+    _motivationalMessages = l10n.motivationalMessages;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Resumen de Entrenamiento'),
+        title: Text(l10n.workoutSummaryTitle),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -290,17 +294,17 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      '¡Entrenamiento',
-                      style: TextStyle(
+                    Text(
+                      l10n.workoutCompletedLine1,
+                      style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         height: 1.2,
                       ),
                     ),
-                    const Text(
-                      'Completado!',
+                    Text(
+                      l10n.workoutCompletedLine2,
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -334,8 +338,9 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                           child: StatCard(
                             icon: Icons.fitness_center,
                             label: 'VOLUMEN',
-                            value: _formatVolume(widget.totalVolume),
-                            unit: 'kg',
+                            value: UnitConverter.weightValue(
+                                widget.totalVolume, units),
+                            unit: UnitConverter.weightUnit(units),
                           ),
                         ),
                       ],
@@ -424,7 +429,8 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                                 ),
                               ),
                               Text(
-                                '$estimatedWeight kg',
+                                UnitConverter.formatWeight(
+                                    estimatedWeight.toDouble(), units),
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -470,9 +476,9 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                const Text(
-                                  'Próxima Sesión',
-                                  style: TextStyle(
+                                Text(
+                                  l10n.nextSessionLabel,
+                                  style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
@@ -536,14 +542,14 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                                   color: Colors.black,
                                 ),
                               )
-                            : const Row(
+                            : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.home,
+                                  const Icon(Icons.home,
                                       color: Colors.black, size: 20),
-                                  SizedBox(width: 8),
+                                  const SizedBox(width: 8),
                                   Text(
-                                    'Volver al Inicio',
+                                    l10n.backToHome,
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,

@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../../core/l10n/app_l10n.dart';
 import 'dart:async';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -131,8 +132,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text(
-          'Rutina Incompleta Encontrada',
+        title: Text(
+          AppL10n.of(context).incompleteWorkoutFound,
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -152,7 +153,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              'Iniciada $timeAgo',
+              AppL10n.of(context).startedLabel(timeAgo),
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 14,
@@ -168,7 +169,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Progreso: $progressPercent%',
+                  AppL10n.of(context).progressLabel(progressPercent),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -193,9 +194,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               // Empezar de cero
               context.read<WorkoutProgressProvider>().deleteProgress();
             },
-            child: const Text(
-              'Empezar de Cero',
-              style: TextStyle(color: AppColors.textSecondary),
+            child: Text(
+              AppL10n.of(context).startFromScratch,
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -208,7 +209,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.black,
             ),
-            child: const Text('Continuar'),
+            child: Text(AppL10n.of(context).continueAction),
           ),
         ],
       ),
@@ -232,11 +233,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
   String _getTimeAgoText(Duration duration) {
     if (duration.inMinutes < 60) {
-      return 'hace ${duration.inMinutes} minutos';
+      return AppL10n.of(context).minutesAgoLabel(duration.inMinutes);
     } else if (duration.inHours < 24) {
-      return 'hace ${duration.inHours} horas';
+      return AppL10n.of(context).hoursAgoLabel(duration.inHours);
     } else {
-      return 'hace ${duration.inDays} días';
+      return AppL10n.of(context).daysAgoLowerLabel(duration.inDays);
     }
   }
 
@@ -469,40 +470,38 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     if (effectiveWorkoutId == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Mi Rutina de Hoy'),
+          title: Text(AppL10n.of(context).myTodayWorkout),
         ),
-        body: const Center(
-          child: Padding(
-            padding: EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.fitness_center_outlined,
-                  size: 80,
+        body: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.fitness_center_outlined,
+                size: 80,
+                color: AppColors.textSecondary,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                AppL10n.of(context).noAssignedWorkout,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                AppL10n.of(context).contactTrainer,
+                style: const TextStyle(
+                  fontSize: 14,
                   color: AppColors.textSecondary,
                 ),
-                SizedBox(height: 24),
-                Text(
-                  'No tienes rutina asignada',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 12),
-                Text(
-                  'Contacta a tu entrenador para que te asigne una rutina',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       );
@@ -513,12 +512,12 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     if (workout == null || workout.exercises.isEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Mi Rutina de Hoy'),
+          title: Text(AppL10n.of(context).myTodayWorkout),
         ),
-        body: const Center(
+        body: Center(
           child: Text(
-            'Error al cargar la rutina',
-            style: TextStyle(color: Colors.white),
+            AppL10n.of(context).loadingWorkoutError,
+            style: const TextStyle(color: Colors.white),
           ),
         ),
       );
@@ -550,9 +549,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'MI RUTINA DE HOY',
-                  style: TextStyle(
+                Text(
+                  AppL10n.of(context).myWorkoutHeader,
+                  style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                     color: AppColors.primary,

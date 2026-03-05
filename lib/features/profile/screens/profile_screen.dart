@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../config/supabase_config.dart';
@@ -99,8 +100,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Perfil actualizado correctamente'),
+          SnackBar(
+            content: Text(AppL10n.of(context).profileUpdated),
             backgroundColor: Colors.green,
           ),
         );
@@ -109,7 +110,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al guardar: $e'),
+            content: Text(AppL10n.of(context).errorSavingMsg(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -128,17 +129,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_camera, color: Colors.white),
-              title: const Text('Tomar foto', style: TextStyle(color: Colors.white)),
+              title: Text(AppL10n.of(context).takePhoto, style: const TextStyle(color: Colors.white)),
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library, color: Colors.white),
-              title: const Text('Galería', style: TextStyle(color: Colors.white)),
+              title: Text(AppL10n.of(context).galleryLabel, style: const TextStyle(color: Colors.white)),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
             ListTile(
               leading: const Icon(Icons.cancel, color: AppColors.textSecondary),
-              title: const Text('Cancelar', style: TextStyle(color: AppColors.textSecondary)),
+              title: Text(AppL10n.of(context).cancel, style: const TextStyle(color: AppColors.textSecondary)),
               onTap: () => Navigator.pop(context),
             ),
           ],
@@ -186,12 +187,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         authProvider.updateUser(authProvider.currentUser!.copyWith(photoUrl: photoUrl));
 
         messenger.showSnackBar(
-          const SnackBar(content: Text('Foto actualizada'), backgroundColor: Colors.green),
+          SnackBar(content: Text(AppL10n.of(context).photoUpdated), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('Error al subir foto: $e'), backgroundColor: Colors.red),
+        SnackBar(content: Text('${AppL10n.of(context).uploadPhotoError}: $e'), backgroundColor: Colors.red),
       );
     } finally {
       if (mounted) setState(() => _isUploadingPhoto = false);
@@ -249,9 +250,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (currentUser == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Mi Perfil')),
-        body: const Center(
-          child: Text('No hay usuario autenticado', style: TextStyle(color: Colors.white)),
+        appBar: AppBar(title: Text(AppL10n.of(context).myProfile)),
+        body: Center(
+          child: Text(AppL10n.of(context).noAuthUser, style: const TextStyle(color: Colors.white)),
         ),
       );
     }
@@ -264,7 +265,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/home'),
         ),
-        title: const Text('Mi Perfil'),
+        title: Text(AppL10n.of(context).myProfile),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -380,7 +381,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'NIVEL DE ENTRENAMIENTO',
+                          AppL10n.of(context).trainingLevel,
                           style: TextStyle(
                             fontSize: 11,
                             color: AppColors.textSecondary.withOpacity(0.8),
@@ -400,7 +401,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: _hasChanges
                             ? PrimaryButton(
                                 key: const ValueKey('save-btn'),
-                                text: 'Guardar Cambios',
+                                text: AppL10n.of(context).saveChanges,
                                 onPressed: _isSaving ? null : _saveProfile,
                                 isLoading: _isSaving,
                               )
@@ -413,31 +414,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // ── Menú ─────────────────────────────────────────────────
                 _MenuItem(
                   icon: Icons.history,
-                  title: 'Historial de entrenamientos',
+                  title: AppL10n.of(context).workoutHistoryMenu,
                   onTap: () => context.push('/workout-history'),
                 ),
                 const SizedBox(height: 10),
                 _MenuItem(
                   icon: Icons.show_chart,
-                  title: 'Mi Progreso',
+                  title: AppL10n.of(context).myProgress,
                   onTap: () => context.push('/progress'),
                 ),
                 const SizedBox(height: 10),
                 _MenuItem(
                   icon: Icons.straighten,
-                  title: 'Medidas Corporales',
+                  title: AppL10n.of(context).bodyMeasurementsLabel,
                   onTap: () => context.push('/body-measurements'),
                 ),
                 const SizedBox(height: 10),
                 _MenuItem(
                   icon: Icons.lock_outline,
-                  title: 'Cambiar Contraseña',
+                  title: AppL10n.of(context).changePasswordMenu,
                   onTap: () => context.push('/change-password'),
                 ),
                 const SizedBox(height: 10),
                 _MenuItem(
                   icon: Icons.settings,
-                  title: 'Configuración',
+                  title: AppL10n.of(context).configurationMenu,
                   onTap: () => context.push('/settings'),
                 ),
 
@@ -453,8 +454,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       if (context.mounted) context.go('/login');
                     },
                     icon: const Icon(Icons.logout, color: Colors.red),
-                    label: const Text(
-                      'CERRAR SESIÓN',
+                    label: Text(
+                      AppL10n.of(context).logOutLabel,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,

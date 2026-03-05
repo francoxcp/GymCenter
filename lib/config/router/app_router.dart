@@ -22,6 +22,7 @@ import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
 import '../../features/legal/screens/terms_and_conditions_screen.dart';
 import '../../features/legal/screens/privacy_policy_screen.dart';
+import '../../features/settings/screens/privacy_settings_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../shared/widgets/bottom_nav_bar.dart';
 
@@ -192,6 +193,10 @@ GoRouter createAppRouter(AuthProvider authProvider) {
         GoRoute(
           path: '/change-password',
           builder: (context, state) => const ChangePasswordScreen(),
+        ),
+        GoRoute(
+          path: '/privacy-settings',
+          builder: (context, state) => const PrivacySettingsScreen(),
         ),
 
         // Legal routes

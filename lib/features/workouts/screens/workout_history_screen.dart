@@ -2,6 +2,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
 import '../models/workout_session.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/workout_session_provider.dart';
@@ -57,7 +58,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Historial de Entrenamientos'),
+        title: Text(AppL10n.of(context).workoutHistory),
       ),
       body: _isLoading
           ? ListView.builder(
@@ -75,9 +76,9 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                     children: [
                       _buildStatsOverview(),
                       const SizedBox(height: 24),
-                      const Text(
-                        'Sesiones Recientes',
-                        style: TextStyle(
+                      Text(
+                        AppL10n.of(context).recentSessions,
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -116,9 +117,9 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
       ),
       child: Column(
         children: [
-          const Text(
-            'Resumen General',
-            style: TextStyle(
+          Text(
+            AppL10n.of(context).generalSummary,
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.white,
@@ -131,19 +132,19 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
               _buildStatItem(
                 Icons.fitness_center,
                 totalSessions.toString(),
-                'Entrenamientos',
+                AppL10n.of(context).totalWorkoutsLabel,
                 Colors.blue,
               ),
               _buildStatItem(
                 Icons.access_time,
                 '${(totalMinutes / 60).toStringAsFixed(1)}h',
-                'Tiempo total',
+                AppL10n.of(context).totalTimeLabel,
                 Colors.orange,
               ),
               _buildStatItem(
                 Icons.calendar_today,
                 completedThisWeek.toString(),
-                'Esta semana',
+                AppL10n.of(context).thisWeek,
                 Colors.green,
               ),
             ],
@@ -219,13 +220,14 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
     final now = DateTime.now();
     final difference = now.difference(date).inDays;
 
+    final l10n = AppL10n.of(context);
     String dateText;
     if (difference == 0) {
-      dateText = 'Hoy';
+      dateText = l10n.todayLabel;
     } else if (difference == 1) {
-      dateText = 'Ayer';
+      dateText = l10n.yesterdayLabel;
     } else if (difference < 7) {
-      dateText = 'Hace $difference días';
+      dateText = l10n.daysAgoLabel(difference);
     } else {
       dateText = '${date.day}/${date.month}/${date.year}';
     }
@@ -279,8 +281,8 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Entrenamiento Completo',
+                    Text(
+                      AppL10n.of(context).completeWorkoutLabel,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -307,13 +309,13 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                     color: Colors.green.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.check_circle, color: Colors.green, size: 16),
-                      SizedBox(width: 4),
+                      const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                      const SizedBox(width: 4),
                       Text(
-                        'Completado',
-                        style: TextStyle(
+                        AppL10n.of(context).completedLabel,
+                        style: const TextStyle(
                           fontSize: 12,
                           color: Colors.green,
                           fontWeight: FontWeight.bold,
@@ -334,7 +336,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
               const SizedBox(width: 20),
               _buildSessionDetail(
                 Icons.repeat,
-                '${session.exercisesCompleted.length} ejercicios',
+                AppL10n.of(context).exercisesCount(session.exercisesCompleted.length),
               ),
             ],
           ),
@@ -352,7 +354,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            '${(completionRate * 100).toStringAsFixed(0)}% completado',
+            AppL10n.of(context).percentCompleted((completionRate * 100).toInt()),
             style: const TextStyle(
               fontSize: 12,
               color: AppColors.textSecondary,
@@ -392,17 +394,17 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
               color: AppColors.textSecondary.withOpacity(0.5),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Sin historial aún',
-              style: TextStyle(
+            Text(
+              AppL10n.of(context).noHistoryYet,
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Completa tu primer entrenamiento\npara ver tu progreso aquí',
+            Text(
+              AppL10n.of(context).noHistoryBody,
               style: TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,
@@ -422,8 +424,8 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
-                'Explorar entrenamientos',
+              child: Text(
+                AppL10n.of(context).exploreWorkouts,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

@@ -151,6 +151,233 @@ class AppL10n {
   String get welcomeAdmin =>
       isEn ? 'Hello, Trainer!' : '¡Hola, Entrenador!';
 
+  // ── Historial de entrenamientos ─────────────────────────────────────────
+  String get workoutHistory =>
+      isEn ? 'Workout History' : 'Historial de Entrenamientos';
+  String get recentSessions => isEn ? 'Recent Sessions' : 'Sesiones Recientes';
+  String get generalSummary => isEn ? 'General Summary' : 'Resumen General';
+  String get totalWorkoutsLabel => isEn ? 'Workouts' : 'Entrenamientos';
+  String get totalTimeLabel => isEn ? 'Total time' : 'Tiempo total';
+  String get thisWeek => isEn ? 'This week' : 'Esta semana';
+  String get todayLabel => isEn ? 'Today' : 'Hoy';
+  String get yesterdayLabel => isEn ? 'Yesterday' : 'Ayer';
+  String daysAgoLabel(int n) => isEn ? '$n days ago' : 'Hace $n días';
+  String get completeWorkoutLabel =>
+      isEn ? 'Complete Workout' : 'Entrenamiento Completo';
+  String get completedLabel => isEn ? 'Completed' : 'Completado';
+  String get noHistoryYet => isEn ? 'No history yet' : 'Sin historial aún';
+  String get noHistoryBody =>
+      isEn
+          ? 'Complete your first workout\nto see your progress here'
+          : 'Completa tu primer entrenamiento\npara ver tu progreso aquí';
+  String get exploreWorkouts =>
+      isEn ? 'Explore workouts' : 'Explorar entrenamientos';
+  String exercisesCount(int n) => isEn ? '$n exercises' : '$n ejercicios';
+  String percentCompleted(int p) =>
+      isEn ? '$p% completed' : '$p% completado';
+
+  // ── Rutina de hoy ────────────────────────────────────────────────────────
+  String get myTodayWorkout => isEn ? 'My Workout' : 'Mi Rutina de Hoy';
+  String get myWorkoutHeader => isEn ? 'MY WORKOUT' : 'MI RUTINA DE HOY';
+  String get incompleteWorkoutFound =>
+      isEn ? 'Incomplete Workout Found' : 'Rutina Incompleta Encontrada';
+  String startedLabel(String t) => isEn ? 'Started $t' : 'Iniciada $t';
+  String progressLabel(int p) => isEn ? 'Progress: $p%' : 'Progreso: $p%';
+  String get startFromScratch => isEn ? 'Start Over' : 'Empezar de Cero';
+  String get continueAction => isEn ? 'Continue' : 'Continuar';
+  String get noAssignedWorkout =>
+      isEn ? 'No workout assigned' : 'No tienes rutina asignada';
+  String get contactTrainer =>
+      isEn
+          ? 'Contact your trainer to get a workout assigned'
+          : 'Contacta a tu entrenador para que te asigne una rutina';
+  String get loadingWorkoutError =>
+      isEn ? 'Error loading workout' : 'Error al cargar la rutina';
+  String minutesAgoLabel(int m) =>
+      isEn ? '$m minutes ago' : 'hace $m minutos';
+  String hoursAgoLabel(int h) => isEn ? '$h hours ago' : 'hace $h horas';
+  String daysAgoLowerLabel(int d) => isEn ? '$d days ago' : 'hace $d días';
+
+  // ── Resumen de entrenamiento ─────────────────────────────────────────────
+  String get workoutSummaryTitle =>
+      isEn ? 'Workout Summary' : 'Resumen de Entrenamiento';
+  String get workoutCompletedLine1 =>
+      isEn ? 'Workout' : '¡Entrenamiento';
+  String get workoutCompletedLine2 => isEn ? 'Completed!' : 'Completado!';
+  String get exerciseSummaryLabel =>
+      isEn ? 'Exercise Summary' : 'Resumen de Ejercicios';
+  String get nextSessionLabel => isEn ? 'Next Session' : 'Próxima Sesión';
+  String get backToHome => isEn ? 'Back to Home' : 'Volver al Inicio';
+  String get nextWorkoutDefault =>
+      isEn ? 'Next Workout' : 'Próxima Rutina';
+  String get nextWorkoutMsg1 =>
+      isEn
+          ? 'Get ready for your next session!'
+          : '¡Prepárate para tu próxima sesión!';
+  String get nextWorkoutMsg2 =>
+      isEn
+          ? "Don't forget to rest and eat well before your next workout!"
+          : '¡No olvides descansar y alimentarte bien antes de tu próxima rutina!';
+  List<String> get motivationalMessages => isEn
+      ? ['INCREDIBLE WORK!', 'YOU DID IT!', 'EXCELLENT!', 'UNSTOPPABLE!',
+          'BRUTAL WORKOUT!', 'KEEP IT UP CHAMP!', 'SPECTACULAR!', 'WHAT A MACHINE!']
+      : ['¡INCREÍBLE TRABAJO!', '¡LO LOGRASTE!', '¡EXCELENTE!', '¡ERES IMPARABLE!',
+          '¡BRUTAL ENTRENAMIENTO!', '¡SIGUE ASÍ CAMPEÓN!', '¡ESPECTACULAR!', '¡QUÉ MÁQUINA!'];
+
+  // ── Progreso ─────────────────────────────────────────────────────────────
+  String get myProgress => isEn ? 'My Progress' : 'Mi Progreso';
+  // Períodos — usados como labels visibles; las claves internas siguen siendo ES
+  List<String> get periodLabels =>
+      isEn ? ['Week', 'Month', 'Year', 'All'] : ['Semana', 'Mes', 'Año', 'Todo'];
+  List<String> get periodKeys => ['Semana', 'Mes', 'Año', 'Todo'];
+  String periodLabel(String key) {
+    final idx = periodKeys.indexOf(key);
+    return idx >= 0 ? periodLabels[idx] : key;
+  }
+  String get currentStreakLabel => isEn ? 'Current Streak' : 'Racha Actual';
+  String consecutiveDaysLabel(int n) =>
+      isEn
+          ? (n == 1 ? 'consecutive day' : 'consecutive days')
+          : (n == 1 ? 'día consecutivo' : 'días consecutivos');
+  String get startStreakToday =>
+      isEn ? 'Start your streak today 💪' : 'Comienza tu racha hoy 💪';
+  String get keepGoing => isEn ? 'Keep it up! 🎉' : '¡Sigue así! 🎉';
+  String get incredibleStreak =>
+      isEn ? 'Incredible streak! 🔥' : '¡Increíble racha! 🔥';
+  String get unstoppableStreak =>
+      isEn ? "You're unstoppable! 🏆" : '¡Eres imparable! 🏆';
+  String get workoutsLabel => isEn ? 'Workouts' : 'Entrenamientos';
+  String get totalTimeStatLabel => isEn ? 'Total Time' : 'Tiempo Total';
+  String get caloriesStatLabel => isEn ? 'Calories' : 'Calorías';
+  String get weightStatLabel => isEn ? 'Weight' : 'Peso';
+  String inPeriod(String key) =>
+      isEn ? 'in ${periodLabel(key).toLowerCase()}' : 'en ${key.toLowerCase()}';
+  String get noWorkoutsYet =>
+      isEn ? 'Start your first workout' : 'Comienza tu primer entrenamiento';
+  String get notTrainedYet =>
+      isEn ? 'Not trained yet' : 'Aún no has entrenado';
+  String get startBurningCalories =>
+      isEn ? 'Start burning calories' : 'Comienza a quemar calorías';
+  String get addMeasurementsHint =>
+      isEn
+          ? 'Add measurements to track progress'
+          : 'Agrega medidas para seguimiento';
+  String get recentActivityLabel =>
+      isEn ? 'Recent Activity' : 'Actividad Reciente';
+  String get weightProgressLabel =>
+      isEn ? 'Weight Progress' : 'Progreso de Peso';
+  String get workoutFrequencyLabel =>
+      isEn ? 'Workout Frequency' : 'Frecuencia de Entrenos';
+  String get recentAchievementsLabel =>
+      isEn ? 'Recent Achievements' : 'Logros Recientes';
+  String get bodyMeasurementsLabel =>
+      isEn ? 'Body Measurements' : 'Medidas Corporales';
+  String get bodyMeasurementsSubtitle =>
+      isEn ? 'Track and follow your measurements' : 'Registra y sigue tus medidas';
+  String get completeWorkoutForStats =>
+      isEn
+          ? 'Complete a workout to see stats'
+          : 'Completa un entreno para ver estadísticas';
+  String sessionsCount(int n) =>
+      isEn ? '$n session${n == 1 ? '' : 's'}' : '$n sesión${n == 1 ? '' : 'es'}';
+  String get noData => isEn ? 'No data' : 'Sin datos';
+  String get achievementsUnlockHint =>
+      isEn
+          ? 'Complete workouts to unlock achievements'
+          : 'Completa entrenamientos para desbloquear logros';
+  String timeAgoLabel(int days, int hours) {
+    if (days > 0) return isEn ? '${days} day${days > 1 ? 's' : ''} ago' : 'Hace $days día${days > 1 ? 's' : ''}';
+    if (hours > 0) return isEn ? '${hours} hour${hours > 1 ? 's' : ''} ago' : 'Hace $hours hora${hours > 1 ? 's' : ''}';
+    return isEn ? 'A few moments ago' : 'Hace unos momentos';
+  }
+
+  // ── Perfil ───────────────────────────────────────────────────────────────
+  String get myProfile => isEn ? 'My Profile' : 'Mi Perfil';
+  String get takePhoto => isEn ? 'Take photo' : 'Tomar foto';
+  String get galleryLabel => isEn ? 'Gallery' : 'Galería';
+  String get profileUpdated =>
+      isEn ? 'Profile updated successfully' : 'Perfil actualizado correctamente';
+  String errorSavingMsg(String e) =>
+      isEn ? 'Error saving: $e' : 'Error al guardar: $e';
+  String get photoUpdated => isEn ? 'Photo updated' : 'Foto actualizada';
+  String get trainingLevel =>
+      isEn ? 'TRAINING LEVEL' : 'NIVEL DE ENTRENAMIENTO';
+  String get saveChanges => isEn ? 'Save Changes' : 'Guardar Cambios';
+  String get workoutHistoryMenu =>
+      isEn ? 'Workout history' : 'Historial de entrenamientos';
+  String get configurationMenu => isEn ? 'Settings' : 'Configuración';
+  String get changePasswordMenu =>
+      isEn ? 'Change Password' : 'Cambiar Contraseña';
+  String get logOutLabel => isEn ? 'LOG OUT' : 'CERRAR SESIÓN';
+  String get fullName => isEn ? 'Full name' : 'Nombre completo';
+  String get enterYourName => isEn ? 'Enter your name' : 'Ingresa tu nombre';
+  String get noAuthUser =>
+      isEn ? 'No authenticated user' : 'No hay usuario autenticado';
+  String get uploadPhotoError =>
+      isEn ? 'Error uploading photo' : 'Error al subir foto';
+
+  // ── Lista de rutinas ─────────────────────────────────────────────────────
+  String get workoutListTitle => isEn ? 'Workout List' : 'Lista de Rutinas';
+  String get searchWorkoutsHint =>
+      isEn ? 'Search workouts by name...' : 'Buscar rutinas por nombre...';
+  String get workoutInProgressTitle =>
+      isEn ? 'Workout in Progress' : 'Rutina en Progreso';
+  String get workoutInProgressBody =>
+      isEn
+          ? 'You have a workout in progress. Continue it or start this one as extra?'
+          : 'Tienes una rutina en curso. ¿Quieres continuar esa o iniciar esta como extra?';
+  String get continueInProgress =>
+      isEn ? 'Continue in progress' : 'Continuar en progreso';
+  String get startThisWorkout =>
+      isEn ? 'Start this workout' : 'Iniciar esta rutina';
+  String get deleteWorkoutTitle =>
+      isEn ? 'Delete workout?' : '¿Eliminar rutina?';
+  String deleteWorkoutConfirm(String name) =>
+      isEn
+          ? 'Are you sure you want to delete "$name"? This cannot be undone.'
+          : '¿Estás seguro de eliminar "$name"? Esta acción no se puede deshacer.';
+  String get workoutDeletedOk =>
+      isEn ? 'Workout deleted successfully' : 'Rutina eliminada correctamente';
+  String workoutDeleteError(String e) =>
+      isEn ? 'Error deleting: $e' : 'Error al eliminar: $e';
+
+  // ── Detalle de rutina ────────────────────────────────────────────────────
+  String get workoutLabel => isEn ? 'Workout' : 'Rutina';
+  String get editLabel => isEn ? 'Edit' : 'Editar';
+  String get deleteConfirmTitle =>
+      isEn ? 'Confirm Delete' : 'Confirmar Eliminación';
+  String get continueInProgressShort =>
+      isEn ? 'Continue in progress' : 'Continuar en progreso';
+  String get startThisOne => isEn ? 'Start this one' : 'Iniciar esta';
+  String get workoutInProgressShort =>
+      isEn ? 'Workout in Progress' : 'Rutina en Progreso';
+
+  // ── Calendario ───────────────────────────────────────────────────────────
+  String get workoutCalendar =>
+      isEn ? 'Workout Calendar' : 'Calendario de Entrenamientos';
+
+  // ── Medidas corporales ───────────────────────────────────────────────────
+  String get bodyMeasurementsTitle =>
+      isEn ? 'Body Measurements' : 'Medidas Corporales';
+  String get currentMeasurements =>
+      isEn ? 'Current Measurements' : 'Medidas Actuales';
+  String get measurementHistory => isEn ? 'History' : 'Historial';
+  String get noMeasurementsYet =>
+      isEn ? 'No measurements recorded' : 'Sin medidas registradas';
+  String get noMeasurementsBody =>
+      isEn
+          ? 'Start recording your measurements\nto track your progress'
+          : 'Comienza a registrar tus medidas\npara hacer seguimiento de tu progreso';
+  String get addFirstMeasurement =>
+      isEn ? 'Add first measurement' : 'Añadir primera medida';
+  String get newMeasurement => isEn ? 'New Measurement' : 'Nueva Medida';
+
+  // ── Legal ────────────────────────────────────────────────────────────────
+  String get termsTitle =>
+      isEn ? 'Terms and Conditions' : 'Términos y Condiciones';
+  String get privacyPolicyTitle =>
+      isEn ? 'Privacy Policy' : 'Política de Privacidad';
+
   // About dialog
   String get aboutContent =>
       isEn

@@ -4,6 +4,7 @@ import 'create_workout_screen.dart';
 import 'edit_workout_screen.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
 import '../providers/workout_provider.dart';
 import '../models/workout.dart';
 import '../providers/workout_session_provider.dart';
@@ -91,34 +92,34 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: AppColors.surface,
-          title: const Text(
-            'Rutina en Progreso',
-            style: TextStyle(color: Colors.white),
+          title: Text(
+            AppL10n.of(ctx).workoutInProgressTitle,
+            style: const TextStyle(color: Colors.white),
           ),
-          content: const Text(
-            'Tienes una rutina en curso. ¿Quieres continuar esa o iniciar esta como extra?',
-            style: TextStyle(color: AppColors.textSecondary),
+          content: Text(
+            AppL10n.of(ctx).workoutInProgressBody,
+            style: const TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, 'cancel'),
-              child: const Text(
-                'Cancelar',
-                style: TextStyle(color: AppColors.textSecondary),
+              child: Text(
+                AppL10n.of(ctx).cancel,
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, 'continue_assigned'),
-              child: const Text(
-                'Continuar en progreso',
-                style: TextStyle(color: AppColors.primary),
+              child: Text(
+                AppL10n.of(ctx).continueInProgress,
+                style: const TextStyle(color: AppColors.primary),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, 'start_extra'),
-              child: const Text(
-                'Iniciar esta rutina',
-                style: TextStyle(color: Colors.white),
+              child: Text(
+                AppL10n.of(ctx).startThisWorkout,
+                style: const TextStyle(color: Colors.white),
               ),
             ),
           ],
@@ -190,22 +191,22 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                     context: context,
                     builder: (ctx) => AlertDialog(
                       backgroundColor: AppColors.surface,
-                      title: const Text('¿Eliminar rutina?',
-                          style: TextStyle(color: Colors.white)),
+                      title: Text(AppL10n.of(context).deleteWorkoutTitle,
+                          style: const TextStyle(color: Colors.white)),
                       content: Text(
-                        '¿Estás seguro de eliminar "${workout.name}"? Esta acción no se puede deshacer.',
+                        AppL10n.of(context).deleteWorkoutConfirm(workout.name),
                         style: const TextStyle(color: AppColors.textSecondary),
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, false),
-                          child: const Text('Cancelar',
-                              style: TextStyle(color: AppColors.textSecondary)),
+                          child: Text(AppL10n.of(context).cancel,
+                              style: const TextStyle(color: AppColors.textSecondary)),
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, true),
-                          child: const Text('Eliminar',
-                              style: TextStyle(color: Colors.redAccent)),
+                          child: Text(AppL10n.of(context).delete,
+                              style: const TextStyle(color: Colors.redAccent)),
                         ),
                       ],
                     ),
@@ -215,8 +216,8 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                       await workoutProvider.deleteWorkout(workout.id);
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Rutina eliminada correctamente'),
+                          SnackBar(
+                            content: Text(AppL10n.of(context).workoutDeletedOk),
                             backgroundColor: AppColors.primary,
                           ),
                         );
@@ -225,7 +226,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Error al eliminar: $e'),
+                            content: Text(AppL10n.of(context).workoutDeleteError(e.toString())),
                             backgroundColor: Colors.redAccent,
                           ),
                         );
@@ -324,7 +325,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                       Provider.of<WorkoutProvider>(context, listen: false)
                           .setSearchQuery(value),
                   decoration: InputDecoration(
-                    hintText: 'Buscar rutinas por nombre...',
+                    hintText: AppL10n.of(context).searchWorkoutsHint,
                     prefixIcon: const Icon(
                       Icons.search,
                       color: AppColors.textSecondary,

@@ -2,6 +2,9 @@
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
+import '../../../core/utils/unit_converter.dart';
+import '../../settings/providers/preferences_provider.dart';
 import '../providers/body_measurement_provider.dart';
 import '../models/body_measurement.dart';
 import '../../../shared/widgets/primary_button.dart';
@@ -28,6 +31,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
   Widget build(BuildContext context) {
     final measurementProvider = Provider.of<BodyMeasurementProvider>(context);
     final measurements = measurementProvider.measurements;
+    final units = Provider.of<PreferencesProvider>(context)
+            .preferences
+            ?.units ??
+        'metric';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -36,7 +43,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Medidas Corporales'),
+        title: Text(AppL10n.of(context).bodyMeasurementsTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -55,24 +62,24 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
               : ListView(
                   padding: const EdgeInsets.all(20),
                   children: [
-                    _buildCurrentStats(measurements),
+                    _buildCurrentStats(measurements, units),
                     const SizedBox(height: 24),
-                    const Text(
-                      'Historial',
-                      style: TextStyle(
+                    Text(
+                      AppL10n.of(context).measurementHistory,
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    ...measurements.map((m) => _buildMeasurementCard(m)),
+                    ...measurements.map((m) => _buildMeasurementCard(m, units)),
                   ],
                 ),
     );
   }
 
-  Widget _buildCurrentStats(List<BodyMeasurement> measurements) {
+  Widget _buildCurrentStats(List<BodyMeasurement> measurements, String units) {
     if (measurements.isEmpty) return const SizedBox();
 
     final latest = measurements.first;
@@ -95,38 +102,42 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Medidas Actuales',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          Text(
+              AppL10n.of(context).currentMeasurements,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
-          ),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildStatColumn(
                 'Peso',
-                '${latest.weight?.toStringAsFixed(1) ?? '--'} kg',
+                latest.weight != null
+                    ? UnitConverter.formatWeight(latest.weight!, units)
+                    : '--',
                 weightChange != 0
-                    ? '${weightChange > 0 ? '+' : ''}${weightChange.toStringAsFixed(1)} kg'
+                    ? UnitConverter.formatWeightChange(weightChange, units)
                     : null,
                 weightChange < 0 ? Colors.green : Colors.red,
               ),
               _buildStatColumn(
                 'Cintura',
-                '${latest.waist?.toStringAsFixed(1) ?? '--'} cm',
+                latest.waist != null
+                    ? UnitConverter.formatLength(latest.waist!, units)
+                    : '--',
                 waistChange != 0
-                    ? '${waistChange > 0 ? '+' : ''}${waistChange.toStringAsFixed(1)} cm'
+                    ? UnitConverter.formatLengthChange(waistChange, units)
                     : null,
                 waistChange < 0 ? Colors.green : Colors.red,
               ),
             ],
           ),
           const SizedBox(height: 20),
-          _buildMeasurementGrid(latest),
+          _buildMeasurementGrid(latest, units),
         ],
       ),
     );
@@ -165,7 +176,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
     );
   }
 
-  Widget _buildMeasurementGrid(BodyMeasurement measurement) {
+  Widget _buildMeasurementGrid(BodyMeasurement measurement, String units) {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -174,19 +185,19 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       crossAxisSpacing: 12,
       childAspectRatio: 0.95,
       children: [
-        _buildMeasurementTile('Pecho', measurement.chest, Icons.fitness_center),
+        _buildMeasurementTile('Pecho', measurement.chest, Icons.fitness_center, units),
         _buildMeasurementTile(
-            'Bíceps', measurement.biceps, Icons.sports_gymnastics),
+            'Bíceps', measurement.biceps, Icons.sports_gymnastics, units),
         _buildMeasurementTile(
-            'Muslos', measurement.thighs, Icons.directions_run),
+            'Muslos', measurement.thighs, Icons.directions_run, units),
         _buildMeasurementTile(
-            'Cadera', measurement.hips, Icons.accessibility_new),
-        _buildMeasurementTile('Altura', measurement.height, Icons.height),
+            'Cadera', measurement.hips, Icons.accessibility_new, units),
+        _buildMeasurementTile('Altura', measurement.height, Icons.height, units),
       ],
     );
   }
 
-  Widget _buildMeasurementTile(String label, double? value, IconData icon) {
+  Widget _buildMeasurementTile(String label, double? value, IconData icon, String units) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -199,11 +210,18 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
           Icon(icon, color: AppColors.primary, size: 20),
           const SizedBox(height: 4),
           Text(
-            value != null ? value.toStringAsFixed(1) : '--',
+            value != null ? UnitConverter.lengthValue(value, units) : '--',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.white,
+            ),
+          ),
+          Text(
+            value != null ? UnitConverter.lengthUnit(units) : '',
+            style: const TextStyle(
+              fontSize: 10,
+              color: AppColors.primary,
             ),
           ),
           Text(
@@ -218,7 +236,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
     );
   }
 
-  Widget _buildMeasurementCard(BodyMeasurement measurement) {
+  Widget _buildMeasurementCard(BodyMeasurement measurement, String units) {
     final date = measurement.date;
     final dateStr = '${date.day}/${date.month}/${date.year}';
     final now = DateTime.now();
@@ -259,7 +277,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
               Row(
                 children: [
                   Text(
-                    '${measurement.weight?.toStringAsFixed(1) ?? '--'} kg',
+                    measurement.weight != null
+                        ? UnitConverter.formatWeight(
+                            measurement.weight!, units)
+                        : '--',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -344,17 +365,17 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
               color: AppColors.textSecondary.withOpacity(0.5),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Sin medidas registradas',
-              style: TextStyle(
+            Text(
+              AppL10n.of(context).noMeasurementsYet,
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Comienza a registrar tus medidas\npara hacer seguimiento de tu progreso',
+            Text(
+              AppL10n.of(context).noMeasurementsBody,
               style: TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,
@@ -363,7 +384,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
             ),
             const SizedBox(height: 30),
             PrimaryButton(
-              text: 'Añadir primera medida',
+              text: AppL10n.of(context).addFirstMeasurement,
               onPressed: () => _showAddMeasurementDialog(),
               width: 220,
             ),

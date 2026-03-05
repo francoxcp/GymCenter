@@ -75,15 +75,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             value: prefs.notificationsEnabled,
             onChanged: (value) async {
               await preferencesProvider.toggleNotifications(value);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(value
-                        ? l10n.notificationsEnabled
-                        : l10n.notificationsDisabled),
-                  ),
-                );
-              }
             },
           ),
           if (prefs.notificationsEnabled) ...[
@@ -94,24 +85,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               value: prefs.workoutReminders,
               onChanged: (value) async {
                 await preferencesProvider.toggleWorkoutReminders(value);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(value
-                          ? (l10n.isEn ? 'Reminders enabled' : 'Recordatorios activados')
-                          : (l10n.isEn ? 'Reminders disabled' : 'Recordatorios desactivados')),
-                    ),
-                  );
-                }
-              },
-            ),
-            _buildSwitchTile(
-              title: l10n.achievementAlerts,
-              subtitle: l10n.achievementAlertsSubtitle,
-              icon: Icons.emoji_events,
-              value: prefs.achievementAlerts,
-              onChanged: (value) async {
-                await preferencesProvider.toggleAchievementAlerts(value);
               },
             ),
             _buildSwitchTile(
@@ -121,15 +94,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               value: prefs.progressReports,
               onChanged: (value) async {
                 await preferencesProvider.toggleProgressReports(value);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(value
-                          ? (l10n.isEn ? 'Weekly reports enabled' : 'Reportes semanales activados')
-                          : (l10n.isEn ? 'Weekly reports disabled' : 'Reportes semanales desactivados')),
-                    ),
-                  );
-                }
               },
             ),
           ],
@@ -168,11 +132,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: l10n.privacy,
             subtitle: l10n.privacySubtitle,
             icon: Icons.privacy_tip_outlined,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.comingSoon)),
-              );
-            },
+            onTap: () => context.push('/privacy-settings'),
           ),
           const SizedBox(height: 24),
 

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../workouts/providers/workout_session_provider.dart';
 import '../providers/body_measurement_provider.dart';
@@ -38,7 +39,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Mi Progreso'),
+        title: Text(AppL10n.of(context).myProgress),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -74,7 +75,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
   }
 
   Widget _buildPeriodSelector() {
-    final periods = ['Semana', 'Mes', 'Año', 'Todo'];
+    final l10n = AppL10n.of(context);
+    final periods = l10n.periodKeys;
 
     return Row(
       children: periods.map((period) {
@@ -101,7 +103,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     : null,
               ),
               child: Text(
-                period,
+                l10n.periodLabel(period),
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -135,14 +137,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
       ),
       child: Column(
         children: [
-          const Row(
+              Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.local_fire_department, color: Colors.orange, size: 40),
-              SizedBox(width: 12),
+              const Icon(Icons.local_fire_department, color: Colors.orange, size: 40),
+              const SizedBox(width: 12),
               Text(
-                'Racha Actual',
-                style: TextStyle(
+                AppL10n.of(context).currentStreakLabel,
+                style: const TextStyle(
                   fontSize: 18,
                   color: AppColors.textSecondary,
                 ),
@@ -160,26 +162,31 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ),
           ),
           Text(
-            currentStreak == 1 ? 'día consecutivo' : 'días consecutivos',
+            AppL10n.of(context).consecutiveDaysLabel(currentStreak),
             style: const TextStyle(
               fontSize: 16,
               color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            currentStreak == 0
-                ? 'Comienza tu racha hoy 💪'
-                : currentStreak < 7
-                    ? '¡Sigue así! 🎉'
-                    : currentStreak < 30
-                        ? '¡Increíble racha! 🔥'
-                        : '¡Eres imparable! 🏆',
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.orange,
-              fontWeight: FontWeight.bold,
-            ),
+          Builder(
+            builder: (context) {
+              final l10n = AppL10n.of(context);
+              return Text(
+                currentStreak == 0
+                    ? l10n.startStreakToday
+                    : currentStreak < 7
+                        ? l10n.keepGoing
+                        : currentStreak < 30
+                            ? l10n.incredibleStreak
+                            : l10n.unstoppableStreak,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.orange,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            }
           ),
         ],
       ),
@@ -229,6 +236,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ? currentWeight - firstWeightInPeriod
             : null;
 
+    final l10n = AppL10n.of(context);
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -238,42 +246,42 @@ class _ProgressScreenState extends State<ProgressScreen> {
       childAspectRatio: 1.3,
       children: [
         _buildStatCard(
-          'Entrenamientos',
+          l10n.workoutsLabel,
           '$totalWorkouts',
           Icons.fitness_center,
           Colors.blue,
           totalWorkouts > 0
-              ? 'en ${_selectedPeriod.toLowerCase()}'
-              : 'Comienza tu primer entrenamiento',
+              ? l10n.inPeriod(_selectedPeriod)
+              : l10n.noWorkoutsYet,
         ),
         _buildStatCard(
-          'Tiempo Total',
+          l10n.totalTimeStatLabel,
           totalMinutes > 0 ? '${totalHours}h' : '0h',
           Icons.access_time,
           Colors.orange,
           totalMinutes > 0
-              ? 'en ${_selectedPeriod.toLowerCase()}'
-              : 'Aún no has entrenado',
+              ? l10n.inPeriod(_selectedPeriod)
+              : l10n.notTrainedYet,
         ),
         _buildStatCard(
-          'Calorías',
+          l10n.caloriesStatLabel,
           totalCalories > 0 ? totalCalories.toString() : '0',
           Icons.local_fire_department,
           Colors.red,
           totalCalories > 0
-              ? 'quemadas en ${_selectedPeriod.toLowerCase()}'
-              : 'Comienza a quemar calorías',
+              ? l10n.inPeriod(_selectedPeriod)
+              : l10n.startBurningCalories,
         ),
         _buildStatCard(
-          'Peso',
+          l10n.weightStatLabel,
           currentWeight != null
               ? '${currentWeight.toStringAsFixed(1)} kg'
               : '--',
           Icons.monitor_weight,
           Colors.green,
           periodWeightChange != null
-              ? '${periodWeightChange > 0 ? '+' : ''}${periodWeightChange.toStringAsFixed(1)} kg en ${_selectedPeriod.toLowerCase()}'
-              : 'Agrega medidas para seguimiento',
+              ? '${periodWeightChange > 0 ? '+' : ''}${periodWeightChange.toStringAsFixed(1)} kg ${l10n.inPeriod(_selectedPeriod)}'
+              : l10n.addMeasurementsHint,
         ),
       ],
     );
@@ -360,7 +368,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                weightData.isEmpty ? 'Actividad Reciente' : 'Progreso de Peso',
+                weightData.isEmpty ? AppL10n.of(context).recentActivityLabel : AppL10n.of(context).weightProgressLabel,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -571,7 +579,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 color: AppColors.primary.withOpacity(0.7), size: 16),
             const SizedBox(width: 6),
             Text(
-              'Frecuencia de Entrenos',
+              AppL10n.of(context).workoutFrequencyLabel,
               style: TextStyle(
                 fontSize: 13,
                 color: AppColors.textSecondary.withOpacity(0.8),
@@ -581,8 +589,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
             const Spacer(),
             Text(
               hasAny
-                  ? '${periodSessions.length} sesión${periodSessions.length == 1 ? '' : 'es'}'
-                  : 'Sin datos',
+                  ? AppL10n.of(context).sessionsCount(periodSessions.length)
+                  : AppL10n.of(context).noData,
               style: TextStyle(
                 fontSize: 12,
                 color: AppColors.primary.withOpacity(0.8),
@@ -673,7 +681,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                           color: AppColors.textSecondary.withOpacity(0.25)),
                       const SizedBox(height: 10),
                       Text(
-                        'Completa un entreno para ver estadísticas',
+                        AppL10n.of(context).completeWorkoutForStats,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: AppColors.textSecondary.withOpacity(0.5),
@@ -699,9 +707,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Logros Recientes',
-              style: TextStyle(
+            Text(
+              AppL10n.of(context).recentAchievementsLabel,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -857,22 +865,22 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 size: 28,
               ),
             ),
-            const SizedBox(width: 16),
-            const Expanded(
+            SizedBox(width: 16),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Medidas Corporales',
-                    style: TextStyle(
+                    AppL10n.of(context).bodyMeasurementsLabel,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
                   Text(
-                    'Registra y sigue tus medidas',
-                    style: TextStyle(
+                    AppL10n.of(context).bodyMeasurementsSubtitle,
+                    style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
                     ),

@@ -2,6 +2,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
 
 class WorkoutCalendarScreen extends StatefulWidget {
   const WorkoutCalendarScreen({super.key});
@@ -59,7 +60,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Calendario de Entrenamientos'),
+        title: Text(AppL10n.of(context).workoutCalendar),
         actions: [
           IconButton(
             icon: const Icon(Icons.today),

@@ -273,7 +273,7 @@ class _AssignMealPlanScreenState extends State<AssignMealPlanScreen> {
                           } else if (widget.user.assignedMealPlanId != null) {
                             // Quitar plan si se deseleccionó
                             await userProvider.assignMealPlan(
-                                widget.user.id, '');
+                                widget.user.id, null);
                           }
                           if (!context.mounted) return;
                           Navigator.pop(context);

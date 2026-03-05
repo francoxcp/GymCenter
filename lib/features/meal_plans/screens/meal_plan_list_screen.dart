@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'create_meal_plan_screen.dart';
 import 'edit_meal_plan_screen.dart';
 import 'package:go_router/go_router.dart';
@@ -52,9 +52,6 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-    final isAdmin = authProvider.isAdmin;
-
     return Scaffold(
       appBar: AppBar(
         title: const Column(
@@ -79,25 +76,159 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
             ),
           ],
         ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(10),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Ícono
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.3),
+                    width: 2,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.restaurant_menu,
+                  size: 48,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Badge
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.4),
+                  ),
+                ),
+                child: const Text(
+                  'EN DESARROLLO',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Título
+              const Text(
+                'Próximamente',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Descripción
+              const Text(
+                'Los planes de alimentación estarán disponibles en una próxima actualización. Podrás ver tu plan semanal o mensual con las comidas de cada día, tal como te lo indica tu nutricionista.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                  height: 1.6,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Qué vendrá
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.cardBackground,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Lo que vendrá:',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    _FeatureItem(
+                        icon: Icons.calendar_month,
+                        text: 'Plan semanal y mensual (4 semanas)'),
+                    SizedBox(height: 8),
+                    _FeatureItem(
+                        icon: Icons.wb_sunny_outlined,
+                        text: 'Comidas por día: desayuno, almuerzo, merienda y cena'),
+                    SizedBox(height: 8),
+                    _FeatureItem(
+                        icon: Icons.person_outline,
+                        text: 'Asignado por tu nutricionista cada mes'),
+                    SizedBox(height: 8),
+                    _FeatureItem(
+                        icon: Icons.auto_awesome,
+                        text: 'Se actualiza automáticamente cada semana'),
+                  ],
+                ),
+              ),
+
+
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ignore: unused_element — reservado para futura implementación
+  Widget _buildAdminContent(BuildContext context) {
+    return Consumer<MealPlanProvider>(
+      builder: (context, mealPlanProvider, child) {
+        return Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => setState(() => _adminManageMode = false),
             ),
-            child: const Icon(
-              Icons.person,
-              color: Colors.black,
+            title: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'ADMINISTRACIÓN',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                Text(
+                  'Planes de alimentación',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
-      body: Consumer<MealPlanProvider>(
-        builder: (context, mealPlanProvider, child) {
-          return Column(
+          body: Column(
             children: [
               // Search Bar
               Padding(
@@ -165,7 +296,8 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: mealPlanProvider.filteredMealPlans.length,
                     itemBuilder: (context, index) {
-                      final plan = mealPlanProvider.filteredMealPlans[index];
+                      final plan =
+                          mealPlanProvider.filteredMealPlans[index];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: GestureDetector(
@@ -176,91 +308,86 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
                             description: plan.description,
                             calories: plan.calories,
                             icon: _getIconForType(plan.iconType),
-                            isAdmin: isAdmin,
-                            onEdit: isAdmin
-                                ? () async {
-                                    final result = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            EditMealPlanScreen(mealPlan: plan),
+                            isAdmin: true,
+                            onEdit: () async {
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      EditMealPlanScreen(mealPlan: plan),
+                                ),
+                              );
+                              if (result == true) {
+                                mealPlanProvider.loadMealPlans(
+                                    forceRefresh: true);
+                              }
+                            },
+                            onDelete: () async {
+                              final shouldDelete =
+                                  await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  backgroundColor: AppColors.surface,
+                                  title: const Text(
+                                    '¿Eliminar plan?',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  content: Text(
+                                    '¿Estás seguro de eliminar "${plan.name}"? Esta acción no se puede deshacer.',
+                                    style: const TextStyle(
+                                        color: AppColors.textSecondary),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      child: const Text(
+                                        'Cancelar',
+                                        style: TextStyle(
+                                            color: AppColors.textSecondary),
                                       ),
-                                    );
-                                    if (result == true) {
-                                      mealPlanProvider.loadMealPlans(
-                                          forceRefresh: true);
-                                    }
-                                  }
-                                : null,
-                            onDelete: isAdmin
-                                ? () async {
-                                    final shouldDelete = await showDialog<bool>(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        backgroundColor: AppColors.surface,
-                                        title: const Text(
-                                          '¿Eliminar plan?',
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                        content: Text(
-                                          '¿Estás seguro de eliminar "${plan.name}"? Esta acción no se puede deshacer.',
-                                          style: const TextStyle(
-                                              color: AppColors.textSecondary),
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, false),
-                                            child: const Text(
-                                              'Cancelar',
-                                              style: TextStyle(
-                                                  color:
-                                                      AppColors.textSecondary),
-                                            ),
-                                          ),
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, true),
-                                            child: const Text(
-                                              'Eliminar',
-                                              style: TextStyle(
-                                                  color: Colors.redAccent),
-                                            ),
-                                          ),
-                                        ],
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
+                                      child: const Text(
+                                        'Eliminar',
+                                        style: TextStyle(
+                                            color: Colors.redAccent),
                                       ),
-                                    );
+                                    ),
+                                  ],
+                                ),
+                              );
 
-                                    if (shouldDelete == true) {
-                                      try {
-                                        await mealPlanProvider
-                                            .deleteMealPlan(plan.id);
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                  'Plan eliminado correctamente'),
-                                              backgroundColor:
-                                                  AppColors.primary,
-                                            ),
-                                          );
-                                        }
-                                      } catch (e) {
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content:
-                                                  Text('Error al eliminar: $e'),
-                                              backgroundColor: Colors.redAccent,
-                                            ),
-                                          );
-                                        }
-                                      }
-                                    }
+                              if (shouldDelete == true) {
+                                try {
+                                  await mealPlanProvider
+                                      .deleteMealPlan(plan.id);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            'Plan eliminado correctamente'),
+                                        backgroundColor: AppColors.primary,
+                                      ),
+                                    );
                                   }
-                                : null,
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            'Error al eliminar: $e'),
+                                        backgroundColor: Colors.redAccent,
+                                      ),
+                                    );
+                                  }
+                                }
+                              }
+                            },
                           ),
                         ),
                       );
@@ -269,32 +396,55 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
                 ),
               ),
             ],
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final navigator = Navigator.of(context);
-          final mealPlanProvider =
-              Provider.of<MealPlanProvider>(context, listen: false);
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () async {
+              final navigator = Navigator.of(context);
+              final provider =
+                  Provider.of<MealPlanProvider>(context, listen: false);
+              final result = await navigator.push(
+                MaterialPageRoute(
+                  builder: (context) => const CreateMealPlanScreen(),
+                ),
+              );
+              if (result == true) {
+                await provider.loadMealPlans(forceRefresh: true);
+              }
+            },
+            backgroundColor: AppColors.primary,
+            child: const Icon(Icons.add, color: Colors.black, size: 32),
+          ),
+        );
+      },
+    );
+  }
+}
 
-          final result = await navigator.push(
-            MaterialPageRoute(
-              builder: (context) => const CreateMealPlanScreen(),
+// Widget auxiliar para la lista de features del "Próximamente"
+class _FeatureItem extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _FeatureItem({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: AppColors.primary),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+              height: 1.4,
             ),
-          );
-
-          if (result == true) {
-            await mealPlanProvider.loadMealPlans(forceRefresh: true);
-          }
-        },
-        backgroundColor: AppColors.primary,
-        child: const Icon(
-          Icons.add,
-          color: Colors.black,
-          size: 32,
+          ),
         ),
-      ),
+      ],
     );
   }
 }

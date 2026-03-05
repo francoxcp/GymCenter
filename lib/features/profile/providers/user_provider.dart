@@ -101,7 +101,7 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> assignMealPlan(String userId, String mealPlanId) async {
+  Future<void> assignMealPlan(String userId, String? mealPlanId) async {
     try {
       await SupabaseConfig.client
           .from(AppConstants.usersTable)

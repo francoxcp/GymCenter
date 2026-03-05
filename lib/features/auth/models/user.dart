@@ -23,6 +23,8 @@ class User {
     this.assignedMealPlanId,
   });
 
+  static const _sentinel = Object();
+
   User copyWith({
     String? id,
     String? email,
@@ -32,8 +34,8 @@ class User {
     String? level,
     int? activeDays,
     int? completedWorkouts,
-    String? assignedWorkoutId,
-    String? assignedMealPlanId,
+    Object? assignedWorkoutId = _sentinel,
+    Object? assignedMealPlanId = _sentinel,
   }) {
     return User(
       id: id ?? this.id,
@@ -44,8 +46,12 @@ class User {
       level: level ?? this.level,
       activeDays: activeDays ?? this.activeDays,
       completedWorkouts: completedWorkouts ?? this.completedWorkouts,
-      assignedWorkoutId: assignedWorkoutId ?? this.assignedWorkoutId,
-      assignedMealPlanId: assignedMealPlanId ?? this.assignedMealPlanId,
+      assignedWorkoutId: assignedWorkoutId == _sentinel
+          ? this.assignedWorkoutId
+          : assignedWorkoutId as String?,
+      assignedMealPlanId: assignedMealPlanId == _sentinel
+          ? this.assignedMealPlanId
+          : assignedMealPlanId as String?,
     );
   }
 

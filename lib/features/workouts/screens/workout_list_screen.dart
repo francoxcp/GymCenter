@@ -266,7 +266,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
               ),
             ),
             Text(
-              'Lista de Rutinas',
+              'Lista de rutinas',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -432,7 +432,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
-                          'Todas las Rutinas',
+                          'Todas las rutinas',
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
@@ -493,7 +493,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                         // ── Rutinas Oficiales ──
                         if (officialWorkouts.isNotEmpty) ...[
                           _SectionHeader(
-                            label: 'Rutinas Oficiales',
+                            label: 'Rutinas oficiales',
                             icon: Icons.verified_rounded,
                             color: AppColors.primary,
                           ),
@@ -517,7 +517,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                             const SizedBox(height: 8),
                           _SectionHeader(
                             label:
-                                isAdmin ? 'Rutinas de Usuarios' : 'Mis Rutinas',
+                                isAdmin ? 'Rutinas de usuarios' : 'Mis rutinas',
                             icon: isAdmin
                                 ? Icons.people_alt_rounded
                                 : Icons.star_rounded,

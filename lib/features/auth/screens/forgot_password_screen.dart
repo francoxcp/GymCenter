@@ -105,7 +105,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       child: const Text(
-                        'Inicio sesión',
+                        'Inicio de sesión',
                         style: TextStyle(
                           fontSize: 14,
                           color: AppColors.primary,
@@ -128,7 +128,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (_emailController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Por favor ingresa tu email'),
+          content: Text('Ingresa tu correo electrónico'),
           backgroundColor: Colors.red,
         ),
       );

@@ -78,7 +78,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   controller: _searchController,
                   onChanged: userProvider.setSearchQuery,
                   decoration: InputDecoration(
-                    hintText: 'Buscar por nombre o email...',
+                    hintText: 'Buscar',
                     prefixIcon: const Icon(
                       Icons.search,
                       color: AppColors.textSecondary,

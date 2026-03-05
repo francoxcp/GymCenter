@@ -71,7 +71,7 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
                   controller: _searchController,
                   onChanged: userProvider.setSearchQuery,
                   decoration: InputDecoration(
-                    hintText: 'Buscar usuario...',
+                    hintText: 'Buscar',
                     prefixIcon: const Icon(
                       Icons.search,
                       color: AppColors.textSecondary,

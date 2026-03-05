@@ -70,7 +70,7 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
               ),
             ),
             Text(
-              'Planes de Alimentación',
+              'Planes de alimentación',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -105,7 +105,7 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Buscar plan por nombre...',
+                    hintText: 'Buscar',
                     prefixIcon: const Icon(
                       Icons.search,
                       color: AppColors.textSecondary,

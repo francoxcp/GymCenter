@@ -337,7 +337,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         '🔄 _nextExercise: currentIndex=$_currentExerciseIndex, total=${_completedSets.length}');
 
     if (_currentExerciseIndex < _completedSets.length - 1) {
-      debugPrint('➡️ Avanzando al siguiente ejercicio');
+      debugPrint('Avanzando al siguiente ejercicio');
       HapticFeedback.mediumImpact();
       setState(() {
         _currentExerciseIndex++;
@@ -348,7 +348,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         curve: Curves.easeOutCubic,
       );
     } else {
-      debugPrint('✅ Último ejercicio completado, mostrando resumen');
+      debugPrint('Último ejercicio completado, mostrando resumen');
       _showWorkoutSummary(workout);
     }
   }
@@ -927,7 +927,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                       HapticFeedback.lightImpact();
                     },
                     child: const Text(
-                      'Saltar Descanso',
+                      'Saltar descanso',
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w600,

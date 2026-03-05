@@ -153,7 +153,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                       children: [
                         // Descanso option
                         _BottomSheetTile(
-                          title: 'Descanso de descanso',
+                          title: 'Día de descanso',
                           subtitle: 'Sin rutina asignada',
                           icon: Icons.hotel,
                           isSelected: currentId == null,

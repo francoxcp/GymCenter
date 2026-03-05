@@ -30,10 +30,10 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: AppColors.surface,
-          title: const Text('Rutina en Progreso',
+          title: const Text('Rutina en progreso',
               style: TextStyle(color: Colors.white)),
           content: const Text(
-            'Tienes una rutina en curso. ¿Quieres continuar esa o iniciar esta como extra?',
+            'Tienes una rutina en curso. ¿Quieres continuarla o iniciar esta como extra?',
             style: TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
@@ -346,7 +346,7 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Ejercicios de la Rutina',
+                        'Ejercicios de la rutina',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,

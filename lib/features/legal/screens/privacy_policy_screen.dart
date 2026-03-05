@@ -32,7 +32,8 @@ class PrivacyPolicyScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.privacy_tip, color: AppColors.primary, size: 32),
+                  const Icon(Icons.privacy_tip,
+                      color: AppColors.primary, size: 32),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -73,17 +74,17 @@ class PrivacyPolicyScreen extends StatelessWidget {
             _buildSection(
               '1. Información que Recopilamos',
               'Recopilamos los siguientes tipos de información:\n\n'
-                  '**Información de Cuenta:**\n'
+                  'Información de Cuenta:\n'
                   '• Nombre completo\n'
                   '• Correo electrónico\n'
                   '• Contraseña (encriptada)\n'
                   '• Fecha de nacimiento\n\n'
-                  '**Información Física:**\n'
+                  'Información física:\n'
                   '• Peso y altura\n'
                   '• Medidas corporales (pecho, cintura, cadera, bíceps, muslos)\n'
                   '• Fotografías de progreso (opcional)\n'
                   '• Nivel de experiencia\n\n'
-                  '**Información de Actividad:**\n'
+                  'Información de Actividad:\n'
                   '• Entrenamientos completados\n'
                   '• Duración de sesiones\n'
                   '• Calorías quemadas\n'

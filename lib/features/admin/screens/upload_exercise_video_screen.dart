@@ -45,7 +45,7 @@ class _UploadExerciseVideoScreenState extends State<UploadExerciseVideoScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              '🎥 Subir Video del Ejercicio',
+              'Subir video del ejercicio',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -198,7 +198,7 @@ class _UploadExerciseVideoScreenState extends State<UploadExerciseVideoScreen> {
                   Expanded(
                     flex: 2,
                     child: PrimaryButton(
-                      text: 'Subir Video',
+                      text: 'Subir video',
                       onPressed: _uploadVideo,
                     ),
                   ),
@@ -206,7 +206,7 @@ class _UploadExerciseVideoScreenState extends State<UploadExerciseVideoScreen> {
               )
             else if (!_isUploading)
               PrimaryButton(
-                text: 'Seleccionar Video',
+                text: 'Seleccionar video',
                 onPressed: _pickVideo,
               ),
 

@@ -103,7 +103,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Editar Perfil'),
+        title: const Text('Editar perfil'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -172,7 +172,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               // Información personal
               const Text(
-                'Información Personal',
+                'Información personal',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -205,7 +205,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               // Nivel de entrenamiento
               const Text(
-                'Nivel de Entrenamiento',
+                'Nivel de entrenamiento',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -261,7 +261,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     Icon(Icons.lock_outline, color: AppColors.primary),
                     SizedBox(width: 8),
                     Text(
-                      'Cambiar Contraseña',
+                      'Cambiar contraseña',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -275,7 +275,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               // Botón guardar
               PrimaryButton(
-                text: 'Guardar Cambios',
+                text: 'Guardar cambios',
                 onPressed: _isLoading ? null : _saveProfile,
                 isLoading: _isLoading,
               ),

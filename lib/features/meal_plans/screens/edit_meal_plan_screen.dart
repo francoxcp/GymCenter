@@ -57,7 +57,7 @@ class _EditMealPlanScreenState extends State<EditMealPlanScreen> {
               ),
             ),
             Text(
-              'Editar Plan Alimenticio',
+              'Editar plan alimenticio',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -85,7 +85,7 @@ class _EditMealPlanScreenState extends State<EditMealPlanScreen> {
                     TextFormField(
                       controller: _nameController,
                       decoration: const InputDecoration(
-                        labelText: 'Nombre del Plan',
+                        labelText: 'Nombre del plan',
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
@@ -109,7 +109,7 @@ class _EditMealPlanScreenState extends State<EditMealPlanScreen> {
                       controller: _caloriesController,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
-                        labelText: 'Calorías Totales',
+                        labelText: 'Calorías totales',
                         border: OutlineInputBorder(),
                         suffixText: 'kcal',
                       ),
@@ -185,7 +185,7 @@ class _EditMealPlanScreenState extends State<EditMealPlanScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            'Calorías del Plan:',
+                            'Calorías del plan:',
                             style: TextStyle(
                               fontSize: 16,
                               color: AppColors.textSecondary,
@@ -215,7 +215,7 @@ class _EditMealPlanScreenState extends State<EditMealPlanScreen> {
                           ),
                         ),
                         child: const Text(
-                          'Guardar Cambios',
+                          'Guardar cambios',
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 16,
@@ -257,7 +257,7 @@ class _EditMealPlanScreenState extends State<EditMealPlanScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: Text(meal == null ? 'Nueva Comida' : 'Editar Comida'),
+        title: Text(meal == null ? 'Nueva comida' : 'Editar comida'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -276,7 +276,7 @@ class _EditMealPlanScreenState extends State<EditMealPlanScreen> {
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 value: mealTime,
-                decoration: const InputDecoration(labelText: 'Momento del Día'),
+                decoration: const InputDecoration(labelText: 'Momento del día'),
                 items: [
                   'Desayuno',
                   'Media Mañana',
@@ -388,7 +388,7 @@ class _EditMealPlanScreenState extends State<EditMealPlanScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: const Text('Confirmar Eliminación'),
+        title: const Text('Confirmar eliminación'),
         content: Text(
           '¿Estás seguro de eliminar "${widget.mealPlan.name}"? Esta acción no se puede deshacer.',
         ),

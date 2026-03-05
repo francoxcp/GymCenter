@@ -580,7 +580,7 @@ class _UserSearchDialogState extends State<_UserSearchDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'Seleccionar Usuario',
+              'Seleccionar usuario',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -592,7 +592,7 @@ class _UserSearchDialogState extends State<_UserSearchDialog> {
               controller: _searchController,
               onChanged: (value) => userProvider.setSearchQuery(value),
               decoration: InputDecoration(
-                hintText: 'Buscar por nombre o email...',
+                hintText: 'Buscar',
                 prefixIcon:
                     const Icon(Icons.search, color: AppColors.textSecondary),
                 filled: true,
@@ -680,7 +680,7 @@ class _MealPlanSelectDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'Seleccionar Plan Alimenticio',
+              'Seleccionar plan alimenticio',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

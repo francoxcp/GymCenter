@@ -353,7 +353,7 @@ class MealPlanDetailScreen extends StatelessWidget {
   MealPlan _getExampleMealPlan() {
     return MealPlan(
       id: mealPlanId,
-      name: 'Plan Balanceado 2000 Cal',
+      name: 'Plan balanceado 2000 Cal',
       description: 'Nutrición equilibrada para mantener tu peso ideal',
       calories: 2000,
       category: 'Mantenimiento',

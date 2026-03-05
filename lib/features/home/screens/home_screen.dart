@@ -43,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (userId != null) {
         progressProvider.loadProgress(userId);
 
-      // Cargar sesiones usando caché (5 min) al cambiar de tab.
+        // Cargar sesiones usando caché (5 min) al cambiar de tab.
         // Solo el pull-to-refresh obliga a re-descargar desde red.
         final sessionProvider =
             Provider.of<WorkoutSessionProvider>(context, listen: false);
@@ -263,9 +263,8 @@ class _AdminHomeContentState extends State<_AdminHomeContent> {
                 userProvider.users.where((u) => u.role != 'admin').toList();
             final userCount = regularUsers.length;
             final workoutCount = workoutProvider.workouts.length;
-            final usersWithoutWorkout = regularUsers
-                .where((u) => u.assignedWorkoutId == null)
-                .length;
+            final usersWithoutWorkout =
+                regularUsers.where((u) => u.assignedWorkoutId == null).length;
             return Column(
               children: [
                 Row(
@@ -308,7 +307,7 @@ class _AdminHomeContentState extends State<_AdminHomeContent> {
                           : AppColors.primary,
                       fullWidth: true,
                       subtitle: usersWithoutWorkout == 0
-                          ? '✓ Todos tienen rutina'
+                          ? 'Todos tienen rutina'
                           : 'Usuarios pendientes de asignación',
                     ),
                   ),
@@ -321,7 +320,7 @@ class _AdminHomeContentState extends State<_AdminHomeContent> {
         const SizedBox(height: 28),
 
         const Text(
-          'Acciones Rápidas',
+          'Acciones rápidas',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -335,7 +334,7 @@ class _AdminHomeContentState extends State<_AdminHomeContent> {
         FadeInCard(
           delay: 200,
           child: _QuickActionCard(
-            title: 'Gestionar Rutinas',
+            title: 'Gestionar rutinas',
             subtitle: 'Crear, editar y asignar rutinas',
             icon: Icons.fitness_center,
             onTap: () => context.push('/workouts'),
@@ -347,7 +346,7 @@ class _AdminHomeContentState extends State<_AdminHomeContent> {
         FadeInCard(
           delay: 300,
           child: _QuickActionCard(
-            title: 'Gestionar Planes Alimenticios',
+            title: 'Gestionar planes alimenticios',
             subtitle: 'Crear y asignar dietas',
             icon: Icons.restaurant_menu,
             onTap: () => context.push('/meal-plans'),
@@ -359,7 +358,7 @@ class _AdminHomeContentState extends State<_AdminHomeContent> {
         FadeInCard(
           delay: 400,
           child: _QuickActionCard(
-            title: 'Panel de Administración',
+            title: 'Panel de administración',
             subtitle: 'Ver estadísticas y usuarios',
             icon: Icons.dashboard,
             onTap: () => context.push('/admin'),
@@ -554,7 +553,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
 
         // Today's Workout
         Text(
-          todayCompleted ? 'Próxima Rutina' : 'Tu Rutina Asignada',
+          todayCompleted ? 'Próxima rutina' : 'Tu rutina asignada',
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -882,7 +881,8 @@ class _StatCard extends StatelessWidget {
                       ),
                     ),
                     TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0.0, end: double.tryParse(value) ?? 0.0),
+                      tween:
+                          Tween(begin: 0.0, end: double.tryParse(value) ?? 0.0),
                       duration: const Duration(milliseconds: 800),
                       curve: Curves.easeOut,
                       builder: (context, animatedValue, child) {

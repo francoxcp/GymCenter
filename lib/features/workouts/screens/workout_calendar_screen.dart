@@ -31,19 +31,19 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
 
     // Datos de ejemplo - conectar con WorkoutSessionProvider para datos reales
     _workoutEvents[DateTime(now.year, now.month, now.day)] = [
-      WorkoutEvent('Entrenamiento Completo', true, 45),
+      WorkoutEvent('Entrenamiento completo', true, 45),
     ];
     _workoutEvents[DateTime(now.year, now.month, now.day - 1)] = [
-      WorkoutEvent('Piernas y Glúteos', true, 50),
+      WorkoutEvent('Piernas y glúteos', true, 50),
     ];
     _workoutEvents[DateTime(now.year, now.month, now.day - 2)] = [
-      WorkoutEvent('Tren Superior', true, 42),
+      WorkoutEvent('Tren superior', true, 42),
     ];
     _workoutEvents[DateTime(now.year, now.month, now.day - 4)] = [
-      WorkoutEvent('Cardio Intenso', true, 30),
+      WorkoutEvent('Cardio intenso', true, 30),
     ];
     _workoutEvents[DateTime(now.year, now.month, now.day + 1)] = [
-      WorkoutEvent('Entrenamiento Completo', false, 0),
+      WorkoutEvent('Entrenamiento completo', false, 0),
     ];
   }
 

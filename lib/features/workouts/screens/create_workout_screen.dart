@@ -168,7 +168,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Nueva Rutina'),
+          title: const Text('Nueva rutina'),
           actions: [
             if (_isLoading)
               const Center(
@@ -202,7 +202,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                 controller: _nameController,
                 decoration: const InputDecoration(
                   labelText: 'Nombre de la rutina',
-                  hintText: 'Ej: Hipertrofia Nivel 3',
+                  hintText: 'Ej: Fuerza',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
@@ -621,7 +621,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
               TextFormField(
                 controller: _weightController,
                 decoration: const InputDecoration(
-                  labelText: 'Peso (kg)',
+                  labelText: 'Peso (lbs)',
                   hintText: 'Ej: 20  —  dejar vacío si es peso corporal',
                   suffixText: 'kg',
                 ),
@@ -660,7 +660,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                   OutlinedButton.icon(
                     onPressed: _pickVideo,
                     icon: const Icon(Icons.upload_file),
-                    label: const Text('Seleccionar Video'),
+                    label: const Text('Seleccionar video'),
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 44),
                     ),

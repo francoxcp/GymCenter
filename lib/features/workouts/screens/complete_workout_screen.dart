@@ -103,7 +103,7 @@ class _CompleteWorkoutScreenState extends State<CompleteWorkoutScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Completar Entrenamiento'),
+        title: const Text('Completar entrenamiento'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -128,7 +128,7 @@ class _CompleteWorkoutScreenState extends State<CompleteWorkoutScreen> {
 
             // Título
             const Text(
-              '¡Sesión Completada!',
+              '¡Sesión completada!',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -173,7 +173,7 @@ class _CompleteWorkoutScreenState extends State<CompleteWorkoutScreen> {
 
             // Campo de calorías
             const Text(
-              'Calorías Quemadas',
+              'Calorías quemadas',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -238,7 +238,7 @@ class _CompleteWorkoutScreenState extends State<CompleteWorkoutScreen> {
 
             // Notas opcionales
             const Text(
-              'Notas (Opcional)',
+              'Notas (opcional)',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -285,7 +285,7 @@ class _CompleteWorkoutScreenState extends State<CompleteWorkoutScreen> {
                       ),
                     )
                   : const Text(
-                      'Guardar y Finalizar',
+                      'Guardar y finalizar',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

@@ -223,7 +223,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               decoration: TextDecoration.underline,
                             ),
                           ),
-                          TextSpan(text: ' de Chamos Fitness.'),
+                          TextSpan(text: ' de Chamos Fitness Center.'),
                         ],
                       ),
                     ),

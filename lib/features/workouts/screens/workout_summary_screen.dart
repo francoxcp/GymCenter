@@ -353,7 +353,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          'Resumen de Ejercicios',
+                          'Resumen de ejercicios',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,

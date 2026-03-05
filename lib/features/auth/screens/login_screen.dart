@@ -278,7 +278,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: const Padding(
                         padding: EdgeInsets.symmetric(vertical: 12),
                         child: Text(
-                          'Iniciar Sesión',
+                          'Iniciar sesión',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: AppColors.primary,
@@ -409,7 +409,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // Login Button
               PrimaryButton(
-                text: _isLoading ? 'Ingresando...' : 'Entrar al Gimnasio',
+                text: _isLoading ? 'Ingresando...' : 'Entrar al gimnasio',
                 onPressed: _isLoading ? () {} : _handleLogin,
               ),
 

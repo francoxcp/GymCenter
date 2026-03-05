@@ -151,7 +151,7 @@ class _CreateMealPlanScreenState extends State<CreateMealPlanScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Nuevo Plan Alimenticio'),
+          title: const Text('Nuevo plan alimenticio'),
           actions: [
             if (_isLoading)
               const Center(
@@ -185,7 +185,7 @@ class _CreateMealPlanScreenState extends State<CreateMealPlanScreen> {
                 controller: _nameController,
                 decoration: const InputDecoration(
                   labelText: 'Nombre del plan',
-                  hintText: 'Ej: Definición Pro - Keto',
+                  hintText: 'Ej: Definición',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {

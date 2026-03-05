@@ -92,7 +92,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                     TextFormField(
                       controller: _nameController,
                       decoration: const InputDecoration(
-                        labelText: 'Nombre de la Rutina',
+                        labelText: 'Nombre de la rutina',
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
@@ -207,7 +207,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                           ),
                         ),
                         child: const Text(
-                          'Guardar Cambios',
+                          'Guardar cambios',
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 16,
@@ -309,7 +309,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: const Text('Confirmar Eliminación'),
+        title: const Text('Confirmar eliminación'),
         content: Text(
           '¿Estás seguro de eliminar "${widget.workout.name}"? Esta acción no se puede deshacer.',
         ),
@@ -603,7 +603,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
     return AlertDialog(
       backgroundColor: AppColors.cardBackground,
       title: Text(
-          widget.exercise == null ? 'Nuevo Ejercicio' : 'Editar Ejercicio'),
+          widget.exercise == null ? 'Nuevo ejercicio' : 'Editar ejercicio'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -683,7 +683,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
               OutlinedButton.icon(
                 onPressed: _pickVideo,
                 icon: const Icon(Icons.upload_file),
-                label: const Text('Seleccionar Video'),
+                label: const Text('Seleccionar video'),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 40),
                 ),

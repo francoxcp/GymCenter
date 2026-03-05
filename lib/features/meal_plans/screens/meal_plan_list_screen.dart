@@ -203,7 +203,7 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () => setState(() => _adminManageMode = false),
+              onPressed: () => Navigator.of(context).pop(),
             ),
             title: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -4,6 +4,7 @@ class WorkoutProgress {
   final String workoutId;
   final int exerciseIndex;
   final List<List<bool>> completedSets;
+  final int accumulatedSeconds;
   final DateTime startedAt;
   final DateTime updatedAt;
 
@@ -13,6 +14,7 @@ class WorkoutProgress {
     required this.workoutId,
     required this.exerciseIndex,
     required this.completedSets,
+    this.accumulatedSeconds = 0,
     required this.startedAt,
     required this.updatedAt,
   });
@@ -33,6 +35,7 @@ class WorkoutProgress {
       workoutId: json['workout_id'] as String,
       exerciseIndex: json['exercise_index'] as int,
       completedSets: sets,
+      accumulatedSeconds: (json['accumulated_seconds'] as int?) ?? 0,
       startedAt: DateTime.parse(json['started_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );

@@ -8,7 +8,6 @@ import '../../../core/utils/unit_converter.dart';
 import '../models/workout.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/user_provider.dart';
-import '../../settings/providers/preferences_provider.dart';
 import '../providers/workout_provider.dart';
 import '../providers/workout_progress_provider.dart';
 import '../providers/workout_session_provider.dart';
@@ -229,8 +228,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final prefs = Provider.of<PreferencesProvider>(context).preferences;
-    final units = prefs?.units ?? 'metric';
+    const units = 'metric';
     final l10n = AppL10n.of(context);
     // Actualizar mensajes según idioma actual
     _motivationalMessages = l10n.motivationalMessages;

@@ -87,6 +87,7 @@ class WorkoutProgressProvider with ChangeNotifier {
     required String workoutId,
     required int exerciseIndex,
     required List<List<bool>> completedSets,
+    int accumulatedSeconds = 0,
   }) async {
     try {
       final data = {
@@ -94,6 +95,7 @@ class WorkoutProgressProvider with ChangeNotifier {
         'workout_id': workoutId,
         'exercise_index': exerciseIndex,
         'completed_sets': completedSets,
+        'accumulated_seconds': accumulatedSeconds,
       };
 
       // Usar upsert para insertar o actualizar

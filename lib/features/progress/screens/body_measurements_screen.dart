@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../core/utils/unit_converter.dart';
-import '../../settings/providers/preferences_provider.dart';
 import '../providers/body_measurement_provider.dart';
 import '../models/body_measurement.dart';
 import '../../../shared/widgets/primary_button.dart';
@@ -31,10 +30,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
   Widget build(BuildContext context) {
     final measurementProvider = Provider.of<BodyMeasurementProvider>(context);
     final measurements = measurementProvider.measurements;
-    final units = Provider.of<PreferencesProvider>(context)
-            .preferences
-            ?.units ??
-        'metric';
+    const units = 'metric';
 
     return Scaffold(
       backgroundColor: AppColors.background,

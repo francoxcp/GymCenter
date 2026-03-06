@@ -17,7 +17,6 @@ class UserPreferences {
   final bool achievementAlerts;
   final bool progressReports;
   final String theme; // 'light', 'dark', 'system'
-  final String units; // 'metric', 'imperial'
   final String language; // 'es', 'en'
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -31,7 +30,6 @@ class UserPreferences {
     required this.achievementAlerts,
     required this.progressReports,
     required this.theme,
-    required this.units,
     required this.language,
     required this.createdAt,
     required this.updatedAt,
@@ -47,7 +45,6 @@ class UserPreferences {
       achievementAlerts: json['achievement_alerts'] ?? true,
       progressReports: json['progress_reports'] ?? true,
       theme: json['theme'] ?? 'system',
-      units: json['units'] ?? 'metric',
       language: json['language'] ?? 'es',
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
@@ -64,7 +61,6 @@ class UserPreferences {
       'achievement_alerts': achievementAlerts,
       'progress_reports': progressReports,
       'theme': theme,
-      'units': units,
       'language': language,
     };
   }
@@ -81,7 +77,6 @@ class UserPreferences {
       'workout_reminders': workoutReminders,
       'achievement_alerts': achievementAlerts,
       'theme': theme,
-      'units': units,
       'language': language,
       'progress_reports': progressReports,
     };
@@ -95,7 +90,6 @@ class UserPreferences {
     bool? achievementAlerts,
     bool? progressReports,
     String? theme,
-    String? units,
     String? language,
   }) {
     return UserPreferences(
@@ -107,7 +101,6 @@ class UserPreferences {
       achievementAlerts: achievementAlerts ?? this.achievementAlerts,
       progressReports: progressReports ?? this.progressReports,
       theme: theme ?? this.theme,
-      units: units ?? this.units,
       language: language ?? this.language,
       createdAt: createdAt,
       updatedAt: DateTime.now(),
@@ -329,14 +322,6 @@ class PreferencesProvider with ChangeNotifier {
     if (enabled && _preferences!.notificationsEnabled) {
       // Programar la notificación semanal del domingo
       await notificationService.scheduleWeeklyProgressReport();
-      // Enviar un reporte inmediato para que el usuario vea que funciona
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId != null) {
-        ProgressReportService().sendNow(
-          userId: userId,
-          isEnglish: (_preferences?.language ?? 'es') == 'en',
-        );
-      }
     } else {
       await notificationService.cancelWeeklyProgressReport();
     }
@@ -353,14 +338,6 @@ class PreferencesProvider with ChangeNotifier {
     if (_preferences == null) return false;
 
     final updated = _preferences!.copyWith(theme: theme);
-    return await updatePreferences(updated);
-  }
-
-  /// Cambiar unidades
-  Future<bool> changeUnits(String units) async {
-    if (_preferences == null) return false;
-
-    final updated = _preferences!.copyWith(units: units);
     return await updatePreferences(updated);
   }
 

@@ -187,16 +187,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
           const SizedBox(height: 24),
 
-          // Unidades
-          _buildSectionTitle(l10n.isEn ? 'Units' : 'Unidades'),
-          _buildOptionTile(
-            title: l10n.measurementSystem,
-            subtitle: prefs.units == 'metric' ? l10n.metric : l10n.imperial,
-            icon: Icons.straighten,
-            onTap: () => _showUnitSelector(preferencesProvider, prefs.units, l10n),
-          ),
-          const SizedBox(height: 24),
-
           // Idioma
           _buildSectionTitle(l10n.sectionLanguage),
           _buildOptionTile(
@@ -418,66 +408,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  void _showUnitSelector(PreferencesProvider provider, String currentUnit, AppL10n l10n) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.cardBackground,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              l10n.selectMeasurementSystem,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildUnitOption(
-                'metric', l10n.metric, 'kg, cm', currentUnit, provider),
-            _buildUnitOption(
-                'imperial', l10n.imperial, 'lb, in', currentUnit, provider),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUnitOption(
-    String unitCode,
-    String unit,
-    String description,
-    String currentUnit,
-    PreferencesProvider provider,
-  ) {
-    final isSelected = currentUnit == unitCode;
-    return ListTile(
-      title: Text(
-        unit,
-        style: TextStyle(
-          color: isSelected ? AppColors.primary : Colors.white,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
-      subtitle: Text(
-        description,
-        style: const TextStyle(color: AppColors.textSecondary),
-      ),
-      trailing:
-          isSelected ? const Icon(Icons.check, color: AppColors.primary) : null,
-      onTap: () {
-        provider.changeUnits(unitCode);
-        Navigator.pop(context);
-      },
     );
   }
 

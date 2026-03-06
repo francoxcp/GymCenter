@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/l10n/app_l10n.dart';
 import 'dart:async';
 import '../../../core/theme/app_theme.dart';
@@ -25,13 +26,15 @@ class TodayWorkoutScreen extends StatefulWidget {
 }
 
 class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   int _currentExerciseIndex = 0;
   List<List<bool>> _completedSets = [];
   bool _isResting = false;
   int _remainingSeconds = 0;
   Timer? _timer;
-  DateTime? _startTime;
+  bool _isPaused = false;
+  int _accumulatedSeconds = 0; // segundos activos acumulados
+  DateTime? _resumeTime;      // inicio del segmento activo actual
 
   late PageController _pageController;
   late AnimationController _celebrationController;
@@ -56,8 +59,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       duration: const Duration(milliseconds: 800),
     );
 
-    // Registrar el momento exacto en que el usuario inicia la rutina
-    _startTime = DateTime.now();
+    // Registrar el inicio del segmento activo
+    _resumeTime = DateTime.now();
+    WidgetsBinding.instance.addObserver(this);
 
     // Verificar progreso pendiente después de que se construya el widget
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -67,11 +71,78 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _saveDebouncer?.cancel();
     _pageController.dispose();
     _celebrationController.dispose();
     super.dispose();
+  }
+
+  // ── Ciclo de vida de la app: auto-pausa al ir a segundo plano ──────────────
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_workoutCompleted) return;
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      if (!_isPaused) _pauseWorkout(auto: true);
+    }
+  }
+
+  // ── Cronómetro activo ──────────────────────────────────────────────────────
+  int _getActiveDurationSeconds() {
+    if (_isPaused || _resumeTime == null) return _accumulatedSeconds;
+    return _accumulatedSeconds +
+        DateTime.now().difference(_resumeTime!).inSeconds;
+  }
+
+  void _pauseWorkout({bool auto = false}) {
+    if (_isPaused) return;
+    _timer?.cancel();
+    setState(() {
+      _accumulatedSeconds = _getActiveDurationSeconds();
+      _isPaused = true;
+      _isResting = false;
+    });
+    _saveTimerLocally();
+    _saveProgressDebounced();
+    if (!auto) HapticFeedback.mediumImpact();
+  }
+
+  void _resumeWorkout() {
+    if (!_isPaused) return;
+    setState(() {
+      _resumeTime = DateTime.now();
+      _isPaused = false;
+    });
+    HapticFeedback.mediumImpact();
+  }
+
+  String _timerKey() {
+    final authProvider = context.read<AuthProvider>();
+    final userId = authProvider.currentUser?.id ?? '';
+    final workoutId = widget.extraWorkoutId ??
+        authProvider.currentUser?.assignedWorkoutId ?? '';
+    return 'workout_timer_${userId}_$workoutId';
+  }
+
+  Future<void> _saveTimerLocally() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_timerKey(), _accumulatedSeconds);
+  }
+
+  Future<void> _loadTimerLocally() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getInt(_timerKey()) ?? 0;
+    if (saved > 0) {
+      setState(() => _accumulatedSeconds = saved);
+    }
+  }
+
+  Future<void> _clearTimerLocally() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_timerKey());
   }
 
   Future<void> _checkPendingProgress() async {
@@ -220,10 +291,19 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     setState(() {
       _completedSets = progress.completedSets;
       _currentExerciseIndex = progress.exerciseIndex;
-      _startTime = progress.startedAt;
+      // Restaurar segundos acumulados guardados (si existen en BD)
+      if (progress.accumulatedSeconds > 0) {
+        _accumulatedSeconds = progress.accumulatedSeconds;
+      }
+      _resumeTime = DateTime.now();
+      _isPaused = false;
+    });
+    // También cargar timer local (SharedPrefs) en paralelo
+    _loadTimerLocally().then((_) {
+      // Si SharedPrefs tiene un valor mayor, usarlo
+      setState(() => _resumeTime = DateTime.now());
     });
 
-    // Animar al ejercicio correcto
     if (_pageController.hasClients) {
       _pageController.jumpToPage(_currentExerciseIndex);
     }
@@ -326,6 +406,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         workoutId: effectiveSaveId,
         exerciseIndex: _currentExerciseIndex,
         completedSets: _completedSets,
+        accumulatedSeconds: _getActiveDurationSeconds(),
       );
     } catch (e) {
       // Error guardado de progreso: log seguro, sin datos sensibles
@@ -370,9 +451,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   void _showWorkoutSummary(Workout workout) {
     HapticFeedback.heavyImpact();
 
-    final endTime = DateTime.now();
-    final durationMinutes =
-        _startTime != null ? endTime.difference(_startTime!).inMinutes : 0;
+    // Tiempo activo real (excluye pausas)
+    final durationMinutes = _getActiveDurationSeconds() ~/ 60;
+    _clearTimerLocally(); // limpiar timer guardado
 
     // Obtener peso del usuario desde medidas corporales (default 70kg)
     final measurementProvider = context.read<BodyMeasurementProvider>();
@@ -570,6 +651,15 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               ],
             ),
             actions: [
+              // Botón pausa / reanudar
+              IconButton(
+                onPressed: _isPaused ? _resumeWorkout : _pauseWorkout,
+                icon: Icon(
+                  _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                  color: _isPaused ? AppColors.primary : AppColors.textSecondary,
+                ),
+                tooltip: _isPaused ? 'Reanudar' : 'Pausar',
+              ),
               // Contador de sets totales
               Padding(
                 padding: const EdgeInsets.only(right: 16),
@@ -679,6 +769,62 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             ],
           ),
         ),
+        // ─ Overlay de PAUSA ──────────────────────────────────────────────────
+        if (_isPaused)
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withOpacity(0.75),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.pause_circle_outline_rounded,
+                    color: AppColors.primary,
+                    size: 80,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'RUTINA PAUSADA',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'El cronómetro está detenido',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton.icon(
+                    onPressed: _resumeWorkout,
+                    icon: const Icon(Icons.play_arrow_rounded,
+                        color: Colors.black),
+                    label: const Text(
+                      'Reanudar rutina',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }

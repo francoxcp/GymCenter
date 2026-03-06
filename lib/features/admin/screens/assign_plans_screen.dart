@@ -6,6 +6,7 @@ import '../../profile/providers/user_provider.dart';
 import '../../workouts/models/workout.dart';
 import '../../workouts/providers/workout_provider.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/services/unsaved_changes_guard.dart';
 
 class AssignPlansScreen extends StatefulWidget {
   final User user;
@@ -44,6 +45,17 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
   void initState() {
     super.initState();
     _loadData();
+    // Interceptar navegación del navbar mientras haya cambios sin guardar.
+    UnsavedChangesGuard.register(() async {
+      if (!_hasAnyWorkoutInSchedule) return true;
+      return await _confirmDiscard();
+    });
+  }
+
+  @override
+  void dispose() {
+    UnsavedChangesGuard.unregister();
+    super.dispose();
   }
 
   Future<void> _loadData() async {

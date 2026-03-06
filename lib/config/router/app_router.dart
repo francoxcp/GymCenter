@@ -25,6 +25,7 @@ import '../../features/legal/screens/privacy_policy_screen.dart';
 import '../../features/settings/screens/privacy_settings_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../shared/widgets/bottom_nav_bar.dart';
+import '../../shared/services/unsaved_changes_guard.dart';
 
 int _locationToIndex(String location) {
   if (location.startsWith('/workouts') ||
@@ -100,7 +101,8 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           body: child,
           bottomNavigationBar: BottomNavBar(
             currentIndex: _locationToIndex(location),
-            onTap: (index) {
+            onTap: (index) async {
+              if (!await UnsavedChangesGuard.canNavigate()) return;
               switch (index) {
                 case 0:
                   context.go(isAdmin ? '/admin' : '/home');

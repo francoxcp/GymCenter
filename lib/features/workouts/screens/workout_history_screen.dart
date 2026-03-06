@@ -243,12 +243,13 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
   }
 
   Widget _buildSessionCard(WorkoutSession session) {
-    final completionRate = session.exercisesCompleted.isEmpty
-        ? 0.0
-        : session.exercisesCompleted
-                .where((e) => e.setsCompleted.contains(true))
-                .length /
-            session.exercisesCompleted.length;
+    final totalSets = session.exercisesCompleted.fold<int>(
+        0, (sum, e) => sum + e.setsCompleted.length);
+    final doneSets = session.exercisesCompleted.fold<int>(
+        0, (sum, e) => sum + e.setsCompleted.where((b) => b).length);
+    final completionRate = totalSets == 0
+        ? (session.isCompleted ? 1.0 : 0.0)
+        : doneSets / totalSets;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -347,14 +348,20 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
               value: completionRate,
               backgroundColor: AppColors.background,
               valueColor: AlwaysStoppedAnimation<Color>(
-                completionRate == 1.0 ? Colors.green : AppColors.primary,
+                completionRate >= 1.0
+                    ? Colors.green
+                    : completionRate >= 0.6
+                        ? Colors.orange
+                        : AppColors.primary,
               ),
               minHeight: 6,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            AppL10n.of(context).percentCompleted((completionRate * 100).toInt()),
+            totalSets > 0
+                ? '$doneSets/$totalSets series · ${(completionRate * 100).toInt()}% completado'
+                : AppL10n.of(context).percentCompleted((completionRate * 100).toInt()),
             style: const TextStyle(
               fontSize: 12,
               color: AppColors.textSecondary,

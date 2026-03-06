@@ -398,6 +398,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
 
+                const SizedBox(height: 16),
+
                 // ── Menú ─────────────────────────────────────────────────
                 _MenuItem(
                   icon: Icons.history,

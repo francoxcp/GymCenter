@@ -24,6 +24,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   final _descriptionController = TextEditingController();
 
   String _selectedLevel = AppConstants.beginnerLevel;
+  String? _selectedCategory;
   final List<Exercise> _exercises = [];
   bool _isLoading = false;
 
@@ -58,6 +59,15 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
 
   Future<void> _saveWorkout() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedCategory == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecciona una categoría para la rutina'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
     if (_exercises.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -83,6 +93,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         level: _selectedLevel,
+        category: _selectedCategory == 'Sin categoría' ? null : _selectedCategory,
         duration: estimatedDuration,
         exerciseCount: _exercises.length,
         imageUrl: '',
@@ -256,6 +267,107 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                     setState(() => _selectedLevel = value);
                   }
                 },
+              ),
+
+              const SizedBox(height: 16),
+
+              // Categoría
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        'Categoría',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '(requerido)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _selectedCategory == null
+                              ? Colors.redAccent
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ...Workout.categories.map((cat) {
+                        final isSelected = _selectedCategory == cat;
+                        return GestureDetector(
+                          onTap: () =>
+                              setState(() => _selectedCategory = cat),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.surface,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.textSecondary
+                                        .withOpacity(0.3),
+                              ),
+                            ),
+                            child: Text(
+                              cat,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected
+                                    ? Colors.black
+                                    : AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                      // Opción sin categoría
+                      GestureDetector(
+                        onTap: () =>
+                            setState(() => _selectedCategory = 'Sin categoría'),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _selectedCategory == 'Sin categoría'
+                                  ? AppColors.textSecondary
+                                  : AppColors.textSecondary.withOpacity(0.3),
+                            ),
+                          ),
+                          child: Text(
+                            'Sin categoría',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: _selectedCategory == 'Sin categoría'
+                                  ? Colors.white
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
 
               const SizedBox(height: 24),

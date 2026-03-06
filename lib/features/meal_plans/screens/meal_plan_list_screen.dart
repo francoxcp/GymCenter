@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/meal_plan_provider.dart';
-import '../../auth/providers/auth_provider.dart';
 import '../../../shared/widgets/filter_chip_button.dart';
 
 class MealPlanListScreen extends StatefulWidget {

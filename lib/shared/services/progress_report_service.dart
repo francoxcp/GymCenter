@@ -165,10 +165,8 @@ class ProgressReportService {
           '${stats.streak > 1 ? ' · 🔥 ${stats.streak}-day streak' : ''}';
     } else {
       title = '📊 Tu reporte semanal de progreso';
-      final workoutWord =
-          stats.workouts == 1 ? 'entrenamiento' : 'entrenamientos';
-      body =
-          '${stats.workouts} $workoutWord · $timeStr · ${stats.calories} kcal'
+      final workoutWord = stats.workouts == 1 ? 'entrenamiento' : 'entrenamientos';
+      body = '${stats.workouts} $workoutWord · $timeStr · ${stats.calories} kcal'
           '${stats.streak > 1 ? ' · 🔥 ${stats.streak} días de racha' : ''}';
     }
 

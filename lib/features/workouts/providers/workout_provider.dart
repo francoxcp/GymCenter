@@ -120,7 +120,8 @@ class WorkoutProvider extends ChangeNotifier {
             'level': workout.level,
             'image_url': workout.imageUrl,
             'description': workout.description,
-            'created_by': userId, // Asignar el creador de la rutina
+            'created_by': userId,
+            'category': workout.category,
           })
           .select()
           .single();

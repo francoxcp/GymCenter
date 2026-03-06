@@ -6,6 +6,7 @@ import '../../../core/l10n/app_l10n.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/preferences_provider.dart';
 import '../../../shared/services/security_service.dart';
+import '../../../shared/services/notification_service.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -87,6 +88,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 await preferencesProvider.toggleWorkoutReminders(value);
               },
             ),
+            if (prefs.workoutReminders) ...[
+              _buildOptionTile(
+                title: 'Hora del recordatorio',
+                subtitle: () {
+                  final t = preferencesProvider.workoutReminderTime;
+                  final period = t.period == DayPeriod.am ? 'AM' : 'PM';
+                  final h = t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod;
+                  final m = t.minute.toString().padLeft(2, '0');
+                  return '$h:$m $period';
+                }(),
+                icon: Icons.schedule_outlined,
+                onTap: () async {
+                  final current = preferencesProvider.workoutReminderTime;
+                  final picked = await showTimePicker(
+                    context: context,
+                    initialTime: current,
+                    helpText: 'Hora del recordatorio de entrenamiento',
+                    builder: (context, child) => Localizations.override(
+                      context: context,
+                      locale: const Locale('en', 'US'),
+                      child: MediaQuery(
+                        data: MediaQuery.of(context)
+                            .copyWith(alwaysUse24HourFormat: false),
+                        child: Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: Theme.of(context).colorScheme.copyWith(
+                              tertiaryContainer: AppColors.primary,
+                              onTertiaryContainer: Colors.black,
+                            ),
+                          ),
+                          child: child!,
+                        ),
+                      ),
+                    ),
+                  );
+                  if (picked != null) {
+                    await preferencesProvider.updateWorkoutReminderTime(picked);
+                    if (context.mounted) {
+                      final period = picked.period == DayPeriod.am ? 'AM' : 'PM';
+                      final h = picked.hourOfPeriod == 0 ? 12 : picked.hourOfPeriod;
+                      final m = picked.minute.toString().padLeft(2, '0');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Recordatorio programado para las $h:$m $period todos los días'),
+                          duration: const Duration(seconds: 3),
+                        ),
+                      );
+                    }
+                  }
+                },
+              ),
+            ],
             _buildSwitchTile(
               title: l10n.progressReports,
               subtitle: l10n.progressReportsSubtitle,
@@ -94,6 +147,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
               value: prefs.progressReports,
               onChanged: (value) async {
                 await preferencesProvider.toggleProgressReports(value);
+              },
+            ),
+            const SizedBox(height: 8),
+            _buildOptionTile(
+              title: 'Probar notificación',
+              subtitle: 'Envía una notificación de entrenamiento ahora',
+              icon: Icons.notifications_active_outlined,
+              onTap: () async {
+                final svc = NotificationService();
+                await svc.initialize();
+                final granted = await svc.requestPermissions();
+                if (!context.mounted) return;
+                if (!granted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Permiso de notificaciones denegado. Actiúvalo desde Ajustes del sistema.'),
+                      duration: Duration(seconds: 3),
+                    ),
+                  );
+                  return;
+                }
+                await svc.showNotification(
+                  id: 999,
+                  title: '💪 Hora de entrenar',
+                  body: '¡No olvides tu rutina de hoy! Tu cuerpo te lo agradecerá.',
+                  payload: 'workout_reminder',
+                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Notificación enviada'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
               },
             ),
           ],

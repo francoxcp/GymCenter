@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../shared/services/notification_service.dart';
 import '../../../shared/services/progress_report_service.dart';
 import '../../auth/providers/auth_provider.dart';
+
+const _kReminderHour = 'workout_reminder_hour';
+const _kReminderMinute = 'workout_reminder_minute';
 
 class UserPreferences {
   final String userId;
@@ -118,11 +122,13 @@ class PreferencesProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   String? _lastUserId; // para detectar cambios de usuario
+  TimeOfDay _workoutReminderTime = const TimeOfDay(hour: 18, minute: 0);
 
   UserPreferences? get preferences => _preferences;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasCompletedOnboarding => _preferences?.onboardingCompleted ?? false;
+  TimeOfDay get workoutReminderTime => _workoutReminderTime;
 
   /// Locale actual derivada del idioma guardado en preferencias.
   Locale get appLocale {
@@ -144,11 +150,37 @@ class PreferencesProvider with ChangeNotifier {
     }
   }
 
+  /// Carga la hora guardada de SharedPreferences
+  Future<void> _loadReminderTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hour = prefs.getInt(_kReminderHour);
+    final minute = prefs.getInt(_kReminderMinute);
+    if (hour != null && minute != null) {
+      _workoutReminderTime = TimeOfDay(hour: hour, minute: minute);
+    }
+  }
+
+  /// Guarda la hora en SharedPreferences y reprograma la notificación
+  Future<void> updateWorkoutReminderTime(TimeOfDay time) async {
+    _workoutReminderTime = time;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kReminderHour, time.hour);
+    await prefs.setInt(_kReminderMinute, time.minute);
+    if (_preferences?.notificationsEnabled == true &&
+        _preferences?.workoutReminders == true) {
+      await NotificationService().scheduleWorkoutReminder(time: time);
+    }
+  }
+
   /// Cargar preferencias del usuario actual
   Future<void> loadPreferences() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
+
+    // Cargar hora guardada localmente en paralelo
+    await _loadReminderTime();
 
     try {
       final userId = _supabase.auth.currentUser?.id;
@@ -179,6 +211,15 @@ class PreferencesProvider with ChangeNotifier {
         ProgressReportService().checkAndSend(
           userId: userId,
           isEnglish: (_preferences?.language ?? 'es') == 'en',
+        );
+      }
+
+      // Re-programar recordatorio diario si está habilitado
+      // (necesario tras un reinicio del sistema o reinstalación)
+      if (_preferences?.notificationsEnabled == true &&
+          _preferences?.workoutReminders == true) {
+        await NotificationService().scheduleWorkoutReminder(
+          time: _workoutReminderTime,
         );
       }
     }
@@ -255,7 +296,7 @@ class PreferencesProvider with ChangeNotifier {
     final notificationService = NotificationService();
 
     if (enabled && _preferences!.notificationsEnabled) {
-      final reminderTime = time ?? const TimeOfDay(hour: 18, minute: 0);
+      final reminderTime = time ?? _workoutReminderTime;
       await notificationService.scheduleWorkoutReminder(time: reminderTime);
     } else {
       await notificationService.cancelWorkoutReminder();

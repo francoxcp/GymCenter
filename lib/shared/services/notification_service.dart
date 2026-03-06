@@ -88,6 +88,9 @@ class NotificationService {
     required String body,
     String? payload,
   }) async {
+    // Garantizar inicialización antes de mostrar
+    await initialize();
+
     const androidDetails = AndroidNotificationDetails(
       'chamos_fitness_channel',
       'Chamos Fitness',

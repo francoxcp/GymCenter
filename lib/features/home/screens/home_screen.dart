@@ -8,7 +8,6 @@ import '../../auth/providers/auth_provider.dart';
 import '../../workouts/providers/workout_provider.dart';
 import '../../workouts/providers/workout_progress_provider.dart';
 import '../../workouts/providers/workout_session_provider.dart';
-import '../../profile/providers/user_provider.dart';
 import '../../../shared/widgets/animated_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/coming_soon_workout_card.dart';
@@ -86,7 +85,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final currentUser = authProvider.currentUser;
-    final isAdmin = authProvider.isAdmin;
 
     if (currentUser == null) {
       return const Scaffold(
@@ -159,9 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            isAdmin
-                                ? '¡Hola, Entrenador!'
-                                : '¡Hola, ${currentUser.name.split(' ')[0]}!',
+                            '¡Hola, ${currentUser.name.split(' ')[0]}!',
                             style: const TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
@@ -221,8 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     // o si ese workout ya fue completado hoy (evita race condition
                     // entre el delete en BD y la recarga de loadProgress),
                     // ni mientras loadProgress está cargando (evita flash residual)
-                    if (!isAdmin &&
-                        !progressProvider.isLoading &&
+                    if (!progressProvider.isLoading &&
                         progressProvider.hasProgress &&
                         progress != null &&
                         progressProvider.completedWorkoutIdToday !=
@@ -246,161 +241,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
 
-                // Contenido diferente según el rol
-                if (isAdmin)
-                  _AdminHomeContent()
-                else
-                  _UserHomeContent(currentUser: currentUser),
+                _UserHomeContent(currentUser: currentUser),
               ],
             ),
           ),
         ),
       ),
-    );
-  }
-}
-
-// Contenido para el Admin (Entrenador)
-class _AdminHomeContent extends StatefulWidget {
-  @override
-  State<_AdminHomeContent> createState() => _AdminHomeContentState();
-}
-
-class _AdminHomeContentState extends State<_AdminHomeContent> {
-  @override
-  void initState() {
-    super.initState();
-    // Cargar usuarios de forma lazy cuando el admin ve el home
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<UserProvider>(context, listen: false).loadUsers();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Panel de Control',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: 0.3,
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Quick Stats — datos reales de los providers
-        Consumer2<UserProvider, WorkoutProvider>(
-          builder: (context, userProvider, workoutProvider, _) {
-            final regularUsers =
-                userProvider.users.where((u) => u.role != 'admin').toList();
-            final userCount = regularUsers.length;
-            final workoutCount = workoutProvider.workouts.length;
-            final usersWithoutWorkout =
-                regularUsers.where((u) => u.assignedWorkoutId == null).length;
-            return Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: FadeInCard(
-                        delay: 0,
-                        child: _StatCard(
-                          icon: Icons.people,
-                          title: 'USUARIOS',
-                          value: userCount.toString(),
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FadeInCard(
-                        delay: 100,
-                        child: _StatCard(
-                          icon: Icons.fitness_center,
-                          title: 'RUTINAS',
-                          value: workoutCount.toString(),
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                if (userCount > 0) ...[
-                  const SizedBox(height: 12),
-                  FadeInCard(
-                    delay: 150,
-                    child: _StatCard(
-                      icon: Icons.person_off_outlined,
-                      title: 'SIN RUTINA ASIGNADA',
-                      value: usersWithoutWorkout.toString(),
-                      color: usersWithoutWorkout > 0
-                          ? Colors.orange
-                          : AppColors.primary,
-                      fullWidth: true,
-                      subtitle: usersWithoutWorkout == 0
-                          ? 'Todos tienen rutina'
-                          : 'Usuarios pendientes de asignación',
-                    ),
-                  ),
-                ],
-              ],
-            );
-          },
-        ),
-
-        const SizedBox(height: 28),
-
-        const Text(
-          'Acciones rápidas',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: 0.3,
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        FadeInCard(
-          delay: 200,
-          child: _QuickActionCard(
-            title: 'Gestionar rutinas',
-            subtitle: 'Crear, editar y asignar rutinas',
-            icon: Icons.fitness_center,
-            onTap: () => context.push('/workouts'),
-          ),
-        ),
-
-        const SizedBox(height: 12),
-
-        FadeInCard(
-          delay: 300,
-          child: _QuickActionCard(
-            title: 'Gestionar planes alimenticios',
-            subtitle: 'Crear y asignar dietas',
-            icon: Icons.restaurant_menu,
-            onTap: () => context.push('/meal-plans'),
-          ),
-        ),
-
-        const SizedBox(height: 12),
-
-        FadeInCard(
-          delay: 400,
-          child: _QuickActionCard(
-            title: 'Panel de administración',
-            subtitle: 'Ver estadísticas y usuarios',
-            icon: Icons.dashboard,
-            onTap: () => context.push('/admin'),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -950,129 +796,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
   }
 }
 
-// Stat Card Widget
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
-  final Color color;
-  final bool fullWidth;
-  final String? subtitle;
-
-  const _StatCard({
-    required this.icon,
-    required this.title,
-    required this.value,
-    required this.color,
-    this.fullWidth = false,
-    this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final content = fullWidth
-        ? Row(
-            children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 10.5,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                    TweenAnimationBuilder<double>(
-                      tween:
-                          Tween(begin: 0.0, end: double.tryParse(value) ?? 0.0),
-                      duration: const Duration(milliseconds: 800),
-                      curve: Curves.easeOut,
-                      builder: (context, animatedValue, child) {
-                        return Text(
-                          animatedValue.toStringAsFixed(0),
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        );
-                      },
-                    ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle!,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: color.withOpacity(0.8),
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          )
-        : Column(
-            children: [
-              Icon(icon, color: color, size: 30),
-              const SizedBox(height: 10),
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0.0, end: double.tryParse(value) ?? 0.0),
-                duration: const Duration(milliseconds: 800),
-                curve: Curves.easeOut,
-                builder: (context, animatedValue, child) {
-                  return Text(
-                    animatedValue.toStringAsFixed(0),
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 4),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 10.5,
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1,
-                ),
-              ),
-              if (subtitle != null) ...[
-                const SizedBox(height: 2),
-                Text(
-                  subtitle!,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: color.withOpacity(0.8),
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ],
-            ],
-          );
-
-    return AnimatedCard(
-      padding: const EdgeInsets.all(16),
-      onTap: null,
-      enableAnimation: false,
-      child: content,
-    );
-  }
-}
-
+// Banner de Workout Pendiente
 class _QuickActionCard extends StatelessWidget {
   final String title;
   final String? subtitle;
@@ -1107,11 +831,7 @@ class _QuickActionCard extends StatelessWidget {
                     color: AppColors.primary.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    icon,
-                    size: 26,
-                    color: AppColors.primary,
-                  ),
+                  child: Icon(icon, size: 26, color: AppColors.primary),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -1138,20 +858,13 @@ class _QuickActionCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 14,
-                  color: AppColors.textSecondary,
-                ),
+                const Icon(Icons.arrow_forward_ios,
+                    size: 14, color: AppColors.textSecondary),
               ],
             )
           : Column(
               children: [
-                Icon(
-                  icon,
-                  size: 36,
-                  color: AppColors.primary,
-                ),
+                Icon(icon, size: 36, color: AppColors.primary),
                 const SizedBox(height: 10),
                 Text(
                   title,
@@ -1168,7 +881,6 @@ class _QuickActionCard extends StatelessWidget {
   }
 }
 
-// Banner de Workout Pendiente
 class _PendingWorkoutBanner extends StatelessWidget {
   final String workoutName;
   final dynamic progress;

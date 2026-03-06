@@ -18,6 +18,7 @@ class WorkoutSummaryScreen extends StatefulWidget {
   final int durationMinutes;
   final int caloriesBurned;
   final double totalVolume;
+  final List<List<bool>>? completedSets;
 
   const WorkoutSummaryScreen({
     super.key,
@@ -25,6 +26,7 @@ class WorkoutSummaryScreen extends StatefulWidget {
     required this.durationMinutes,
     required this.caloriesBurned,
     required this.totalVolume,
+    this.completedSets,
   });
 
   @override
@@ -72,6 +74,18 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
           '💾 _saveWorkoutSession: userId=$userId workoutId=${widget.workout.id}');
 
       // Guardar sesión en workout_sessions y actualizar estadísticas
+      // Construir datos de ejercicios con series reales si están disponibles
+      List<Map<String, dynamic>>? exercisesData;
+      if (widget.completedSets != null &&
+          widget.completedSets!.length == widget.workout.exercises.length) {
+        exercisesData = List.generate(widget.workout.exercises.length, (i) {
+          return {
+            'exerciseId': widget.workout.exercises[i].id,
+            'setsCompleted': widget.completedSets![i],
+          };
+        });
+      }
+
       await progressProvider.completeWorkout(
         userId: userId,
         workoutId: widget.workout.id,
@@ -79,6 +93,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         exercisesCompleted: widget.workout.exercises.length,
         caloriesBurned: widget.caloriesBurned,
         totalVolumeKg: widget.totalVolume,
+        exercisesData: exercisesData,
       );
 
       // Refrescar WorkoutSessionProvider solo si el widget sigue montado

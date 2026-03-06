@@ -148,6 +148,7 @@ class WorkoutProgressProvider with ChangeNotifier {
     required int exercisesCompleted,
     int caloriesBurned = 0,
     double totalVolumeKg = 0,
+    List<Map<String, dynamic>>? exercisesData,
   }) async {
     try {
       // Guardar sesión en workout_sessions
@@ -156,7 +157,7 @@ class WorkoutProgressProvider with ChangeNotifier {
         'workout_id': workoutId,
         'completed_at': DateTime.now().toIso8601String(),
         'duration_minutes': durationMinutes,
-        'exercises_completed': exercisesCompleted,
+        'exercises_completed': exercisesData ?? exercisesCompleted,
         'calories_burned': caloriesBurned,
         'total_volume_kg': totalVolumeKg,
       });

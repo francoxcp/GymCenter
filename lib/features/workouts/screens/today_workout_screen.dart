@@ -457,6 +457,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         durationMinutes: _summaryDurationMinutes,
         caloriesBurned: _summaryCaloriesBurned,
         totalVolume: _summaryTotalVolume,
+        completedSets: _completedSets,
       );
     }
 

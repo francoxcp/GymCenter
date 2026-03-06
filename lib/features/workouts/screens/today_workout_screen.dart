@@ -2,6 +2,7 @@
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/l10n/app_l10n.dart';
 import 'dart:async';
 import '../../../core/theme/app_theme.dart';
@@ -49,6 +50,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   int _summaryDurationMinutes = 0;
   int _summaryCaloriesBurned = 0;
   double _summaryTotalVolume = 0;
+
+  // ── Historial de peso por ejercicio ───────────────────────────────────────
+  // [exerciseIndex][setIndex] → peso en kg (null = no ingresado)
+  Map<int, Map<int, double?>> _setWeights = {};
+  bool _hasLoadedWeights = false;
 
   @override
   void initState() {
@@ -152,6 +158,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     final authProvider = context.read<AuthProvider>();
     final progressProvider = context.read<WorkoutProgressProvider>();
     final workoutProvider = context.read<WorkoutProvider>();
+
+    // Cargar últimos pesos usados para este workout
+    final effectiveId =
+        widget.extraWorkoutId ?? authProvider.currentUser?.assignedWorkoutId;
+    final userId = authProvider.currentUser?.id;
+    if (effectiveId != null && userId != null) {
+      unawaited(_loadLastWeights(workoutId: effectiveId, userId: userId));
+    }
 
     // Si es rutina extra, no restaurar progreso guardado de la rutina asignada
     if (widget.extraWorkoutId != null) return;
@@ -455,6 +469,16 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     final durationMinutes = _getActiveDurationSeconds() ~/ 60;
     _clearTimerLocally(); // limpiar timer guardado
 
+    // Guardar pesos por serie en segundo plano
+    final authProvider = context.read<AuthProvider>();
+    final userId = authProvider.currentUser?.id;
+    final workoutId =
+        widget.extraWorkoutId ?? authProvider.currentUser?.assignedWorkoutId;
+    if (userId != null && workoutId != null) {
+      unawaited(
+          _saveSetWeights(workoutId: workoutId, userId: userId, workout: workout));
+    }
+
     // Obtener peso del usuario desde medidas corporales (default 70kg)
     final measurementProvider = context.read<BodyMeasurementProvider>();
     final userWeightKg = measurementProvider.latestMeasurement?.weight ?? 70.0;
@@ -527,6 +551,164 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     if (name.contains('dominada') || name.contains('pull')) return 0;
     if (name.contains('burpee') || name.contains('jumping')) return 0;
     return 50;
+  }
+
+  // ── Peso por serie ────────────────────────────────────────────────────────────────
+
+  Future<void> _loadLastWeights({
+    required String workoutId,
+    required String userId,
+  }) async {
+    if (_hasLoadedWeights) return;
+    _hasLoadedWeights = true;
+    try {
+      final supabase = Supabase.instance.client;
+      final response = await supabase
+          .from('exercise_set_logs')
+          .select('exercise_index, set_index, weight_kg')
+          .eq('user_id', userId)
+          .eq('workout_id', workoutId)
+          .order('logged_at', ascending: false);
+
+      final logs = response as List;
+      final Map<int, Map<int, double?>> weights = {};
+      // La respuesta está ordenada desc → la primera entrada de cada combo es la más reciente
+      for (final log in logs) {
+        final exIdx = log['exercise_index'] as int;
+        final setIdx = log['set_index'] as int;
+        final weightKg = (log['weight_kg'] as num?)?.toDouble();
+        if (!(weights.containsKey(exIdx) &&
+            weights[exIdx]!.containsKey(setIdx))) {
+          weights[exIdx] ??= {};
+          weights[exIdx]![setIdx] = weightKg;
+        }
+      }
+      if (mounted) setState(() => _setWeights = weights);
+    } catch (e) {
+      debugPrint('Error cargando últimos pesos: $e');
+    }
+  }
+
+  Future<void> _saveSetWeights({
+    required String workoutId,
+    required String userId,
+    required Workout workout,
+  }) async {
+    try {
+      if (_setWeights.isEmpty) return;
+      final supabase = Supabase.instance.client;
+      final logs = <Map<String, dynamic>>[];
+      final now = DateTime.now().toIso8601String();
+      for (final exEntry in _setWeights.entries) {
+        final exIdx = exEntry.key;
+        final exercise =
+            exIdx < workout.exercises.length ? workout.exercises[exIdx] : null;
+        for (final setEntry in exEntry.value.entries) {
+          if (setEntry.value != null) {
+            logs.add({
+              'user_id': userId,
+              'workout_id': workoutId,
+              'exercise_index': exIdx,
+              'set_index': setEntry.key,
+              'exercise_name': exercise?.name ?? '',
+              'weight_kg': setEntry.value,
+              'reps': exercise?.reps,
+              'logged_at': now,
+            });
+          }
+        }
+      }
+      if (logs.isNotEmpty) {
+        await supabase.from('exercise_set_logs').insert(logs);
+        debugPrint('💪 Pesos guardados: ${logs.length} registros');
+      }
+    } catch (e) {
+      debugPrint('Error guardando pesos: $e');
+    }
+  }
+
+  void _showWeightDialog(int exerciseIndex, int setIndex) {
+    final currentWeight = _setWeights[exerciseIndex]?[setIndex];
+    final controller = TextEditingController(
+      text: currentWeight != null
+          ? (currentWeight == currentWeight.roundToDouble()
+              ? currentWeight.toInt().toString()
+              : currentWeight.toStringAsFixed(1))
+          : '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Peso · Serie ${setIndex + 1}',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: TextField(
+          controller: controller,
+          keyboardType:
+              const TextInputType.numberWithOptions(decimal: true),
+          autofocus: true,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
+          decoration: const InputDecoration(
+            hintText: '0',
+            hintStyle: TextStyle(color: AppColors.textSecondary),
+            suffixText: 'kg',
+            suffixStyle: TextStyle(
+              color: AppColors.primary,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: AppColors.primary),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final weight = double.tryParse(
+                  controller.text.replaceAll(',', '.'));
+              setState(() {
+                _setWeights[exerciseIndex] ??= {};
+                _setWeights[exerciseIndex]![setIndex] = weight;
+              });
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text(
+              'Guardar',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -1167,12 +1349,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                           ),
                         ),
                         const Spacer(),
-                        Text(
-                          '${exercise.reps} reps',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                          ),
+                        _WeightChip(
+                          weight: _setWeights[exerciseIndex]?[setIndex],
+                          reps: exercise.reps,
+                          onTap: () => _showWeightDialog(exerciseIndex, setIndex),
                         ),
                       ],
                     ),
@@ -1245,6 +1425,69 @@ class _InfoCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Muestra las reps del ejercicio y un chip para ingresar el peso usado.
+class _WeightChip extends StatelessWidget {
+  final double? weight;
+  final int reps;
+  final VoidCallback onTap;
+
+  const _WeightChip({
+    required this.weight,
+    required this.reps,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasWeight = weight != null;
+    final weightLabel = hasWeight
+        ? (weight! == weight!.roundToDouble()
+            ? '${weight!.toInt()} kg'
+            : '${weight!.toStringAsFixed(1)} kg')
+        : '+ kg';
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          '$reps reps',
+          style: const TextStyle(
+            fontSize: 14,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        const SizedBox(width: 8),
+        GestureDetector(
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: hasWeight
+                  ? AppColors.primary.withOpacity(0.15)
+                  : AppColors.surface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: hasWeight
+                    ? AppColors.primary
+                    : AppColors.textSecondary.withOpacity(0.4),
+              ),
+            ),
+            child: Text(
+              weightLabel,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: hasWeight ? AppColors.primary : AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -262,4 +262,23 @@ class WorkoutProgressProvider with ChangeNotifier {
       return null;
     }
   }
+
+  /// Devuelve true si hoy está en el horario semanal del usuario,
+  /// o si el usuario no tiene horario configurado (asume que entrena todos los días).
+  Future<bool> isTodayScheduled(String userId) async {
+    try {
+      final todayWeekday = DateTime.now().weekday; // 1=Lun … 7=Dom
+      final response = await _supabase
+          .from('user_workout_schedule')
+          .select('day_of_week')
+          .eq('user_id', userId);
+
+      final schedule = response as List;
+      if (schedule.isEmpty) return true; // sin horario → siempre entrena
+      return schedule.any((s) => (s['day_of_week'] as int) == todayWeekday);
+    } catch (e) {
+      debugPrint('❌ Error verificando horario de hoy: $e');
+      return true; // ante error, mostrar rutina
+    }
+  }
 }

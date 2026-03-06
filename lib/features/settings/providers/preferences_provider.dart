@@ -162,7 +162,10 @@ class PreferencesProvider with ChangeNotifier {
     await prefs.setInt(_kReminderMinute, time.minute);
     if (_preferences?.notificationsEnabled == true &&
         _preferences?.workoutReminders == true) {
-      await NotificationService().scheduleWorkoutReminder(time: time);
+      await NotificationService().scheduleWorkoutReminder(
+        time: time,
+        userId: _supabase.auth.currentUser?.id,
+      );
     }
   }
 
@@ -213,6 +216,7 @@ class PreferencesProvider with ChangeNotifier {
           _preferences?.workoutReminders == true) {
         await NotificationService().scheduleWorkoutReminder(
           time: _workoutReminderTime,
+          userId: _supabase.auth.currentUser?.id,
         );
       }
     }
@@ -290,7 +294,10 @@ class PreferencesProvider with ChangeNotifier {
 
     if (enabled && _preferences!.notificationsEnabled) {
       final reminderTime = time ?? _workoutReminderTime;
-      await notificationService.scheduleWorkoutReminder(time: reminderTime);
+      await notificationService.scheduleWorkoutReminder(
+        time: reminderTime,
+        userId: _supabase.auth.currentUser?.id,
+      );
     } else {
       await notificationService.cancelWorkoutReminder();
     }

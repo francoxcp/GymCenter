@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
@@ -12,8 +14,35 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
+  final SupabaseClient _supabase = Supabase.instance.client;
 
   bool _isInitialized = false;
+
+  // ── Deep links ──────────────────────────────────────────────────────────
+  GoRouter? _router;
+  String? _pendingPayload;
+
+  /// Registra el router para poder navegar al tocar notificaciones.
+  static void setRouter(GoRouter router) {
+    _instance._router = router;
+    // Si había un payload pendiente (app abierta desde notificación en estado cerrado)
+    final pending = _instance._pendingPayload;
+    if (pending != null) {
+      _instance._pendingPayload = null;
+      _instance._handlePayload(pending);
+    }
+  }
+
+  void _handlePayload(String payload) {
+    switch (payload) {
+      case 'workout_reminder':
+        _router?.go('/today-workout');
+        break;
+      case 'progress_report':
+        _router?.go('/progress');
+        break;
+    }
+  }
 
   /// Inicializa el servicio de notificaciones
   Future<void> initialize() async {
@@ -50,13 +79,33 @@ class NotificationService {
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
 
+    // Manejar lanzamiento desde notificación cuando la app estaba completamente cerrada
+    final launchDetails = await _notifications.getNotificationAppLaunchDetails();
+    if (launchDetails?.didNotificationLaunchApp == true) {
+      final payload = launchDetails!.notificationResponse?.payload;
+      if (payload != null) {
+        if (_router != null) {
+          _handlePayload(payload);
+        } else {
+          _pendingPayload = payload;
+        }
+      }
+    }
+
     _isInitialized = true;
   }
 
-  /// Maneja el tap en una notificación
+  /// Maneja el tap en una notificación (app en primer o segundo plano)
   void _onNotificationTapped(NotificationResponse response) {
-    debugPrint('Notificación tocada: ${response.payload}');
-    // Aquí puedes navegar a una pantalla específica según el payload
+    final payload = response.payload;
+    debugPrint('Notificación tocada: $payload');
+    if (payload == null) return;
+    if (_router != null) {
+      _handlePayload(payload);
+    } else {
+      // Router aún no listo (race condition al arrancar) → guardar y navegar cuando esté listo
+      _pendingPayload = payload;
+    }
   }
 
   /// Solicita permisos de notificación (principalmente para iOS)
@@ -229,14 +278,46 @@ class NotificationService {
   static const int achievementId = 100; // Base ID para logros
   static const int progressReportId = 50;
 
-  /// Programa recordatorio de entrenamiento
+  /// Programa recordatorio de entrenamiento.
+  /// Si se pasa [userId], personaliza el mensaje según los días sin entrenar.
   Future<void> scheduleWorkoutReminder({
     required TimeOfDay time,
+    String? userId,
   }) async {
+    String title = '💪 Hora de entrenar';
+    String body = '¡No olvides tu rutina de hoy! Tu cuerpo te lo agradecerá.';
+
+    if (userId != null) {
+      try {
+        final lastSession = await _supabase
+            .from('workout_sessions')
+            .select('completed_at')
+            .eq('user_id', userId)
+            .order('completed_at', ascending: false)
+            .limit(1)
+            .maybeSingle();
+
+        if (lastSession != null) {
+          final lastDate =
+              DateTime.parse(lastSession['completed_at'] as String).toLocal();
+          final daysSince = DateTime.now().difference(lastDate).inDays;
+          if (daysSince >= 2) {
+            title = '¿Todo bien? 💪';
+            body = 'Llevas $daysSince días sin entrenar. ¡Hoy es un buen día para retomar!';
+          }
+        } else {
+          title = '¡Empieza hoy! 💪';
+          body = '¿Listo para tu primera sesión? ¡Tu cuerpo te lo agradecerá!';
+        }
+      } catch (_) {
+        // Error al consultar BD → usar mensaje por defecto
+      }
+    }
+
     await scheduleDailyNotification(
       id: workoutReminderId,
-      title: '💪 Hora de entrenar',
-      body: '¡No olvides tu rutina de hoy! Tu cuerpo te lo agradecerá.',
+      title: title,
+      body: body,
       time: time,
       payload: 'workout_reminder',
     );

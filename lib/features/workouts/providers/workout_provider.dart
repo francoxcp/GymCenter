@@ -2,11 +2,13 @@
 import '../models/workout.dart';
 import '../models/exercise.dart';
 import '../../../config/supabase_config.dart';
+import '../../../shared/services/offline_cache_service.dart';
 
 class WorkoutProvider extends ChangeNotifier {
   List<Workout> _workouts = [];
   String _selectedFilter = 'Todos';
   bool _isLoading = false;
+  bool _isOffline = false;
   DateTime? _lastFetch;
 
   // Guardar parámetros del usuario para recargas automáticas
@@ -18,6 +20,9 @@ class WorkoutProvider extends ChangeNotifier {
   List<Workout> get workouts => _workouts;
   String get selectedFilter => _selectedFilter;
   bool get isLoading => _isLoading;
+
+  /// true si los workouts se cargaron desde caché local (sin conexión)
+  bool get isOffline => _isOffline;
 
   // No cargar automáticamente en el constructor
   // El componente que use este provider debe llamar loadWorkouts() con los parámetros correctos
@@ -77,10 +82,44 @@ class WorkoutProvider extends ChangeNotifier {
         );
       }).toList();
 
+      // Guardar en caché local para modo offline
+      await OfflineCacheService().saveWorkouts(response as List);
+
       _lastFetch = DateTime.now();
+      _isOffline = false;
       _isLoading = false;
       notifyListeners();
     } catch (e) {
+      // Intentar cargar desde caché local si hay error de red
+      try {
+        final cached = await OfflineCacheService().loadWorkouts();
+        if (cached != null && cached.isNotEmpty) {
+          _workouts = cached.map((json) {
+            final exercisesJson = json['exercises'] as List?;
+            List<Exercise> exercises = [];
+            if (exercisesJson != null) {
+              exercises = exercisesJson
+                  .map((e) => Exercise.fromJson(e as Map<String, dynamic>))
+                  .toList();
+              exercises.sort((a, b) => a.id.compareTo(b.id));
+            }
+            return Workout(
+              id: json['id'],
+              name: json['name'],
+              duration: json['duration'],
+              exerciseCount: json['exercise_count'] ?? 0,
+              level: json['level'] ?? 'Principiante',
+              imageUrl: json['image_url'] ?? '',
+              description: json['description'],
+              createdBy: json['created_by'],
+              category: json['category'],
+              exercises: exercises,
+            );
+          }).toList();
+          _isOffline = true;
+          debugPrint('📦 Workouts cargados desde caché local (modo offline)');
+        }
+      } catch (_) {/* no cache available */}
       _isLoading = false;
       notifyListeners();
       // Error cargando workouts: log seguro, sin datos sensibles

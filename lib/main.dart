@@ -51,6 +51,8 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _authProvider = AuthProvider();
     _router = createAppRouter(_authProvider);
+    // Registrar el router en NotificationService para manejar deep links
+    NotificationService.setRouter(_router);
   }
 
   @override

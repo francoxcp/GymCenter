@@ -177,6 +177,42 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 24),
 
+                // Banner modo offline
+                Consumer<WorkoutProvider>(
+                  builder: (context, wp, _) {
+                    if (!wp.isOffline) return const SizedBox.shrink();
+                    return Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color: Colors.orange.withOpacity(0.5)),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.wifi_off_rounded,
+                              color: Colors.orange, size: 18),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Sin conexión · Mostrando datos guardados',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.orange,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
                 // Banner de progreso pendiente
                 Consumer<WorkoutProgressProvider>(
                   builder: (context, progressProvider, _) {
@@ -381,6 +417,7 @@ class _UserHomeContent extends StatefulWidget {
 
 class _UserHomeContentState extends State<_UserHomeContent> {
   Map<String, dynamic>? _nextSchedule;
+  bool _isRestDay = false;
 
   @override
   void initState() {
@@ -394,9 +431,18 @@ class _UserHomeContentState extends State<_UserHomeContent> {
     final userId =
         Provider.of<AuthProvider>(context, listen: false).currentUser?.id;
     if (userId == null) return;
-    final next = await progressProvider.getNextScheduledWorkout(userId);
+
+    // Cargar próxima sesión y verificar si hoy es día de descanso en paralelo
+    final results = await Future.wait([
+      progressProvider.getNextScheduledWorkout(userId),
+      progressProvider.isTodayScheduled(userId),
+    ]);
+
     if (mounted) {
-      setState(() => _nextSchedule = next);
+      setState(() {
+        _nextSchedule = results[0] as Map<String, dynamic>?;
+        _isRestDay = !(results[1] as bool);
+      });
     }
   }
 
@@ -553,7 +599,11 @@ class _UserHomeContentState extends State<_UserHomeContent> {
 
         // Today's Workout
         Text(
-          todayCompleted ? 'Próxima rutina' : 'Tu rutina asignada',
+          todayCompleted
+              ? 'Próxima rutina'
+              : _isRestDay
+                  ? 'Descanso programado'
+                  : 'Tu rutina asignada',
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -595,6 +645,64 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                     ],
                   ),
                 ),
+              ),
+            ),
+          ),
+        ] else if (hasAssignedWorkout &&
+            assignedWorkout != null &&
+            !todayCompleted &&
+            _isRestDay) ...[
+          // Día de descanso
+          FadeInCard(
+            delay: 200,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.cardBackground,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.primary.withOpacity(0.3),
+                  width: 1.5,
+                ),
+              ),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.bedtime_outlined,
+                      color: AppColors.primary,
+                      size: 34,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    '¡Día de descanso! 💤',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _nextSchedule != null
+                        ? 'Descansa y recupera músculos.\nTu próxima sesión es el ${_dayName(_nextSchedule!["day_of_week"] as int)}.'
+                        : 'Hoy no tienes entrenamiento programado.\nDescansa y recupera músculos.',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           ),

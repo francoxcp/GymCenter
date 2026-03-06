@@ -192,6 +192,25 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
+  /// Sincroniza solo el campo assigned_workout_id del usuario (sin tocar el horario).
+  /// Pasa null para limpiar la referencia cuando el usuario no tiene ninguna rutina en la semana.
+  Future<void> syncAssignedWorkout(String userId, String? workoutId) async {
+    try {
+      await SupabaseConfig.client
+          .from(AppConstants.usersTable)
+          .update({'assigned_workout_id': workoutId}).eq('id', userId);
+
+      final idx = _users.indexWhere((u) => u.id == userId);
+      if (idx != -1) {
+        _users[idx] = _users[idx].copyWith(assignedWorkoutId: workoutId);
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('❌ Error syncAssignedWorkout: $e');
+      rethrow;
+    }
+  }
+
   /// Quita la rutina de un día específico (lo pone en "Descanso")
   Future<void> removeWorkoutFromDay(String userId, int dayOfWeek) async {
     try {

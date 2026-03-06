@@ -59,7 +59,12 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
 
   Future<void> _loadSchedule(UserProvider userProvider) async {
     try {
-      final weekMap = await userProvider.getWeekWorkouts(widget.user.id);
+      // Si el usuario no tiene assigned_workout_id activo, sus registros en
+      // user_workout_schedule pueden ser datos huérfanos de sesiones anteriores.
+      // Mostramos todos los días vacíos para que el admin parta de cero.
+      final Map<int, String> weekMap = widget.user.assignedWorkoutId == null
+          ? {}
+          : await userProvider.getWeekWorkouts(widget.user.id);
       if (mounted) {
         setState(() {
           for (int day = 1; day <= 6; day++) {
@@ -72,6 +77,22 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
     } catch (e) {
       if (mounted) setState(() => _isLoadingSchedule = false);
     }
+  }
+
+  /// True si al menos un día del horario actual tiene rutina asignada.
+  bool get _hasAnyWorkoutInSchedule =>
+      _schedule.values.any((v) => v != null);
+
+  /// Devuelve el nombre del próximo día (después de [fromDay]) que tenga
+  /// rutina asignada en el horario actual. Wrappea si es necesario.
+  String? _nextTrainingDayLabel(int fromDay) {
+    for (int d = fromDay + 1; d <= 6; d++) {
+      if (_schedule[d] != null) return _dayNames[d];
+    }
+    for (int d = 1; d < fromDay; d++) {
+      if (_schedule[d] != null) return _dayNames[d];
+    }
+    return null;
   }
 
   void _selectDay(int day, String? workoutId) {
@@ -266,6 +287,14 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
         }
       }
 
+      // Siempre sincronizar assigned_workout_id con el primer día con rutina.
+      // Esto corrige el caso donde el horario existía pero assigned_workout_id
+      // nunca se actualizó (p.ej. guardado parcial anterior).
+      final firstWorkout = [1, 2, 3, 4, 5, 6]
+          .map((d) => _schedule[d])
+          .firstWhere((w) => w != null, orElse: () => null);
+      await userProvider.syncAssignedWorkout(widget.user.id, firstWorkout);
+
       if (!mounted) return;
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -287,9 +316,51 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
     }
   }
 
+  Future<bool> _confirmDiscard() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.cardBackground,
+        title: const Text(
+          '¿Descartar cambios?',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          'Tienes días con rutinas asignadas que no se han guardado. ¿Salir de todos modos?',
+          style: TextStyle(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Continuar editando'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              'Descartar',
+              style: TextStyle(color: Colors.redAccent),
+            ),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        if (!_hasAnyWorkoutInSchedule) {
+          Navigator.pop(context);
+          return;
+        }
+        final discard = await _confirmDiscard();
+        if (discard && context.mounted) Navigator.pop(context);
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,6 +384,51 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Limpiar horario',
+            icon: const Icon(Icons.cleaning_services_outlined,
+                color: AppColors.textSecondary),
+            onPressed: _isSaving
+                ? null
+                : () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: AppColors.cardBackground,
+                        title: const Text(
+                          '¿Limpiar horario?',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        content: const Text(
+                          'Se quitarán todas las rutinas asignadas a los días. Debes guardar para aplicar los cambios.',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('Cancelar'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              setState(() {
+                                for (int d = 1; d <= 6; d++) {
+                                  _schedule[d] = null;
+                                }
+                              });
+                            },
+                            child: const Text(
+                              'Limpiar',
+                              style: TextStyle(color: Colors.redAccent),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -390,6 +506,122 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
 
                           final hasWorkout = workoutId != null;
 
+                          if (!hasWorkout) {
+                            // ── Tarjeta día de descanso ──────────────────
+                            final nextDay = _nextTrainingDayLabel(day);
+                            return GestureDetector(
+                              onTap: _isSaving
+                                  ? null
+                                  : () => _showDayPicker(day, workouts),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 250),
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: hasChange
+                                        ? AppColors.primary
+                                        : Colors.amber.withOpacity(0.45),
+                                    width: hasChange ? 2 : 1.5,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 46,
+                                      height: 46,
+                                      decoration: BoxDecoration(
+                                        color: Colors.amber.withOpacity(0.12),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.bedtime_outlined,
+                                          color: Colors.amber,
+                                          size: 22,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(
+                                                _dayNames[day]!,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              if (hasChange) ...[
+                                                const SizedBox(width: 6),
+                                                Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 2),
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors.primary
+                                                        .withOpacity(0.2),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            6),
+                                                  ),
+                                                  child: const Text(
+                                                    'modificado',
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      color: AppColors.primary,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                          const SizedBox(height: 3),
+                                          const Text(
+                                            '¡Día de descanso! 💤',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.amber,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          if (nextDay != null) ...[
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Próximo entreno: $nextDay',
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.add_circle_outline,
+                                      color: Colors.amber.withOpacity(0.7),
+                                      size: 22,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+
+                          // ── Tarjeta día con rutina ────────────────────
                           return AnimatedContainer(
                             duration: const Duration(milliseconds: 250),
                             margin: const EdgeInsets.only(bottom: 10),
@@ -399,9 +631,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                               border: Border.all(
                                 color: hasChange
                                     ? AppColors.primary
-                                    : hasWorkout
-                                        ? AppColors.primary.withOpacity(0.4)
-                                        : Colors.transparent,
+                                    : AppColors.primary.withOpacity(0.4),
                                 width: hasChange ? 2 : 1.5,
                               ),
                             ),
@@ -415,20 +645,16 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                 width: 46,
                                 height: 46,
                                 decoration: BoxDecoration(
-                                  color: hasWorkout
-                                      ? AppColors.primary
-                                      : AppColors.surface,
+                                  color: AppColors.primary,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Center(
                                   child: Text(
                                     _dayShort[day]!,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
-                                      color: hasWorkout
-                                          ? Colors.black
-                                          : AppColors.textSecondary,
+                                      color: Colors.black,
                                     ),
                                   ),
                                 ),
@@ -467,20 +693,14 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                               ),
                               subtitle: Text(
                                 workoutName,
-                                style: TextStyle(
-                                  color: hasWorkout
-                                      ? AppColors.primary
-                                      : AppColors.textSecondary,
+                                style: const TextStyle(
+                                  color: AppColors.primary,
                                   fontSize: 12,
                                 ),
                               ),
-                              trailing: Icon(
-                                hasWorkout
-                                    ? Icons.edit
-                                    : Icons.add_circle_outline,
-                                color: hasWorkout
-                                    ? AppColors.primary
-                                    : AppColors.textSecondary,
+                              trailing: const Icon(
+                                Icons.edit,
+                                color: AppColors.primary,
                                 size: 22,
                               ),
                             ),
@@ -533,7 +753,8 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
           ),
         ],
       ),
-    );
+    ),     // cierra Scaffold
+    );     // cierra PopScope
   }
 }
 

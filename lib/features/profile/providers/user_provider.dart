@@ -344,6 +344,15 @@ class UserProvider extends ChangeNotifier {
         .from('user_workout_schedule')
         .delete()
         .eq('user_id', userId);
+
+    // Actualizar lista local de inmediato para que la UI refleje el cambio sin esperar loadUsers
+    final idx = _users.indexWhere((u) => u.id == userId);
+    if (idx != -1) {
+      _users[idx] = _users[idx].copyWith(
+        assignedWorkoutId: null,
+        assignedMealPlanId: null,
+      );
+    }
     notifyListeners();
 
     // Actualizar AuthProvider si es el usuario actual

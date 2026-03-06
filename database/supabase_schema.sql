@@ -34,6 +34,7 @@ CREATE TABLE workouts (
   duration INT NOT NULL, -- en minutos
   exercise_count INT DEFAULT 0,
   level TEXT CHECK (level IN ('Principiante', 'Intermedio', 'Avanzado')),
+  category TEXT CHECK (category IN ('Pecho', 'Espalda', 'Pierna', 'Cardio', 'Funcional')),
   image_url TEXT,
   description TEXT,
   created_at TIMESTAMP DEFAULT NOW(),

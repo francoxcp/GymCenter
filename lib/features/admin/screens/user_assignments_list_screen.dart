@@ -5,7 +5,6 @@ import '../../profile/providers/user_provider.dart';
 import '../../auth/models/user.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import 'assign_plans_screen.dart';
-import 'assign_meal_plan_screen.dart';
 
 class UserAssignmentsListScreen extends StatefulWidget {
   const UserAssignmentsListScreen({super.key});
@@ -108,7 +107,7 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Toca un usuario para ver o editar sus asignaciones',
+                          'Usa los 3 puntos de cada usuario para asignar o editar su rutina semanal',
                           style: TextStyle(
                             color: AppColors.primary,
                             fontSize: 12,
@@ -224,20 +223,31 @@ class _UserAssignmentCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      if (user.assignedWorkoutId == null &&
-                          user.assignedMealPlanId == null)
-                        const Text(
-                          'Sin asignaciones',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textSecondary,
-                            fontStyle: FontStyle.italic,
-                          ),
+                  if (user.assignedWorkoutId == null)
+                    const Text(
+                      'Sin rutina asignada',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        'Rutina asignada',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w500,
                         ),
-                    ],
-                  ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -254,65 +264,64 @@ class _UserAssignmentCard extends StatelessWidget {
                     Provider.of<UserProvider>(context, listen: false)
                         .loadUsers();
                   });
-                } else if (value == 'meal') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AssignMealPlanScreen(user: user),
-                    ),
-                  ).then((_) {
-                    Provider.of<UserProvider>(context, listen: false)
-                        .loadUsers();
-                  });
                 } else if (value == 'remove') {
                   final userProvider =
                       Provider.of<UserProvider>(context, listen: false);
-                  // Limpiar asignaciones en users y user_workout_schedule
-                  await userProvider.clearUserAssignments(user.id);
-                  if (!context.mounted) return;
-                  // Recargar usuarios antes de mostrar el mensaje
-                  userProvider.loadUsers();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Asignaciones eliminadas'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
+                  try {
+                    await userProvider.clearUserAssignments(user.id);
+                    if (!context.mounted) return;
+                    await userProvider.loadUsers();
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Rutina eliminada'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  } catch (e) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error al eliminar la rutina: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 }
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'schedule',
                   child: Row(
                     children: [
-                      Icon(Icons.calendar_month, size: 18),
-                      SizedBox(width: 8),
-                      Text('Horario semanal'),
+                      Icon(
+                        user.assignedWorkoutId == null
+                            ? Icons.add_circle_outline
+                            : Icons.edit,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        user.assignedWorkoutId == null
+                            ? 'Agregar rutina'
+                            : 'Editar rutina',
+                      ),
                     ],
                   ),
                 ),
-                const PopupMenuItem(
-                  value: 'meal',
-                  child: Row(
-                    children: [
-                      Icon(Icons.restaurant_menu, size: 18),
-                      SizedBox(width: 8),
-                      Text('Plan alimenticio'),
-                    ],
+                if (user.assignedWorkoutId != null)
+                  const PopupMenuItem(
+                    value: 'remove',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline,
+                            size: 18, color: Colors.redAccent),
+                        SizedBox(width: 8),
+                        Text('Quitar rutina',
+                            style: TextStyle(color: Colors.redAccent)),
+                      ],
+                    ),
                   ),
-                ),
-                const PopupMenuItem(
-                  value: 'remove',
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete_outline,
-                          size: 18, color: Colors.redAccent),
-                      SizedBox(width: 8),
-                      Text('Quitar asignación',
-                          style: TextStyle(color: Colors.redAccent)),
-                    ],
-                  ),
-                ),
               ],
             ),
           ],

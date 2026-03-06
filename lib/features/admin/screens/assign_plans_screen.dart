@@ -18,7 +18,9 @@ class AssignPlansScreen extends StatefulWidget {
 
 class _AssignPlansScreenState extends State<AssignPlansScreen> {
   final Map<int, String?> _schedule = {};
-  final Set<int> _savingDays = {};
+  Map<int, String?> _originalSchedule = {};
+  bool _isLoadingSchedule = true;
+  bool _isSaving = false;
 
   static const _dayNames = {
     1: 'Lunes',
@@ -41,56 +43,39 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() async {
-      final workoutProvider =
-          Provider.of<WorkoutProvider>(context, listen: false);
-      workoutProvider.loadWorkouts();
-    });
+    _loadData();
   }
 
-  Future<void> _assignDay(int day, Workout workout) async {
-    setState(() => _savingDays.add(day));
+  Future<void> _loadData() async {
+    final workoutProvider =
+        Provider.of<WorkoutProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    await Future.wait([
+      workoutProvider.loadWorkouts(),
+      _loadSchedule(userProvider),
+    ]);
+  }
+
+  Future<void> _loadSchedule(UserProvider userProvider) async {
     try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      await userProvider.assignWorkoutToDay(
-          widget.user.id, day, workout.id);
+      final weekMap = await userProvider.getWeekWorkouts(widget.user.id);
       if (mounted) {
-        setState(() => _schedule[day] = workout.id);
+        setState(() {
+          for (int day = 1; day <= 6; day++) {
+            _schedule[day] = weekMap[day];
+          }
+          _originalSchedule = Map.from(_schedule);
+          _isLoadingSchedule = false;
+        });
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al asignar día: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _savingDays.remove(day));
+      if (mounted) setState(() => _isLoadingSchedule = false);
     }
   }
 
-  Future<void> _clearDay(int day) async {
-    setState(() => _savingDays.add(day));
-    try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      await userProvider.removeWorkoutFromDay(widget.user.id, day);
-      if (mounted) {
-        setState(() => _schedule[day] = null);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al limpiar día: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _savingDays.remove(day));
-    }
+  void _selectDay(int day, String? workoutId) {
+    setState(() => _schedule[day] = workoutId);
   }
 
   void _showDayPicker(int day, List<Workout> workouts) {
@@ -100,93 +85,206 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          minChildSize: 0.4,
-          maxChildSize: 0.9,
-          expand: false,
-          builder: (_, scrollCtrl) {
-            return Container(
-              decoration: const BoxDecoration(
-                color: AppColors.cardBackground,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: Column(
-                children: [
-                  const SizedBox(height: 12),
-                  Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.textSecondary.withOpacity(0.4),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
+        String selectedCategory = 'Todos';
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            final filtered = selectedCategory == 'Todos'
+                ? workouts
+                : workouts
+                    .where((w) => w.category == selectedCategory)
+                    .toList();
+
+            return DraggableScrollableSheet(
+              initialChildSize: 0.7,
+              minChildSize: 0.4,
+              maxChildSize: 0.95,
+              expand: false,
+              builder: (_, scrollCtrl) {
+                return Container(
+                  decoration: const BoxDecoration(
+                    color: AppColors.cardBackground,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(24)),
                   ),
-                  const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      children: [
-                        Text(
-                          _dayNames[day]!,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 12),
+                      Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.textSecondary.withOpacity(0.4),
+                          borderRadius: BorderRadius.circular(2),
                         ),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          child: const Text('Cerrar',
-                              style: TextStyle(color: AppColors.textSecondary)),
+                      ),
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          children: [
+                            Text(
+                              _dayNames[day]!,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const Spacer(),
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('Cerrar',
+                                  style: TextStyle(
+                                      color: AppColors.textSecondary)),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      const Divider(color: AppColors.surface),
+                      // Chips de categoría
+                      SizedBox(
+                        height: 40,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          children: ['Todos', ...Workout.categories].map((cat) {
+                            final isSelected = selectedCategory == cat;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: GestureDetector(
+                                onTap: () =>
+                                    setSheetState(() => selectedCategory = cat),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? AppColors.primary
+                                        : AppColors.surface,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? AppColors.primary
+                                          : Colors.transparent,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    cat,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: isSelected
+                                          ? Colors.black
+                                          : AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: ListView(
+                          controller: scrollCtrl,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          children: [
+                            if (selectedCategory == 'Todos')
+                              _BottomSheetTile(
+                                title: 'Día de descanso',
+                                subtitle: 'Sin rutina asignada',
+                                icon: Icons.hotel,
+                                isSelected: currentId == null,
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  _selectDay(day, null);
+                                },
+                              ),
+                            if (selectedCategory == 'Todos')
+                              const SizedBox(height: 8),
+                            if (filtered.isEmpty)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 32),
+                                child: Center(
+                                  child: Text(
+                                    'No hay rutinas en esta categoría',
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              ...filtered.map((w) {
+                                final sel = currentId == w.id;
+                                return _BottomSheetTile(
+                                  title: w.name,
+                                  subtitle:
+                                      '${w.duration} min · ${w.exerciseCount} ejercicios',
+                                  icon: Icons.fitness_center,
+                                  isSelected: sel,
+                                  badge: w.category,
+                                  onTap: () {
+                                    Navigator.pop(ctx);
+                                    _selectDay(day, w.id);
+                                  },
+                                );
+                              }),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const Divider(color: AppColors.surface),
-                  Expanded(
-                    child: ListView(
-                      controller: scrollCtrl,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      children: [
-                        // Descanso option
-                        _BottomSheetTile(
-                          title: 'Día de descanso',
-                          subtitle: 'Sin rutina asignada',
-                          icon: Icons.hotel,
-                          isSelected: currentId == null,
-                          onTap: () {
-                            Navigator.pop(ctx);
-                            _clearDay(day);
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        ...workouts.map((w) {
-                          final sel = currentId == w.id;
-                          return _BottomSheetTile(
-                            title: w.name,
-                            subtitle:
-                                '${w.duration} min · ${w.exerciseCount} ejercicios',
-                            icon: Icons.fitness_center,
-                            isSelected: sel,
-                            onTap: () {
-                              Navigator.pop(ctx);
-                              _assignDay(day, w);
-                            },
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             );
           },
         );
       },
     );
+  }
+
+  Future<void> _saveSchedule() async {
+    setState(() => _isSaving = true);
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+      for (int day = 1; day <= 6; day++) {
+        final original = _originalSchedule[day];
+        final current = _schedule[day];
+        if (original == current) continue;
+
+        if (current != null) {
+          await userProvider.assignWorkoutToDay(widget.user.id, day, current);
+        } else {
+          await userProvider.removeWorkoutFromDay(widget.user.id, day);
+        }
+      }
+
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Rutina guardada correctamente'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al guardar: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -197,7 +295,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'ASIGNAR PLANES',
+              'ASIGNAR RUTINA',
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
@@ -216,164 +314,224 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // User info card
-            _UserInfoCard(user: widget.user),
-
-            const SizedBox(height: 28),
-
-            // Weekly schedule section
-            Row(
-              children: [
-                const Text(
-                  'RUTINA SEMANAL',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'Toca un día para asignar',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-
-            Consumer<WorkoutProvider>(
-              builder: (context, workoutProvider, _) {
-                final workouts = workoutProvider.workouts;
-
-                if (workoutProvider.isLoading) {
-                  return Column(
-                    children: List.generate(
-                      6,
-                      (_) => const Padding(
-                        padding: EdgeInsets.only(bottom: 10),
-                        child: ShimmerCard(height: 72),
-                      ),
-                    ),
-                  );
-                }
-
-                return Column(
-                  children: List.generate(6, (index) {
-                    final day = index + 1;
-                    final workoutId = _schedule[day];
-                    final isSaving = _savingDays.contains(day);
-
-                    String workoutName = 'Día de descanso';
-                    if (workoutId != null) {
-                      final match = workouts
-                          .where((w) => w.id == workoutId)
-                          .toList();
-                      if (match.isNotEmpty) workoutName = match.first.name;
-                    }
-
-                    final hasWorkout = workoutId != null;
-
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      margin: const EdgeInsets.only(bottom: 10),
-                      decoration: BoxDecoration(
-                        color: AppColors.cardBackground,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: hasWorkout
-                              ? AppColors.primary.withOpacity(0.5)
-                              : Colors.transparent,
-                          width: 1.5,
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _UserInfoCard(user: widget.user),
+                  const SizedBox(height: 28),
+                  Row(
+                    children: [
+                      const Text(
+                        'RUTINA SEMANAL',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                          letterSpacing: 1.5,
                         ),
                       ),
-                      child: ListTile(
-                        onTap: isSaving
-                            ? null
-                            : () => _showDayPicker(day, workouts),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 4),
-                        leading: Container(
-                          width: 46,
-                          height: 46,
-                          decoration: BoxDecoration(
-                            color: hasWorkout
-                                ? AppColors.primary
-                                : AppColors.surface,
-                            borderRadius: BorderRadius.circular(10),
+                      const SizedBox(width: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          'Toca un día para asignar',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
                           ),
-                          child: Center(
-                            child: Text(
-                              _dayShort[day]!,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: hasWorkout
-                                    ? Colors.black
-                                    : AppColors.textSecondary,
-                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Consumer<WorkoutProvider>(
+                    builder: (context, workoutProvider, _) {
+                      final workouts = workoutProvider.workouts;
+
+                      if (_isLoadingSchedule || workoutProvider.isLoading) {
+                        return Column(
+                          children: List.generate(
+                            6,
+                            (_) => const Padding(
+                              padding: EdgeInsets.only(bottom: 10),
+                              child: ShimmerCard(height: 72),
                             ),
                           ),
-                        ),
-                        title: Text(
-                          _dayNames[day]!,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
-                        ),
-                        subtitle: Text(
-                          workoutName,
-                          style: TextStyle(
-                            color: hasWorkout
-                                ? AppColors.primary
-                                : AppColors.textSecondary,
-                            fontSize: 12,
-                          ),
-                        ),
-                        trailing: isSaving
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.primary,
+                        );
+                      }
+
+                      return Column(
+                        children: List.generate(6, (index) {
+                          final day = index + 1;
+                          final workoutId = _schedule[day];
+                          final hasChange =
+                              _originalSchedule[day] != workoutId;
+
+                          String workoutName = 'Día de descanso';
+                          if (workoutId != null) {
+                            final match = workouts
+                                .where((w) => w.id == workoutId)
+                                .toList();
+                            if (match.isNotEmpty) {
+                              workoutName = match.first.name;
+                            }
+                          }
+
+                          final hasWorkout = workoutId != null;
+
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            margin: const EdgeInsets.only(bottom: 10),
+                            decoration: BoxDecoration(
+                              color: AppColors.cardBackground,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: hasChange
+                                    ? AppColors.primary
+                                    : hasWorkout
+                                        ? AppColors.primary.withOpacity(0.4)
+                                        : Colors.transparent,
+                                width: hasChange ? 2 : 1.5,
+                              ),
+                            ),
+                            child: ListTile(
+                              onTap: _isSaving
+                                  ? null
+                                  : () => _showDayPicker(day, workouts),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 4),
+                              leading: Container(
+                                width: 46,
+                                height: 46,
+                                decoration: BoxDecoration(
+                                  color: hasWorkout
+                                      ? AppColors.primary
+                                      : AppColors.surface,
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
-                              )
-                            : Icon(
-                                hasWorkout ? Icons.edit : Icons.add_circle_outline,
+                                child: Center(
+                                  child: Text(
+                                    _dayShort[day]!,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: hasWorkout
+                                          ? Colors.black
+                                          : AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              title: Row(
+                                children: [
+                                  Text(
+                                    _dayNames[day]!,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  if (hasChange) ...[
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            AppColors.primary.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text(
+                                        'modificado',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              subtitle: Text(
+                                workoutName,
+                                style: TextStyle(
+                                  color: hasWorkout
+                                      ? AppColors.primary
+                                      : AppColors.textSecondary,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              trailing: Icon(
+                                hasWorkout
+                                    ? Icons.edit
+                                    : Icons.add_circle_outline,
                                 color: hasWorkout
                                     ? AppColors.primary
                                     : AppColors.textSecondary,
                                 size: 22,
                               ),
-                      ),
-                    );
-                  }),
-                );
-              },
+                            ),
+                          );
+                        }),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
+          ),
 
-          ],
-        ),
+          // Botón guardar
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _isSaving || _isLoadingSchedule
+                    ? null
+                    : _saveSchedule,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Colors.black,
+                        ),
+                      )
+                    : const Text(
+                        'Guardar rutina',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -450,6 +608,7 @@ class _BottomSheetTile extends StatelessWidget {
   final IconData icon;
   final bool isSelected;
   final VoidCallback onTap;
+  final String? badge;
 
   const _BottomSheetTile({
     required this.title,
@@ -457,6 +616,7 @@ class _BottomSheetTile extends StatelessWidget {
     required this.icon,
     required this.isSelected,
     required this.onTap,
+    this.badge,
   });
 
   @override
@@ -477,15 +637,39 @@ class _BottomSheetTile extends StatelessWidget {
         onTap: onTap,
         leading: Icon(
           icon,
-          color:
-              isSelected ? AppColors.primary : AppColors.textSecondary,
+          color: isSelected ? AppColors.primary : AppColors.textSecondary,
         ),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: isSelected ? AppColors.primary : Colors.white,
-          ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? AppColors.primary : Colors.white,
+                ),
+              ),
+            ),
+            if (badge != null) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  badge!,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
         subtitle: Text(
           subtitle,

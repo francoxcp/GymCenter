@@ -9,7 +9,16 @@ class Workout {
   final String imageUrl;
   final String? description;
   final String? createdBy; // ID del usuario que creó la rutina (null = admin)
+  final String? category; // Pecho, Espalda, Pierna, Cardio, Funcional
   final List<Exercise> exercises;
+
+  static const List<String> categories = [
+    'Pecho',
+    'Espalda',
+    'Pierna',
+    'Cardio',
+    'Funcional',
+  ];
 
   Workout({
     required this.id,
@@ -20,6 +29,7 @@ class Workout {
     required this.imageUrl,
     this.description,
     this.createdBy,
+    this.category,
     this.exercises = const [],
   });
 
@@ -33,6 +43,7 @@ class Workout {
       imageUrl: json['image_url'] ?? json['imageUrl'] ?? '',
       description: json['description'],
       createdBy: json['created_by'] ?? json['createdBy'],
+      category: json['category'],
       exercises: (json['exercises'] as List?)
               ?.map((e) => Exercise.fromJson(e))
               .toList() ??
@@ -51,6 +62,7 @@ class Workout {
       'level': level,
       'imageUrl': imageUrl,
       'createdBy': createdBy,
+      'category': category,
     };
   }
 }

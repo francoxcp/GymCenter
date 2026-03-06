@@ -72,6 +72,7 @@ class WorkoutProvider extends ChangeNotifier {
           imageUrl: json['image_url'] ?? '',
           description: json['description'],
           createdBy: json['created_by'],
+          category: json['category'],
           exercises: exercises,
         );
       }).toList();

@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:video_player/video_player.dart';
 import '../../core/theme/app_theme.dart';
 import 'fullscreen_video_player.dart';
@@ -10,6 +12,7 @@ class VideoPlayerWidget extends StatefulWidget {
   final bool looping;
   final double? aspectRatio;
   final String? exerciseName;
+  final String? thumbnailUrl;
   final bool showFullscreenButton;
 
   const VideoPlayerWidget({
@@ -19,6 +22,7 @@ class VideoPlayerWidget extends StatefulWidget {
     this.looping = true,
     this.aspectRatio,
     this.exerciseName,
+    this.thumbnailUrl,
     this.showFullscreenButton = true,
   });
 
@@ -40,7 +44,6 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   Future<void> _initializeVideo() async {
     try {
-      // Verificar que la URL no esté vacía
       if (widget.videoUrl.isEmpty) {
         setState(() {
           _hasError = true;
@@ -49,9 +52,18 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         return;
       }
 
-      _controller = VideoPlayerController.networkUrl(
-        Uri.parse(widget.videoUrl),
-      );
+      // Try to get cached file first; falls back to network automatically.
+      File? cachedFile;
+      try {
+        cachedFile =
+            await DefaultCacheManager().getSingleFile(widget.videoUrl);
+      } catch (_) {
+        // Cache miss or network error — fall back to streaming
+      }
+
+      _controller = cachedFile != null
+          ? VideoPlayerController.file(cachedFile)
+          : VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
 
       _controller.setLooping(widget.looping);
 
@@ -123,26 +135,47 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     }
 
     if (!_isInitialized) {
+      // Show thumbnail as placeholder while the video initialises.
+      // Falls back to a dark container with a spinner if no thumbnail.
       return Container(
         height: 200,
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: Colors.black,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            fit: StackFit.expand,
+            alignment: Alignment.center,
             children: [
-              CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-              ),
-              SizedBox(height: 12),
-              Text(
-                'Cargando video...',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
+              // Thumbnail background
+              if (widget.thumbnailUrl != null &&
+                  widget.thumbnailUrl!.isNotEmpty)
+                Image.network(
+                  widget.thumbnailUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                 ),
+              // Dark overlay
+              Container(color: Colors.black54),
+              // Spinner + label
+              const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    'Cargando video...',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

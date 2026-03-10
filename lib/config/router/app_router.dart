@@ -14,6 +14,7 @@ import '../../features/meal_plans/screens/meal_plan_list_screen.dart';
 import '../../features/meal_plans/screens/meal_plan_detail_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/profile/screens/edit_profile_screen.dart';
+import '../../features/profile/screens/personal_records_screen.dart';
 import '../../features/progress/screens/progress_screen.dart';
 import '../../features/progress/screens/body_measurements_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
@@ -45,7 +46,8 @@ int _locationToIndex(String location) {
       location.startsWith('/body-measurements') ||
       location.startsWith('/settings') ||
       location.startsWith('/profile') ||
-      location.startsWith('/edit-profile')) {
+      location.startsWith('/edit-profile') ||
+      location.startsWith('/personal-records')) {
     return 3;
   }
 
@@ -177,6 +179,10 @@ GoRouter createAppRouter(AuthProvider authProvider) {
         GoRoute(
           path: '/edit-profile',
           builder: (context, state) => const EditProfileScreen(),
+        ),
+        GoRoute(
+          path: '/personal-records',
+          builder: (context, state) => const PersonalRecordsScreen(),
         ),
 
         // Progress routes

@@ -55,22 +55,31 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
             )
           : measurements.isEmpty
               ? _buildEmptyState()
-              : ListView(
-                  padding: const EdgeInsets.all(20),
-                  children: [
-                    _buildCurrentStats(measurements, units),
-                    const SizedBox(height: 24),
-                    Text(
-                      AppL10n.of(context).measurementHistory,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+              : RefreshIndicator(
+                  onRefresh: () =>
+                      Provider.of<BodyMeasurementProvider>(context,
+                              listen: false)
+                          .loadMeasurements(),
+                  color: AppColors.primary,
+                  backgroundColor: AppColors.cardBackground,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(20),
+                    children: [
+                      _buildCurrentStats(measurements, units),
+                      const SizedBox(height: 24),
+                      Text(
+                        AppL10n.of(context).measurementHistory,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    ...measurements.map((m) => _buildMeasurementCard(m, units)),
-                  ],
+                      const SizedBox(height: 16),
+                      ...measurements.map((m) => _buildMeasurementCard(m, units)),
+                    ],
+                  ),
                 ),
     );
   }

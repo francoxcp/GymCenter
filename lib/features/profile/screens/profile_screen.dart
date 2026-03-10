@@ -204,20 +204,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _onFieldChanged();
             },
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: const EdgeInsets.symmetric(vertical: 11),
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 color: isSelected ? col.withOpacity(0.2) : AppColors.background,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: isSelected ? col : Colors.transparent,
-                  width: 2,
+                  width: 1.5,
                 ),
               ),
               child: Text(
                 level['name'] as String,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   color: isSelected ? Colors.white : AppColors.textSecondary,
                 ),
@@ -227,6 +227,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         );
       }).toList(),
+    );
+  }
+
+  /// Compact read-only level badge for users without assigned routine.
+  Widget _buildLevelBadge() {
+    final colors = {
+      'Principiante': AppColors.badgePrincipiante,
+      'Intermedio': AppColors.badgeIntermedio,
+      'Avanzado': AppColors.badgeAvanzado,
+    };
+    final col = colors[_selectedLevel] ?? AppColors.badgeIntermedio;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: col.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: col.withOpacity(0.5)),
+      ),
+      child: Text(
+        _selectedLevel,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: col,
+        ),
+      ),
     );
   }
 
@@ -365,20 +391,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 20),
 
                       // Selector de nivel
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          AppL10n.of(context).trainingLevel,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textSecondary.withOpacity(0.8),
-                            letterSpacing: 1,
-                            fontWeight: FontWeight.w600,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            AppL10n.of(context).trainingLevel,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: AppColors.textSecondary.withOpacity(0.8),
+                              letterSpacing: 1,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
+                          // If no routine, show compact badge inline
+                          if (currentUser.assignedWorkoutId == null) ...
+                            [
+                              const SizedBox(width: 8),
+                              _buildLevelBadge(),
+                            ],
+                        ],
                       ),
-                      const SizedBox(height: 10),
-                      _buildLevelSelector(),
+                      if (currentUser.assignedWorkoutId != null) ...
+                        [
+                          const SizedBox(height: 8),
+                          _buildLevelSelector(),
+                        ],
 
                       const SizedBox(height: 20),
 
@@ -401,6 +438,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 16),
 
                 // ── Menú ─────────────────────────────────────────────────
+                _MenuItem(
+                  icon: Icons.emoji_events_outlined,
+                  title: 'Personal Records',
+                  onTap: () => context.push('/personal-records'),
+                ),
+                const SizedBox(height: 10),
                 _MenuItem(
                   icon: Icons.history,
                   title: AppL10n.of(context).workoutHistoryMenu,

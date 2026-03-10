@@ -56,6 +56,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   Map<int, Map<int, double?>> _setWeights = {};
   bool _hasLoadedWeights = false;
 
+  // PR histórico por ejercicio (max weight ever logged)
+  Map<int, double> _exercisePRs = {};
+  // Ejercicios que superaron su PR en esta sesión
+  final Set<int> _newPRsThisSession = {};
+
   @override
   void initState() {
     super.initState();
@@ -572,6 +577,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
       final logs = response as List;
       final Map<int, Map<int, double?>> weights = {};
+      final Map<int, double> prs = {};
       // La respuesta está ordenada desc → la primera entrada de cada combo es la más reciente
       for (final log in logs) {
         final exIdx = log['exercise_index'] as int;
@@ -582,8 +588,17 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           weights[exIdx] ??= {};
           weights[exIdx]![setIdx] = weightKg;
         }
+        // PR = máximo histórico por ejercicio
+        if (weightKg != null) {
+          if (!prs.containsKey(exIdx) || weightKg > prs[exIdx]!) {
+            prs[exIdx] = weightKg;
+          }
+        }
       }
-      if (mounted) setState(() => _setWeights = weights);
+      if (mounted) setState(() {
+        _setWeights = weights;
+        _exercisePRs = prs;
+      });
     } catch (e) {
       debugPrint('Error cargando últimos pesos: $e');
     }
@@ -627,13 +642,21 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     }
   }
 
-  void _showWeightDialog(int exerciseIndex, int setIndex) {
+  String _fmtWeight(double w) =>
+      w == w.roundToDouble() ? '${w.toInt()} kg' : '${w.toStringAsFixed(1)} kg';
+
+  void _showWeightDialog(int exerciseIndex, int setIndex, Exercise exercise) {
     final currentWeight = _setWeights[exerciseIndex]?[setIndex];
+    final pr = _exercisePRs[exerciseIndex];
+    final adminWeight = exercise.weight > 0 ? exercise.weight : null;
+
+    // Sugerencia: peso actual de sesión > PR histórico > sugerencia admin
+    final suggestion = currentWeight ?? pr ?? adminWeight;
     final controller = TextEditingController(
-      text: currentWeight != null
-          ? (currentWeight == currentWeight.roundToDouble()
-              ? currentWeight.toInt().toString()
-              : currentWeight.toStringAsFixed(1))
+      text: suggestion != null
+          ? (suggestion == suggestion.roundToDouble()
+              ? suggestion.toInt().toString()
+              : suggestion.toStringAsFixed(1))
           : '',
     );
 
@@ -649,33 +672,89 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             fontWeight: FontWeight.bold,
           ),
         ),
-        content: TextField(
-          controller: controller,
-          keyboardType:
-              const TextInputType.numberWithOptions(decimal: true),
-          autofocus: true,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-          ),
-          decoration: const InputDecoration(
-            hintText: '0',
-            hintStyle: TextStyle(color: AppColors.textSecondary),
-            suffixText: 'kg',
-            suffixStyle: TextStyle(
-              color: AppColors.primary,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Contexto de referencia
+            if (pr != null || adminWeight != null) ...[  
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.cardBackground,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 6,
+                  children: [
+                    if (pr != null)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🏆', style: TextStyle(fontSize: 13)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Récord: ${_fmtWeight(pr)}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.amber,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    if (adminWeight != null)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.tips_and_updates_outlined,
+                              size: 13, color: Colors.lightBlueAccent),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Entrenador: ${_fmtWeight(adminWeight)}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.lightBlueAccent,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+            ],
+            TextField(
+              controller: controller,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              autofocus: true,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+              decoration: const InputDecoration(
+                hintText: '0',
+                hintStyle: TextStyle(color: AppColors.textSecondary),
+                suffixText: 'kg',
+                suffixStyle: TextStyle(
+                  color: AppColors.primary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.primary),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.primary, width: 2),
+                ),
+              ),
             ),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: AppColors.primary),
-            ),
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: AppColors.primary, width: 2),
-            ),
-          ),
+          ],
         ),
         actions: [
           TextButton(
@@ -687,13 +766,44 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           ),
           ElevatedButton(
             onPressed: () {
-              final weight = double.tryParse(
-                  controller.text.replaceAll(',', '.'));
+              final weight =
+                  double.tryParse(controller.text.replaceAll(',', '.'));
+              final isNewPR = weight != null &&
+                  (pr == null || weight > pr);
               setState(() {
                 _setWeights[exerciseIndex] ??= {};
                 _setWeights[exerciseIndex]![setIndex] = weight;
+                if (isNewPR) {
+                  _exercisePRs[exerciseIndex] = weight;
+                  _newPRsThisSession.add(exerciseIndex);
+                }
               });
               Navigator.pop(ctx);
+              if (isNewPR) {
+                HapticFeedback.heavyImpact();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Text('🏆', style: TextStyle(fontSize: 18)),
+                        const SizedBox(width: 10),
+                        Text(
+                          '¡Nuevo récord personal! ${_fmtWeight(weight)}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Colors.amber,
+                    duration: const Duration(seconds: 3),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -707,6 +817,211 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Bottom sheet con historial de las últimas sesiones del ejercicio.
+  Future<void> _showExerciseHistory(
+      int exerciseIndex, String exerciseName) async {
+    final userId =
+        Provider.of<AuthProvider>(context, listen: false).currentUser?.id;
+    final workoutId = widget.extraWorkoutId ??
+        Provider.of<AuthProvider>(context, listen: false)
+            .currentUser
+            ?.assignedWorkoutId;
+    if (userId == null || workoutId == null) return;
+
+    final supabase = Supabase.instance.client;
+    List logs = [];
+    try {
+      logs = await supabase
+          .from('exercise_set_logs')
+          .select('set_index, weight_kg, reps, logged_at')
+          .eq('user_id', userId)
+          .eq('workout_id', workoutId)
+          .eq('exercise_index', exerciseIndex)
+          .order('logged_at', ascending: false)
+          .limit(30);
+    } catch (_) {}
+
+    if (!mounted) return;
+
+    // Agrupar por fecha (día)
+    final Map<String, List<Map>> byDate = {};
+    for (final log in logs) {
+      final dt = DateTime.tryParse(log['logged_at'] as String? ?? '');
+      if (dt == null) continue;
+      final key =
+          '${dt.toLocal().day}/${dt.toLocal().month}/${dt.toLocal().year}';
+      byDate[key] ??= [];
+      byDate[key]!.add(Map.from(log));
+    }
+    final sessions = byDate.entries.toList();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.55,
+        minChildSize: 0.35,
+        maxChildSize: 0.85,
+        expand: false,
+        builder: (_, scroll) => Container(
+          decoration: const BoxDecoration(
+            color: AppColors.cardBackground,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              // Handle
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.textSecondary.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        exerciseName,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    // PR badge
+                    if (_exercisePRs.containsKey(exerciseIndex))
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                              color: Colors.amber.withOpacity(0.5)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Text('🏆',
+                                style: TextStyle(fontSize: 13)),
+                            const SizedBox(width: 4),
+                            Text(
+                              _fmtWeight(_exercisePRs[exerciseIndex]!),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.amber,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const Divider(height: 24, color: AppColors.surface),
+              Expanded(
+                child: sessions.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Sin historial previo',
+                          style: TextStyle(
+                              color: AppColors.textSecondary, fontSize: 14),
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: scroll,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: sessions.length,
+                        itemBuilder: (_, i) {
+                          final date = sessions[i].key;
+                          final sets = sessions[i].value;
+                          final maxW = sets
+                              .map((s) =>
+                                  (s['weight_kg'] as num?)?.toDouble() ?? 0.0)
+                              .fold(0.0,
+                                  (a, b) => a > b ? a : b);
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        date,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Wrap(
+                                        spacing: 6,
+                                        runSpacing: 4,
+                                        children: sets.map((s) {
+                                          final w = (s['weight_kg'] as num?)
+                                              ?.toDouble();
+                                          final r = s['reps'] as int?;
+                                          return Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 3),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.cardBackground,
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              w != null
+                                                  ? '${_fmtWeight(w)}${r != null ? ' × $r' : ''}'
+                                                  : '—',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.white70,
+                                              ),
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (maxW > 0)
+                                  Text(
+                                    _fmtWeight(maxW),
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1115,6 +1430,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 autoPlay: false,
                 looping: true,
                 exerciseName: exercise.name,
+                thumbnailUrl: exercise.thumbnailUrl,
                 showFullscreenButton: true,
               ),
             )
@@ -1269,6 +1585,16 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             const SizedBox(height: 24),
           ],
 
+          // ── Barra de referencia (PR + sugerencia admin + historial) ──
+          _ExerciseReferenceBar(
+            pr: _exercisePRs[exerciseIndex],
+            adminWeight: exercise.weight > 0 ? exercise.weight : null,
+            isNewPR: _newPRsThisSession.contains(exerciseIndex),
+            onHistoryTap: () =>
+                _showExerciseHistory(exerciseIndex, exercise.name),
+          ),
+          const SizedBox(height: 16),
+
           // Sets Checklist con animaciones
           const Text(
             'Marca las series completadas:',
@@ -1352,7 +1678,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         _WeightChip(
                           weight: _setWeights[exerciseIndex]?[setIndex],
                           reps: exercise.reps,
-                          onTap: () => _showWeightDialog(exerciseIndex, setIndex),
+                          isNewPR: _newPRsThisSession.contains(exerciseIndex) &&
+                              _setWeights[exerciseIndex]?[setIndex] ==
+                                  _exercisePRs[exerciseIndex],
+                          onTap: () => _showWeightDialog(
+                              exerciseIndex, setIndex, exercise),
                         ),
                       ],
                     ),
@@ -1430,15 +1760,136 @@ class _InfoCard extends StatelessWidget {
 }
 
 /// Muestra las reps del ejercicio y un chip para ingresar el peso usado.
+// ── Barra de referencia PR / sugerencia admin ───────────────────────────────
+class _ExerciseReferenceBar extends StatelessWidget {
+  final double? pr;
+  final double? adminWeight;
+  final bool isNewPR;
+  final VoidCallback onHistoryTap;
+
+  const _ExerciseReferenceBar({
+    required this.pr,
+    required this.adminWeight,
+    required this.isNewPR,
+    required this.onHistoryTap,
+  });
+
+  String _fmt(double w) =>
+      w == w.roundToDouble() ? '${w.toInt()} kg' : '${w.toStringAsFixed(1)} kg';
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPR = pr != null;
+    final hasAdmin = adminWeight != null;
+    if (!hasPR && !hasAdmin) {
+      // Nada que mostrar salvo el botón de historial
+      return Align(
+        alignment: Alignment.centerRight,
+        child: _HistoryButton(onTap: onHistoryTap),
+      );
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: isNewPR
+            ? Border.all(color: Colors.amber, width: 1.5)
+            : null,
+      ),
+      child: Row(
+        children: [
+          if (isNewPR) ...[  
+            const Text('🏆', style: TextStyle(fontSize: 16)),
+            const SizedBox(width: 6),
+            const Text(
+              '¡Nuevo récord!',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.amber,
+              ),
+            ),
+          ] else if (hasPR) ...[  
+            const Text('🏆', style: TextStyle(fontSize: 13)),
+            const SizedBox(width: 4),
+            Text(
+              'Récord: ${_fmt(pr!)}',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.amber,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+          if (hasPR && hasAdmin) const SizedBox(width: 14),
+          if (hasAdmin) ...[  
+            const Icon(Icons.tips_and_updates_outlined,
+                size: 14, color: Colors.lightBlueAccent),
+            const SizedBox(width: 4),
+            Text(
+              'Entrenador: ${_fmt(adminWeight!)}',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.lightBlueAccent,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+          const Spacer(),
+          _HistoryButton(onTap: onHistoryTap),
+        ],
+      ),
+    );
+  }
+}
+
+class _HistoryButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _HistoryButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: AppColors.cardBackground,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.bar_chart_rounded,
+                size: 15, color: AppColors.textSecondary),
+            SizedBox(width: 4),
+            Text(
+              'Historial',
+              style: TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _WeightChip extends StatelessWidget {
   final double? weight;
   final int reps;
+  final bool isNewPR;
   final VoidCallback onTap;
 
   const _WeightChip({
     required this.weight,
     required this.reps,
     required this.onTap,
+    this.isNewPR = false,
   });
 
   @override
@@ -1467,23 +1918,40 @@ class _WeightChip extends StatelessWidget {
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: hasWeight
-                  ? AppColors.primary.withOpacity(0.15)
-                  : AppColors.surface,
+              color: isNewPR
+                  ? Colors.amber.withOpacity(0.18)
+                  : hasWeight
+                      ? AppColors.primary.withOpacity(0.15)
+                      : AppColors.surface,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: hasWeight
-                    ? AppColors.primary
-                    : AppColors.textSecondary.withOpacity(0.4),
+                color: isNewPR
+                    ? Colors.amber
+                    : hasWeight
+                        ? AppColors.primary
+                        : AppColors.textSecondary.withOpacity(0.4),
               ),
             ),
-            child: Text(
-              weightLabel,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: hasWeight ? AppColors.primary : AppColors.textSecondary,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isNewPR) ...[
+                  const Text('🏆', style: TextStyle(fontSize: 11)),
+                  const SizedBox(width: 4),
+                ],
+                Text(
+                  weightLabel,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: isNewPR
+                        ? Colors.amber
+                        : hasWeight
+                            ? AppColors.primary
+                            : AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

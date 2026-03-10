@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -60,6 +61,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   Map<int, double> _exercisePRs = {};
   // Ejercicios que superaron su PR en esta sesión
   final Set<int> _newPRsThisSession = {};
+  // Pre-caché de videos: solo se lanza una vez por sesión
+  bool _videosCacheStarted = false;
 
   @override
   void initState() {
@@ -164,6 +167,23 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     await prefs.remove(_timerKey());
   }
 
+  /// Pre-descarga todos los videos de la rutina en background.
+  /// No bloquea — se ejecuta una sola vez por sesión.
+  void _preCacheVideos(List<Exercise> exercises) {
+    final cache = DefaultCacheManager();
+    for (final ex in exercises) {
+      final url = ex.videoUrl;
+      if (url != null && url.isNotEmpty) {
+        cache.getFileFromCache(url).then((info) {
+          if (info == null) {
+            // No está en caché → descargar en background silenciosamente
+            cache.downloadFile(url).ignore();
+          }
+        }).ignore();
+      }
+    }
+  }
+
   Future<void> _checkPendingProgress() async {
     if (_hasCheckedProgress) return;
     _hasCheckedProgress = true;
@@ -232,7 +252,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         backgroundColor: AppColors.surface,
         title: Text(
           AppL10n.of(context).incompleteWorkoutFound,
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
@@ -492,13 +512,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           _saveSetWeights(workoutId: workoutId, userId: userId, workout: workout));
     }
 
-    // Obtener peso del usuario desde medidas corporales (default 70kg)
+    // Obtener peso: medidas corporales → perfil de usuario → default 70kg
     final measurementProvider = context.read<BodyMeasurementProvider>();
-    final userWeightKg = measurementProvider.latestMeasurement?.weight ?? 70.0;
+    final authUser = context.read<AuthProvider>().currentUser;
+    final userWeightKg = measurementProvider.latestMeasurement?.weight
+        ?? authUser?.weightKg
+        ?? 70.0;
 
-    // Cálculo de calorías con valores MET (estándar de fisiología del ejercicio)
-    // MET cardio ~8, MET fuerza ~5
-    // Fórmula: kcal = MET × peso_kg × horas
+    // Cálculo de calorías mejorado con datos del perfil de usuario
     final caloriesBurned = _estimateCalories(
       workout,
       durationMinutes,
@@ -525,34 +546,68 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   int _estimateCalories(Workout workout, int durationMinutes, double weightKg) {
     if (durationMinutes == 0) return 0;
 
-    int cardioCount = 0;
-    int totalExercises = workout.exercises.length;
+    // ── Datos del usuario ──────────────────────────────────────────────────────
+    final authUser = context.read<AuthProvider>().currentUser;
+    final age = authUser?.age ?? 30;
+    final sex = authUser?.sex ?? 'male';
+    // Altura: perfil de usuario → medidas corporales → default 170 cm
+    final heightCm = (authUser?.heightCm ??
+            context
+                .read<BodyMeasurementProvider>()
+                .latestMeasurement
+                ?.height
+                ?.round() ??
+            170)
+        .toDouble();
 
-    for (var exercise in workout.exercises) {
-      final name = exercise.name.toLowerCase();
-      if (name.contains('burpee') ||
-          name.contains('jumping') ||
-          name.contains('salto') ||
-          name.contains('carrera') ||
-          name.contains('bicicleta') ||
-          name.contains('cuerda') ||
-          name.contains('cardio') ||
-          name.contains('hiit') ||
-          name.contains('sprint') ||
-          name.contains('trote') ||
-          name.contains('mountain')) {
-        cardioCount++;
-      }
+    // ── BMR (Harris-Benedict revisado) ────────────────────────────────────────
+    // Hombre:  13.397×kg + 4.799×cm − 5.677×años + 88.362
+    // Mujer:   9.247×kg  + 3.098×cm − 4.330×años + 447.593
+    final double bmr = sex == 'female'
+        ? 9.247 * weightKg + 3.098 * heightCm - 4.330 * age + 447.593
+        : 13.397 * weightKg + 4.799 * heightCm - 5.677 * age + 88.362;
+
+    // ── Detección de ejercicios cardio ────────────────────────────────────────
+    final exercises = workout.exercises;
+    int cardioCount = 0;
+    for (final ex in exercises) {
+      if (_isCardioExercise(ex)) cardioCount++;
     }
 
-    // MET promedio según proporción de ejercicios cardio
-    // Fuerza pura: MET 5 | Cardio puro: MET 8
-    final cardioRatio = totalExercises > 0 ? cardioCount / totalExercises : 0.0;
-    final avgMet = 5.0 + (cardioRatio * 3.0);
+    // MET promedio: fuerza pura = 5, cardio puro = 9
+    final cardioRatio = exercises.isNotEmpty ? cardioCount / exercises.length : 0.0;
+    final avgMet = 5.0 + (cardioRatio * 4.0);
 
-    // kcal = MET × peso_kg × horas
-    final calories = avgMet * weightKg * (durationMinutes / 60.0);
+    // ── Fórmula: kcal = BMR/1440 × min × MET ──────────────────────────────────
+    // (BMR/1440 es el gasto calórico por minuto en reposo)
+    final calories = (bmr / 1440.0) * durationMinutes * avgMet;
     return calories.round();
+  }
+
+  /// Detecta si un ejercicio es cardiovascular usando múltiples señales:
+  /// 1. Campo muscleGroup == 'Cardio' (señal primaria, más fiable)
+  /// 2. Nombre del ejercicio contra lista de palabras clave (ES + EN)
+  bool _isCardioExercise(Exercise exercise) {
+    // Señal primaria: grupo muscular clasificado como Cardio en la DB
+    if (exercise.muscleGroup.toLowerCase() == 'cardio') return true;
+
+    // Señal secundaria: keywords en el nombre
+    final name = exercise.name.toLowerCase();
+    const keywords = [
+      // Español
+      'burpee', 'salto', 'saltar', 'carrera', 'correr', 'trote',
+      'trotar', 'bicicleta', 'cuerda', 'comba', 'cardio', 'hiit',
+      'sprint', 'escalador', 'escaladora', 'aeróbico', 'aerobico',
+      'elíptica', 'eliptica', 'remo', 'nadar', 'natación', 'natacion',
+      'step', 'zumba', 'baile', 'bailar', 'patinar',
+      // English
+      'jump', 'jumping', 'run', 'running', 'jog', 'jogging',
+      'bike', 'cycling', 'rope', 'mountain climber', 'box jump',
+      'star jump', 'skipping', 'aerobic', 'elliptical', 'row',
+      'rowing', 'swim', 'swimming', 'dance', 'skate',
+      'high knee', 'butt kick', 'sprint', 'treadmill',
+    ];
+    return keywords.any((k) => name.contains(k));
   }
 
   int _estimateWeight(String exerciseName) {
@@ -603,10 +658,12 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           }
         }
       }
-      if (mounted) setState(() {
-        _setWeights = weights;
-        _exercisePRs = prs;
-      });
+      if (mounted) {
+        setState(() {
+          _setWeights = weights;
+          _exercisePRs = prs;
+        });
+      }
     } catch (e) {
       debugPrint('Error cargando últimos pesos: $e');
     }
@@ -1115,6 +1172,12 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       _completedSets = workout.exercises
           .map((e) => List.generate(e.sets, (_) => false))
           .toList();
+    }
+
+    // Pre-descargar todos los videos en background una sola vez
+    if (!_videosCacheStarted) {
+      _videosCacheStarted = true;
+      _preCacheVideos(workout.exercises);
     }
 
     final currentExercise = workout.exercises[_currentExerciseIndex];

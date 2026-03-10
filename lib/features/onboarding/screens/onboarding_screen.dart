@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../settings/providers/preferences_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../../shared/widgets/primary_button.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -18,6 +19,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   String _selectedLevel = 'Principiante';
   double _weight = 70.0;
   double _height = 170.0;
+  int _age = 25;
+  String _sex = 'male'; // 'male' | 'female' | 'other'
   String _goal = 'Perder peso';
 
   @override
@@ -47,6 +50,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _completeOnboarding() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final preferencesProvider =
         Provider.of<PreferencesProvider>(context, listen: false);
 
@@ -60,21 +64,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
 
     try {
-      // Guardar datos de onboarding en preferencias
+      // Guardar datos de fitness en Supabase (usuarios registrados)
+      if (authProvider.isAuthenticated) {
+        await authProvider.saveOnboardingData(
+          age: _age,
+          weightKg: _weight,
+          heightCm: _height.round(),
+          sex: _sex,
+          level: _selectedLevel,
+        );
+      }
+
+      // Guardar preferencias locales (goal, etc.)
       final onboardingData = {
         'level': _selectedLevel,
         'weight': _weight,
         'height': _height,
+        'age': _age,
+        'sex': _sex,
         'goal': _goal,
         'completed_at': DateTime.now().toIso8601String(),
       };
-
       await preferencesProvider.completeOnboarding(onboardingData);
 
       if (mounted) {
-        // Cerrar loading
         Navigator.of(context).pop();
-        // Ir a home
         context.go('/home');
       }
     } catch (e) {
@@ -304,13 +318,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildStatsPage() {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(30),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const SizedBox(height: 20),
           const Text(
-            'Tus medidas actuales',
+            'Tus datos personales',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -318,16 +333,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 8),
+          const Text(
+            'Estos datos nos ayudan a calcular tus calorías con precisión',
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
           _buildStatSlider(
             'Peso',
             _weight,
             'kg',
-            40,
-            150,
+            30,
+            180,
             (value) => setState(() => _weight = value),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 24),
           _buildStatSlider(
             'Altura',
             _height,
@@ -336,8 +357,128 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             220,
             (value) => setState(() => _height = value),
           ),
+          const SizedBox(height: 24),
+          _buildAgeSlider(),
+          const SizedBox(height: 28),
+          _buildSexSelector(),
+          const SizedBox(height: 20),
         ],
       ),
+    );
+  }
+
+  Widget _buildAgeSlider() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Edad',
+          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: Slider(
+                value: _age.toDouble(),
+                min: 12,
+                max: 90,
+                divisions: 78,
+                activeColor: AppColors.primary,
+                inactiveColor: AppColors.cardBackground,
+                onChanged: (value) => setState(() => _age = value.round()),
+              ),
+            ),
+            Container(
+              width: 80,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.cardBackground,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '$_age años',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSexSelector() {
+    final options = [
+      {'value': 'male', 'label': 'Hombre', 'icon': Icons.male},
+      {'value': 'female', 'label': 'Mujer', 'icon': Icons.female},
+      {'value': 'other', 'label': 'Prefiero no decir', 'icon': Icons.person},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Sexo biológico',
+          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Usado para la fórmula de calorías',
+          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: options.map((opt) {
+            final isSelected = _sex == opt['value'];
+            const color = AppColors.primary;
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() => _sex = opt['value'] as String),
+                child: Container(
+                  margin: EdgeInsets.only(
+                    right: opt['value'] != 'other' ? 8 : 0,
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? color.withOpacity(0.2)
+                        : AppColors.cardBackground,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? color : Colors.transparent,
+                      width: 2,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        opt['icon'] as IconData,
+                        color: isSelected ? color : AppColors.textSecondary,
+                        size: 26,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        opt['label'] as String,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: isSelected ? color : AppColors.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 

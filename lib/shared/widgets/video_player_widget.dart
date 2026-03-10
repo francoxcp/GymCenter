@@ -1,5 +1,4 @@
-﻿import 'dart:io';
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:video_player/video_player.dart';
 import '../../core/theme/app_theme.dart';
@@ -30,11 +29,15 @@ class VideoPlayerWidget extends StatefulWidget {
   State<VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
 }
 
-class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
+class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
+    with AutomaticKeepAliveClientMixin {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
   bool _hasError = false;
   String _errorMessage = '';
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -52,18 +55,23 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         return;
       }
 
-      // Try to get cached file first; falls back to network automatically.
-      File? cachedFile;
+      // Non-blocking cache lookup — returns instantly if not cached.
+      FileInfo? cacheInfo;
       try {
-        cachedFile =
-            await DefaultCacheManager().getSingleFile(widget.videoUrl);
-      } catch (_) {
-        // Cache miss or network error — fall back to streaming
-      }
+        cacheInfo = await DefaultCacheManager().getFileFromCache(widget.videoUrl);
+      } catch (_) {}
 
-      _controller = cachedFile != null
-          ? VideoPlayerController.file(cachedFile)
-          : VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+      if (cacheInfo != null) {
+        // Cache hit → play from disk instantly
+        _controller = VideoPlayerController.file(cacheInfo.file);
+      } else {
+        // Cache miss → stream from network immediately (no wait),
+        // and download in background so next time it's instant.
+        _controller = VideoPlayerController.networkUrl(
+          Uri.parse(widget.videoUrl),
+        );
+        DefaultCacheManager().downloadFile(widget.videoUrl).ignore();
+      }
 
       _controller.setLooping(widget.looping);
 
@@ -103,6 +111,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // required by AutomaticKeepAliveClientMixin
     if (_hasError) {
       return Container(
         height: 200,

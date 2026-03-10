@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -65,16 +64,19 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
         return;
       }
 
-      // Serve from cache if available (video was already cached inline).
-      File? cachedFile;
+      // Non-blocking cache lookup — returns instantly if not cached.
+      FileInfo? cacheInfo;
       try {
-        cachedFile =
-            await DefaultCacheManager().getSingleFile(widget.videoUrl);
+        cacheInfo = await DefaultCacheManager().getFileFromCache(widget.videoUrl);
       } catch (_) {}
 
-      _controller = cachedFile != null
-          ? VideoPlayerController.file(cachedFile)
-          : VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+      if (cacheInfo != null) {
+        _controller = VideoPlayerController.file(cacheInfo.file);
+      } else {
+        _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+        // Download in background so next open is instant
+        DefaultCacheManager().downloadFile(widget.videoUrl).ignore();
+      }
 
       _controller.setLooping(true);
       await _controller.initialize();

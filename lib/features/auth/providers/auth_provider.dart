@@ -19,6 +19,16 @@ class AuthProvider extends ChangeNotifier {
   String get initialRoute =>
       isAdmin ? AppConstants.adminRoute : AppConstants.homeRoute;
 
+  /// true cuando el usuario autenticado aún no ha completado el onboarding
+  /// de datos de fitness (edad, peso y sexo son los campos mínimos).
+  bool get needsOnboarding =>
+      _isAuthenticated &&
+      !isAdmin &&
+      _currentUser != null &&
+      (_currentUser!.age == null ||
+          _currentUser!.weightKg == null ||
+          _currentUser!.sex == null);
+
   AuthProvider() {
     _initAuthListener();
   }
@@ -165,6 +175,38 @@ class AuthProvider extends ChangeNotifier {
   void updateUser(User user) {
     _currentUser = user;
     notifyListeners();
+  }
+
+  /// Guarda los datos de fitness del onboarding en Supabase y actualiza el modelo local.
+  Future<void> saveOnboardingData({
+    required int age,
+    required double weightKg,
+    required int heightCm,
+    required String sex,
+    required String level,
+  }) async {
+    if (_currentUser == null) return;
+    try {
+      await SupabaseConfig.client.from('users').update({
+        'age': age,
+        'weight_kg': weightKg,
+        'height_cm': heightCm,
+        'sex': sex,
+        'level': level,
+      }).eq('id', _currentUser!.id);
+
+      _currentUser = _currentUser!.copyWith(
+        age: age,
+        weightKg: weightKg,
+        heightCm: heightCm,
+        sex: sex,
+        level: level,
+      );
+      notifyListeners();
+    } catch (e) {
+      debugPrint('❌ Error saving onboarding data: $e');
+      rethrow;
+    }
   }
 
   Future<void> refreshUser() async {

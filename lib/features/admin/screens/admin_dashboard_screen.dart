@@ -2,6 +2,7 @@
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../config/supabase_config.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/user_provider.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../workouts/screens/create_workout_screen.dart';
@@ -114,6 +115,27 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Consumer<AuthProvider>(
+                  builder: (context, auth, _) {
+                    final name = auth.currentUser?.name ?? 'Admin';
+                    final hour = DateTime.now().hour;
+                    final greeting = hour < 12
+                        ? 'Buenos días'
+                        : hour < 19
+                            ? 'Buenas tardes'
+                            : 'Buenas noches';
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+                      child: Text(
+                        '$greeting, $name 👋',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    );
+                  },
+                ),
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -257,13 +279,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   List<Widget> _buildChartBars() {
-    final labels = ['LUN', 'MAR', 'MIE', 'JUE', 'VIE', 'SAB', 'DOM'];
+    const weekdays = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
+    final now = DateTime.now();
+    final labels = List.generate(7, (i) {
+      if (i == 6) return 'HOY';
+      if (i == 5) return 'AYER';
+      final day = now.subtract(Duration(days: 6 - i));
+      return '${weekdays[day.weekday - 1]}\n${day.day}';
+    });
     final maxSessions = _dailySessions.isEmpty
         ? 1
         : _dailySessions.reduce((a, b) => a > b ? a : b);
     // Espacio disponible: 200 container - 16*2 padding - 14px label - 8px spacer - 18px count = ~128px para barra
     const maxBarHeight = 110.0;
-    final now = DateTime.now();
     // El array siempre tiene hoy en el índice 6 (el más reciente a la derecha)
     const todayIndex = 6;
 
@@ -390,9 +418,11 @@ class _ChartBar extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         Text(
           label,
+          textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 10,
             color: AppColors.textSecondary,
+            height: 1.3,
           ),
         ),
       ],

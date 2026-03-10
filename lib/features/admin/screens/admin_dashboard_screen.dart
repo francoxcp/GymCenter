@@ -264,7 +264,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     // Espacio disponible: 200 container - 16*2 padding - 14px label - 8px spacer - 18px count = ~128px para barra
     const maxBarHeight = 110.0;
     final now = DateTime.now();
-    final todayIndex = (now.weekday - 1) % 7; // 0 = Lunes, 6 = Domingo
+    // El array siempre tiene hoy en el índice 6 (el más reciente a la derecha)
+    const todayIndex = 6;
 
     return List.generate(7, (index) {
       final sessions = _dailySessions[index];

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../config/app_constants.dart';
 import '../models/workout.dart';
@@ -22,16 +23,156 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _newCategoryController = TextEditingController();
+
+  static const _kAddCategory = '＋ Nueva categoría';
+  static const _kNoCategory = 'Sin categoría';
+  static const _kPrefsKey = 'custom_workout_categories';
 
   String _selectedLevel = AppConstants.beginnerLevel;
   String? _selectedCategory;
+  List<String> _categories = List.from(Workout.categories);
   final List<Exercise> _exercises = [];
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomCategories();
+  }
+
+  Future<void> _loadCustomCategories() async {
+    final prefs = await SharedPreferences.getInstance();
+    final custom = prefs.getStringList(_kPrefsKey) ?? [];
+    if (custom.isNotEmpty && mounted) {
+      setState(() {
+        _categories = [...Workout.categories, ...custom];
+      });
+    }
+  }
+
+  Future<void> _saveCustomCategories() async {
+    final prefs = await SharedPreferences.getInstance();
+    final custom = _categories
+        .where((c) => !Workout.categories.contains(c))
+        .toList();
+    await prefs.setStringList(_kPrefsKey, custom);
+  }
+
+  void _showAddCategoryDialog() {
+    _newCategoryController.clear();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Nueva categoría'),
+        content: TextField(
+          controller: _newCategoryController,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+          decoration: const InputDecoration(
+            hintText: 'Ej: Hombros, HIIT, Funcional...',
+            border: OutlineInputBorder(),
+          ),
+          onSubmitted: (_) => _confirmAddCategory(ctx),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => _confirmAddCategory(ctx),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.black,
+            ),
+            child: const Text('Agregar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmAddCategory(BuildContext ctx) {
+    final name = _newCategoryController.text.trim();
+    if (name.isEmpty) return;
+    final normalized = name[0].toUpperCase() + name.substring(1);
+    if (!_categories.contains(normalized)) {
+      setState(() {
+        _categories.add(normalized);
+        _selectedCategory = normalized;
+      });
+      _saveCustomCategories();
+    } else {
+      setState(() => _selectedCategory = normalized);
+    }
+    Navigator.pop(ctx);
+  }
+
+  void _showManageCategoriesDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Gestionar categorías'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Las categorías predeterminadas no se pueden eliminar.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ..._categories.map((cat) {
+                  final isDefault = Workout.categories.contains(cat);
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    title: Text(cat),
+                    trailing: isDefault
+                        ? const Icon(Icons.lock_outline,
+                            size: 16, color: AppColors.textSecondary)
+                        : IconButton(
+                            icon: const Icon(Icons.delete_outline,
+                                size: 20, color: Colors.redAccent),
+                            onPressed: () {
+                              setState(() {
+                                _categories.remove(cat);
+                                if (_selectedCategory == cat) {
+                                  _selectedCategory = null;
+                                }
+                              });
+                              setDialogState(() {});
+                              _saveCustomCategories();
+                            },
+                          ),
+                  );
+                }),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _newCategoryController.dispose();
     super.dispose();
   }
 
@@ -59,15 +200,6 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
 
   Future<void> _saveWorkout() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Selecciona una categoría para la rutina'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
     if (_exercises.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -272,100 +404,66 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
               const SizedBox(height: 16),
 
               // Categoría
-              Column(
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      const Text(
-                        'Categoría',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedCategory,
+                      decoration: const InputDecoration(
+                        labelText: 'Categoría',
+                        border: OutlineInputBorder(),
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '(requerido)',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: _selectedCategory == null
-                              ? Colors.redAccent
-                              : AppColors.textSecondary,
+                      hint: const Text('Selecciona una categoría'),
+                      items: [
+                        ..._categories.map((cat) => DropdownMenuItem(
+                              value: cat,
+                              child: Text(cat),
+                            )),
+                        const DropdownMenuItem(
+                          value: _kNoCategory,
+                          child: Text('Sin categoría'),
                         ),
-                      ),
-                    ],
+                        const DropdownMenuItem(
+                          value: _kAddCategory,
+                          child: Row(
+                            children: [
+                              Icon(Icons.add_circle_outline,
+                                  size: 16, color: AppColors.primary),
+                              SizedBox(width: 8),
+                              Text(
+                                'Nueva categoría',
+                                style: TextStyle(color: AppColors.primary),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value == _kAddCategory) {
+                          setState(() {});
+                          _showAddCategoryDialog();
+                        } else if (value != null) {
+                          setState(() => _selectedCategory = value);
+                        }
+                      },
+                      validator: (value) {
+                        if (value == null || value == _kAddCategory) {
+                          return 'Selecciona una categoría';
+                        }
+                        return null;
+                      },
+                    ),
                   ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      ...Workout.categories.map((cat) {
-                        final isSelected = _selectedCategory == cat;
-                        return GestureDetector(
-                          onTap: () =>
-                              setState(() => _selectedCategory = cat),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.surface,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: isSelected
-                                    ? AppColors.primary
-                                    : AppColors.textSecondary
-                                        .withOpacity(0.3),
-                              ),
-                            ),
-                            child: Text(
-                              cat,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: isSelected
-                                    ? Colors.black
-                                    : AppColors.textSecondary,
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                      // Opción sin categoría
-                      GestureDetector(
-                        onTap: () =>
-                            setState(() => _selectedCategory = 'Sin categoría'),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: _selectedCategory == 'Sin categoría'
-                                  ? AppColors.textSecondary
-                                  : AppColors.textSecondary.withOpacity(0.3),
-                            ),
-                          ),
-                          child: Text(
-                            'Sin categoría',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: _selectedCategory == 'Sin categoría'
-                                  ? Colors.white
-                                  : AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                  const SizedBox(width: 4),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: IconButton(
+                      onPressed: _showManageCategoriesDialog,
+                      icon: const Icon(Icons.tune),
+                      tooltip: 'Gestionar categorías',
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),

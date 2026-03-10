@@ -15,9 +15,9 @@ class Workout {
   static const List<String> categories = [
     'Pecho',
     'Espalda',
-    'Pierna',
-    'Cardio',
-    'Funcional',
+    'Piernas',
+    'Brazos',
+    'Glúteo',
   ];
 
   Workout({

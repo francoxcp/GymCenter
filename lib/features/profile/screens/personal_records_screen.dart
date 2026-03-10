@@ -65,7 +65,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
             .select('*, exercises(*)')
             .eq('id', user.assignedWorkoutId!)
             .single();
-        workout = Workout.fromJson(raw as Map<String, dynamic>);
+        workout = Workout.fromJson(raw);
       }
 
       // ── 2. Fetch all-time set logs for this user ─────────────────────────
@@ -375,7 +375,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
         // ── Exercise list ─────────────────────────────────────────────
         Expanded(
           child: filtered.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
                     'No se encontraron ejercicios',
                     style: TextStyle(color: AppColors.textSecondary),

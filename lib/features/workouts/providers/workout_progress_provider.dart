@@ -47,9 +47,8 @@ class WorkoutProgressProvider with ChangeNotifier {
           final now = DateTime.now();
           final startOfDay =
               DateTime(now.year, now.month, now.day).toIso8601String();
-          final endOfDay =
-              DateTime(now.year, now.month, now.day, 23, 59, 59)
-                  .toIso8601String();
+          final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59)
+              .toIso8601String();
 
           final completedSession = await _supabase
               .from('workout_sessions')
@@ -89,22 +88,44 @@ class WorkoutProgressProvider with ChangeNotifier {
     required List<List<bool>> completedSets,
     int accumulatedSeconds = 0,
   }) async {
+    // Intento 1: con accumulated_seconds
     try {
-      final data = {
-        'user_id': userId,
-        'workout_id': workoutId,
-        'exercise_index': exerciseIndex,
-        'completed_sets': completedSets,
-        'accumulated_seconds': accumulatedSeconds,
-      };
-
-      // Usar upsert para insertar o actualizar
       final response = await _supabase
           .from('workout_progress')
-          .upsert(data, onConflict: 'user_id')
+          .upsert(
+            {
+              'user_id': userId,
+              'workout_id': workoutId,
+              'exercise_index': exerciseIndex,
+              'completed_sets': completedSets,
+              'accumulated_seconds': accumulatedSeconds,
+            },
+            onConflict: 'user_id',
+          )
           .select()
           .single();
+      _currentProgress = WorkoutProgress.fromJson(response);
+      notifyListeners();
+      return;
+    } catch (e) {
+      debugPrint('saveProgress (con timer) falló: $e — reintentando sin timer');
+    }
 
+    // Intento 2: sin accumulated_seconds (columna puede no existir aún)
+    try {
+      final response = await _supabase
+          .from('workout_progress')
+          .upsert(
+            {
+              'user_id': userId,
+              'workout_id': workoutId,
+              'exercise_index': exerciseIndex,
+              'completed_sets': completedSets,
+            },
+            onConflict: 'user_id',
+          )
+          .select()
+          .single();
       _currentProgress = WorkoutProgress.fromJson(response);
       notifyListeners();
     } catch (e) {

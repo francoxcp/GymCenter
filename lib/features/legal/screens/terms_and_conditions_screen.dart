@@ -46,8 +46,8 @@ class TermsAndConditionsScreen extends StatelessWidget {
                             color: Colors.white,
                           ),
                         ),
-                        SizedBox(height: 4),
-                        Text(
+                        const SizedBox(height: 4),
+                        const Text(
                           'Última actualización: 11 de febrero de 2026',
                           style: TextStyle(
                             fontSize: 12,

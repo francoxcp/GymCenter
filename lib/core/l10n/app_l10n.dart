@@ -286,8 +286,8 @@ class AppL10n {
           ? 'Complete workouts to unlock achievements'
           : 'Completa entrenamientos para desbloquear logros';
   String timeAgoLabel(int days, int hours) {
-    if (days > 0) return isEn ? '${days} day${days > 1 ? 's' : ''} ago' : 'Hace $days día${days > 1 ? 's' : ''}';
-    if (hours > 0) return isEn ? '${hours} hour${hours > 1 ? 's' : ''} ago' : 'Hace $hours hora${hours > 1 ? 's' : ''}';
+    if (days > 0) return isEn ? '$days day${days > 1 ? 's' : ''} ago' : 'Hace $days día${days > 1 ? 's' : ''}';
+    if (hours > 0) return isEn ? '$hours hour${hours > 1 ? 's' : ''} ago' : 'Hace $hours hora${hours > 1 ? 's' : ''}';
     return isEn ? 'A few moments ago' : 'Hace unos momentos';
   }
 

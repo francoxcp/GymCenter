@@ -239,9 +239,9 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                             if (selectedCategory == 'Todos')
                               const SizedBox(height: 8),
                             if (filtered.isEmpty)
-                              Padding(
+                              const Padding(
                                 padding:
-                                    const EdgeInsets.symmetric(vertical: 32),
+                                    EdgeInsets.symmetric(vertical: 32),
                                 child: Center(
                                   child: Text(
                                     'No hay rutinas en esta categoría',

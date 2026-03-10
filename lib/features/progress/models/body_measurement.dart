@@ -122,8 +122,8 @@ class BodyMeasurement {
       thighLeft: thighLeft ?? this.thighLeft,
       thighRight: thighRight ?? this.thighRight,
       // Preserve legacy fields as-is
-      biceps: this.biceps,
-      thighs: this.thighs,
+      biceps: biceps,
+      thighs: thighs,
       photoUrl: photoUrl ?? this.photoUrl,
       notes: notes ?? this.notes,
     );

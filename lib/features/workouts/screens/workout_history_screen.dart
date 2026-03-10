@@ -284,7 +284,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                   children: [
                     Text(
                       AppL10n.of(context).completeWorkoutLabel,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -412,7 +412,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
             const SizedBox(height: 12),
             Text(
               AppL10n.of(context).noHistoryBody,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,
               ),
@@ -433,7 +433,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
               ),
               child: Text(
                 AppL10n.of(context).exploreWorkouts,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,

@@ -488,7 +488,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     icon: const Icon(Icons.logout, color: Colors.red),
                     label: Text(
                       AppL10n.of(context).logOutLabel,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.red,

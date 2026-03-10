@@ -314,7 +314,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                     ),
                     Text(
                       l10n.workoutCompletedLine2,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -559,7 +559,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                                   const SizedBox(width: 8),
                                   Text(
                                     l10n.backToHome,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: 0.5,

@@ -121,7 +121,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Las categorías predeterminadas no se pueden eliminar.',
                   style: TextStyle(
                     fontSize: 12,
@@ -588,7 +588,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
   final _restController = TextEditingController(text: '60');
   final _weightController = TextEditingController(text: '');
 
-  String _selectedMuscleGroup = 'General';
+  final String _selectedMuscleGroup = 'General';
 
   // Video handling
   final ImagePicker _picker = ImagePicker();

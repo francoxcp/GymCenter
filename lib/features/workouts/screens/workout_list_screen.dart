@@ -63,6 +63,8 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
           Provider.of<WorkoutProvider>(context, listen: false);
       final sessionProvider =
           Provider.of<WorkoutSessionProvider>(context, listen: false);
+      final progressProvider =
+          Provider.of<WorkoutProgressProvider>(context, listen: false);
       workoutProvider.loadWorkouts(
         userId: authProvider.currentUser?.id,
         isAdmin: authProvider.isAdmin,
@@ -70,6 +72,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
       if (authProvider.currentUser?.id != null) {
         sessionProvider.loadSessions(authProvider.currentUser!.id,
             forceRefresh: true);
+        progressProvider.loadProgress(authProvider.currentUser!.id);
         _loadNextSchedule(authProvider.currentUser!.id);
       }
     });
@@ -201,7 +204,8 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, false),
                           child: Text(AppL10n.of(context).cancel,
-                              style: const TextStyle(color: AppColors.textSecondary)),
+                              style: const TextStyle(
+                                  color: AppColors.textSecondary)),
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, true),
@@ -226,7 +230,8 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(AppL10n.of(context).workoutDeleteError(e.toString())),
+                            content: Text(AppL10n.of(context)
+                                .workoutDeleteError(e.toString())),
                             backgroundColor: Colors.redAccent,
                           ),
                         );
@@ -390,6 +395,70 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                 ),
               ),
 
+              // Banner: rutina en pausa
+              if (progressProvider.hasProgress) ...[
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _PausedWorkoutBanner(
+                    workoutName: workoutProvider
+                            .getWorkoutById(
+                                progressProvider.currentProgress!.workoutId)
+                            ?.name ??
+                        'Rutina',
+                    exerciseIndex:
+                        progressProvider.currentProgress!.exerciseIndex,
+                    onContinue: () {
+                      final pausedId =
+                          progressProvider.currentProgress!.workoutId;
+                      final isAssigned =
+                          pausedId == currentUser?.assignedWorkoutId;
+                      if (isAssigned) {
+                        context.push('/today-workout');
+                      } else {
+                        context.push('/today-workout?workoutId=$pausedId');
+                      }
+                    },
+                    onDiscard: () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: AppColors.surface,
+                          title: const Text(
+                            'Terminar rutina',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          content: const Text(
+                            '¿Seguro que quieres terminar la rutina? Se perderá el progreso actual.',
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: const Text('Cancelar'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.redAccent,
+                                foregroundColor: Colors.white,
+                              ),
+                              child: const Text('Terminar'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed == true && context.mounted) {
+                        await Provider.of<WorkoutProgressProvider>(
+                          context,
+                          listen: false,
+                        ).deleteProgress();
+                      }
+                    },
+                  ),
+                ),
+              ],
+
               // Assigned Workout Hero Card (ocultar si ya se completó hoy)
               if (hasAssignedWorkout &&
                   assignedWorkout != null &&
@@ -492,7 +561,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                       children: [
                         // ── Rutinas Oficiales ──
                         if (officialWorkouts.isNotEmpty) ...[
-                          _SectionHeader(
+                          const _SectionHeader(
                             label: 'Rutinas oficiales',
                             icon: Icons.verified_rounded,
                             color: AppColors.primary,
@@ -596,7 +665,7 @@ class _WorkoutCard extends StatelessWidget {
     required this.exerciseCount,
     required this.level,
     this.isOfficial = false,
-    this.isClickable = false,
+    this.isClickable = true,
     this.onEdit,
     this.onDelete,
     this.onPlay,
@@ -803,6 +872,139 @@ class _WorkoutCard extends StatelessWidget {
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PausedWorkoutBanner extends StatelessWidget {
+  final String workoutName;
+  final int exerciseIndex;
+  final VoidCallback onContinue;
+  final VoidCallback onDiscard;
+
+  const _PausedWorkoutBanner({
+    required this.workoutName,
+    required this.exerciseIndex,
+    required this.onContinue,
+    required this.onDiscard,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary.withOpacity(0.22),
+            AppColors.surface,
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.45),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 12, 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.pause_circle_outline_rounded,
+                    color: AppColors.primary,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'RUTINA EN PAUSA',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        workoutName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        'Ejercicio ${exerciseIndex + 1}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: onContinue,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    textStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  child: const Text('Continuar'),
+                ),
+              ],
+            ),
+          ),
+          Divider(
+            height: 1,
+            color: AppColors.primary.withOpacity(0.2),
+          ),
+          TextButton.icon(
+            onPressed: onDiscard,
+            icon: const Icon(Icons.stop_circle_outlined,
+                size: 16, color: Colors.redAccent),
+            label: const Text(
+              'Terminar rutina',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.redAccent,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              minimumSize: const Size(double.infinity, 0),
+              alignment: Alignment.center,
+            ),
+          ),
         ],
       ),
     );

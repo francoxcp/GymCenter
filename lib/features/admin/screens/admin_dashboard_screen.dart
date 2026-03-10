@@ -184,6 +184,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     : Container(
                         height: 200,
                         padding: const EdgeInsets.all(AppSpacing.lg),
+                        clipBehavior: Clip.hardEdge,
                         decoration: BoxDecoration(
                           color: AppColors.cardBackground,
                           borderRadius: BorderRadius.circular(AppSpacing.lg),
@@ -260,14 +261,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final maxSessions = _dailySessions.isEmpty
         ? 1
         : _dailySessions.reduce((a, b) => a > b ? a : b);
-    const maxHeight = 110.0;
+    // Espacio disponible: 200 container - 16*2 padding - 14px label - 8px spacer - 18px count = ~128px para barra
+    const maxBarHeight = 110.0;
     final now = DateTime.now();
     final todayIndex = (now.weekday - 1) % 7; // 0 = Lunes, 6 = Domingo
 
     return List.generate(7, (index) {
       final sessions = _dailySessions[index];
       final height =
-          maxSessions > 0 ? (sessions / maxSessions * maxHeight) : 20.0;
+          maxSessions > 0 ? (sessions / maxSessions * maxBarHeight) : 20.0;
       final isToday = index == todayIndex;
 
       return _ChartBar(
@@ -361,6 +363,7 @@ class _ChartBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         if (count > 0)

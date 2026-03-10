@@ -31,7 +31,7 @@ class VideoPlayerWidget extends StatefulWidget {
 }
 
 class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
-  late VideoPlayerController _controller;
+  VideoPlayerController? _controller;
   bool _isInitialized = false;
   bool _hasError = false;
   String _errorMessage = '';
@@ -58,24 +58,23 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       try {
         cacheInfo = await DefaultCacheManager()
             .getFileFromCache(widget.videoUrl);
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('Cache check failed: $e');
+      }
 
       _controller = cacheInfo != null
           ? VideoPlayerController.file(cacheInfo.file)
           : VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
 
-      _controller.setLooping(widget.looping);
+      _controller!.setLooping(widget.looping);
 
-      await _controller.initialize();
-
-      if (!mounted) return;
-      setState(() => _isInitialized = true);
+      await _controller!.initialize();
 
       if (!mounted) return;
       setState(() => _isInitialized = true);
 
       if (widget.autoPlay) {
-        _controller.play();
+        _controller!.play();
       }
     } catch (e) {
       debugPrint('Error al inicializar video: $e');
@@ -89,16 +88,17 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   void _togglePlayPause() {
+    if (_controller == null) return;
     setState(() {
-      if (_controller.value.isPlaying) {
-        _controller.pause();
+      if (_controller!.value.isPlaying) {
+        _controller!.pause();
       } else {
-        _controller.play();
+        _controller!.play();
       }
     });
   }
@@ -111,7 +111,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         decoration: BoxDecoration(
           color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.red.withOpacity(0.3)),
+          border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
         ),
         child: Center(
           child: Column(
@@ -196,8 +196,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
           alignment: Alignment.center,
           children: [
             AspectRatio(
-              aspectRatio: widget.aspectRatio ?? _controller.value.aspectRatio,
-              child: VideoPlayer(_controller),
+              aspectRatio: widget.aspectRatio ?? _controller!.value.aspectRatio,
+              child: VideoPlayer(_controller!),
             ),
 
             // Play/Pause overlay
@@ -207,7 +207,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                 color: Colors.transparent,
                 child: Center(
                   child: AnimatedOpacity(
-                    opacity: _controller.value.isPlaying ? 0.0 : 0.8,
+                    opacity: _controller!.value.isPlaying ? 0.0 : 0.8,
                     duration: const Duration(milliseconds: 200),
                     child: Container(
                       padding: const EdgeInsets.all(16),
@@ -216,7 +216,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        _controller.value.isPlaying
+                        _controller!.value.isPlaying
                             ? Icons.pause
                             : Icons.play_arrow,
                         color: Colors.white,
@@ -266,7 +266,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
               left: 0,
               right: 0,
               child: VideoProgressIndicator(
-                _controller,
+                _controller!,
                 allowScrubbing: true,
                 colors: const VideoProgressColors(
                   playedColor: AppColors.primary,
@@ -294,7 +294,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: ValueListenableBuilder(
-                  valueListenable: _controller,
+                  valueListenable: _controller!,
                   builder: (context, VideoPlayerValue value, child) {
                     final position = value.position;
                     final duration = value.duration;
@@ -380,7 +380,7 @@ class VideoThumbnailWidget extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
         ),
         child: Stack(
           alignment: Alignment.center,

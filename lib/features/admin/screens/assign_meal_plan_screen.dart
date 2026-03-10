@@ -108,7 +108,7 @@ class _AssignMealPlanScreenState extends State<AssignMealPlanScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.15),
+                        color: AppColors.primary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
@@ -148,7 +148,7 @@ class _AssignMealPlanScreenState extends State<AssignMealPlanScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.15),
+                        color: Colors.red.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
@@ -214,7 +214,7 @@ class _AssignMealPlanScreenState extends State<AssignMealPlanScreen> {
                           height: 48,
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? AppColors.primary.withOpacity(0.2)
+                                ? AppColors.primary.withValues(alpha: 0.2)
                                 : AppColors.surface,
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -297,7 +297,7 @@ class _AssignMealPlanScreenState extends State<AssignMealPlanScreen> {
                       },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+                  disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

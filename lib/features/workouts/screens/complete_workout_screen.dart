@@ -71,9 +71,7 @@ class _CompleteWorkoutScreenState extends State<CompleteWorkoutScreen> {
       // Verificar que el widget sigue montado antes de usar context
       if (!mounted) return;
 
-      // ignore: use_build_context_synchronously
       Navigator.pop(context, true); // Retornar true indicando éxito
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('¡Entrenamiento completado! 💪'),
@@ -114,7 +112,7 @@ class _CompleteWorkoutScreenState extends State<CompleteWorkoutScreen> {
             Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -184,10 +182,10 @@ class _CompleteWorkoutScreenState extends State<CompleteWorkoutScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: AppColors.primary.withOpacity(0.3),
+                  color: AppColors.primary.withValues(alpha: 0.3),
                 ),
               ),
               child: Row(

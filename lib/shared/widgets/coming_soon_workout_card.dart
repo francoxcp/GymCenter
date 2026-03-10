@@ -45,7 +45,7 @@ class ComingSoonWorkoutCard extends StatelessWidget {
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.primary.withOpacity(0.18),
+          color: AppColors.primary.withValues(alpha: 0.18),
           width: 1,
         ),
       ),
@@ -56,10 +56,10 @@ class ComingSoonWorkoutCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.12),
+              color: Colors.green.withValues(alpha: 0.12),
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.green.withOpacity(0.4),
+                color: Colors.green.withValues(alpha: 0.4),
                 width: 1.5,
               ),
             ),
@@ -76,7 +76,7 @@ class ComingSoonWorkoutCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white.withOpacity(0.65),
+                    color: Colors.white.withValues(alpha: 0.65),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -86,26 +86,26 @@ class ComingSoonWorkoutCard extends StatelessWidget {
                   children: [
                     Icon(Icons.timer_outlined,
                         size: 12,
-                        color: AppColors.textSecondary.withOpacity(0.7)),
+                        color: AppColors.textSecondary.withValues(alpha: 0.7)),
                     const SizedBox(width: 3),
                     Text(
                       '${workout.duration} min',
                       style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.textSecondary.withOpacity(0.8),
+                        color: AppColors.textSecondary.withValues(alpha: 0.8),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Icon(Icons.calendar_today_outlined,
                         size: 12,
-                        color: AppColors.primary.withOpacity(0.7)),
+                        color: AppColors.primary.withValues(alpha: 0.7)),
                     const SizedBox(width: 3),
                     Flexible(
                       child: Text(
                         availableLabel,
                         style: TextStyle(
                           fontSize: 11,
-                          color: AppColors.primary.withOpacity(0.85),
+                          color: AppColors.primary.withValues(alpha: 0.85),
                           fontWeight: FontWeight.w500,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -119,16 +119,16 @@ class ComingSoonWorkoutCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
             ),
             child: Text(
               '¡Buen trabajo!',
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary.withOpacity(0.85),
+                color: AppColors.primary.withValues(alpha: 0.85),
                 letterSpacing: 0.3,
               ),
             ),
@@ -145,7 +145,7 @@ class ComingSoonWorkoutCard extends StatelessWidget {
           color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: AppColors.primary.withOpacity(0.22),
+            color: AppColors.primary.withValues(alpha: 0.22),
             width: 1.2,
           ),
         ),
@@ -161,10 +161,10 @@ class ComingSoonWorkoutCard extends StatelessWidget {
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.14),
+                    color: Colors.green.withValues(alpha: 0.14),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.green.withOpacity(0.45),
+                      color: Colors.green.withValues(alpha: 0.45),
                       width: 1.5,
                     ),
                   ),
@@ -177,7 +177,7 @@ class ComingSoonWorkoutCard extends StatelessWidget {
                     '¡Entrenamiento completado!',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.green.withOpacity(0.85),
+                      color: Colors.green.withValues(alpha: 0.85),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -186,10 +186,10 @@ class ComingSoonWorkoutCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.12),
+                    color: AppColors.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: AppColors.primary.withOpacity(0.35),
+                      color: AppColors.primary.withValues(alpha: 0.35),
                     ),
                   ),
                   child: Text(
@@ -197,7 +197,7 @@ class ComingSoonWorkoutCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primary.withOpacity(0.9),
+                      color: AppColors.primary.withValues(alpha: 0.9),
                       letterSpacing: 0.3,
                     ),
                   ),
@@ -214,7 +214,7 @@ class ComingSoonWorkoutCard extends StatelessWidget {
               'PRÓXIMA RUTINA',
               style: TextStyle(
                 fontSize: 10,
-                color: AppColors.primary.withOpacity(0.8),
+                color: AppColors.primary.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.2,
               ),
@@ -225,7 +225,7 @@ class ComingSoonWorkoutCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
-                color: Colors.white.withOpacity(0.75),
+                color: Colors.white.withValues(alpha: 0.75),
                 letterSpacing: 0.2,
               ),
               maxLines: 1,
@@ -274,14 +274,14 @@ class _InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = highlight
-        ? AppColors.primary.withOpacity(0.85)
-        : AppColors.textSecondary.withOpacity(0.75);
+        ? AppColors.primary.withValues(alpha: 0.85)
+        : AppColors.textSecondary.withValues(alpha: 0.75);
     final bg = highlight
-        ? AppColors.primary.withOpacity(0.1)
-        : Colors.white.withOpacity(0.05);
+        ? AppColors.primary.withValues(alpha: 0.1)
+        : Colors.white.withValues(alpha: 0.05);
     final border = highlight
-        ? AppColors.primary.withOpacity(0.3)
-        : Colors.white.withOpacity(0.08);
+        ? AppColors.primary.withValues(alpha: 0.3)
+        : Colors.white.withValues(alpha: 0.08);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

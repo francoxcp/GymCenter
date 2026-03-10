@@ -97,7 +97,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
                     const TextStyle(color: AppColors.textSecondary),
                 defaultTextStyle: const TextStyle(color: Colors.white),
                 todayDecoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.5),
+                  color: AppColors.primary.withValues(alpha: 0.5),
                   shape: BoxShape.circle,
                 ),
                 selectedDecoration: const BoxDecoration(
@@ -275,14 +275,14 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
                     Icon(
                       Icons.event_busy,
                       size: 60,
-                      color: AppColors.textSecondary.withOpacity(0.5),
+                      color: AppColors.textSecondary.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: 12),
                     Text(
                       'Sin entrenamientos programados',
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.textSecondary.withOpacity(0.7),
+                        color: AppColors.textSecondary.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -312,8 +312,8 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(12),
         border: event.isCompleted
-            ? Border.all(color: Colors.green.withOpacity(0.5))
-            : Border.all(color: AppColors.primary.withOpacity(0.3)),
+            ? Border.all(color: Colors.green.withValues(alpha: 0.5))
+            : Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -321,8 +321,8 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: event.isCompleted
-                  ? Colors.green.withOpacity(0.2)
-                  : AppColors.primary.withOpacity(0.2),
+                  ? Colors.green.withValues(alpha: 0.2)
+                  : AppColors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -367,7 +367,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.2),
+                color: Colors.green.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Text(

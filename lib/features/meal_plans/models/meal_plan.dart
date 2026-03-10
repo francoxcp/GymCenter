@@ -17,12 +17,12 @@ class MealPlan {
 
   factory MealPlan.fromJson(Map<String, dynamic> json) {
     return MealPlan(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      calories: json['calories'],
-      category: json['category'],
-      iconType: json['iconType'],
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      calories: (json['calories'] as num?)?.toInt() ?? 0,
+      category: json['category'] as String? ?? '',
+      iconType: json['iconType'] as String? ?? '',
     );
   }
 

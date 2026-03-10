@@ -48,9 +48,9 @@ class BodyMeasurement {
 
   factory BodyMeasurement.fromJson(Map<String, dynamic> json) {
     return BodyMeasurement(
-      id: json['id'],
-      userId: json['user_id'],
-      date: DateTime.parse(json['date']),
+      id: json['id'] as String? ?? '',
+      userId: json['user_id'] as String? ?? '',
+      date: DateTime.parse(json['date'] as String),
       weight: (json['weight'] as num?)?.toDouble(),
       height: (json['height'] as num?)?.toDouble(),
       chest: (json['chest'] as num?)?.toDouble(),

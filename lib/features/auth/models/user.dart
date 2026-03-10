@@ -57,17 +57,19 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'],
-      email: json['email'],
-      name: json['name'],
-      photoUrl: json['photo_url'] ?? json['photoUrl'],
-      role: json['role'] ?? 'user',
-      level: json['level'] ?? 'Principiante',
-      activeDays: json['active_days'] ?? json['activeDays'] ?? 0,
+      id: json['id'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      photoUrl: json['photo_url'] as String? ?? json['photoUrl'] as String?,
+      role: json['role'] as String? ?? 'user',
+      level: json['level'] as String? ?? 'Principiante',
+      activeDays: (json['active_days'] ?? json['activeDays'] ?? 0) as int,
       completedWorkouts:
-          json['completed_workouts'] ?? json['completedWorkouts'] ?? 0,
-      assignedWorkoutId: json['assigned_workout_id'],
-      assignedMealPlanId: json['assigned_meal_plan_id'],
+          (json['completed_workouts'] ?? json['completedWorkouts'] ?? 0) as int,
+      assignedWorkoutId:
+          json['assigned_workout_id'] as String? ?? json['assignedWorkoutId'] as String?,
+      assignedMealPlanId:
+          json['assigned_meal_plan_id'] as String? ?? json['assignedMealPlanId'] as String?,
     );
   }
 

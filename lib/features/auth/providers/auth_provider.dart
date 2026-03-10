@@ -25,19 +25,24 @@ class AuthProvider extends ChangeNotifier {
 
   void _initAuthListener() {
     // Escuchar cambios de autenticación
-    SupabaseConfig.auth.onAuthStateChange.listen((data) {
-      final session = data.session;
-      if (session != null) {
-        _loadCurrentUser(session.user.id);
-      } else if (data.event == AuthChangeEvent.signedOut) {
-        // Solo limpiar sesión cuando el cierre es explícito (logout manual)
-        _isAuthenticated = false;
-        _currentUser = null;
-        notifyListeners();
-      }
-      // Otros eventos con session==null (ej: tokenRefreshFailed momentáneo)
-      // no cierran la sesión — Supabase reintentará el refresh automáticamente
-    });
+    SupabaseConfig.auth.onAuthStateChange.listen(
+      (data) {
+        final session = data.session;
+        if (session != null) {
+          _loadCurrentUser(session.user.id);
+        } else if (data.event == AuthChangeEvent.signedOut) {
+          // Solo limpiar sesión cuando el cierre es explícito (logout manual)
+          _isAuthenticated = false;
+          _currentUser = null;
+          notifyListeners();
+        }
+        // Otros eventos con session==null (ej: tokenRefreshFailed momentáneo)
+        // no cierran la sesión — Supabase reintentará el refresh automáticamente
+      },
+      onError: (e) {
+        debugPrint('❌ Auth state listener error: $e');
+      },
+    );
 
     // Verificar si ya hay sesión activa al arrancar
     final session = SupabaseConfig.auth.currentSession;

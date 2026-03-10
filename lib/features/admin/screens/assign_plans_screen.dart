@@ -146,7 +146,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: AppColors.textSecondary.withOpacity(0.4),
+                          color: AppColors.textSecondary.withValues(alpha: 0.4),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -468,7 +468,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.12),
+                          color: AppColors.primary.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Text(
@@ -536,7 +536,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                   border: Border.all(
                                     color: hasChange
                                         ? AppColors.primary
-                                        : Colors.amber.withOpacity(0.45),
+                                        : Colors.amber.withValues(alpha: 0.45),
                                     width: hasChange ? 2 : 1.5,
                                   ),
                                 ),
@@ -546,7 +546,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                       width: 46,
                                       height: 46,
                                       decoration: BoxDecoration(
-                                        color: Colors.amber.withOpacity(0.12),
+                                        color: Colors.amber.withValues(alpha: 0.12),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: const Center(
@@ -582,7 +582,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                                       vertical: 2),
                                                   decoration: BoxDecoration(
                                                     color: AppColors.primary
-                                                        .withOpacity(0.2),
+                                                        .withValues(alpha: 0.2),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             6),
@@ -624,7 +624,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                     ),
                                     Icon(
                                       Icons.add_circle_outline,
-                                      color: Colors.amber.withOpacity(0.7),
+                                      color: Colors.amber.withValues(alpha: 0.7),
                                       size: 22,
                                     ),
                                   ],
@@ -643,7 +643,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                               border: Border.all(
                                 color: hasChange
                                     ? AppColors.primary
-                                    : AppColors.primary.withOpacity(0.4),
+                                    : AppColors.primary.withValues(alpha: 0.4),
                                 width: hasChange ? 2 : 1.5,
                               ),
                             ),
@@ -688,7 +688,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                           horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
                                         color:
-                                            AppColors.primary.withOpacity(0.2),
+                                            AppColors.primary.withValues(alpha: 0.2),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: const Text(
@@ -738,7 +738,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                     : _saveSchedule,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+                  disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -858,7 +858,7 @@ class _BottomSheetTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: isSelected
-            ? AppColors.primary.withOpacity(0.15)
+            ? AppColors.primary.withValues(alpha: 0.15)
             : AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
@@ -889,7 +889,7 @@ class _BottomSheetTile extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.15),
+                  color: AppColors.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(

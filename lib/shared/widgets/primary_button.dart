@@ -77,11 +77,11 @@ class _PrimaryButtonState extends State<PrimaryButton>
               foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(vertical: 14),
               elevation: 0,
-              shadowColor: AppColors.primary.withOpacity(0.5),
+              shadowColor: AppColors.primary.withValues(alpha: 0.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              disabledBackgroundColor: AppColors.textSecondary.withOpacity(0.3),
+              disabledBackgroundColor: AppColors.textSecondary.withValues(alpha: 0.3),
             ),
             child: widget.isLoading
                 ? const SizedBox(

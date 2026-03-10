@@ -276,7 +276,11 @@ class PreferencesProvider with ChangeNotifier {
       }
     } else {
       // Cancelar todas las notificaciones si se deshabilitan
-      await notificationService.cancelAllNotifications();
+      try {
+        await notificationService.cancelAllNotifications();
+      } catch (e) {
+        debugPrint('Error cancelando notificaciones: $e');
+      }
     }
 
     final updated = _preferences!.copyWith(
@@ -292,14 +296,18 @@ class PreferencesProvider with ChangeNotifier {
 
     final notificationService = NotificationService();
 
-    if (enabled && _preferences!.notificationsEnabled) {
-      final reminderTime = time ?? _workoutReminderTime;
-      await notificationService.scheduleWorkoutReminder(
-        time: reminderTime,
-        userId: _supabase.auth.currentUser?.id,
-      );
-    } else {
-      await notificationService.cancelWorkoutReminder();
+    try {
+      if (enabled && _preferences!.notificationsEnabled) {
+        final reminderTime = time ?? _workoutReminderTime;
+        await notificationService.scheduleWorkoutReminder(
+          time: reminderTime,
+          userId: _supabase.auth.currentUser?.id,
+        );
+      } else {
+        await notificationService.cancelWorkoutReminder();
+      }
+    } catch (e) {
+      debugPrint('Error gestionando recordatorio de entrenamiento: $e');
     }
 
     final updated = _preferences!.copyWith(
@@ -326,11 +334,15 @@ class PreferencesProvider with ChangeNotifier {
 
     final notificationService = NotificationService();
 
-    if (enabled && _preferences!.notificationsEnabled) {
-      // Programar la notificación semanal del domingo
-      await notificationService.scheduleWeeklyProgressReport();
-    } else {
-      await notificationService.cancelWeeklyProgressReport();
+    try {
+      if (enabled && _preferences!.notificationsEnabled) {
+        // Programar la notificación semanal del domingo
+        await notificationService.scheduleWeeklyProgressReport();
+      } else {
+        await notificationService.cancelWeeklyProgressReport();
+      }
+    } catch (e) {
+      debugPrint('Error gestionando reportes de progreso: $e');
     }
 
     final updated = _preferences!.copyWith(

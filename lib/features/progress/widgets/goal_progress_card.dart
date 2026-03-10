@@ -74,13 +74,13 @@ class _GoalProgressCardState extends State<GoalProgressCard>
             color: AppColors.cardBackground,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: _getProgressColor().withOpacity(_isPressed ? 0.5 : 0.3),
+              color: _getProgressColor().withValues(alpha: _isPressed ? 0.5 : 0.3),
               width: _isPressed ? 2 : 1,
             ),
             boxShadow: _isPressed
                 ? [
                     BoxShadow(
-                      color: _getProgressColor().withOpacity(0.2),
+                      color: _getProgressColor().withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -137,7 +137,7 @@ class _GoalProgressCardState extends State<GoalProgressCard>
                             '${widget.goal.daysRemaining} días restantes',
                             style: TextStyle(
                               fontSize: 11,
-                              color: AppColors.textSecondary.withOpacity(0.9),
+                              color: AppColors.textSecondary.withValues(alpha: 0.9),
                             ),
                           ),
                       ],
@@ -207,7 +207,7 @@ class _GoalProgressCardState extends State<GoalProgressCard>
                       'Faltan ${widget.goal.remainingValue.toStringAsFixed(widget.goal.goalType == 'workouts' ? 0 : 1)} ${widget.goal.unit}',
                       style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.textSecondary.withOpacity(0.9),
+                        color: AppColors.textSecondary.withValues(alpha: 0.9),
                       ),
                     ),
                 ],
@@ -221,7 +221,7 @@ class _GoalProgressCardState extends State<GoalProgressCard>
                 padding:
                     const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
                 decoration: BoxDecoration(
-                  color: _getProgressColor().withOpacity(0.15),
+                  color: _getProgressColor().withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(

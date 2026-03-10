@@ -92,11 +92,11 @@ class UserGoal {
 
   factory UserGoal.fromJson(Map<String, dynamic> json) {
     return UserGoal(
-      id: json['id'] as String,
-      userId: json['user_id'] as String,
-      goalType: json['goal_type'] as String,
-      title: json['title'] as String,
-      targetValue: (json['target_value'] as num).toDouble(),
+      id: json['id'] as String? ?? '',
+      userId: json['user_id'] as String? ?? '',
+      goalType: json['goal_type'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      targetValue: (json['target_value'] as num?)?.toDouble() ?? 0,
       currentValue: (json['current_value'] as num?)?.toDouble() ?? 0,
       startDate: DateTime.parse(json['start_date'] as String),
       endDate: DateTime.parse(json['end_date'] as String),

@@ -87,8 +87,8 @@ class _AnimatedCardState extends State<AnimatedCard>
             ? [
                 BoxShadow(
                   color: _isPressed
-                      ? AppColors.primary.withOpacity(0.15)
-                      : Colors.black.withOpacity(0.1),
+                      ? AppColors.primary.withValues(alpha: 0.15)
+                      : Colors.black.withValues(alpha: 0.1),
                   blurRadius: _isPressed ? 12 : 8,
                   offset: Offset(0, _isPressed ? 3 : 2),
                 ),

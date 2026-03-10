@@ -308,7 +308,7 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
                 begin: Alignment.bottomCenter,
                 end: Alignment.topCenter,
                 colors: [
-                  Colors.black.withOpacity(0.8),
+                  Colors.black.withValues(alpha: 0.8),
                   Colors.transparent,
                 ],
               ),

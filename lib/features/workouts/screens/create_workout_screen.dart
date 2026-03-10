@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../config/app_constants.dart';
+import '../../../core/constants/app_constants.dart';
 import '../models/workout.dart';
 import '../models/exercise.dart';
 import '../providers/workout_provider.dart';
@@ -320,7 +320,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                                 color: isSelected
                                     ? AppColors.primary
                                     : AppColors.textSecondary
-                                        .withOpacity(0.3),
+                                        .withValues(alpha: 0.3),
                               ),
                             ),
                             child: Text(
@@ -350,7 +350,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                             border: Border.all(
                               color: _selectedCategory == 'Sin categoría'
                                   ? AppColors.textSecondary
-                                  : AppColors.textSecondary.withOpacity(0.3),
+                                  : AppColors.textSecondary.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Text(
@@ -439,7 +439,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                     color: AppColors.cardBackground,
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: AppColors.primary.withOpacity(0.2),
+                        backgroundColor: AppColors.primary.withValues(alpha: 0.2),
                         child: Text(
                           '${index + 1}',
                           style: const TextStyle(
@@ -783,7 +783,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: AppColors.primary),
                         ),
@@ -835,7 +835,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.success.withOpacity(0.1),
+                      color: AppColors.success.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: AppColors.success),
                     ),

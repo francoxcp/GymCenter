@@ -63,13 +63,13 @@ class _FilterChipButtonState extends State<FilterChipButton>
             border: Border.all(
               color: widget.isSelected
                   ? AppColors.primary
-                  : AppColors.surface.withOpacity(0.3),
+                  : AppColors.surface.withValues(alpha: 0.3),
               width: 1.5,
             ),
             boxShadow: widget.isSelected
                 ? [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),

@@ -250,7 +250,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                     end: Alignment.bottomCenter,
                     colors: [
                       AppColors.background,
-                      AppColors.background.withOpacity(0.9),
+                      AppColors.background.withValues(alpha: 0.9),
                     ],
                   ),
                 ),
@@ -375,7 +375,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.2),
+                            color: AppColors.primary.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: AppColors.primary),
                           ),
@@ -463,7 +463,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                           color: AppColors.cardBackground,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: AppColors.primary.withOpacity(0.3),
+                            color: AppColors.primary.withValues(alpha: 0.3),
                             width: 2,
                           ),
                         ),
@@ -475,7 +475,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: AppColors.primary.withOpacity(0.2),
+                                    color: AppColors.primary.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Icon(
@@ -599,7 +599,7 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: AppColors.primary.withOpacity(0.15),
+      color: AppColors.primary.withValues(alpha: 0.15),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(12),

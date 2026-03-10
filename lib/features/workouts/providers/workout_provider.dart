@@ -160,7 +160,7 @@ class WorkoutProvider extends ChangeNotifier {
   /// Called before entering workout detail or starting a workout session.
   Future<void> ensureExercisesLoaded(String workoutId) async {
     final idx = _workouts.indexWhere((w) => w.id == workoutId);
-    if (idx == -1) return;
+    if (idx < 0 || idx >= _workouts.length) return;
     if (_workouts[idx].exercises.isNotEmpty) return; // already loaded
 
     try {
@@ -174,8 +174,12 @@ class WorkoutProvider extends ChangeNotifier {
           .map((e) => Exercise.fromJson(e as Map<String, dynamic>))
           .toList();
 
-      final w = _workouts[idx];
-      _workouts[idx] = Workout(
+      // Re-check index after async gap to guard against concurrent list changes
+      final currentIdx = _workouts.indexWhere((w) => w.id == workoutId);
+      if (currentIdx < 0 || currentIdx >= _workouts.length) return;
+
+      final w = _workouts[currentIdx];
+      _workouts[currentIdx] = Workout(
         id: w.id,
         name: w.name,
         duration: w.duration,

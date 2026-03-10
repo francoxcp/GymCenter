@@ -27,17 +27,20 @@ class Exercise {
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
     return Exercise(
-      id: json['id'].toString(),
-      name: json['name'],
-      description: json['instructions'] ?? json['description'],
-      sets: json['sets'],
+      id: (json['id'] ?? '').toString(),
+      name: json['name'] as String? ?? '',
+      description: json['instructions'] as String? ?? json['description'] as String?,
+      sets: (json['sets'] as num?)?.toInt() ?? 0,
       reps: int.tryParse(json['reps'].toString()) ?? 12,
-      restSeconds: json['rest_time'] ?? json['restSeconds'] ?? 60,
-      videoUrl: json['video_url'] ?? json['videoUrl'],
-      thumbnailUrl: json['thumbnail_url'] ?? json['thumbnailUrl'],
-      muscleGroup: json['muscle_group'] ?? json['muscleGroup'] ?? 'General',
-      difficulty: json['difficulty'] ?? 'Intermedio',
-      weight: (json['weight'] ?? 0).toDouble(),
+      restSeconds:
+          (json['rest_time'] ?? json['restSeconds'] ?? 60) as int,
+      videoUrl: json['video_url'] as String? ?? json['videoUrl'] as String?,
+      thumbnailUrl:
+          json['thumbnail_url'] as String? ?? json['thumbnailUrl'] as String?,
+      muscleGroup:
+          json['muscle_group'] as String? ?? json['muscleGroup'] as String? ?? 'General',
+      difficulty: json['difficulty'] as String? ?? 'Intermedio',
+      weight: ((json['weight'] ?? 0) as num).toDouble(),
     );
   }
 

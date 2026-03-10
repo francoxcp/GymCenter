@@ -243,7 +243,7 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.redAccent,
                               side: BorderSide(
-                                  color: Colors.redAccent.withOpacity(0.6)),
+                                  color: Colors.redAccent.withValues(alpha: 0.6)),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12)),
                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -270,7 +270,7 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.primary.withOpacity(0.3),
+                        AppColors.primary.withValues(alpha: 0.3),
                         AppColors.background,
                       ],
                       begin: Alignment.topCenter,
@@ -403,7 +403,7 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.cardBackground,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
           ),
           child: Icon(
             icon,
@@ -455,7 +455,7 @@ class _ExerciseCard extends StatelessWidget {
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.primary.withOpacity(0.2),
+          color: AppColors.primary.withValues(alpha: 0.2),
         ),
       ),
       child: Row(

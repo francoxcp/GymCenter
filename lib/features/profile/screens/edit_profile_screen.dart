@@ -221,10 +221,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.08),
+                  color: AppColors.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                      color: AppColors.primary.withOpacity(0.25), width: 1),
+                      color: AppColors.primary.withValues(alpha: 0.25), width: 1),
                 ),
                 child: const Row(
                   children: [
@@ -305,7 +305,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? (level['color'] as Color).withOpacity(0.2)
+                    ? (level['color'] as Color).withValues(alpha: 0.2)
                     : AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
@@ -363,12 +363,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
 
     if (source == null) return;
+    if (!mounted) return;
+
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     setState(() => _isUploadingPhoto = true);
-    // ignore: use_build_context_synchronously
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    // ignore: use_build_context_synchronously
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     try {
       // Seleccionar imagen

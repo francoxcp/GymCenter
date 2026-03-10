@@ -450,6 +450,16 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     });
   }
 
+  Future<void> _onManualPause() async {
+    _pauseWorkout();
+    final choice = await _showExitWorkoutDialog();
+    if (choice == 'stay' || choice == null) {
+      _resumeWorkout();
+    } else {
+      await _handleExitChoice(choice);
+    }
+  }
+
   // ── Diálogo de salida ────────────────────────────────────────────────────
   Future<String?> _showExitWorkoutDialog() async {
     return showDialog<String>(
@@ -1356,7 +1366,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               actions: [
                 // Botón pausa / reanudar
                 IconButton(
-                  onPressed: _isPaused ? _resumeWorkout : _pauseWorkout,
+                  onPressed: _isPaused ? _resumeWorkout : _onManualPause,
                   icon: Icon(
                     _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
                     color:
@@ -1474,103 +1484,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               ],
             ),
           ),
-          // ─ Overlay de PAUSA ──────────────────────────────────────────────────
-          if (_isPaused)
-            Positioned.fill(
-              child: Container(
-                color: Colors.black.withOpacity(0.75),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.pause_circle_outline_rounded,
-                      color: AppColors.primary,
-                      size: 80,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'RUTINA PAUSADA',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'El cronómetro está detenido',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    ElevatedButton.icon(
-                      onPressed: _resumeWorkout,
-                      icon: const Icon(Icons.play_arrow_rounded,
-                          color: Colors.black),
-                      label: const Text(
-                        'Reanudar rutina',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 32, vertical: 14),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30)),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton.icon(
-                      onPressed: () => _handleExitChoice('save_later'),
-                      icon: const Icon(
-                        Icons.exit_to_app_rounded,
-                        color: AppColors.textSecondary,
-                        size: 20,
-                      ),
-                      label: const Text(
-                        'Continuar después',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Divider(
-                      color: Colors.white.withOpacity(0.12),
-                      indent: 48,
-                      endIndent: 48,
-                      height: 1,
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton.icon(
-                      onPressed: () => _handleExitChoice('terminate'),
-                      icon: const Icon(
-                        Icons.stop_circle_outlined,
-                        color: Colors.redAccent,
-                        size: 20,
-                      ),
-                      label: const Text(
-                        'Terminar rutina',
-                        style: TextStyle(
-                          color: Colors.redAccent,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          // ─ Overlay de PAUSA eliminado: el botón pause ahora usa _onManualPause
         ],
       ), // Stack
     ); // PopScope

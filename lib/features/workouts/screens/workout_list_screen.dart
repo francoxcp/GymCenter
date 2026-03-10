@@ -127,13 +127,17 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
       );
 
       if (!context.mounted) return;
+      final wp = Provider.of<WorkoutProvider>(context, listen: false);
       if (choice == 'continue_assigned') {
         context.push('/today-workout');
       } else if (choice == 'start_extra') {
+        wp.ensureExercisesLoaded(workoutId);
         context.push('/today-workout?workoutId=$workoutId');
       }
       // 'cancel' → no hace nada
     } else {
+      Provider.of<WorkoutProvider>(context, listen: false)
+          .ensureExercisesLoaded(workoutId);
       context.push('/today-workout?workoutId=$workoutId');
     }
   }
@@ -399,7 +403,11 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: AssignedWorkoutCard(
                     workout: assignedWorkout,
-                    onStart: () => context.push('/today-workout'),
+                    onStart: () {
+                      Provider.of<WorkoutProvider>(context, listen: false)
+                          .ensureExercisesLoaded(assignedWorkout.id);
+                      context.push('/today-workout');
+                    },
                   ),
                 ),
               ] else if (hasAssignedWorkout &&

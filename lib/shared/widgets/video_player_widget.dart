@@ -68,22 +68,18 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
       await _controller.initialize();
 
-      setState(() {
-        _isInitialized = true;
-      });
+      if (!mounted) return;
+      setState(() => _isInitialized = true);
+
+      if (!mounted) return;
+      setState(() => _isInitialized = true);
 
       if (widget.autoPlay) {
         _controller.play();
       }
-
-      // Pre-cache in background after playback starts so next open is instant.
-      if (cacheInfo == null) {
-        DefaultCacheManager()
-            .downloadFile(widget.videoUrl)
-            .catchError((_) {});
-      }
     } catch (e) {
       debugPrint('Error al inicializar video: $e');
+      if (!mounted) return;
       setState(() {
         _hasError = true;
         _errorMessage = 'Error al cargar el video';

@@ -35,7 +35,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   Timer? _timer;
   bool _isPaused = false;
   int _accumulatedSeconds = 0; // segundos activos acumulados
-  DateTime? _resumeTime;      // inicio del segmento activo actual
+  DateTime? _resumeTime; // inicio del segmento activo actual
 
   late PageController _pageController;
   late AnimationController _celebrationController;
@@ -142,7 +142,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     final authProvider = context.read<AuthProvider>();
     final userId = authProvider.currentUser?.id ?? '';
     final workoutId = widget.extraWorkoutId ??
-        authProvider.currentUser?.assignedWorkoutId ?? '';
+        authProvider.currentUser?.assignedWorkoutId ??
+        '';
     return 'workout_timer_${userId}_$workoutId';
   }
 
@@ -393,8 +394,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       // Iniciar descanso al completar cualquier serie,
       // excepto cuando es la última serie del último ejercicio
       final totalSets = _completedSets[exerciseIndex].length;
-      final isLastExercise =
-          exerciseIndex == _completedSets.length - 1;
+      final isLastExercise = exerciseIndex == _completedSets.length - 1;
       final isLastSet = setIndex == totalSets - 1;
 
       if (!(isLastExercise && isLastSet)) {
@@ -488,8 +488,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     final workoutId =
         widget.extraWorkoutId ?? authProvider.currentUser?.assignedWorkoutId;
     if (userId != null && workoutId != null) {
-      unawaited(
-          _saveSetWeights(workoutId: workoutId, userId: userId, workout: workout));
+      unawaited(_saveSetWeights(
+          workoutId: workoutId, userId: userId, workout: workout));
     }
 
     // Obtener peso del usuario desde medidas corporales (default 70kg)
@@ -603,10 +603,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           }
         }
       }
-      if (mounted) setState(() {
-        _setWeights = weights;
-        _exercisePRs = prs;
-      });
+      if (mounted)
+        setState(() {
+          _setWeights = weights;
+          _exercisePRs = prs;
+        });
     } catch (e) {
       debugPrint('Error cargando últimos pesos: $e');
     }
@@ -684,10 +685,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             // Contexto de referencia
-            if (pr != null || adminWeight != null) ...[  
+            if (pr != null || adminWeight != null) ...[
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   color: AppColors.cardBackground,
@@ -776,8 +778,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             onPressed: () {
               final weight =
                   double.tryParse(controller.text.replaceAll(',', '.'));
-              final isNewPR = weight != null &&
-                  (pr == null || weight > pr);
+              final isNewPR = weight != null && (pr == null || weight > pr);
               setState(() {
                 _setWeights[exerciseIndex] ??= {};
                 _setWeights[exerciseIndex]![setIndex] = weight;
@@ -916,13 +917,12 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         decoration: BoxDecoration(
                           color: Colors.amber.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                              color: Colors.amber.withOpacity(0.5)),
+                          border:
+                              Border.all(color: Colors.amber.withOpacity(0.5)),
                         ),
                         child: Row(
                           children: [
-                            const Text('🏆',
-                                style: TextStyle(fontSize: 13)),
+                            const Text('🏆', style: TextStyle(fontSize: 13)),
                             const SizedBox(width: 4),
                             Text(
                               _fmtWeight(_exercisePRs[exerciseIndex]!),
@@ -958,8 +958,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                           final maxW = sets
                               .map((s) =>
                                   (s['weight_kg'] as num?)?.toDouble() ?? 0.0)
-                              .fold(0.0,
-                                  (a, b) => a > b ? a : b);
+                              .fold(0.0, (a, b) => a > b ? a : b);
                           return Container(
                             margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.all(14),
@@ -1096,7 +1095,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
     final workout = workoutProvider.getWorkoutById(effectiveWorkoutId);
 
-    if (workout == null || workout.exercises.isEmpty) {
+    if (workout == null) {
       return Scaffold(
         appBar: AppBar(
           title: Text(AppL10n.of(context).myTodayWorkout),
@@ -1106,6 +1105,18 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             AppL10n.of(context).loadingWorkoutError,
             style: const TextStyle(color: Colors.white),
           ),
+        ),
+      );
+    }
+
+    // Exercises are loading lazily — show spinner until they arrive
+    if (workout.exercises.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(AppL10n.of(context).myTodayWorkout),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
         ),
       );
     }
@@ -1161,7 +1172,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 onPressed: _isPaused ? _resumeWorkout : _pauseWorkout,
                 icon: Icon(
                   _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-                  color: _isPaused ? AppColors.primary : AppColors.textSecondary,
+                  color:
+                      _isPaused ? AppColors.primary : AppColors.textSecondary,
                 ),
                 tooltip: _isPaused ? 'Reanudar' : 'Pausar',
               ),
@@ -1520,92 +1532,67 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
           const SizedBox(height: 16),
 
-          // Rest Timer Circular Mejorado
+          // Rest Timer
           if (_isResting && exerciseIndex == _currentExerciseIndex) ...[
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.primary, width: 2),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
                 children: [
-                  // Label + skip button stacked
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'DESCANSANDO',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        onPressed: () {
-                          _timer?.cancel();
-                          setState(() {
-                            _isResting = false;
-                            _remainingSeconds = 0;
-                          });
-                          HapticFeedback.lightImpact();
-                        },
-                        child: const Text(
-                          'Saltar',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ],
+                  const Text(
+                    'DESCANSANDO',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                      letterSpacing: 1.5,
+                    ),
                   ),
-
-                  // Big number on the right
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        _remainingSeconds.toString(),
-                        style: TextStyle(
-                          fontSize: 80,
-                          fontWeight: FontWeight.bold,
-                          height: 1,
-                          color: _remainingSeconds <= 3
-                              ? Colors.red
-                              : AppColors.primary,
-                        ),
+                  const SizedBox(height: 12),
+                  Text(
+                    _remainingSeconds.toString(),
+                    style: TextStyle(
+                      fontSize: 80,
+                      fontWeight: FontWeight.bold,
+                      color: _remainingSeconds <= 3
+                          ? Colors.red
+                          : AppColors.primary,
+                    ),
+                  ),
+                  const Text(
+                    'segundos',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () {
+                      _timer?.cancel();
+                      setState(() {
+                        _isResting = false;
+                        _remainingSeconds = 0;
+                      });
+                      HapticFeedback.lightImpact();
+                    },
+                    child: const Text(
+                      'Saltar descanso',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 10),
-                        child: Text(
-                          ' s',
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
           ],
 
           // ── Barra de referencia (PR + sugerencia admin + historial) ──
@@ -1816,13 +1803,11 @@ class _ExerciseReferenceBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: isNewPR
-            ? Border.all(color: Colors.amber, width: 1.5)
-            : null,
+        border: isNewPR ? Border.all(color: Colors.amber, width: 1.5) : null,
       ),
       child: Row(
         children: [
-          if (isNewPR) ...[  
+          if (isNewPR) ...[
             const Text('🏆', style: TextStyle(fontSize: 16)),
             const SizedBox(width: 6),
             const Text(
@@ -1833,7 +1818,7 @@ class _ExerciseReferenceBar extends StatelessWidget {
                 color: Colors.amber,
               ),
             ),
-          ] else if (hasPR) ...[  
+          ] else if (hasPR) ...[
             const Text('🏆', style: TextStyle(fontSize: 13)),
             const SizedBox(width: 4),
             Text(
@@ -1846,7 +1831,7 @@ class _ExerciseReferenceBar extends StatelessWidget {
             ),
           ],
           if (hasPR && hasAdmin) const SizedBox(width: 14),
-          if (hasAdmin) ...[  
+          if (hasAdmin) ...[
             const Icon(Icons.tips_and_updates_outlined,
                 size: 14, color: Colors.lightBlueAccent),
             const SizedBox(width: 4),

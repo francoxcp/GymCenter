@@ -34,7 +34,7 @@ class Exercise {
       reps: int.tryParse(json['reps'].toString()) ?? 12,
       restSeconds: json['rest_time'] ?? json['restSeconds'] ?? 60,
       videoUrl: json['video_url'] ?? json['videoUrl'],
-      thumbnailUrl: json['thumbnailUrl'],
+      thumbnailUrl: json['thumbnail_url'] ?? json['thumbnailUrl'],
       muscleGroup: json['muscle_group'] ?? json['muscleGroup'] ?? 'General',
       difficulty: json['difficulty'] ?? 'Intermedio',
       weight: (json['weight'] ?? 0).toDouble(),

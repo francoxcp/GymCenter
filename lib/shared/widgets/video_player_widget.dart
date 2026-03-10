@@ -52,17 +52,16 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         return;
       }
 
-      // Try to get cached file first; falls back to network automatically.
-      File? cachedFile;
+      // Check disk cache without downloading (instant, non-blocking).
+      // If not cached, stream directly from network — faster first-load.
+      FileInfo? cacheInfo;
       try {
-        cachedFile =
-            await DefaultCacheManager().getSingleFile(widget.videoUrl);
-      } catch (_) {
-        // Cache miss or network error — fall back to streaming
-      }
+        cacheInfo = await DefaultCacheManager()
+            .getFileFromCache(widget.videoUrl);
+      } catch (_) {}
 
-      _controller = cachedFile != null
-          ? VideoPlayerController.file(cachedFile)
+      _controller = cacheInfo != null
+          ? VideoPlayerController.file(cacheInfo.file)
           : VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
 
       _controller.setLooping(widget.looping);
@@ -75,6 +74,13 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
       if (widget.autoPlay) {
         _controller.play();
+      }
+
+      // Pre-cache in background after playback starts so next open is instant.
+      if (cacheInfo == null) {
+        DefaultCacheManager()
+            .downloadFile(widget.videoUrl)
+            .catchError((_) {});
       }
     } catch (e) {
       debugPrint('Error al inicializar video: $e');

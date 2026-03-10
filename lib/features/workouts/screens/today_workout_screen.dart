@@ -1524,73 +1524,88 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           if (_isResting && exerciseIndex == _currentExerciseIndex) ...[
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: AppColors.primary, width: 2),
               ),
-              child: Column(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'DESCANSANDO',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Tiempo restante
+                  // Label + skip button stacked
                   Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'DESCANSANDO',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        onPressed: () {
+                          _timer?.cancel();
+                          setState(() {
+                            _isResting = false;
+                            _remainingSeconds = 0;
+                          });
+                          HapticFeedback.lightImpact();
+                        },
+                        child: const Text(
+                          'Saltar',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Big number on the right
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
                         _remainingSeconds.toString(),
                         style: TextStyle(
                           fontSize: 80,
                           fontWeight: FontWeight.bold,
+                          height: 1,
                           color: _remainingSeconds <= 3
                               ? Colors.red
                               : AppColors.primary,
                         ),
                       ),
-                      const Text(
-                        'segundos',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textSecondary,
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 10),
+                        child: Text(
+                          ' s',
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 24),
-
-                  // Botón para saltar descanso
-                  TextButton(
-                    onPressed: () {
-                      _timer?.cancel();
-                      setState(() {
-                        _isResting = false;
-                        _remainingSeconds = 0;
-                      });
-                      HapticFeedback.lightImpact();
-                    },
-                    child: const Text(
-                      'Saltar descanso',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
           ],
 
           // ── Barra de referencia (PR + sugerencia admin + historial) ──

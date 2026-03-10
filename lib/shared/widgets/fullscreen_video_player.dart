@@ -65,15 +65,15 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
         return;
       }
 
-      // Serve from cache if available (video was already cached inline).
-      File? cachedFile;
+      // Check disk cache without blocking download.
+      FileInfo? cacheInfo;
       try {
-        cachedFile =
-            await DefaultCacheManager().getSingleFile(widget.videoUrl);
+        cacheInfo =
+            await DefaultCacheManager().getFileFromCache(widget.videoUrl);
       } catch (_) {}
 
-      _controller = cachedFile != null
-          ? VideoPlayerController.file(cachedFile)
+      _controller = cacheInfo != null
+          ? VideoPlayerController.file(cacheInfo.file)
           : VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
 
       _controller.setLooping(true);

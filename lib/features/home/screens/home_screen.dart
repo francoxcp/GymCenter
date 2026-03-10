@@ -610,7 +610,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                             size: 18, color: Colors.black87),
                         const SizedBox(width: 6),
                         Text(
-                          '${assignedWorkout.exercises.length} ejercicios',
+                          '${assignedWorkout.exerciseCount} ejercicios',
                           style: const TextStyle(
                             color: Colors.black87,
                             fontSize: 14,

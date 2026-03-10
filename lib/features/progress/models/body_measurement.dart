@@ -7,6 +7,12 @@ class BodyMeasurement {
   final double? chest;
   final double? waist;
   final double? hips;
+  // New per-side fields (new records)
+  final double? bicepsLeft;
+  final double? bicepsRight;
+  final double? thighLeft;
+  final double? thighRight;
+  // Legacy single fields kept for old records
   final double? biceps;
   final double? thighs;
   final String? photoUrl;
@@ -21,24 +27,42 @@ class BodyMeasurement {
     this.chest,
     this.waist,
     this.hips,
+    this.bicepsLeft,
+    this.bicepsRight,
+    this.thighLeft,
+    this.thighRight,
     this.biceps,
     this.thighs,
     this.photoUrl,
     this.notes,
   });
 
+  /// Effective left bicep: new field → fallback to legacy value (Option B).
+  double? get effectiveBicepsLeft => bicepsLeft ?? biceps;
+  /// Effective right bicep: new field → fallback to legacy value (Option B).
+  double? get effectiveBicepsRight => bicepsRight ?? biceps;
+  /// Effective left thigh: new field → fallback to legacy value (Option B).
+  double? get effectiveThighLeft => thighLeft ?? thighs;
+  /// Effective right thigh: new field → fallback to legacy value (Option B).
+  double? get effectiveThighRight => thighRight ?? thighs;
+
   factory BodyMeasurement.fromJson(Map<String, dynamic> json) {
     return BodyMeasurement(
       id: json['id'],
       userId: json['user_id'],
       date: DateTime.parse(json['date']),
-      weight: json['weight']?.toDouble(),
-      height: json['height']?.toDouble(),
-      chest: json['chest']?.toDouble(),
-      waist: json['waist']?.toDouble(),
-      hips: json['hips']?.toDouble(),
-      biceps: json['biceps']?.toDouble(),
-      thighs: json['thighs']?.toDouble(),
+      weight: (json['weight'] as num?)?.toDouble(),
+      height: (json['height'] as num?)?.toDouble(),
+      chest: (json['chest'] as num?)?.toDouble(),
+      waist: (json['waist'] as num?)?.toDouble(),
+      hips: (json['hips'] as num?)?.toDouble(),
+      bicepsLeft: (json['biceps_left'] as num?)?.toDouble(),
+      bicepsRight: (json['biceps_right'] as num?)?.toDouble(),
+      thighLeft: (json['thigh_left'] as num?)?.toDouble(),
+      thighRight: (json['thigh_right'] as num?)?.toDouble(),
+      // Legacy columns (old records)
+      biceps: (json['biceps'] as num?)?.toDouble(),
+      thighs: (json['thighs'] as num?)?.toDouble(),
       photoUrl: json['photo_url'],
       notes: json['notes'],
     );
@@ -53,13 +77,14 @@ class BodyMeasurement {
       'chest': chest,
       'waist': waist,
       'hips': hips,
-      'biceps': biceps,
-      'thighs': thighs,
+      'biceps_left': bicepsLeft,
+      'biceps_right': bicepsRight,
+      'thigh_left': thighLeft,
+      'thigh_right': thighRight,
       'photo_url': photoUrl,
       'notes': notes,
     };
 
-    // Solo incluir id si no está vacío (para updates)
     if (id.isNotEmpty) {
       json['id'] = id;
     }
@@ -76,8 +101,10 @@ class BodyMeasurement {
     double? chest,
     double? waist,
     double? hips,
-    double? biceps,
-    double? thighs,
+    double? bicepsLeft,
+    double? bicepsRight,
+    double? thighLeft,
+    double? thighRight,
     String? photoUrl,
     String? notes,
   }) {
@@ -90,8 +117,13 @@ class BodyMeasurement {
       chest: chest ?? this.chest,
       waist: waist ?? this.waist,
       hips: hips ?? this.hips,
-      biceps: biceps ?? this.biceps,
-      thighs: thighs ?? this.thighs,
+      bicepsLeft: bicepsLeft ?? this.bicepsLeft,
+      bicepsRight: bicepsRight ?? this.bicepsRight,
+      thighLeft: thighLeft ?? this.thighLeft,
+      thighRight: thighRight ?? this.thighRight,
+      // Preserve legacy fields as-is
+      biceps: this.biceps,
+      thighs: this.thighs,
       photoUrl: photoUrl ?? this.photoUrl,
       notes: notes ?? this.notes,
     );

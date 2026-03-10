@@ -33,56 +33,104 @@ class WorkoutProvider extends ChangeNotifier {
     return DateTime.now().difference(_lastFetch!).inMinutes > 5;
   }
 
+  /// Parses a raw list from Supabase or local cache into [Workout] objects.
+  /// Also handles legacy cached data that may include exercises.
+  List<Workout> _parseWorkoutList(List<dynamic> data) {
+    return data.map<Workout>((json) {
+      final exercisesJson = json['exercises'] as List?;
+      List<Exercise> exercises = [];
+      if (exercisesJson != null) {
+        exercises = exercisesJson
+            .map((e) => Exercise.fromJson(e as Map<String, dynamic>))
+            .toList();
+        exercises.sort((a, b) => a.id.compareTo(b.id));
+      }
+      return Workout(
+        id: json['id'],
+        name: json['name'],
+        duration: json['duration'],
+        exerciseCount: json['exercise_count'] ?? json['exerciseCount'] ?? 0,
+        level: json['level'] ?? 'Principiante',
+        imageUrl: json['image_url'] ?? json['imageUrl'] ?? '',
+        description: json['description'],
+        createdBy: json['created_by'] ?? json['createdBy'],
+        category: json['category'],
+        exercises: exercises,
+      );
+    }).toList();
+  }
+
   Future<void> loadWorkouts({
     bool forceRefresh = false,
     String? userId,
     bool isAdmin = false,
   }) async {
+    _currentUserId = userId;
+    _isAdmin = isAdmin;
+
+    // Memory cache is still valid — nothing to do
     if (!forceRefresh && !_shouldRefresh && _workouts.isNotEmpty) {
-      return; // Usar caché
+      return;
+    }
+
+    // ── Stale-while-revalidate ────────────────────────────────────────────────
+    // If we already have data in memory (just stale), we'll refresh silently
+    // in background without showing a loading spinner.
+    // If we have nothing in memory, try loading the disk cache first so the
+    // list appears instantly, then refresh in background.
+    final hasInMemoryData = _workouts.isNotEmpty;
+    var showedDiskCache = false;
+
+    if (!hasInMemoryData && !forceRefresh) {
+      try {
+        final cached = await OfflineCacheService().loadWorkouts();
+        if (cached != null && cached.isNotEmpty) {
+          _workouts = _parseWorkoutList(cached);
+          showedDiskCache = true;
+          notifyListeners(); // instant display — no spinner
+        }
+      } catch (_) {}
+    }
+
+    // Only show the loading spinner when we have absolutely nothing to display
+    if (!hasInMemoryData && !showedDiskCache) {
+      _isLoading = true;
+      notifyListeners();
     }
 
     try {
-      _isLoading = true;
-      notifyListeners();
+      // Fetch only workout metadata (no exercises) — significantly smaller payload
+      final response = await SupabaseConfig.client
+          .from('workouts')
+          .select('*')
+          .order('created_at', ascending: false);
 
-      // Guardar parámetros para futuras recargas
-      _currentUserId = userId;
-      _isAdmin = isAdmin;
+      // Preserve already-loaded exercises so a background refresh doesn't
+      // clear them for workouts the user has already opened
+      final Map<String, List<Exercise>> existingExercises = {
+        for (final w in _workouts)
+          if (w.exercises.isNotEmpty) w.id: w.exercises,
+      };
 
-      // Crear la query base
-      var query =
-          SupabaseConfig.client.from('workouts').select('*, exercises(*)');
-
-      // Todos los usuarios (admin y normales) ven todas las rutinas
-      // Esto permite que usuarios sin rutina asignada puedan ver las rutinas del admin
-
-      final response = await query.order('created_at', ascending: false);
-
-      _workouts = (response as List).map((json) {
-        // Parsear ejercicios si existen
-        final exercisesJson = json['exercises'] as List?;
-        List<Exercise> exercises = [];
-        if (exercisesJson != null) {
-          exercises = exercisesJson.map((e) => Exercise.fromJson(e)).toList();
-          exercises.sort((a, b) => a.id.compareTo(b.id));
+      _workouts = _parseWorkoutList(response as List).map((w) {
+        final kept = existingExercises[w.id];
+        if (kept != null && kept.isNotEmpty) {
+          return Workout(
+            id: w.id,
+            name: w.name,
+            duration: w.duration,
+            exerciseCount: w.exerciseCount,
+            level: w.level,
+            imageUrl: w.imageUrl,
+            description: w.description,
+            createdBy: w.createdBy,
+            category: w.category,
+            exercises: kept,
+          );
         }
-
-        return Workout(
-          id: json['id'],
-          name: json['name'],
-          duration: json['duration'],
-          exerciseCount: json['exercise_count'] ?? 0,
-          level: json['level'] ?? 'Principiante',
-          imageUrl: json['image_url'] ?? '',
-          description: json['description'],
-          createdBy: json['created_by'],
-          category: json['category'],
-          exercises: exercises,
-        );
+        return w;
       }).toList();
 
-      // Guardar en caché local para modo offline
       await OfflineCacheService().saveWorkouts(response as List);
 
       _lastFetch = DateTime.now();
@@ -90,39 +138,58 @@ class WorkoutProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     } catch (e) {
-      // Intentar cargar desde caché local si hay error de red
-      try {
-        final cached = await OfflineCacheService().loadWorkouts();
-        if (cached != null && cached.isNotEmpty) {
-          _workouts = cached.map((json) {
-            final exercisesJson = json['exercises'] as List?;
-            List<Exercise> exercises = [];
-            if (exercisesJson != null) {
-              exercises = exercisesJson
-                  .map((e) => Exercise.fromJson(e as Map<String, dynamic>))
-                  .toList();
-              exercises.sort((a, b) => a.id.compareTo(b.id));
-            }
-            return Workout(
-              id: json['id'],
-              name: json['name'],
-              duration: json['duration'],
-              exerciseCount: json['exercise_count'] ?? 0,
-              level: json['level'] ?? 'Principiante',
-              imageUrl: json['image_url'] ?? '',
-              description: json['description'],
-              createdBy: json['created_by'],
-              category: json['category'],
-              exercises: exercises,
-            );
-          }).toList();
-          _isOffline = true;
-          debugPrint('📦 Workouts cargados desde caché local (modo offline)');
-        }
-      } catch (_) {/* no cache available */}
+      // Network error — keep whatever we already have (stale memory or disk cache)
+      if (_workouts.isEmpty) {
+        try {
+          final cached = await OfflineCacheService().loadWorkouts();
+          if (cached != null && cached.isNotEmpty) {
+            _workouts = _parseWorkoutList(cached);
+            _isOffline = true;
+            debugPrint('📦 Workouts cargados desde caché local (modo offline)');
+          }
+        } catch (_) {}
+      } else {
+        _isOffline = true;
+      }
       _isLoading = false;
       notifyListeners();
-      // Error cargando workouts: log seguro, sin datos sensibles
+    }
+  }
+
+  /// Loads exercises for [workoutId] on-demand if they are not yet in memory.
+  /// Called before entering workout detail or starting a workout session.
+  Future<void> ensureExercisesLoaded(String workoutId) async {
+    final idx = _workouts.indexWhere((w) => w.id == workoutId);
+    if (idx == -1) return;
+    if (_workouts[idx].exercises.isNotEmpty) return; // already loaded
+
+    try {
+      final response = await SupabaseConfig.client
+          .from('exercises')
+          .select('*')
+          .eq('workout_id', workoutId)
+          .order('order_index', ascending: true);
+
+      final exercises = (response as List)
+          .map((e) => Exercise.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      final w = _workouts[idx];
+      _workouts[idx] = Workout(
+        id: w.id,
+        name: w.name,
+        duration: w.duration,
+        exerciseCount: w.exerciseCount,
+        level: w.level,
+        imageUrl: w.imageUrl,
+        description: w.description,
+        createdBy: w.createdBy,
+        category: w.category,
+        exercises: exercises,
+      );
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading exercises for workout $workoutId: $e');
     }
   }
 

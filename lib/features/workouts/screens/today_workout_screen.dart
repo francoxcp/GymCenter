@@ -76,6 +76,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
     // Verificar progreso pendiente después de que se construya el widget
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Ensure exercises are loaded before the workout begins
+      final authProvider = context.read<AuthProvider>();
+      final workoutProvider = context.read<WorkoutProvider>();
+      final effectiveId =
+          widget.extraWorkoutId ?? authProvider.currentUser?.assignedWorkoutId;
+      if (effectiveId != null) {
+        workoutProvider.ensureExercisesLoaded(effectiveId);
+      }
       _checkPendingProgress();
     });
   }

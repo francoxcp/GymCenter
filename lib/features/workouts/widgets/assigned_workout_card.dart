@@ -134,7 +134,7 @@ class AssignedWorkoutCard extends StatelessWidget {
                       const SizedBox(width: 20),
                       _buildStat(
                         icon: Icons.fitness_center,
-                        value: '${workout.exercises.length} ejercicios',
+                        value: '${workout.exerciseCount} ejercicios',
                       ),
                     ],
                   ),

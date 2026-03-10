@@ -245,7 +245,7 @@ class ComingSoonWorkoutCard extends StatelessWidget {
                 ),
                 _InfoChip(
                   icon: Icons.fitness_center,
-                  label: '${workout.exercises.length} ejercicios',
+                  label: '${workout.exerciseCount} ejercicios',
                 ),
                 _InfoChip(
                   icon: Icons.calendar_today_outlined,

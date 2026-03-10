@@ -191,12 +191,11 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       childAspectRatio: 0.95,
       children: [
         _buildMeasurementTile('Pecho', measurement.chest, Icons.fitness_center, units),
-        _buildMeasurementTile(
-            'Bíceps', measurement.biceps, Icons.sports_gymnastics, units),
-        _buildMeasurementTile(
-            'Muslos', measurement.thighs, Icons.directions_run, units),
-        _buildMeasurementTile(
-            'Cadera', measurement.hips, Icons.accessibility_new, units),
+        _buildMeasurementTile('Bícep Izq.', measurement.effectiveBicepsLeft, Icons.sports_gymnastics, units),
+        _buildMeasurementTile('Bícep Der.', measurement.effectiveBicepsRight, Icons.sports_gymnastics, units),
+        _buildMeasurementTile('Muslo Izq.', measurement.effectiveThighLeft, Icons.directions_run, units),
+        _buildMeasurementTile('Muslo Der.', measurement.effectiveThighRight, Icons.directions_run, units),
+        _buildMeasurementTile('Cadera', measurement.hips, Icons.accessibility_new, units),
         _buildMeasurementTile('Altura', measurement.height, Icons.height, units),
       ],
     );
@@ -309,7 +308,19 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
               _buildSmallMeasurement('Pecho', measurement.chest),
               _buildSmallMeasurement('Cintura', measurement.waist),
               _buildSmallMeasurement('Cadera', measurement.hips),
-              _buildSmallMeasurement('Bíceps', measurement.biceps),
+              _buildSmallMeasurement('B.Izq', measurement.effectiveBicepsLeft),
+              _buildSmallMeasurement('B.Der', measurement.effectiveBicepsRight),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildSmallMeasurement('M.Izq', measurement.effectiveThighLeft),
+              _buildSmallMeasurement('M.Der', measurement.effectiveThighRight),
+              const SizedBox(width: 40),
+              const SizedBox(width: 40),
+              const SizedBox(width: 40),
             ],
           ),
           if (measurement.notes != null && measurement.notes!.isNotEmpty) ...[
@@ -405,8 +416,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
     final chestController = TextEditingController();
     final waistController = TextEditingController();
     final hipsController = TextEditingController();
-    final bicepsController = TextEditingController();
-    final thighsController = TextEditingController();
+    final bicepsLeftController = TextEditingController();
+    final bicepsRightController = TextEditingController();
+    final thighLeftController = TextEditingController();
+    final thighRightController = TextEditingController();
     final notesController = TextEditingController();
 
     showDialog(
@@ -439,10 +452,22 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                   'Cintura (cm)', waistController, Icons.straighten),
               _buildMeasurementField(
                   'Cadera (cm)', hipsController, Icons.accessibility_new),
-              _buildMeasurementField(
-                  'Bíceps (cm)', bicepsController, Icons.sports_gymnastics),
-              _buildMeasurementField(
-                  'Muslos (cm)', thighsController, Icons.directions_run),
+              // Bíceps lado a lado
+              _buildPairedFields(
+                'Bícep Izquierdo (cm)',
+                bicepsLeftController,
+                'Bícep Derecho (cm)',
+                bicepsRightController,
+                Icons.sports_gymnastics,
+              ),
+              // Muslos lado a lado
+              _buildPairedFields(
+                'Muslo Izquierdo (cm)',
+                thighLeftController,
+                'Muslo Derecho (cm)',
+                thighRightController,
+                Icons.directions_run,
+              ),
               const SizedBox(height: 16),
               TextField(
                 controller: notesController,
@@ -498,8 +523,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                           chest: double.tryParse(chestController.text),
                           waist: double.tryParse(waistController.text),
                           hips: double.tryParse(hipsController.text),
-                          biceps: double.tryParse(bicepsController.text),
-                          thighs: double.tryParse(thighsController.text),
+                          bicepsLeft: double.tryParse(bicepsLeftController.text),
+                          bicepsRight: double.tryParse(bicepsRightController.text),
+                          thighLeft: double.tryParse(thighLeftController.text),
+                          thighRight: double.tryParse(thighRightController.text),
                           notes: notesController.text.isEmpty
                               ? null
                               : notesController.text,
@@ -571,6 +598,64 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
             borderSide: BorderSide.none,
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPairedFields(
+    String leftLabel,
+    TextEditingController leftController,
+    String rightLabel,
+    TextEditingController rightController,
+    IconData icon,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: leftController,
+              keyboardType: TextInputType.number,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: leftLabel,
+                labelStyle: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+                prefixIcon: Icon(icon, color: AppColors.primary, size: 18),
+                filled: true,
+                fillColor: AppColors.background,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: rightController,
+              keyboardType: TextInputType.number,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: rightLabel,
+                labelStyle: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+                filled: true,
+                fillColor: AppColors.background,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

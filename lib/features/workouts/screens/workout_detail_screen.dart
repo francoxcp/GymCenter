@@ -23,6 +23,14 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
   User? _selectedUser;
   MealPlan? _selectedMealPlan;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<WorkoutProvider>().ensureExercisesLoaded(widget.workoutId);
+    });
+  }
+
   void _showUserSearchDialog() {
     showDialog(
       context: context,

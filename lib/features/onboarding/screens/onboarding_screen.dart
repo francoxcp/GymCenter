@@ -181,78 +181,92 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildWelcomePage() {
-    return const Padding(
-      padding: EdgeInsets.all(30),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.fitness_center,
-            size: 120,
-            color: AppColors.primary,
-          ),
-          SizedBox(height: 40),
-          Text(
-            '¡Bienvenido a Chamos Fitness!',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.fitness_center,
+                  size: 80,
+                  color: AppColors.primary,
+                ),
+                SizedBox(height: 28),
+                Text(
+                  '¡Bienvenido a Chamos Fitness!',
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Tu compañero perfecto para alcanzar tus metas de fitness. Vamos a personalizar tu experiencia.',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: AppColors.textSecondary,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-            textAlign: TextAlign.center,
           ),
-          SizedBox(height: 20),
-          Text(
-            'Tu compañero perfecto para alcanzar tus metas de fitness. Vamos a personalizar tu experiencia.',
-            style: TextStyle(
-              fontSize: 16,
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildLevelPage() {
-    return Padding(
-      padding: const EdgeInsets.all(30),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            '¿Cuál es tu nivel de fitness?',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  '¿Cuál es tu nivel de fitness?',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                _buildLevelOption(
+                  'Principiante',
+                  'Nuevo en el entrenamiento',
+                  Icons.trending_up,
+                  AppColors.badgePrincipiante,
+                ),
+                const SizedBox(height: 12),
+                _buildLevelOption(
+                  'Intermedio',
+                  'Entreno regularmente',
+                  Icons.fitness_center,
+                  AppColors.badgeIntermedio,
+                ),
+                const SizedBox(height: 12),
+                _buildLevelOption(
+                  'Avanzado',
+                  'Atleta experimentado',
+                  Icons.emoji_events,
+                  AppColors.badgeAvanzado,
+                ),
+              ],
             ),
-            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 40),
-          _buildLevelOption(
-            'Principiante',
-            'Nuevo en el entrenamiento',
-            Icons.trending_up,
-            AppColors.badgePrincipiante,
-          ),
-          const SizedBox(height: 16),
-          _buildLevelOption(
-            'Intermedio',
-            'Entreno regularmente',
-            Icons.fitness_center,
-            AppColors.badgeIntermedio,
-          ),
-          const SizedBox(height: 16),
-          _buildLevelOption(
-            'Avanzado',
-            'Atleta experimentado',
-            Icons.emoji_events,
-            AppColors.badgeAvanzado,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -390,8 +404,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
             Container(
-              width: 80,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              width: 88,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(8),
@@ -399,11 +413,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Text(
                 '$_age años',
                 style: const TextStyle(
-                  fontSize: 15,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -515,8 +531,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
             Container(
-              width: 80,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              width: 90,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(8),
@@ -524,11 +540,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Text(
                 '${value.toStringAsFixed(1)} $unit',
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -542,49 +560,56 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       {
         'title': 'Perder peso',
         'icon': Icons.trending_down,
-        'color': Colors.red
+        'color': Colors.red,
       },
       {
         'title': 'Ganar músculo',
         'icon': Icons.fitness_center,
-        'color': Colors.blue
+        'color': Colors.blue,
       },
       {
         'title': 'Mantenerme en forma',
         'icon': Icons.favorite,
-        'color': Colors.green
+        'color': Colors.green,
       },
       {
         'title': 'Mejorar resistencia',
         'icon': Icons.directions_run,
-        'color': Colors.orange
+        'color': Colors.orange,
       },
     ];
 
-    return Padding(
-      padding: const EdgeInsets.all(30),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            '¿Cuál es tu objetivo?',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 40),
-          ...goals.map((goal) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: _buildGoalOption(
-                  goal['title'] as String,
-                  goal['icon'] as IconData,
-                  goal['color'] as Color,
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  '¿Cuál es tu objetivo?',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              )),
-        ],
+                const SizedBox(height: 24),
+                ...goals.map((goal) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _buildGoalOption(
+                        goal['title'] as String,
+                        goal['icon'] as IconData,
+                        goal['color'] as Color,
+                      ),
+                    )),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

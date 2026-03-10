@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'create_meal_plan_screen.dart';
 import 'edit_meal_plan_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -396,23 +395,8 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
               ),
             ],
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () async {
-              final navigator = Navigator.of(context);
-              final provider =
-                  Provider.of<MealPlanProvider>(context, listen: false);
-              final result = await navigator.push(
-                MaterialPageRoute(
-                  builder: (context) => const CreateMealPlanScreen(),
-                ),
-              );
-              if (result == true) {
-                await provider.loadMealPlans(forceRefresh: true);
-              }
-            },
-            backgroundColor: AppColors.primary,
-            child: const Icon(Icons.add, color: Colors.black, size: 32),
-          ),
+          // TODO: Crear nuevo plan de alimentación — oculto hasta completar la pantalla de planes
+          // floatingActionButton: FloatingActionButton(...)
         );
       },
     );

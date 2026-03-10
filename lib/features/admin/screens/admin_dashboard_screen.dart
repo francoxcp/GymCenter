@@ -4,7 +4,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../config/supabase_config.dart';
 import '../../profile/providers/user_provider.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
-import '../../meal_plans/screens/create_meal_plan_screen.dart';
 import '../../workouts/screens/create_workout_screen.dart';
 import 'user_management_screen.dart';
 import 'user_assignments_list_screen.dart';
@@ -233,20 +232,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     );
                   },
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                _QuickActionButton(
-                  icon: Icons.restaurant_menu,
-                  iconColor: AppColors.primary,
-                  title: 'Crear nuevo plan alimenticio',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CreateMealPlanScreen(),
-                      ),
-                    );
-                  },
-                ),
+                // TODO: Crear nuevo plan alimenticio — oculto hasta completar la pantalla de planes
                 const SizedBox(height: AppSpacing.sm),
                 _QuickActionButton(
                   icon: Icons.fitness_center,
@@ -274,7 +260,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final maxSessions = _dailySessions.isEmpty
         ? 1
         : _dailySessions.reduce((a, b) => a > b ? a : b);
-    const maxHeight = 160.0;
+    const maxHeight = 110.0;
     final now = DateTime.now();
     final todayIndex = (now.weekday - 1) % 7; // 0 = Lunes, 6 = Domingo
 

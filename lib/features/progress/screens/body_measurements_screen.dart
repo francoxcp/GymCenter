@@ -188,7 +188,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       crossAxisCount: 3,
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
-      childAspectRatio: 0.95,
+      childAspectRatio: 0.82,
       children: [
         _buildMeasurementTile('Pecho', measurement.chest, Icons.fitness_center, units),
         _buildMeasurementTile('Bícep Izq.', measurement.effectiveBicepsLeft, Icons.sports_gymnastics, units),
@@ -203,15 +203,16 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
 
   Widget _buildMeasurementTile(String label, double? value, IconData icon, String units) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.primary, size: 20),
+          Icon(icon, color: AppColors.primary, size: 18),
           const SizedBox(height: 4),
           Text(
             value != null ? UnitConverter.lengthValue(value, units) : '--',
@@ -231,9 +232,12 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
           Text(
             label,
             style: const TextStyle(
-              fontSize: 10,
+              fontSize: 9,
               color: AppColors.textSecondary,
             ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -392,7 +396,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
             const SizedBox(height: 12),
             Text(
               AppL10n.of(context).noMeasurementsBody,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,
               ),

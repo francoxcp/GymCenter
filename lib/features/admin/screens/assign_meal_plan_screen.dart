@@ -24,6 +24,7 @@ class _AssignMealPlanScreenState extends State<AssignMealPlanScreen> {
     super.initState();
     selectedMealPlanId = widget.user.assignedMealPlanId;
     Future.microtask(() {
+      if (!mounted) return;
       Provider.of<MealPlanProvider>(context, listen: false).loadMealPlans();
     });
   }

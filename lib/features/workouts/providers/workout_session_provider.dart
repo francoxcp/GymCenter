@@ -58,30 +58,6 @@ class WorkoutSessionProvider extends ChangeNotifier {
     }
   }
 
-  /// Guarda una nueva sesión de entrenamiento
-  Future<void> saveSession(WorkoutSession session) async {
-    try {
-      await SupabaseConfig.client.from('workout_sessions').insert({
-        'user_id': session.userId,
-        'workout_id': session.workoutId,
-        'duration_minutes': session.durationMinutes,
-        'exercises_completed': session.exercisesCompleted
-            .map((e) => {
-                  'exerciseId': e.exerciseId,
-                  'setsCompleted': e.setsCompleted,
-                  'notes': e.notes,
-                })
-            .toList(),
-        'completed_at': session.date.toIso8601String(),
-      });
-
-      await loadSessions(session.userId, forceRefresh: true);
-    } catch (e) {
-      debugPrint('Error saving workout session: $e');
-      rethrow;
-    }
-  }
-
   /// Obtiene las sesiones de un mes específico (para calendario)
   List<WorkoutSession> getSessionsForMonth(int year, int month) {
     return _sessions.where((session) {

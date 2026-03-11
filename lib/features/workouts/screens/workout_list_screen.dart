@@ -654,7 +654,6 @@ class _WorkoutCard extends StatelessWidget {
   final int exerciseCount;
   final String level;
   final bool isOfficial;
-  final bool isClickable;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onPlay;
@@ -665,7 +664,6 @@ class _WorkoutCard extends StatelessWidget {
     required this.exerciseCount,
     required this.level,
     this.isOfficial = false,
-    this.isClickable = true,
     this.onEdit,
     this.onDelete,
     this.onPlay,
@@ -844,7 +842,7 @@ class _WorkoutCard extends StatelessWidget {
                 ),
               ],
             )
-          else if (isClickable)
+          else
             const Icon(
               Icons.chevron_right,
               color: AppColors.textSecondary,

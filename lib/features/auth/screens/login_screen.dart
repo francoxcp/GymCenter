@@ -65,8 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final success = await authProvider.login(
+      final success = await _authProvider.login(
         _emailController.text.trim(),
         _passwordController.text,
       );
@@ -75,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (success && mounted) {
         // Redirigir según el rol del usuario
-        final route = authProvider.initialRoute;
+        final route = _authProvider.initialRoute;
         context.go(route);
       } else if (!success && mounted) {
         _showErrorDialog(

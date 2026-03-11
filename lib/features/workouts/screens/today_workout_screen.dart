@@ -601,7 +601,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       );
       if (confirmed == true && mounted) {
         await context.read<WorkoutProgressProvider>().deleteProgress();
-        context.go('/workouts');
+        if (mounted) context.go('/workouts');
       }
     }
     // 'stay' o null → no hace nada
@@ -1767,9 +1767,6 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
           // ── Barra de referencia (PR + sugerencia admin + historial) ──
           _ExerciseReferenceBar(
-            pr: _exercisePRs[exerciseIndex],
-            adminWeight: exercise.weight > 0 ? exercise.weight : null,
-            isNewPR: _newPRsThisSession.contains(exerciseIndex),
             onHistoryTap: () =>
                 _showExerciseHistory(exerciseIndex, exercise.name),
           ),
@@ -1942,15 +1939,9 @@ class _InfoCard extends StatelessWidget {
 /// Muestra las reps del ejercicio y un chip para ingresar el peso usado.
 // ── Barra de referencia PR / sugerencia admin ───────────────────────────────
 class _ExerciseReferenceBar extends StatelessWidget {
-  final double? pr;
-  final double? adminWeight;
-  final bool isNewPR;
   final VoidCallback onHistoryTap;
 
   const _ExerciseReferenceBar({
-    required this.pr,
-    required this.adminWeight,
-    required this.isNewPR,
     required this.onHistoryTap,
   });
 

@@ -25,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     // Cargar datos al iniciar
     Future.microtask(() {
+      if (!mounted) return;
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final workoutProvider =
           Provider.of<WorkoutProvider>(context, listen: false);
@@ -799,13 +800,11 @@ class _UserHomeContentState extends State<_UserHomeContent> {
 // Banner de Workout Pendiente
 class _QuickActionCard extends StatelessWidget {
   final String title;
-  final String? subtitle;
   final IconData icon;
   final VoidCallback onTap;
 
   const _QuickActionCard({
     required this.title,
-    this.subtitle,
     required this.icon,
     required this.onTap,
   });
@@ -813,70 +812,28 @@ class _QuickActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedCard(
-      padding: subtitle != null
-          ? const EdgeInsets.all(18)
-          : const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       onTap: () {
         HapticFeedback.lightImpact();
         onTap();
       },
       enableAnimation: true,
       enableShadow: false,
-      child: subtitle != null
-          ? Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, size: 26, color: AppColors.primary),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        subtitle!,
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          color: AppColors.textSecondary.withOpacity(0.9),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.arrow_forward_ios,
-                    size: 14, color: AppColors.textSecondary),
-              ],
-            )
-          : Column(
-              children: [
-                Icon(icon, size: 36, color: AppColors.primary),
-                const SizedBox(height: 10),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ],
+      child: Column(
+        children: [
+          Icon(icon, size: 36, color: AppColors.primary),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: 0.3,
             ),
+          ),
+        ],
+      ),
     );
   }
 }

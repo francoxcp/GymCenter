@@ -450,7 +450,7 @@ class _AddMealDialogState extends State<_AddMealDialog> {
     );
 
     if (shouldPop == true) {
-      if (context.mounted) {
+      if (mounted) {
         Navigator.of(context).pop();
       }
     }

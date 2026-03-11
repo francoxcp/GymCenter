@@ -122,6 +122,7 @@ GoRouter createAppRouter(AuthProvider authProvider) {
                 currentIndex: _locationToIndex(location),
                 onTap: (index) async {
                   if (!await UnsavedChangesGuard.canNavigate()) return;
+                  if (!context.mounted) return;
                   switch (index) {
                     case 0:
                       context.go(isAdmin ? '/admin' : '/home');
@@ -270,7 +271,7 @@ class _DoubleBackToExitState extends State<_DoubleBackToExit> {
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
         final now = DateTime.now();
-        final twoSeconds = const Duration(seconds: 2);
+        const twoSeconds = Duration(seconds: 2);
         if (_lastBackPress == null ||
             now.difference(_lastBackPress!) > twoSeconds) {
           _lastBackPress = now;

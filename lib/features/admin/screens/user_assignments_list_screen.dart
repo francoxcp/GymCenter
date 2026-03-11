@@ -234,7 +234,8 @@ class _UserAssignmentCard extends StatelessWidget {
                     )
                   else
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(6),
@@ -261,6 +262,7 @@ class _UserAssignmentCard extends StatelessWidget {
                       builder: (context) => AssignPlansScreen(user: user),
                     ),
                   ).then((_) {
+                    if (!context.mounted) return;
                     Provider.of<UserProvider>(context, listen: false)
                         .loadUsers();
                   });

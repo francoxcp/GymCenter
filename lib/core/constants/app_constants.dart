@@ -36,10 +36,6 @@ class AppConstants {
   static const Duration defaultTimeout = Duration(seconds: 30);
   static const Duration userCreationDelay = Duration(milliseconds: 500);
 
-  // Colores (referencia para el tema)
-  static const int primaryYellowValue = 0xFFFFD700;
-  static const int primaryBlackValue = 0xFF000000;
-
   // Mensajes
   static const String errorLoadingUsers = 'Error al cargar usuarios';
   static const String errorLoadingWorkouts = 'Error al cargar rutinas';

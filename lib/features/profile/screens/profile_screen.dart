@@ -116,17 +116,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_camera, color: Colors.white),
-              title: Text(AppL10n.of(context).takePhoto, style: const TextStyle(color: Colors.white)),
+              title: Text(AppL10n.of(context).takePhoto,
+                  style: const TextStyle(color: Colors.white)),
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library, color: Colors.white),
-              title: Text(AppL10n.of(context).galleryLabel, style: const TextStyle(color: Colors.white)),
+              title: Text(AppL10n.of(context).galleryLabel,
+                  style: const TextStyle(color: Colors.white)),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
             ListTile(
               leading: const Icon(Icons.cancel, color: AppColors.textSecondary),
-              title: Text(AppL10n.of(context).cancel, style: const TextStyle(color: AppColors.textSecondary)),
+              title: Text(AppL10n.of(context).cancel,
+                  style: const TextStyle(color: AppColors.textSecondary)),
               onTap: () => Navigator.pop(context),
             ),
           ],
@@ -141,6 +144,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final messenger = ScaffoldMessenger.of(context);
     // ignore: use_build_context_synchronously
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    // ignore: use_build_context_synchronously
+    final l10n = AppL10n.of(context);
 
     try {
       final picker = ImagePicker();
@@ -160,10 +165,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (kIsWeb) {
         final bytes = await image.readAsBytes();
-        photoUrl = await storageService.uploadProfilePhoto(userId: userId, imageBytes: bytes);
+        photoUrl = await storageService.uploadProfilePhoto(
+            userId: userId, imageBytes: bytes);
       } else {
         final file = File(image.path);
-        photoUrl = await storageService.uploadProfilePhoto(userId: userId, imageFile: file);
+        photoUrl = await storageService.uploadProfilePhoto(
+            userId: userId, imageFile: file);
       }
 
       if (photoUrl != null) {
@@ -171,15 +178,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             .from('users')
             .update({'photo_url': photoUrl}).eq('id', userId);
 
-        authProvider.updateUser(authProvider.currentUser!.copyWith(photoUrl: photoUrl));
+        authProvider
+            .updateUser(authProvider.currentUser!.copyWith(photoUrl: photoUrl));
 
         messenger.showSnackBar(
-          SnackBar(content: Text(AppL10n.of(context).photoUpdated), backgroundColor: Colors.green),
+          SnackBar(
+              content: Text(l10n.photoUpdated), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('${AppL10n.of(context).uploadPhotoError}: $e'), backgroundColor: Colors.red),
+        SnackBar(
+            content: Text('${l10n.uploadPhotoError}: $e'),
+            backgroundColor: Colors.red),
       );
     } finally {
       if (mounted) setState(() => _isUploadingPhoto = false);
@@ -265,7 +276,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return Scaffold(
         appBar: AppBar(title: Text(AppL10n.of(context).myProfile)),
         body: Center(
-          child: Text(AppL10n.of(context).noAuthUser, style: const TextStyle(color: Colors.white)),
+          child: Text(AppL10n.of(context).noAuthUser,
+              style: const TextStyle(color: Colors.white)),
         ),
       );
     }
@@ -305,7 +317,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             height: 110,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: AppColors.primary, width: 3),
+                              border: Border.all(
+                                  color: AppColors.primary, width: 3),
                               color: AppColors.background,
                             ),
                             child: currentUser.photoUrl != null
@@ -340,7 +353,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             bottom: 0,
                             right: 0,
                             child: GestureDetector(
-                              onTap: _isUploadingPhoto ? null : _handleProfilePhotoChange,
+                              onTap: _isUploadingPhoto
+                                  ? null
+                                  : _handleProfilePhotoChange,
                               child: Container(
                                 width: 34,
                                 height: 34,
@@ -356,7 +371,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           color: Colors.black,
                                         ),
                                       )
-                                    : const Icon(Icons.camera_alt, color: Colors.black, size: 18),
+                                    : const Icon(Icons.camera_alt,
+                                        color: Colors.black, size: 18),
                               ),
                             ),
                           ),
@@ -404,18 +420,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ),
                           // If no routine, show compact badge inline
-                          if (currentUser.assignedWorkoutId == null) ...
-                            [
-                              const SizedBox(width: 8),
-                              _buildLevelBadge(),
-                            ],
+                          if (currentUser.assignedWorkoutId == null) ...[
+                            const SizedBox(width: 8),
+                            _buildLevelBadge(),
+                          ],
                         ],
                       ),
-                      if (currentUser.assignedWorkoutId != null) ...
-                        [
-                          const SizedBox(height: 8),
-                          _buildLevelSelector(),
-                        ],
+                      if (currentUser.assignedWorkoutId != null) ...[
+                        const SizedBox(height: 8),
+                        _buildLevelSelector(),
+                      ],
 
                       const SizedBox(height: 20),
 
@@ -512,7 +526,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-
 }
 
 class _MenuItem extends StatelessWidget {

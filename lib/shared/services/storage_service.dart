@@ -37,7 +37,6 @@ class StorageService {
 
       if (result != null) {
         // Imagen comprimida exitosamente
-        // ...existing code...
       }
 
       return result;
@@ -122,7 +121,6 @@ class StorageService {
       final publicUrl =
           _supabase.storage.from(profilePhotosBucket).getPublicUrl(fileName);
 
-      // ...existing code...
       return publicUrl;
     } catch (e) {
       // Error al subir foto de perfil: log seguro, sin datos sensibles
@@ -178,8 +176,6 @@ class StorageService {
       // Obtener URL pública
       final publicUrl =
           _supabase.storage.from(exerciseVideosBucket).getPublicUrl(fileName);
-
-      // ...existing code...
 
       // Guardar metadata en base de datos
       await _saveVideoMetadata(

@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../config/app_constants.dart';
+import '../../../core/constants/app_constants.dart';
 import '../models/workout.dart';
 import '../models/exercise.dart';
 import '../providers/workout_provider.dart';
@@ -53,9 +53,8 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
 
   Future<void> _saveCustomCategories() async {
     final prefs = await SharedPreferences.getInstance();
-    final custom = _categories
-        .where((c) => !Workout.categories.contains(c))
-        .toList();
+    final custom =
+        _categories.where((c) => !Workout.categories.contains(c)).toList();
     await prefs.setStringList(_kPrefsKey, custom);
   }
 
@@ -225,7 +224,8 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         level: _selectedLevel,
-        category: _selectedCategory == 'Sin categoría' ? null : _selectedCategory,
+        category:
+            _selectedCategory == 'Sin categoría' ? null : _selectedCategory,
         duration: estimatedDuration,
         exerciseCount: _exercises.length,
         imageUrl: '',
@@ -751,7 +751,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
     );
 
     if (shouldPop == true) {
-      if (context.mounted) {
+      if (mounted) {
         Navigator.of(context).pop();
       }
     }

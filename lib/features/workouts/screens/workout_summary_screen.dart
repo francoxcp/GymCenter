@@ -40,8 +40,14 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
 
   // Mensajes motivacionales — se asignan en initState después de conocer el idioma
   List<String> _motivationalMessages = [
-    '¡INCREÍBLE TRABAJO!', '¡LO LOGRASTE!', '¡EXCELENTE!', '¡ERES IMPARABLE!',
-    '¡BRUTAL ENTRENAMIENTO!', '¡SIGUE ASÍ CAMPEÓN!', '¡ESPECTACULAR!', '¡QUÉ MÁQUINA!',
+    '¡INCREÍBLE TRABAJO!',
+    '¡LO LOGRASTE!',
+    '¡EXCELENTE!',
+    '¡ERES IMPARABLE!',
+    '¡BRUTAL ENTRENAMIENTO!',
+    '¡SIGUE ASÍ CAMPEÓN!',
+    '¡ESPECTACULAR!',
+    '¡QUÉ MÁQUINA!',
   ];
 
   @override
@@ -157,7 +163,8 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         final workoutName = workoutProvider
             .getWorkoutById(nextWorkoutData['workout_id'] as String)
             ?.name;
-        nextWorkoutData['name'] = workoutName; // null → fallback en _buildNextWorkoutInfo
+        nextWorkoutData['name'] =
+            workoutName; // null → fallback en _buildNextWorkoutInfo
       }
 
       if (mounted) {
@@ -193,7 +200,8 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
   Widget _buildNextWorkoutInfo() {
     if (_nextWorkout == null) return const SizedBox();
     final l10nDays = AppL10n.of(context);
-    final name = (_nextWorkout?['name'] as String?) ?? l10nDays.nextWorkoutDefault;
+    final name =
+        (_nextWorkout?['name'] as String?) ?? l10nDays.nextWorkoutDefault;
     final date = _nextWorkout?['date'] as DateTime?;
     final daysUntil = (_nextWorkout?['days_until'] as int?) ?? 1;
     final dateStr = date != null
@@ -203,7 +211,9 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         ? l10nDays.todayLabel
         : daysUntil == 1
             ? (l10nDays.isEn ? 'Tomorrow' : 'Mañana')
-            : (l10nDays.isEn ? 'In $daysUntil days ($dateStr)' : 'En $daysUntil días ($dateStr)');
+            : (l10nDays.isEn
+                ? 'In $daysUntil days ($dateStr)'
+                : 'En $daysUntil días ($dateStr)');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -521,18 +531,21 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                             : () async {
                                 // Recarga final de sesiones antes de navegar
                                 // por si el contexto estaba desmontado antes
-                                final userId = Provider.of<AuthProvider>(
-                                        context,
-                                        listen: false)
-                                    .currentUser
-                                    ?.id;
+                                final authProvider = Provider.of<AuthProvider>(
+                                    context,
+                                    listen: false);
+                                final sessionProvider =
+                                    Provider.of<WorkoutSessionProvider>(context,
+                                        listen: false);
+                                final userId = authProvider.currentUser?.id;
                                 if (userId != null) {
-                                  await Provider.of<WorkoutSessionProvider>(
-                                          context,
-                                          listen: false)
-                                      .loadSessions(userId, forceRefresh: true);
+                                  if (!mounted) return;
+                                  await sessionProvider.loadSessions(
+                                    userId,
+                                    forceRefresh: true,
+                                  );
                                 }
-                                if (mounted) context.go('/home');
+                                if (context.mounted) context.go('/home');
                               },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,

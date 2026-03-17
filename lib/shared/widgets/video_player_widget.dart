@@ -58,7 +58,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       // Non-blocking cache lookup — returns instantly if not cached.
       FileInfo? cacheInfo;
       try {
-        cacheInfo = await DefaultCacheManager().getFileFromCache(widget.videoUrl);
+        cacheInfo =
+            await DefaultCacheManager().getFileFromCache(widget.videoUrl);
       } catch (_) {}
 
       if (cacheInfo != null) {
@@ -164,7 +165,13 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
                 Image.network(
                   widget.thumbnailUrl!,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                  errorBuilder: (_, __, ___) => const Center(
+                    child: Icon(
+                      Icons.videocam_off,
+                      color: AppColors.textSecondary,
+                      size: 40,
+                    ),
+                  ),
                 ),
               // Dark overlay
               Container(color: Colors.black54),

@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import '../models/user.dart';
 import '../../../config/supabase_config.dart';
@@ -10,6 +11,7 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading = false;
   // true mientras se verifica la sesión guardada al arrancar — evita el flash de login
   bool _isInitializing = true;
+  StreamSubscription<AuthState>? _authSubscription;
 
   bool get isAuthenticated => _isAuthenticated;
   User? get currentUser => _currentUser;
@@ -35,7 +37,7 @@ class AuthProvider extends ChangeNotifier {
 
   void _initAuthListener() {
     // Escuchar cambios de autenticación
-    SupabaseConfig.auth.onAuthStateChange.listen((data) {
+    _authSubscription = SupabaseConfig.auth.onAuthStateChange.listen((data) {
       final session = data.session;
       if (session != null) {
         _loadCurrentUser(session.user.id);
@@ -58,6 +60,12 @@ class AuthProvider extends ChangeNotifier {
       _isInitializing = false;
       notifyListeners();
     }
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadCurrentUser(String userId) async {

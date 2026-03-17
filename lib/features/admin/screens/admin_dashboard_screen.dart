@@ -21,6 +21,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   int _totalSessions = 0;
   List<int> _dailySessions = [0, 0, 0, 0, 0, 0, 0];
   bool _isLoading = true;
+  bool _hasError = false;
 
   @override
   void initState() {
@@ -69,11 +70,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         _totalSessions = sessions.length;
         _dailySessions = dailyCounts;
         _isLoading = false;
+        _hasError = false;
       });
     } catch (e) {
       debugPrint('Error loading dashboard data: $e');
       setState(() {
         _isLoading = false;
+        _hasError = true;
       });
     }
   }
@@ -157,6 +160,40 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.lg),
+                if (_hasError && !_isLoading)
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border:
+                          Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.wifi_off, color: Colors.red, size: 20),
+                        const SizedBox(width: AppSpacing.sm),
+                        const Expanded(
+                          child: Text(
+                            'Error al cargar datos. Verifica tu conexión.',
+                            style: TextStyle(color: Colors.red, fontSize: 13),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _isLoading = true;
+                              _hasError = false;
+                            });
+                            _loadDashboardData();
+                          },
+                          child: const Text('Reintentar'),
+                        ),
+                      ],
+                    ),
+                  ),
                 _isLoading
                     ? const Row(
                         children: [
@@ -211,11 +248,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           color: AppColors.cardBackground,
                           borderRadius: BorderRadius.circular(AppSpacing.lg),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: _buildChartBars(),
-                        ),
+                        child: _totalSessions == 0
+                            ? const Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.bar_chart,
+                                        color: AppColors.textSecondary,
+                                        size: 40),
+                                    SizedBox(height: AppSpacing.sm),
+                                    Text(
+                                      'Sin sesiones esta semana',
+                                      style: TextStyle(
+                                        color: AppColors.textSecondary,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: _buildChartBars(),
+                              ),
                       ),
                 const SizedBox(height: AppSpacing.xxl),
                 const Text(

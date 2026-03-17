@@ -9,6 +9,7 @@ class WorkoutProvider extends ChangeNotifier {
   String _selectedFilter = 'Todos';
   bool _isLoading = false;
   bool _isOffline = false;
+  String? _errorMessage;
   DateTime? _lastFetch;
 
   // Guardar parámetros del usuario para recargas automáticas
@@ -23,6 +24,15 @@ class WorkoutProvider extends ChangeNotifier {
 
   /// true si los workouts se cargaron desde caché local (sin conexión)
   bool get isOffline => _isOffline;
+
+  /// Mensaje de error de la última carga, null si no hubo error
+  String? get errorMessage => _errorMessage;
+
+  /// Limpia el mensaje de error
+  void clearError() {
+    _errorMessage = null;
+    notifyListeners();
+  }
 
   // No cargar automáticamente en el constructor
   // El componente que use este provider debe llamar loadWorkouts() con los parámetros correctos
@@ -135,10 +145,13 @@ class WorkoutProvider extends ChangeNotifier {
 
       _lastFetch = DateTime.now();
       _isOffline = false;
+      _errorMessage = null;
       _isLoading = false;
       notifyListeners();
     } catch (e) {
       // Network error — keep whatever we already have (stale memory or disk cache)
+      _errorMessage =
+          'No se pudo conectar al servidor. Mostrando datos guardados.';
       if (_workouts.isEmpty) {
         try {
           final cached = await OfflineCacheService().loadWorkouts();

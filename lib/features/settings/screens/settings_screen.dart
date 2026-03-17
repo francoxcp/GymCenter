@@ -754,7 +754,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
       ),
-    );
+    ).then((_) {
+      currentPasswordController.dispose();
+      newPasswordController.dispose();
+      confirmPasswordController.dispose();
+    });
   }
 
   // Diálogo para confirmar eliminación con contraseña
@@ -866,6 +870,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
       ),
-    );
+    ).then((_) {
+      passwordController.dispose();
+    });
   }
 }

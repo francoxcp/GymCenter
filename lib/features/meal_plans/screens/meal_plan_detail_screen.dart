@@ -1,7 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/meal_plan.dart';
+import '../providers/meal_plan_provider.dart';
 
 class MealPlanDetailScreen extends StatelessWidget {
   final String mealPlanId;
@@ -13,8 +15,9 @@ class MealPlanDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Usando datos de ejemplo - conectar con MealPlanProvider para datos reales
-    final mealPlan = _getExampleMealPlan();
+    final mealPlanProvider = Provider.of<MealPlanProvider>(context);
+    final mealPlan =
+        mealPlanProvider.getMealPlanById(mealPlanId) ?? _getFallbackMealPlan();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -350,7 +353,7 @@ class MealPlanDetailScreen extends StatelessWidget {
     }
   }
 
-  MealPlan _getExampleMealPlan() {
+  MealPlan _getFallbackMealPlan() {
     return MealPlan(
       id: mealPlanId,
       name: 'Plan balanceado 2000 Cal',

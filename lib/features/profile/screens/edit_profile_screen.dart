@@ -166,6 +166,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 child: Image.network(
                                   currentUser!.photoUrl!,
                                   fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.person,
+                                    size: 60,
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ),
                               )
                             : const Icon(
@@ -419,6 +424,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (image == null) {
         setState(() => _isUploadingPhoto = false);
+        return;
+      }
+
+      // Validar formato de imagen
+      final extension = image.name.split('.').last.toLowerCase();
+      if (!['jpg', 'jpeg', 'png', 'webp'].contains(extension)) {
+        setState(() => _isUploadingPhoto = false);
+        scaffoldMessenger.showSnackBar(
+          const SnackBar(
+            content: Text('Formato no soportado. Usa JPG, PNG o WebP.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // Validar tamaño (máx 5 MB)
+      final fileSize = await image.length();
+      if (fileSize > 5 * 1024 * 1024) {
+        setState(() => _isUploadingPhoto = false);
+        scaffoldMessenger.showSnackBar(
+          const SnackBar(
+            content: Text('La imagen es muy grande. Máximo 5 MB.'),
+            backgroundColor: Colors.red,
+          ),
+        );
         return;
       }
 

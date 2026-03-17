@@ -972,6 +972,24 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             onPressed: () {
               final inputLbs =
                   double.tryParse(controller.text.replaceAll(',', '.'));
+              if (controller.text.trim().isNotEmpty && inputLbs == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Ingresa un número válido'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+              if (inputLbs != null && inputLbs < 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('El peso no puede ser negativo'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
               // Convertir libras → kg para almacenar internamente
               final weight = inputLbs != null ? _toKg(inputLbs) : null;
               final isNewPR = weight != null && (pr == null || weight > pr);

@@ -353,10 +353,16 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           ),
         ],
       ),
-    );
+    ).then((_) {
+      nameController.dispose();
+    });
   }
 
+  bool _isProcessing = false;
+
   void _toggleAdminRole(User user) async {
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final newRole = user.role == 'admin' ? 'user' : 'admin';
 
@@ -379,50 +385,72 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           SnackBar(content: Text('Error: $e')),
         );
       }
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
   void _confirmDeleteUser(User user) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardBackground,
-        title: const Text('Confirmar eliminación'),
-        content: Text(
-          '¿Estás seguro de eliminar a ${user.name}? Esta acción no se puede deshacer.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+      builder: (context) {
+        bool isDeleting = false;
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            backgroundColor: AppColors.cardBackground,
+            title: const Text('Confirmar eliminación'),
+            content: Text(
+              '¿Estás seguro de eliminar a ${user.name}? Esta acción no se puede deshacer.',
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            actions: [
+              TextButton(
+                onPressed: isDeleting ? null : () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: isDeleting
+                    ? null
+                    : () async {
+                        setState(() => isDeleting = true);
+                        final userProvider =
+                            Provider.of<UserProvider>(context, listen: false);
+                        try {
+                          await userProvider.deleteUser(user.id);
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Usuario eliminado correctamente')),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error: $e')),
+                            );
+                          }
+                        }
+                      },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: isDeleting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text('Eliminar'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () async {
-              final userProvider =
-                  Provider.of<UserProvider>(context, listen: false);
-              try {
-                await userProvider.deleteUser(user.id);
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Usuario eliminado correctamente')),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $e')),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

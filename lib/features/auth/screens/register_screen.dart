@@ -1,8 +1,10 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../providers/auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -18,6 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _acceptedTerms = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -25,6 +28,82 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleRegister() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    // Validar campos vacíos
+    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      _showError('Por favor completa todos los campos');
+      return;
+    }
+
+    // Validar formato de email
+    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+      _showError('Por favor ingresa un correo electrónico válido');
+      return;
+    }
+
+    // Validar largo de contraseña
+    if (password.length < 8) {
+      _showError('La contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+
+    if (password.length > 15) {
+      _showError('La contraseña no puede tener más de 15 caracteres');
+      return;
+    }
+
+    // Validar que coincidan
+    if (password != confirmPassword) {
+      _showError('Las contraseñas no coinciden');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final success =
+          await authProvider.register(email, password, email.split('@').first);
+
+      if (success && mounted) {
+        context.go(authProvider.initialRoute);
+      } else if (mounted) {
+        _showError('No se pudo completar el registro. Intenta nuevamente.');
+      }
+    } catch (e) {
+      if (mounted) {
+        final errorMsg = e.toString().toLowerCase();
+        if (errorMsg.contains('already registered') ||
+            errorMsg.contains('already exists')) {
+          _showError('Ya existe una cuenta con este correo electrónico.');
+        } else if (errorMsg.contains('network') ||
+            errorMsg.contains('connection')) {
+          _showError('Error de conexión. Verifica tu internet.');
+        } else {
+          _showError('Error al registrar: ${e.toString()}');
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   @override
@@ -236,7 +315,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Register Button
               PrimaryButton(
                 text: 'REGISTRARSE',
-                onPressed: _acceptedTerms ? () => context.go('/home') : () {},
+                isLoading: _isLoading,
+                onPressed:
+                    _acceptedTerms && !_isLoading ? _handleRegister : null,
               ),
 
               const SizedBox(height: 24),

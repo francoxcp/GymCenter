@@ -311,6 +311,18 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       return;
     }
 
+    // Validar largo mínimo
+    if (_newPasswordController.text.length < 8) {
+      _showError('La nueva contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+
+    // Validar largo máximo
+    if (_newPasswordController.text.length > 15) {
+      _showError('La contraseña no puede tener más de 15 caracteres');
+      return;
+    }
+
     // Validar que las contraseñas nuevas coincidan
     if (_newPasswordController.text != _confirmPasswordController.text) {
       _showError('Las contraseñas nuevas no coinciden');

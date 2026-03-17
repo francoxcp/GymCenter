@@ -62,6 +62,15 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    final email = _emailController.text.trim();
+    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+      _showErrorDialog(
+        'Correo inválido',
+        'Por favor ingresa un correo electrónico válido.',
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {

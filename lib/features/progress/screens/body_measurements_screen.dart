@@ -575,6 +575,47 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () async {
+                          // Validar que al menos un campo numérico tenga valor
+                          final controllers = [
+                            weightController,
+                            heightController,
+                            chestController,
+                            waistController,
+                            hipsController,
+                            bicepsLeftController,
+                            bicepsRightController,
+                            thighLeftController,
+                            thighRightController,
+                          ];
+                          final hasAnyValue = controllers.any(
+                            (c) => c.text.trim().isNotEmpty,
+                          );
+                          if (!hasAnyValue) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Ingresa al menos una medida'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+                          // Validar que los valores sean numéricos positivos
+                          for (final c in controllers) {
+                            if (c.text.trim().isNotEmpty) {
+                              final val = double.tryParse(c.text.trim());
+                              if (val == null || val <= 0) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Los valores deben ser números positivos'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+                            }
+                          }
+
                           final measurementProvider =
                               Provider.of<BodyMeasurementProvider>(
                             context,
@@ -646,7 +687,18 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
           ),
         ),
       ),
-    );
+    ).then((_) {
+      weightController.dispose();
+      heightController.dispose();
+      chestController.dispose();
+      waistController.dispose();
+      hipsController.dispose();
+      bicepsLeftController.dispose();
+      bicepsRightController.dispose();
+      thighLeftController.dispose();
+      thighRightController.dispose();
+      notesController.dispose();
+    });
   }
 
   Widget _buildMeasurementField(
@@ -658,7 +710,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: TextField(
         controller: controller,
-        keyboardType: TextInputType.number,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,

@@ -60,7 +60,9 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       try {
         cacheInfo =
             await DefaultCacheManager().getFileFromCache(widget.videoUrl);
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('Error checking video cache: $e');
+      }
 
       if (cacheInfo != null) {
         // Cache hit → play from disk instantly

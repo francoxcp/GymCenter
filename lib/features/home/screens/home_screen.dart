@@ -62,18 +62,28 @@ class _HomeScreenState extends State<HomeScreen> {
     final sessionProvider =
         Provider.of<WorkoutSessionProvider>(context, listen: false);
 
-    await Future.wait([
-      authProvider.refreshUser(),
-      workoutProvider.loadWorkouts(
+    await Future.wait<void>([
+      authProvider.refreshUser().catchError((e) {
+        debugPrint('Error refreshing user: $e');
+      }),
+      workoutProvider
+          .loadWorkouts(
         forceRefresh: true,
         userId: authProvider.currentUser?.id,
         isAdmin: authProvider.isAdmin,
-      ),
+      )
+          .catchError((e) {
+        debugPrint('Error refreshing workouts: $e');
+      }),
       if (authProvider.currentUser?.id != null)
-        sessionProvider.loadSessions(
+        sessionProvider
+            .loadSessions(
           authProvider.currentUser!.id,
           forceRefresh: true,
-        ),
+        )
+            .catchError((e) {
+          debugPrint('Error refreshing sessions: $e');
+        }),
     ]);
 
     // Cargar progreso si hay usuario autenticado

@@ -99,7 +99,9 @@ class WorkoutProvider extends ChangeNotifier {
           showedDiskCache = true;
           notifyListeners(); // instant display — no spinner
         }
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('Error loading disk cache: $e');
+      }
     }
 
     // Only show the loading spinner when we have absolutely nothing to display
@@ -160,7 +162,9 @@ class WorkoutProvider extends ChangeNotifier {
             _isOffline = true;
             debugPrint('📦 Workouts cargados desde caché local (modo offline)');
           }
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('Error loading offline cache: $e');
+        }
       } else {
         _isOffline = true;
       }

@@ -67,13 +67,17 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
       // Non-blocking cache lookup — returns instantly if not cached.
       FileInfo? cacheInfo;
       try {
-        cacheInfo = await DefaultCacheManager().getFileFromCache(widget.videoUrl);
-      } catch (_) {}
+        cacheInfo =
+            await DefaultCacheManager().getFileFromCache(widget.videoUrl);
+      } catch (e) {
+        debugPrint('Error checking video cache: $e');
+      }
 
       if (cacheInfo != null) {
         _controller = VideoPlayerController.file(cacheInfo.file);
       } else {
-        _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+        _controller =
+            VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
         // Download in background so next open is instant
         DefaultCacheManager().downloadFile(widget.videoUrl).ignore();
       }

@@ -139,7 +139,9 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
           .eq('exercise_name', exercise.name)
           .order('logged_at', ascending: false)
           .limit(40);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Error loading exercise history: $e');
+    }
 
     if (!mounted) return;
 

@@ -313,6 +313,10 @@ class UserProvider extends ChangeNotifier {
 
   Future<void> deleteUser(String userId) async {
     try {
+      // Remover de la lista local inmediatamente para UX responsiva
+      _users.removeWhere((u) => u.id == userId);
+      notifyListeners();
+
       // Esto también eliminará el usuario de auth.users debido a CASCADE
       await SupabaseConfig.client.from('users').delete().eq('id', userId);
 

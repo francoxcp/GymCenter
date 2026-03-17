@@ -1066,7 +1066,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           .eq('exercise_index', exerciseIndex)
           .order('logged_at', ascending: false)
           .limit(30);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Error loading set history: $e');
+    }
 
     if (!mounted) return;
 

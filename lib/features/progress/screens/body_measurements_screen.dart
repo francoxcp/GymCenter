@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../core/utils/unit_converter.dart';
+import '../../settings/providers/preferences_provider.dart';
 import '../providers/body_measurement_provider.dart';
 import '../models/body_measurement.dart';
 import '../../../shared/widgets/primary_button.dart';
@@ -30,7 +31,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
   Widget build(BuildContext context) {
     final measurementProvider = Provider.of<BodyMeasurementProvider>(context);
     final measurements = measurementProvider.measurements;
-    const units = 'metric';
+    final prefsProvider =
+        Provider.of<PreferencesProvider>(context, listen: false);
+    final units =
+        (prefsProvider.preferences?.language == 'en') ? 'imperial' : 'metric';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -56,10 +60,9 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
           : measurements.isEmpty
               ? _buildEmptyState()
               : RefreshIndicator(
-                  onRefresh: () =>
-                      Provider.of<BodyMeasurementProvider>(context,
-                              listen: false)
-                          .loadMeasurements(),
+                  onRefresh: () => Provider.of<BodyMeasurementProvider>(context,
+                          listen: false)
+                      .loadMeasurements(),
                   color: AppColors.primary,
                   backgroundColor: AppColors.cardBackground,
                   child: ListView(
@@ -77,7 +80,8 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      ...measurements.map((m) => _buildMeasurementCard(m, units)),
+                      ...measurements
+                          .map((m) => _buildMeasurementCard(m, units)),
                     ],
                   ),
                 ),
@@ -108,13 +112,13 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-              AppL10n.of(context).currentMeasurements,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+            AppL10n.of(context).currentMeasurements,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
+          ),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -190,18 +194,26 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       crossAxisSpacing: 12,
       childAspectRatio: 0.82,
       children: [
-        _buildMeasurementTile('Pecho', measurement.chest, Icons.fitness_center, units),
-        _buildMeasurementTile('Bícep Izq.', measurement.effectiveBicepsLeft, Icons.sports_gymnastics, units),
-        _buildMeasurementTile('Bícep Der.', measurement.effectiveBicepsRight, Icons.sports_gymnastics, units),
-        _buildMeasurementTile('Muslo Izq.', measurement.effectiveThighLeft, Icons.directions_run, units),
-        _buildMeasurementTile('Muslo Der.', measurement.effectiveThighRight, Icons.directions_run, units),
-        _buildMeasurementTile('Cadera', measurement.hips, Icons.accessibility_new, units),
-        _buildMeasurementTile('Altura', measurement.height, Icons.height, units),
+        _buildMeasurementTile(
+            'Pecho', measurement.chest, Icons.fitness_center, units),
+        _buildMeasurementTile('Bícep Izq.', measurement.effectiveBicepsLeft,
+            Icons.sports_gymnastics, units),
+        _buildMeasurementTile('Bícep Der.', measurement.effectiveBicepsRight,
+            Icons.sports_gymnastics, units),
+        _buildMeasurementTile('Muslo Izq.', measurement.effectiveThighLeft,
+            Icons.directions_run, units),
+        _buildMeasurementTile('Muslo Der.', measurement.effectiveThighRight,
+            Icons.directions_run, units),
+        _buildMeasurementTile(
+            'Cadera', measurement.hips, Icons.accessibility_new, units),
+        _buildMeasurementTile(
+            'Altura', measurement.height, Icons.height, units),
       ],
     );
   }
 
-  Widget _buildMeasurementTile(String label, double? value, IconData icon, String units) {
+  Widget _buildMeasurementTile(
+      String label, double? value, IconData icon, String units) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
       decoration: BoxDecoration(
@@ -286,8 +298,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                 children: [
                   Text(
                     measurement.weight != null
-                        ? UnitConverter.formatWeight(
-                            measurement.weight!, units)
+                        ? UnitConverter.formatWeight(measurement.weight!, units)
                         : '--',
                     style: const TextStyle(
                       fontSize: 18,
@@ -527,10 +538,13 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                           chest: double.tryParse(chestController.text),
                           waist: double.tryParse(waistController.text),
                           hips: double.tryParse(hipsController.text),
-                          bicepsLeft: double.tryParse(bicepsLeftController.text),
-                          bicepsRight: double.tryParse(bicepsRightController.text),
+                          bicepsLeft:
+                              double.tryParse(bicepsLeftController.text),
+                          bicepsRight:
+                              double.tryParse(bicepsRightController.text),
                           thighLeft: double.tryParse(thighLeftController.text),
-                          thighRight: double.tryParse(thighRightController.text),
+                          thighRight:
+                              double.tryParse(thighRightController.text),
                           notes: notesController.text.isEmpty
                               ? null
                               : notesController.text,

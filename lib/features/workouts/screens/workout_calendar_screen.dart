@@ -1,8 +1,12 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../providers/workout_session_provider.dart';
+import '../providers/workout_provider.dart';
 
 class WorkoutCalendarScreen extends StatefulWidget {
   const WorkoutCalendarScreen({super.key});
@@ -15,36 +19,55 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+  bool _isLoading = false;
 
-  // Datos de ejemplo
-  final Map<DateTime, List<WorkoutEvent>> _workoutEvents = {};
+  Map<DateTime, List<WorkoutEvent>> _workoutEvents = {};
 
   @override
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
-    _loadWorkoutEvents();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadSessions());
   }
 
-  void _loadWorkoutEvents() {
-    final now = DateTime.now();
+  Future<void> _loadSessions() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
 
-    // Datos de ejemplo - conectar con WorkoutSessionProvider para datos reales
-    _workoutEvents[DateTime(now.year, now.month, now.day)] = [
-      WorkoutEvent('Entrenamiento completo', true, 45),
-    ];
-    _workoutEvents[DateTime(now.year, now.month, now.day - 1)] = [
-      WorkoutEvent('Piernas y glúteos', true, 50),
-    ];
-    _workoutEvents[DateTime(now.year, now.month, now.day - 2)] = [
-      WorkoutEvent('Tren superior', true, 42),
-    ];
-    _workoutEvents[DateTime(now.year, now.month, now.day - 4)] = [
-      WorkoutEvent('Cardio intenso', true, 30),
-    ];
-    _workoutEvents[DateTime(now.year, now.month, now.day + 1)] = [
-      WorkoutEvent('Entrenamiento completo', false, 0),
-    ];
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final sessionProvider =
+        Provider.of<WorkoutSessionProvider>(context, listen: false);
+    final workoutProvider =
+        Provider.of<WorkoutProvider>(context, listen: false);
+
+    final userId = authProvider.currentUser?.id;
+    if (userId != null) {
+      await sessionProvider.loadSessions(userId);
+    }
+
+    if (!mounted) return;
+
+    final sessions = sessionProvider.sessions;
+    final workouts = workoutProvider.workouts;
+
+    // Construir mapa de eventos por día normalizado (sin hora)
+    final Map<DateTime, List<WorkoutEvent>> events = {};
+    for (final session in sessions) {
+      final key =
+          DateTime(session.date.year, session.date.month, session.date.day);
+      // Buscar el nombre del workout; si no está cargado, usar ID corto
+      final workout =
+          workouts.where((w) => w.id == session.workoutId).firstOrNull;
+      final name = workout?.name ?? 'Entrenamiento';
+      events.putIfAbsent(key, () => []).add(
+            WorkoutEvent(name, true, session.durationMinutes),
+          );
+    }
+
+    setState(() {
+      _workoutEvents = events;
+      _isLoading = false;
+    });
   }
 
   List<WorkoutEvent> _getEventsForDay(DateTime day) {
@@ -62,6 +85,24 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
         ),
         title: Text(AppL10n.of(context).workoutCalendar),
         actions: [
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.only(right: 16),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _loadSessions,
+              tooltip: 'Actualizar',
+            ),
           IconButton(
             icon: const Icon(Icons.today),
             onPressed: () {
@@ -148,7 +189,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
                 });
               },
               onPageChanged: (focusedDay) {
-                _focusedDay = focusedDay;
+                setState(() => _focusedDay = focusedDay);
               },
             ),
           ),
@@ -166,16 +207,19 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
   }
 
   Widget _buildMonthStats() {
-    final now = DateTime.now();
-    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+    final focusedMonth = _focusedDay.month;
+    final focusedYear = _focusedDay.year;
+    final daysInMonth = DateTime(focusedYear, focusedMonth + 1, 0).day;
     final completedDays = _workoutEvents.entries
         .where((entry) =>
-            entry.key.month == now.month &&
+            entry.key.year == focusedYear &&
+            entry.key.month == focusedMonth &&
             entry.value.any((event) => event.isCompleted))
         .length;
 
     final totalMinutes = _workoutEvents.entries
-        .where((entry) => entry.key.month == now.month)
+        .where((entry) =>
+            entry.key.year == focusedYear && entry.key.month == focusedMonth)
         .expand((entry) => entry.value)
         .where((event) => event.isCompleted)
         .fold<int>(0, (sum, event) => sum + event.durationMinutes);

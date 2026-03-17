@@ -42,8 +42,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
         _sessions = sessionProvider.sessions;
       });
     } else {
-      // Datos de ejemplo si no hay usuario
-      _sessions = _getExampleSessions();
+      setState(() => _sessions = []);
     }
 
     setState(() => _isLoading = false);
@@ -243,10 +242,10 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
   }
 
   Widget _buildSessionCard(WorkoutSession session) {
-    final totalSets = session.exercisesCompleted.fold<int>(
-        0, (sum, e) => sum + e.setsCompleted.length);
-    final doneSets = session.exercisesCompleted.fold<int>(
-        0, (sum, e) => sum + e.setsCompleted.where((b) => b).length);
+    final totalSets = session.exercisesCompleted
+        .fold<int>(0, (sum, e) => sum + e.setsCompleted.length);
+    final doneSets = session.exercisesCompleted
+        .fold<int>(0, (sum, e) => sum + e.setsCompleted.where((b) => b).length);
     final completionRate = totalSets == 0
         ? (session.isCompleted ? 1.0 : 0.0)
         : doneSets / totalSets;
@@ -312,7 +311,8 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                      const Icon(Icons.check_circle,
+                          color: Colors.green, size: 16),
                       const SizedBox(width: 4),
                       Text(
                         AppL10n.of(context).completedLabel,
@@ -337,7 +337,8 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
               const SizedBox(width: 20),
               _buildSessionDetail(
                 Icons.repeat,
-                AppL10n.of(context).exercisesCount(session.exercisesCompleted.length),
+                AppL10n.of(context)
+                    .exercisesCount(session.exercisesCompleted.length),
               ),
             ],
           ),
@@ -361,7 +362,8 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
           Text(
             totalSets > 0
                 ? '$doneSets/$totalSets series · ${(completionRate * 100).toInt()}% completado'
-                : AppL10n.of(context).percentCompleted((completionRate * 100).toInt()),
+                : AppL10n.of(context)
+                    .percentCompleted((completionRate * 100).toInt()),
             style: const TextStyle(
               fontSize: 12,
               color: AppColors.textSecondary,
@@ -444,55 +446,5 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
         ),
       ),
     );
-  }
-
-  List<WorkoutSession> _getExampleSessions() {
-    final now = DateTime.now();
-    return [
-      WorkoutSession(
-        id: '1',
-        userId: 'user1',
-        workoutId: 'workout1',
-        date: now.subtract(const Duration(hours: 2)),
-        durationMinutes: 45,
-        exercisesCompleted: [
-          ExerciseProgress(
-              exerciseId: 'ex1', setsCompleted: [true, true, true]),
-          ExerciseProgress(
-              exerciseId: 'ex2', setsCompleted: [true, true, true]),
-          ExerciseProgress(
-              exerciseId: 'ex3', setsCompleted: [true, true, false]),
-        ],
-        isCompleted: true,
-      ),
-      WorkoutSession(
-        id: '2',
-        userId: 'user1',
-        workoutId: 'workout1',
-        date: now.subtract(const Duration(days: 1)),
-        durationMinutes: 38,
-        exercisesCompleted: [
-          ExerciseProgress(
-              exerciseId: 'ex1', setsCompleted: [true, true, true]),
-          ExerciseProgress(
-              exerciseId: 'ex2', setsCompleted: [true, true, true]),
-        ],
-        isCompleted: true,
-      ),
-      WorkoutSession(
-        id: '3',
-        userId: 'user1',
-        workoutId: 'workout2',
-        date: now.subtract(const Duration(days: 3)),
-        durationMinutes: 52,
-        exercisesCompleted: [
-          ExerciseProgress(
-              exerciseId: 'ex4', setsCompleted: [true, true, true, true]),
-          ExerciseProgress(
-              exerciseId: 'ex5', setsCompleted: [true, true, true]),
-        ],
-        isCompleted: true,
-      ),
-    ];
   }
 }

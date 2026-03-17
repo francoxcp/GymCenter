@@ -18,6 +18,12 @@ class ProgressScreen extends StatefulWidget {
 class _ProgressScreenState extends State<ProgressScreen> {
   String _selectedPeriod = 'Semana';
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshData());
+  }
+
   Future<void> _refreshData() async {
     final measurementProvider =
         Provider.of<BodyMeasurementProvider>(context, listen: false);
@@ -136,10 +142,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
       ),
       child: Column(
         children: [
-              Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.local_fire_department, color: Colors.orange, size: 40),
+              const Icon(Icons.local_fire_department,
+                  color: Colors.orange, size: 40),
               const SizedBox(width: 12),
               Text(
                 AppL10n.of(context).currentStreakLabel,
@@ -168,25 +175,23 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          Builder(
-            builder: (context) {
-              final l10n = AppL10n.of(context);
-              return Text(
-                currentStreak == 0
-                    ? l10n.startStreakToday
-                    : currentStreak < 7
-                        ? l10n.keepGoing
-                        : currentStreak < 30
-                            ? l10n.incredibleStreak
-                            : l10n.unstoppableStreak,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.orange,
-                  fontWeight: FontWeight.bold,
-                ),
-              );
-            }
-          ),
+          Builder(builder: (context) {
+            final l10n = AppL10n.of(context);
+            return Text(
+              currentStreak == 0
+                  ? l10n.startStreakToday
+                  : currentStreak < 7
+                      ? l10n.keepGoing
+                      : currentStreak < 30
+                          ? l10n.incredibleStreak
+                          : l10n.unstoppableStreak,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.orange,
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -367,7 +372,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                weightData.isEmpty ? AppL10n.of(context).recentActivityLabel : AppL10n.of(context).weightProgressLabel,
+                weightData.isEmpty
+                    ? AppL10n.of(context).recentActivityLabel
+                    : AppL10n.of(context).weightProgressLabel,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

@@ -96,190 +96,228 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
     final currentUser = authProvider.currentUser;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-        title: const Text('Editar perfil'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Foto de perfil
-              Center(
-                child: Stack(
-                  children: [
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.cardBackground,
-                        border: Border.all(color: AppColors.primary, width: 3),
-                      ),
-                      child: currentUser?.photoUrl != null
-                          ? ClipOval(
-                              child: Image.network(
-                                currentUser!.photoUrl!,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : const Icon(
-                              Icons.person,
-                              size: 60,
-                              color: AppColors.textSecondary,
-                            ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: GestureDetector(
-                        onTap: _handleProfilePhotoChange,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: _isUploadingPhoto
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(
-                                  Icons.camera_alt,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
+        if (didPop) return;
+
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final user = authProvider.currentUser;
+        final hasChanges = _nameController.text != (user?.name ?? '') ||
+            _selectedLevel != (user?.level ?? 'Principiante');
+
+        if (!hasChanges) {
+          if (context.mounted) context.pop();
+          return;
+        }
+
+        final shouldPop = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('¿Descartar cambios?'),
+            content: const Text(
+              '¿Estás seguro de que quieres salir sin guardar los cambios?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
               ),
-              const SizedBox(height: 32),
-
-              // Información personal
-              const Text(
-                'Información personal',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              CustomTextField(
-                controller: _nameController,
-                hintText: 'Nombre completo',
-                prefixIcon: Icons.person_outline,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Ingresa tu nombre';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              Text(
-                'Email: ${currentUser?.email}',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Nivel de entrenamiento
-              const Text(
-                'Nivel de entrenamiento',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              _buildLevelSelector(),
-              const SizedBox(height: 16),
-
-              // Tip: medidas corporales disponibles en sección aparte
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                      color: AppColors.primary.withOpacity(0.25), width: 1),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.straighten,
-                        color: AppColors.primary, size: 18),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Registra tu peso, altura y medidas en la sección "Medidas Corporales".',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Botón cambiar contraseña
-              OutlinedButton(
-                onPressed: () => context.push('/change-password'),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.primary),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.lock_outline, color: AppColors.primary),
-                    SizedBox(width: 8),
-                    Text(
-                      'Cambiar contraseña',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Botón guardar
-              PrimaryButton(
-                text: 'Guardar cambios',
-                onPressed: _isLoading ? null : _saveProfile,
-                isLoading: _isLoading,
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Salir'),
               ),
             ],
+          ),
+        );
+
+        if (shouldPop == true && context.mounted) {
+          context.pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('Editar perfil'),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Foto de perfil
+                Center(
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.cardBackground,
+                          border:
+                              Border.all(color: AppColors.primary, width: 3),
+                        ),
+                        child: currentUser?.photoUrl != null
+                            ? ClipOval(
+                                child: Image.network(
+                                  currentUser!.photoUrl!,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.person,
+                                size: 60,
+                                color: AppColors.textSecondary,
+                              ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: GestureDetector(
+                          onTap: _handleProfilePhotoChange,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              color: AppColors.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: _isUploadingPhoto
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Información personal
+                const Text(
+                  'Información personal',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                CustomTextField(
+                  controller: _nameController,
+                  hintText: 'Nombre completo',
+                  prefixIcon: Icons.person_outline,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Ingresa tu nombre';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                Text(
+                  'Email: ${currentUser?.email}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Nivel de entrenamiento
+                const Text(
+                  'Nivel de entrenamiento',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                _buildLevelSelector(),
+                const SizedBox(height: 16),
+
+                // Tip: medidas corporales disponibles en sección aparte
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: AppColors.primary.withOpacity(0.25), width: 1),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.straighten,
+                          color: AppColors.primary, size: 18),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Registra tu peso, altura y medidas en la sección "Medidas Corporales".',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Botón cambiar contraseña
+                OutlinedButton(
+                  onPressed: () => context.push('/change-password'),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.primary),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.lock_outline, color: AppColors.primary),
+                      SizedBox(width: 8),
+                      Text(
+                        'Cambiar contraseña',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Botón guardar
+                PrimaryButton(
+                  text: 'Guardar cambios',
+                  onPressed: _isLoading ? null : _saveProfile,
+                  isLoading: _isLoading,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -412,8 +450,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         // Guardar URL en la tabla users
         await SupabaseConfig.client
             .from('users')
-            .update({'photo_url': photoUrl})
-            .eq('id', userId);
+            .update({'photo_url': photoUrl}).eq('id', userId);
 
         // Actualizar estado local
         authProvider.updateUser(

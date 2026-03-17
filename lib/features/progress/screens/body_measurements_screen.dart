@@ -437,157 +437,212 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
     final thighRightController = TextEditingController();
     final notesController = TextEditingController();
 
+    bool hasContent() {
+      return weightController.text.isNotEmpty ||
+          heightController.text.isNotEmpty ||
+          chestController.text.isNotEmpty ||
+          waistController.text.isNotEmpty ||
+          hipsController.text.isNotEmpty ||
+          bicepsLeftController.text.isNotEmpty ||
+          bicepsRightController.text.isNotEmpty ||
+          thighLeftController.text.isNotEmpty ||
+          thighRightController.text.isNotEmpty ||
+          notesController.text.isNotEmpty;
+    }
+
+    Future<bool> confirmDiscard(BuildContext ctx) async {
+      if (!hasContent()) return true;
+      final shouldPop = await showDialog<bool>(
+        context: ctx,
+        builder: (context) => AlertDialog(
+          title: const Text('¿Descartar medidas?'),
+          content: const Text(
+            '¿Estás seguro de que quieres salir sin guardar las medidas?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Descartar'),
+            ),
+          ],
+        ),
+      );
+      return shouldPop == true;
+    }
+
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        backgroundColor: AppColors.cardBackground,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Nueva Medida',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 20),
-              _buildMeasurementField(
-                  'Peso (kg)', weightController, Icons.monitor_weight),
-              _buildMeasurementField(
-                  'Altura (cm)', heightController, Icons.height),
-              _buildMeasurementField(
-                  'Pecho (cm)', chestController, Icons.fitness_center),
-              _buildMeasurementField(
-                  'Cintura (cm)', waistController, Icons.straighten),
-              _buildMeasurementField(
-                  'Cadera (cm)', hipsController, Icons.accessibility_new),
-              // Bíceps lado a lado
-              _buildPairedFields(
-                'Bícep Izquierdo (cm)',
-                bicepsLeftController,
-                'Bícep Derecho (cm)',
-                bicepsRightController,
-                Icons.sports_gymnastics,
-              ),
-              // Muslos lado a lado
-              _buildPairedFields(
-                'Muslo Izquierdo (cm)',
-                thighLeftController,
-                'Muslo Derecho (cm)',
-                thighRightController,
-                Icons.directions_run,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: notesController,
-                style: const TextStyle(color: Colors.white),
-                maxLines: 3,
-                decoration: InputDecoration(
-                  hintText: 'Notas (opcional)',
-                  hintStyle: const TextStyle(color: AppColors.textSecondary),
-                  filled: true,
-                  fillColor: AppColors.background,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+      barrierDismissible: false,
+      builder: (context) => PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) async {
+          if (didPop) return;
+          if (await confirmDiscard(context)) {
+            if (context.mounted) Navigator.of(context).pop();
+          }
+        },
+        child: Dialog(
+          backgroundColor: AppColors.cardBackground,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Nueva Medida',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: AppColors.textSecondary),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Cancelar',
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
+                const SizedBox(height: 20),
+                _buildMeasurementField(
+                    'Peso (kg)', weightController, Icons.monitor_weight),
+                _buildMeasurementField(
+                    'Altura (cm)', heightController, Icons.height),
+                _buildMeasurementField(
+                    'Pecho (cm)', chestController, Icons.fitness_center),
+                _buildMeasurementField(
+                    'Cintura (cm)', waistController, Icons.straighten),
+                _buildMeasurementField(
+                    'Cadera (cm)', hipsController, Icons.accessibility_new),
+                // Bíceps lado a lado
+                _buildPairedFields(
+                  'Bícep Izquierdo (cm)',
+                  bicepsLeftController,
+                  'Bícep Derecho (cm)',
+                  bicepsRightController,
+                  Icons.sports_gymnastics,
+                ),
+                // Muslos lado a lado
+                _buildPairedFields(
+                  'Muslo Izquierdo (cm)',
+                  thighLeftController,
+                  'Muslo Derecho (cm)',
+                  thighRightController,
+                  Icons.directions_run,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: notesController,
+                  style: const TextStyle(color: Colors.white),
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: 'Notas (opcional)',
+                    hintStyle: const TextStyle(color: AppColors.textSecondary),
+                    filled: true,
+                    fillColor: AppColors.background,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        final measurementProvider =
-                            Provider.of<BodyMeasurementProvider>(
-                          context,
-                          listen: false,
-                        );
-
-                        // Crear nueva medida
-                        final newMeasurement = BodyMeasurement(
-                          id: '',
-                          userId: '',
-                          date: DateTime.now(),
-                          weight: double.tryParse(weightController.text),
-                          height: double.tryParse(heightController.text),
-                          chest: double.tryParse(chestController.text),
-                          waist: double.tryParse(waistController.text),
-                          hips: double.tryParse(hipsController.text),
-                          bicepsLeft:
-                              double.tryParse(bicepsLeftController.text),
-                          bicepsRight:
-                              double.tryParse(bicepsRightController.text),
-                          thighLeft: double.tryParse(thighLeftController.text),
-                          thighRight:
-                              double.tryParse(thighRightController.text),
-                          notes: notesController.text.isEmpty
-                              ? null
-                              : notesController.text,
-                        );
-
-                        final success = await measurementProvider
-                            .addMeasurement(newMeasurement);
-
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                success
-                                    ? 'Medida guardada correctamente'
-                                    : 'Error al guardar medida',
-                              ),
-                              backgroundColor:
-                                  success ? Colors.green : AppColors.error,
-                            ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () async {
+                          if (await confirmDiscard(context)) {
+                            if (context.mounted) Navigator.of(context).pop();
+                          }
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          side:
+                              const BorderSide(color: AppColors.textSecondary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Cancelar',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final measurementProvider =
+                              Provider.of<BodyMeasurementProvider>(
+                            context,
+                            listen: false,
                           );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+
+                          // Crear nueva medida
+                          final newMeasurement = BodyMeasurement(
+                            id: '',
+                            userId: '',
+                            date: DateTime.now(),
+                            weight: double.tryParse(weightController.text),
+                            height: double.tryParse(heightController.text),
+                            chest: double.tryParse(chestController.text),
+                            waist: double.tryParse(waistController.text),
+                            hips: double.tryParse(hipsController.text),
+                            bicepsLeft:
+                                double.tryParse(bicepsLeftController.text),
+                            bicepsRight:
+                                double.tryParse(bicepsRightController.text),
+                            thighLeft:
+                                double.tryParse(thighLeftController.text),
+                            thighRight:
+                                double.tryParse(thighRightController.text),
+                            notes: notesController.text.isEmpty
+                                ? null
+                                : notesController.text,
+                          );
+
+                          final success = await measurementProvider
+                              .addMeasurement(newMeasurement);
+
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  success
+                                      ? 'Medida guardada correctamente'
+                                      : 'Error al guardar medida',
+                                ),
+                                backgroundColor:
+                                    success ? Colors.green : AppColors.error,
+                              ),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'Guardar',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                        child: const Text(
+                          'Guardar',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

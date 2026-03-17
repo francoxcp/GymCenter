@@ -759,229 +759,237 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Agregar Ejercicio'),
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre del ejercicio',
-                  hintText: 'Ej: Press de banca',
-                ),
-                validator: (value) =>
-                    value?.trim().isEmpty ?? true ? 'Requerido' : null,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _setsController,
-                      decoration: const InputDecoration(labelText: 'Series'),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Requerido';
-                        }
-                        if (int.tryParse(value) == null) {
-                          return 'Número inválido';
-                        }
-                        return null;
-                      },
-                    ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _handleCancel();
+      },
+      child: AlertDialog(
+        title: const Text('Agregar Ejercicio'),
+        content: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nombre del ejercicio',
+                    hintText: 'Ej: Press de banca',
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _repsController,
-                      decoration: const InputDecoration(labelText: 'Reps'),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Requerido';
-                        }
-                        if (int.tryParse(value) == null) {
-                          return 'Número inválido';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _restController,
-                decoration: const InputDecoration(
-                  labelText: 'Descanso (segundos)',
+                  validator: (value) =>
+                      value?.trim().isEmpty ?? true ? 'Requerido' : null,
                 ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Requerido';
-                  if (int.tryParse(value) == null) return 'Número inválido';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _weightController,
-                decoration: const InputDecoration(
-                  labelText: 'Peso (lbs)',
-                  hintText: 'Ej: 20  —  dejar vacío si es peso corporal',
-                  suffixText: 'kg',
-                ),
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                validator: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    if (double.tryParse(value) == null) {
-                      return 'Número inválido';
-                    }
-                  }
-                  return null;
-                },
-              ),
-
-              // Video upload section - Solo para admins
-              if (widget.isAdmin) ...[
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 8),
-                const Row(
+                const SizedBox(height: 12),
+                Row(
                   children: [
-                    Icon(Icons.videocam, color: AppColors.primary),
-                    SizedBox(width: 8),
-                    Text(
-                      'Video del ejercicio (opcional)',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                    Expanded(
+                      child: TextFormField(
+                        controller: _setsController,
+                        decoration: const InputDecoration(labelText: 'Series'),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Requerido';
+                          }
+                          if (int.tryParse(value) == null) {
+                            return 'Número inválido';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _repsController,
+                        decoration: const InputDecoration(labelText: 'Reps'),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Requerido';
+                          }
+                          if (int.tryParse(value) == null) {
+                            return 'Número inválido';
+                          }
+                          return null;
+                        },
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                if (_videoFile == null && _videoUrl == null)
-                  OutlinedButton.icon(
-                    onPressed: _pickVideo,
-                    icon: const Icon(Icons.upload_file),
-                    label: const Text('Seleccionar video'),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 44),
-                    ),
-                  )
-                else if (_videoFile != null && _videoUrl == null)
-                  Column(
+                TextFormField(
+                  controller: _restController,
+                  decoration: const InputDecoration(
+                    labelText: 'Descanso (segundos)',
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Requerido';
+                    if (int.tryParse(value) == null) return 'Número inválido';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _weightController,
+                  decoration: const InputDecoration(
+                    labelText: 'Peso (lbs)',
+                    hintText: 'Ej: 20  —  dejar vacío si es peso corporal',
+                    suffixText: 'kg',
+                  ),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  validator: (value) {
+                    if (value != null && value.isNotEmpty) {
+                      if (double.tryParse(value) == null) {
+                        return 'Número inválido';
+                      }
+                    }
+                    return null;
+                  },
+                ),
+
+                // Video upload section - Solo para admins
+                if (widget.isAdmin) ...[
+                  const SizedBox(height: 16),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  const Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.primary),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.video_file,
-                                color: AppColors.primary),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _videoFile!.name,
-                                style: const TextStyle(fontSize: 12),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.close, size: 20),
-                              onPressed: () {
-                                setState(() {
-                                  _videoFile = null;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ElevatedButton.icon(
-                        onPressed: _isUploadingVideo ? null : _uploadVideo,
-                        icon: _isUploadingVideo
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.cloud_upload),
-                        label: Text(
-                            _isUploadingVideo ? 'Subiendo...' : 'Subir Video'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.black,
-                          minimumSize: const Size(double.infinity, 44),
+                      Icon(Icons.videocam, color: AppColors.primary),
+                      SizedBox(width: 8),
+                      Text(
+                        'Video del ejercicio (opcional)',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
                         ),
                       ),
                     ],
-                  )
-                else if (_videoUrl != null)
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.success.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.success),
-                    ),
-                    child: Row(
+                  ),
+                  const SizedBox(height: 12),
+                  if (_videoFile == null && _videoUrl == null)
+                    OutlinedButton.icon(
+                      onPressed: _pickVideo,
+                      icon: const Icon(Icons.upload_file),
+                      label: const Text('Seleccionar video'),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 44),
+                      ),
+                    )
+                  else if (_videoFile != null && _videoUrl == null)
+                    Column(
                       children: [
-                        const Icon(Icons.check_circle,
-                            color: AppColors.success),
-                        const SizedBox(width: 8),
-                        const Expanded(
-                          child: Text(
-                            'Video subido exitosamente',
-                            style: TextStyle(
-                              color: AppColors.success,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.primary),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.video_file,
+                                  color: AppColors.primary),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _videoFile!.name,
+                                  style: const TextStyle(fontSize: 12),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.close, size: 20),
+                                onPressed: () {
+                                  setState(() {
+                                    _videoFile = null;
+                                  });
+                                },
+                              ),
+                            ],
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.close, size: 20),
-                          onPressed: () {
-                            setState(() {
-                              _videoFile = null;
-                              _videoUrl = null;
-                            });
-                          },
+                        const SizedBox(height: 8),
+                        ElevatedButton.icon(
+                          onPressed: _isUploadingVideo ? null : _uploadVideo,
+                          icon: _isUploadingVideo
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.cloud_upload),
+                          label: Text(_isUploadingVideo
+                              ? 'Subiendo...'
+                              : 'Subir Video'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.black,
+                            minimumSize: const Size(double.infinity, 44),
+                          ),
                         ),
                       ],
+                    )
+                  else if (_videoUrl != null)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.success.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.success),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle,
+                              color: AppColors.success),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text(
+                              'Video subido exitosamente',
+                              style: TextStyle(
+                                color: AppColors.success,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close, size: 20),
+                            onPressed: () {
+                              setState(() {
+                                _videoFile = null;
+                                _videoUrl = null;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
+        actions: [
+          TextButton(
+            onPressed: _handleCancel,
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: _save,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.black,
+            ),
+            child: const Text('Agregar'),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-          onPressed: _handleCancel,
-          child: const Text('Cancelar'),
-        ),
-        ElevatedButton(
-          onPressed: _save,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.black,
-          ),
-          child: const Text('Agregar'),
-        ),
-      ],
     );
   }
 }

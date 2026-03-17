@@ -114,9 +114,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: Theme(
                           data: Theme.of(context).copyWith(
                             colorScheme: Theme.of(context).colorScheme.copyWith(
-                              tertiaryContainer: AppColors.primary,
-                              onTertiaryContainer: Colors.black,
-                            ),
+                                  tertiaryContainer: AppColors.primary,
+                                  onTertiaryContainer: Colors.black,
+                                ),
                           ),
                           child: child!,
                         ),
@@ -126,12 +126,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   if (picked != null) {
                     await preferencesProvider.updateWorkoutReminderTime(picked);
                     if (context.mounted) {
-                      final period = picked.period == DayPeriod.am ? 'AM' : 'PM';
-                      final h = picked.hourOfPeriod == 0 ? 12 : picked.hourOfPeriod;
+                      final period =
+                          picked.period == DayPeriod.am ? 'AM' : 'PM';
+                      final h =
+                          picked.hourOfPeriod == 0 ? 12 : picked.hourOfPeriod;
                       final m = picked.minute.toString().padLeft(2, '0');
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Recordatorio programado para las $h:$m $period todos los días'),
+                          content: Text(
+                              'Recordatorio programado para las $h:$m $period todos los días'),
                           duration: const Duration(seconds: 3),
                         ),
                       );
@@ -162,7 +165,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 if (!granted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Permiso de notificaciones denegado. Actiúvalo desde Ajustes del sistema.'),
+                      content: Text(
+                          'Permiso de notificaciones denegado. Actiúvalo desde Ajustes del sistema.'),
                       duration: Duration(seconds: 3),
                     ),
                   );
@@ -171,7 +175,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 await svc.showNotification(
                   id: 999,
                   title: '💪 Hora de entrenar',
-                  body: '¡No olvides tu rutina de hoy! Tu cuerpo te lo agradecerá.',
+                  body:
+                      '¡No olvides tu rutina de hoy! Tu cuerpo te lo agradecerá.',
                   payload: 'workout_reminder',
                 );
                 if (context.mounted) {
@@ -193,8 +198,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: l10n.appLanguage,
             subtitle: prefs.language == 'es' ? 'Español' : 'English',
             icon: Icons.language,
-            onTap: () =>
-                _showLanguageSelector(preferencesProvider, prefs.language, l10n),
+            onTap: () => _showLanguageSelector(
+                preferencesProvider, prefs.language, l10n),
           ),
           const SizedBox(height: 24),
 
@@ -580,133 +585,173 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          backgroundColor: AppColors.cardBackground,
-          title: Text(l10n.changePasswordTitle),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: currentPasswordController,
-                  obscureText: obscureCurrent,
-                  style: const TextStyle(color: AppColors.textPrimary),
-                  decoration: InputDecoration(
-                    labelText: l10n.currentPassword,
-                    labelStyle: const TextStyle(color: AppColors.textSecondary),
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(obscureCurrent
-                          ? Icons.visibility_off
-                          : Icons.visibility),
-                      onPressed: () =>
-                          setState(() => obscureCurrent = !obscureCurrent),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+      barrierDismissible: false,
+      builder: (context) => PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop) return;
+          final hasContent = currentPasswordController.text.isNotEmpty ||
+              newPasswordController.text.isNotEmpty ||
+              confirmPasswordController.text.isNotEmpty;
+          if (!hasContent) {
+            Navigator.of(context).pop();
+            return;
+          }
+          showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('¿Descartar cambios?'),
+              content: const Text('¿Salir sin cambiar la contraseña?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Cancelar'),
                 ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: newPasswordController,
-                  obscureText: obscureNew,
-                  style: const TextStyle(color: AppColors.textPrimary),
-                  decoration: InputDecoration(
-                    labelText: l10n.newPassword,
-                    labelStyle: const TextStyle(color: AppColors.textSecondary),
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                          obscureNew ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () => setState(() => obscureNew = !obscureNew),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: confirmPasswordController,
-                  obscureText: obscureConfirm,
-                  style: const TextStyle(color: AppColors.textPrimary),
-                  decoration: InputDecoration(
-                    labelText: l10n.confirmPassword,
-                    labelStyle: const TextStyle(color: AppColors.textSecondary),
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                      icon: Icon(obscureConfirm
-                          ? Icons.visibility_off
-                          : Icons.visibility),
-                      onPressed: () =>
-                          setState(() => obscureConfirm = !obscureConfirm),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.passwordHint,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                  ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  child: const Text('Salir'),
                 ),
               ],
             ),
+          ).then((shouldPop) {
+            if (shouldPop == true && context.mounted) {
+              Navigator.of(context).pop();
+            }
+          });
+        },
+        child: StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            backgroundColor: AppColors.cardBackground,
+            title: Text(l10n.changePasswordTitle),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: currentPasswordController,
+                    obscureText: obscureCurrent,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                    decoration: InputDecoration(
+                      labelText: l10n.currentPassword,
+                      labelStyle:
+                          const TextStyle(color: AppColors.textSecondary),
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(obscureCurrent
+                            ? Icons.visibility_off
+                            : Icons.visibility),
+                        onPressed: () =>
+                            setState(() => obscureCurrent = !obscureCurrent),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: newPasswordController,
+                    obscureText: obscureNew,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                    decoration: InputDecoration(
+                      labelText: l10n.newPassword,
+                      labelStyle:
+                          const TextStyle(color: AppColors.textSecondary),
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(obscureNew
+                            ? Icons.visibility_off
+                            : Icons.visibility),
+                        onPressed: () =>
+                            setState(() => obscureNew = !obscureNew),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: confirmPasswordController,
+                    obscureText: obscureConfirm,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                    decoration: InputDecoration(
+                      labelText: l10n.confirmPassword,
+                      labelStyle:
+                          const TextStyle(color: AppColors.textSecondary),
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(obscureConfirm
+                            ? Icons.visibility_off
+                            : Icons.visibility),
+                        onPressed: () =>
+                            setState(() => obscureConfirm = !obscureConfirm),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.passwordHint,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isLoading ? null : () => Navigator.pop(context),
+                child: Text(l10n.cancel),
+              ),
+              ElevatedButton(
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        if (newPasswordController.text !=
+                            confirmPasswordController.text) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(l10n.passwordsDontMatch)),
+                          );
+                          return;
+                        }
+
+                        setState(() => isLoading = true);
+
+                        final securityService = SecurityService();
+                        final result = await securityService.changePassword(
+                          currentPassword: currentPasswordController.text,
+                          newPassword: newPasswordController.text,
+                        );
+
+                        setState(() => isLoading = false);
+
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(result['message']),
+                              backgroundColor:
+                                  result['success'] ? Colors.green : Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                child: isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l10n.change),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: isLoading ? null : () => Navigator.pop(context),
-              child: Text(l10n.cancel),
-            ),
-            ElevatedButton(
-              onPressed: isLoading
-                  ? null
-                  : () async {
-                      if (newPasswordController.text !=
-                          confirmPasswordController.text) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(l10n.passwordsDontMatch)),
-                        );
-                        return;
-                      }
-
-                      setState(() => isLoading = true);
-
-                      final securityService = SecurityService();
-                      final result = await securityService.changePassword(
-                        currentPassword: currentPasswordController.text,
-                        newPassword: newPasswordController.text,
-                      );
-
-                      setState(() => isLoading = false);
-
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(result['message']),
-                            backgroundColor:
-                                result['success'] ? Colors.green : Colors.red,
-                          ),
-                        );
-                      }
-                    },
-              child: isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(l10n.change),
-            ),
-          ],
         ),
       ),
     );
@@ -771,8 +816,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   : () async {
                       if (passwordController.text.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(l10n.enterPassword)),
+                          SnackBar(content: Text(l10n.enterPassword)),
                         );
                         return;
                       }

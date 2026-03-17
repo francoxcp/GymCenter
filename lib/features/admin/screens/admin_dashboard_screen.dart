@@ -255,7 +255,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     );
                   },
                 ),
-                // TODO: Crear nuevo plan alimenticio — oculto hasta completar la pantalla de planes
                 const SizedBox(height: AppSpacing.sm),
                 _QuickActionButton(
                   icon: Icons.fitness_center,

@@ -51,7 +51,6 @@ class SecurityService {
       );
 
       if (response.user != null) {
-        debugPrint('Contraseña cambiada exitosamente');
         return {
           'success': true,
           'message': 'Contraseña actualizada correctamente',

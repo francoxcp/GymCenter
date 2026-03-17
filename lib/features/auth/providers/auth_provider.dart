@@ -84,8 +84,6 @@ class AuthProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      debugPrint('🔐 Attempting login for: $email');
-
       final response = await SupabaseConfig.auth.signInWithPassword(
         email: email,
         password: password,

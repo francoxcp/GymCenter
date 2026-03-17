@@ -62,15 +62,6 @@ class StorageService {
         format: CompressFormat.jpeg,
       );
 
-      final originalSize = imageBytes.length;
-      final compressedSize = result.length;
-      final reduction = ((originalSize - compressedSize) / originalSize * 100)
-          .toStringAsFixed(1);
-
-      debugPrint(
-          'Imagen comprimida: $originalSize bytes → $compressedSize bytes');
-      debugPrint('Reducción: $reduction%');
-
       return result;
     } catch (e) {
       debugPrint('Error al comprimir imagen: $e');
@@ -155,8 +146,6 @@ class StorageService {
 
       // Para videos grandes, mostrar progreso
       final videoSize = videoData.length;
-      final sizeInMB = (videoSize / (1024 * 1024)).toStringAsFixed(2);
-      debugPrint('Subiendo video: $sizeInMB MB');
 
       // Generar nombre único
       final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -228,8 +217,6 @@ class StorageService {
           'uploaded_at': DateTime.now().toIso8601String(),
         }
       }).eq('id', exerciseId);
-
-      debugPrint('Metadata del video guardada');
     } catch (e) {
       debugPrint('Error al guardar metadata: $e');
     }
@@ -241,7 +228,6 @@ class StorageService {
       final fileName = _extractFileNameFromUrl(photoUrl, profilePhotosBucket);
       if (fileName != null) {
         await _supabase.storage.from(profilePhotosBucket).remove([fileName]);
-        debugPrint('Foto de perfil eliminada: $fileName');
       }
     } catch (e) {
       debugPrint('Error al eliminar foto: $e');
@@ -254,7 +240,6 @@ class StorageService {
       final fileName = _extractFileNameFromUrl(videoUrl, exerciseVideosBucket);
       if (fileName != null) {
         await _supabase.storage.from(exerciseVideosBucket).remove([fileName]);
-        debugPrint('Video eliminado: $fileName');
       }
     } catch (e) {
       debugPrint('Error al eliminar video: $e');

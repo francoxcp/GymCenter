@@ -364,6 +364,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 hintText: 'ejemplo@chamos.com',
                 prefixIcon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) return null;
+                  if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+                      .hasMatch(value.trim())) {
+                    return 'Ingresa un correo electrónico válido';
+                  }
+                  return null;
+                },
               ),
 
               const SizedBox(height: 20),
@@ -384,6 +393,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 hintText: '••••••••',
                 prefixIcon: Icons.lock_outline,
                 obscureText: _obscurePassword,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (value) {
+                  if (value == null || value.isEmpty) return null;
+                  if (value.length < 8) return 'Mínimo 8 caracteres';
+                  return null;
+                },
                 suffixIcon: IconButton(
                   icon: Icon(
                     _obscurePassword ? Icons.visibility_off : Icons.visibility,

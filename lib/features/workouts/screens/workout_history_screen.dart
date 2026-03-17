@@ -400,7 +400,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
             Icon(
               Icons.history,
               size: 100,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: AppColors.textSecondary.withOpacity(0.7),
             ),
             const SizedBox(height: 20),
             Text(

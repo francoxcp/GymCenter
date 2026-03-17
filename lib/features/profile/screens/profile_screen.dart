@@ -288,6 +288,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
+          tooltip: 'Volver',
           onPressed: () => context.go('/home'),
         ),
         title: Text(AppL10n.of(context).myProfile),

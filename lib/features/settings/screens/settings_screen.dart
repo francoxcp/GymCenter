@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -8,6 +9,7 @@ import '../providers/preferences_provider.dart';
 import '../../../shared/services/security_service.dart';
 import '../../../shared/services/notification_service.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -40,6 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
+            tooltip: 'Volver',
             onPressed: () => context.pop(),
           ),
           title: Text(l10n.settings),
@@ -60,6 +63,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
+          tooltip: 'Volver',
           onPressed: () => context.pop(),
         ),
         title: Text(l10n.settings),
@@ -131,13 +135,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       final h =
                           picked.hourOfPeriod == 0 ? 12 : picked.hourOfPeriod;
                       final m = picked.minute.toString().padLeft(2, '0');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'Recordatorio programado para las $h:$m $period todos los días'),
-                          duration: const Duration(seconds: 3),
-                        ),
-                      );
+                      AppSnackbar.success(context,
+                          'Recordatorio programado para las $h:$m $period todos los días');
                     }
                   }
                 },
@@ -163,13 +162,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 final granted = await svc.requestPermissions();
                 if (!context.mounted) return;
                 if (!granted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                          'Permiso de notificaciones denegado. Actiúvalo desde Ajustes del sistema.'),
-                      duration: Duration(seconds: 3),
-                    ),
-                  );
+                  AppSnackbar.error(context,
+                      'Permiso de notificaciones denegado. Actívalo desde Ajustes del sistema.');
                   return;
                 }
                 await svc.showNotification(
@@ -180,12 +174,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   payload: 'workout_reminder',
                 );
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Notificación enviada'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
+                  AppSnackbar.success(context, 'Notificación enviada');
                 }
               },
             ),
@@ -320,7 +309,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           Switch(
             value: value,
-            onChanged: onChanged,
+            onChanged: (v) {
+              HapticFeedback.selectionClick();
+              onChanged(v);
+            },
             activeColor: AppColors.primary,
           ),
         ],

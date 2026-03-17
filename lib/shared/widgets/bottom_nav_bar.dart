@@ -85,66 +85,72 @@ class _BottomNavBarState extends State<BottomNavBar> {
     final isSelected = widget.currentIndex == index;
 
     return Expanded(
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          widget.onTap(index);
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Barra indicadora superior animada
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeOut,
-                height: 3,
-                width: isSelected ? 32 : 0,
-                margin: const EdgeInsets.only(bottom: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(2),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: AppColors.primary.withOpacity(0.5),
-                            blurRadius: 6,
-                          )
-                        ]
-                      : null,
+      child: Semantics(
+        label: label,
+        button: true,
+        selected: isSelected,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            widget.onTap(index);
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Barra indicadora superior animada
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOut,
+                  height: 3,
+                  width: isSelected ? 32 : 0,
+                  margin: const EdgeInsets.only(bottom: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(2),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.5),
+                              blurRadius: 6,
+                            )
+                          ]
+                        : null,
+                  ),
                 ),
-              ),
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: 1.0, end: isSelected ? 1.15 : 1.0),
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOut,
-                builder: (context, scale, child) {
-                  return Transform.scale(
-                    scale: scale,
-                    child: Icon(
-                      isSelected ? activeIcon : icon,
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.textSecondary,
-                      size: 24,
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 4),
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 200),
-                style: TextStyle(
-                  fontSize: isSelected ? 11.5 : 11,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color:
-                      isSelected ? AppColors.primary : AppColors.textSecondary,
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 1.0, end: isSelected ? 1.15 : 1.0),
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  builder: (context, scale, child) {
+                    return Transform.scale(
+                      scale: scale,
+                      child: Icon(
+                        isSelected ? activeIcon : icon,
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.textSecondary,
+                        size: 24,
+                      ),
+                    );
+                  },
                 ),
-                child: Text(label),
-              ),
-            ],
+                const SizedBox(height: 4),
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 200),
+                  style: TextStyle(
+                    fontSize: isSelected ? 11.5 : 11,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
+                  ),
+                  child: Text(label),
+                ),
+              ],
+            ),
           ),
         ),
       ),

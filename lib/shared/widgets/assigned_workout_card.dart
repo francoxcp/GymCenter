@@ -114,6 +114,8 @@ class AssignedWorkoutCard extends StatelessWidget {
                   // Workout Name
                   Text(
                     workout.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,

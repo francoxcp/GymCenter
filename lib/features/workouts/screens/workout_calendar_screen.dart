@@ -319,7 +319,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
                     Icon(
                       Icons.event_busy,
                       size: 60,
-                      color: AppColors.textSecondary.withOpacity(0.5),
+                      color: AppColors.textSecondary.withOpacity(0.7),
                     ),
                     const SizedBox(height: 12),
                     Text(

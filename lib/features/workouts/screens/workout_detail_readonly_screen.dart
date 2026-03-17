@@ -109,9 +109,14 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
+              tooltip: 'Volver',
               onPressed: () => context.pop(),
             ),
-            title: Text(workout.name),
+            title: Text(
+              workout.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           // Barra de acciones fija al fondo
           bottomNavigationBar: SafeArea(

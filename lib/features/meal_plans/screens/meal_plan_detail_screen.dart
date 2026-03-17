@@ -26,7 +26,11 @@ class MealPlanDetailScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: Text(mealPlan.name),
+        title: Text(
+          mealPlan.name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(

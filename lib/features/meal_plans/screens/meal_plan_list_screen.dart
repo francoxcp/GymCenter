@@ -73,29 +73,6 @@ class _MealPlanListScreenState extends State<MealPlanListScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Badge
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: AppColors.primary.withOpacity(0.4),
-                  ),
-                ),
-                child: const Text(
-                  'EN DESARROLLO',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
               // Título
               const Text(
                 'Próximamente',

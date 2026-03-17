@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import '../providers/auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -97,13 +98,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    AppSnackbar.error(context, message);
   }
 
   @override
@@ -193,6 +188,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 hintText: 'ejemplo@correo.com',
                 prefixIcon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) return null;
+                  if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+                      .hasMatch(value.trim())) {
+                    return 'Ingresa un correo electrónico válido';
+                  }
+                  return null;
+                },
               ),
 
               const SizedBox(height: 20),
@@ -213,6 +217,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 hintText: '••••••••',
                 prefixIcon: Icons.lock_outline,
                 obscureText: _obscurePassword,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (value) {
+                  if (value == null || value.isEmpty) return null;
+                  if (value.length < 8) return 'Mínimo 8 caracteres';
+                  if (value.length > 15) return 'Máximo 15 caracteres';
+                  return null;
+                },
                 suffixIcon: IconButton(
                   icon: Icon(
                     _obscurePassword ? Icons.visibility_off : Icons.visibility,
@@ -244,6 +255,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 hintText: '••••••••',
                 prefixIcon: Icons.lock_outline,
                 obscureText: _obscureConfirmPassword,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (value) {
+                  if (value == null || value.isEmpty) return null;
+                  if (value != _passwordController.text) {
+                    return 'Las contraseñas no coinciden';
+                  }
+                  return null;
+                },
                 suffixIcon: IconButton(
                   icon: Icon(
                     _obscureConfirmPassword

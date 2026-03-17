@@ -10,6 +10,8 @@ class CustomTextField extends StatefulWidget {
   final TextInputType keyboardType;
   final int maxLines;
   final String? Function(String?)? validator;
+  final String? errorText;
+  final AutovalidateMode? autovalidateMode;
 
   const CustomTextField({
     super.key,
@@ -21,6 +23,8 @@ class CustomTextField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.maxLines = 1,
     this.validator,
+    this.errorText,
+    this.autovalidateMode,
   });
 
   @override
@@ -65,11 +69,13 @@ class _CustomTextFieldState extends State<CustomTextField>
           keyboardType: widget.keyboardType,
           maxLines: widget.maxLines,
           validator: widget.validator,
+          autovalidateMode: widget.autovalidateMode,
           style: const TextStyle(color: Colors.white, fontSize: 15),
           decoration: InputDecoration(
             hintText: widget.hintText,
+            errorText: widget.errorText,
             hintStyle: TextStyle(
-              color: AppColors.textSecondary.withOpacity(0.7),
+              color: AppColors.textSecondary.withOpacity(0.8),
               fontSize: 15,
             ),
             prefixIcon: widget.prefixIcon != null

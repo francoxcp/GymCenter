@@ -546,7 +546,11 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                           ),
                         ),
                       ),
-                      title: Text(exercise.name),
+                      title: Text(
+                        exercise.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       subtitle: Text(
                         '${exercise.sets} series × ${exercise.reps} reps',
                         style: const TextStyle(color: AppColors.textSecondary),

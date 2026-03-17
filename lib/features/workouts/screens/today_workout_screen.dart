@@ -350,7 +350,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   void _restoreProgress(progress) {
     setState(() {
       _completedSets = progress.completedSets;
-      _currentExerciseIndex = progress.exerciseIndex;
+      // Clamp index to valid bounds in case exercises were modified after saving
+      _currentExerciseIndex = _completedSets.isNotEmpty
+          ? progress.exerciseIndex.clamp(0, _completedSets.length - 1)
+          : 0;
       // Restaurar segundos acumulados guardados (si existen en BD)
       if (progress.accumulatedSeconds > 0) {
         _accumulatedSeconds = progress.accumulatedSeconds;

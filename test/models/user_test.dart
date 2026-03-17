@@ -8,13 +8,13 @@ void main() {
         'id': '1',
         'email': 'test@example.com',
         'name': 'Test User',
-        'photoUrl': 'https://example.com/photo.jpg',
+        'photo_url': 'https://example.com/photo.jpg',
         'role': 'user',
         'level': 'Intermedio',
-        'activeDays': 5,
-        'completedWorkouts': 10,
-        'assignedWorkoutId': 'workout123',
-        'assignedMealPlanId': 'meal456',
+        'active_days': 5,
+        'completed_workouts': 10,
+        'assigned_workout_id': 'workout123',
+        'assigned_meal_plan_id': 'meal456',
       };
 
       final user = User.fromJson(json);

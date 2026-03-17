@@ -69,8 +69,10 @@ void main() {
         chest: 100.0,
         waist: 85.0,
         hips: 95.0,
-        biceps: 35.0,
-        thighs: 55.0,
+        bicepsLeft: 35.0,
+        bicepsRight: 36.0,
+        thighLeft: 55.0,
+        thighRight: 56.0,
         photoUrl: 'https://example.com/photo.jpg',
         notes: 'Medición regular',
       );
@@ -85,8 +87,10 @@ void main() {
       expect(json['chest'], 100.0);
       expect(json['waist'], 85.0);
       expect(json['hips'], 95.0);
-      expect(json['biceps'], 35.0);
-      expect(json['thighs'], 55.0);
+      expect(json['biceps_left'], 35.0);
+      expect(json['biceps_right'], 36.0);
+      expect(json['thigh_left'], 55.0);
+      expect(json['thigh_right'], 56.0);
       expect(json['photo_url'], 'https://example.com/photo.jpg');
       expect(json['notes'], 'Medición regular');
     });

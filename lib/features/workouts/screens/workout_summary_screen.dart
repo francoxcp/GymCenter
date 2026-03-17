@@ -11,6 +11,8 @@ import '../../profile/providers/user_provider.dart';
 import '../providers/workout_provider.dart';
 import '../providers/workout_progress_provider.dart';
 import '../providers/workout_session_provider.dart';
+import '../../progress/providers/achievements_provider.dart';
+import '../../progress/providers/body_measurement_provider.dart';
 
 class WorkoutSummaryScreen extends StatefulWidget {
   final Workout workout;
@@ -131,7 +133,34 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
       // Refrescar usuario para obtener estadísticas actualizadas
       if (mounted) await authProvider.refreshUser();
 
-      debugPrint('✅ Sesión guardada y estadísticas actualizadas');
+      // Verificar y desbloquear logros
+      if (mounted) {
+        final achievementsProvider =
+            Provider.of<AchievementsProvider>(context, listen: false);
+        final sessionProvider2 =
+            Provider.of<WorkoutSessionProvider>(context, listen: false);
+        final measurementProvider =
+            Provider.of<BodyMeasurementProvider>(context, listen: false);
+
+        final totalWorkouts = sessionProvider2.sessions.length;
+        final currentStreak = sessionProvider2.getCurrentStreak();
+
+        double? weightLoss;
+        final allMeasurements = measurementProvider.measurements;
+        if (allMeasurements.length >= 2) {
+          final firstWeight = allMeasurements.last.weight;
+          final latestWeight = allMeasurements.first.weight;
+          if (firstWeight != null && latestWeight != null) {
+            weightLoss = firstWeight - latestWeight;
+          }
+        }
+
+        await achievementsProvider.checkAndUnlockAchievements(
+          totalWorkouts: totalWorkouts,
+          currentStreak: currentStreak,
+          weightLoss: weightLoss,
+        );
+      }
     } catch (e) {
       debugPrint('❌ Error al guardar sesión: $e');
     } finally {

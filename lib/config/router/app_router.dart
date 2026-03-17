@@ -18,6 +18,7 @@ import '../../features/profile/screens/edit_profile_screen.dart';
 import '../../features/profile/screens/personal_records_screen.dart';
 import '../../features/progress/screens/progress_screen.dart';
 import '../../features/progress/screens/body_measurements_screen.dart';
+import '../../features/progress/screens/achievements_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/settings/screens/change_password_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
@@ -45,6 +46,7 @@ int _locationToIndex(String location) {
 
   if (location.startsWith('/progress') ||
       location.startsWith('/body-measurements') ||
+      location.startsWith('/achievements') ||
       location.startsWith('/settings') ||
       location.startsWith('/profile') ||
       location.startsWith('/edit-profile') ||
@@ -212,6 +214,10 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           GoRoute(
             path: '/body-measurements',
             builder: (context, state) => const BodyMeasurementsScreen(),
+          ),
+          GoRoute(
+            path: '/achievements',
+            builder: (context, state) => const AchievementsScreen(),
           ),
 
           // Settings routes

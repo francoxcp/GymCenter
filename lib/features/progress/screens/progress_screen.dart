@@ -7,6 +7,7 @@ import '../../../core/l10n/app_l10n.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../workouts/providers/workout_session_provider.dart';
 import '../providers/body_measurement_provider.dart';
+import '../providers/achievements_provider.dart';
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -37,6 +38,15 @@ class _ProgressScreenState extends State<ProgressScreen> {
         sessionProvider.loadSessions(authProvider.currentUser!.id,
             forceRefresh: true),
     ]);
+
+    if (mounted) {
+      final achievementsProvider =
+          Provider.of<AchievementsProvider>(context, listen: false);
+      await Future.wait([
+        achievementsProvider.loadAllAchievements(),
+        achievementsProvider.loadUnlockedAchievements(),
+      ]);
+    }
   }
 
   @override
@@ -69,6 +79,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
             // Estadísticas generales
             _buildStatsGrid(),
+            const SizedBox(height: 20),
+
+            // Logros
+            _buildAchievementsCard(),
             const SizedBox(height: 24),
 
             // Gráfico de peso (placeholder)
@@ -339,6 +353,64 @@ class _ProgressScreenState extends State<ProgressScreen> {
             overflow: TextOverflow.ellipsis,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAchievementsCard() {
+    final provider = Provider.of<AchievementsProvider>(context);
+    final l10n = AppL10n.of(context);
+
+    return GestureDetector(
+      onTap: () => context.push('/achievements'),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.amber.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child:
+                  const Icon(Icons.emoji_events, color: Colors.amber, size: 28),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.recentAchievementsLabel,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    provider.totalCount > 0
+                        ? '${provider.unlockedCount}/${provider.totalCount} · ${provider.totalPoints} pts'
+                        : l10n.achievementsUnlockHint,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right,
+                color: AppColors.textSecondary, size: 24),
+          ],
+        ),
       ),
     );
   }

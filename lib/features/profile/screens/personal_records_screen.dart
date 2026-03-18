@@ -154,8 +154,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
       final key = '${local.day.toString().padLeft(2, '0')}/'
           '${local.month.toString().padLeft(2, '0')}/'
           '${local.year}';
-      byDate[key] ??= [];
-      byDate[key]!.add(Map.from(log));
+      (byDate[key] ??= []).add(Map.from(log));
     }
     final sessions = byDate.entries.toList();
     final pr = _prByName[exercise.name];

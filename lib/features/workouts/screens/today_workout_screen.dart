@@ -886,6 +886,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       }
     } catch (e) {
       debugPrint('Error guardando pesos: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se pudieron guardar los pesos de esta sesión'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -984,10 +992,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 );
                 return;
               }
-              if (inputLbs != null && inputLbs < 0) {
+              if (inputLbs != null && inputLbs <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('El peso no puede ser negativo'),
+                    content: Text('El peso debe ser mayor a 0'),
                     backgroundColor: Colors.red,
                   ),
                 );

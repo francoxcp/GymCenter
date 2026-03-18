@@ -8,6 +8,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../providers/preferences_provider.dart';
 import '../../../shared/services/security_service.dart';
 import '../../../shared/services/notification_service.dart';
+import '../../../shared/services/data_export_service.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 
@@ -205,6 +206,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: l10n.privacySubtitle,
             icon: Icons.privacy_tip_outlined,
             onTap: () => context.push('/privacy-settings'),
+          ),
+          _buildOptionTile(
+            title: 'Exportar mis datos',
+            subtitle: 'Descarga toda tu información en formato JSON',
+            icon: Icons.download_outlined,
+            onTap: () => _exportUserData(),
           ),
           const SizedBox(height: 24),
 
@@ -493,6 +500,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _exportUserData() async {
+    try {
+      AppSnackbar.info(context, 'Preparando exportación...');
+      await DataExportService().exportUserData(context);
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.error(context, 'Error al exportar datos: $e');
+      }
+    }
   }
 
   void _confirmLogout(AuthProvider authProvider, AppL10n l10n) {

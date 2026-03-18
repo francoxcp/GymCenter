@@ -73,8 +73,7 @@ class ProgressReportService {
 
   Future<void> _saveReportDate() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-        _lastReportKey, DateTime.now().toIso8601String());
+    await prefs.setString(_lastReportKey, DateTime.now().toIso8601String());
   }
 
   /// Consulta Supabase por las sesiones de los últimos 7 días y calcula stats.
@@ -140,7 +139,8 @@ class ProgressReportService {
         }
       }
       return streak;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('⚠️ Error calculating streak: $e');
       return 0;
     }
   }
@@ -161,12 +161,15 @@ class ProgressReportService {
     if (isEnglish) {
       title = '📊 Your weekly progress report';
       final workoutWord = stats.workouts == 1 ? 'workout' : 'workouts';
-      body = '${stats.workouts} $workoutWord · $timeStr · ${stats.calories} kcal'
+      body =
+          '${stats.workouts} $workoutWord · $timeStr · ${stats.calories} kcal'
           '${stats.streak > 1 ? ' · 🔥 ${stats.streak}-day streak' : ''}';
     } else {
       title = '📊 Tu reporte semanal de progreso';
-      final workoutWord = stats.workouts == 1 ? 'entrenamiento' : 'entrenamientos';
-      body = '${stats.workouts} $workoutWord · $timeStr · ${stats.calories} kcal'
+      final workoutWord =
+          stats.workouts == 1 ? 'entrenamiento' : 'entrenamientos';
+      body =
+          '${stats.workouts} $workoutWord · $timeStr · ${stats.calories} kcal'
           '${stats.streak > 1 ? ' · 🔥 ${stats.streak} días de racha' : ''}';
     }
 

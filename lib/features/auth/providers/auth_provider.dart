@@ -13,6 +13,12 @@ class AuthProvider extends ChangeNotifier {
   bool _isInitializing = true;
   StreamSubscription<AuthState>? _authSubscription;
 
+  // Rate limiting local para login
+  int _loginAttempts = 0;
+  DateTime? _lockoutUntil;
+  static const int _maxAttempts = 5;
+  static const Duration _lockoutDuration = Duration(seconds: 30);
+
   bool get isAuthenticated => _isAuthenticated;
   User? get currentUser => _currentUser;
   bool get isAdmin => _currentUser?.role == 'admin';
@@ -88,6 +94,14 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> login(String email, String password) async {
+    // Rate limiting local
+    if (_lockoutUntil != null && DateTime.now().isBefore(_lockoutUntil!)) {
+      final remaining = _lockoutUntil!.difference(DateTime.now()).inSeconds;
+      throw Exception(
+        'Demasiados intentos. Espera ${remaining}s antes de intentar de nuevo.',
+      );
+    }
+
     try {
       _isLoading = true;
       notifyListeners();
@@ -98,20 +112,32 @@ class AuthProvider extends ChangeNotifier {
       );
 
       if (response.user != null) {
+        _loginAttempts = 0;
+        _lockoutUntil = null;
         await _loadCurrentUser(response.user!.id);
         _isLoading = false;
         notifyListeners();
         return true;
       }
 
+      _loginAttempts++;
+      if (_loginAttempts >= _maxAttempts) {
+        _lockoutUntil = DateTime.now().add(_lockoutDuration);
+        _loginAttempts = 0;
+      }
       _isLoading = false;
       notifyListeners();
       return false;
     } catch (e) {
+      _loginAttempts++;
+      if (_loginAttempts >= _maxAttempts) {
+        _lockoutUntil = DateTime.now().add(_lockoutDuration);
+        _loginAttempts = 0;
+      }
       _isLoading = false;
       notifyListeners();
       debugPrint('❌ Login error: $e');
-      rethrow; // Re-lanzar para que el UI pueda mostrar el error apropiado
+      rethrow;
     }
   }
 

@@ -49,10 +49,12 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
 
   bool _hasChanges() {
     if (_nameController.text != widget.workout.name) return true;
-    if (_descriptionController.text != (widget.workout.description ?? ''))
+    if (_descriptionController.text != (widget.workout.description ?? '')) {
       return true;
-    if (_durationController.text != widget.workout.duration.toString())
+    }
+    if (_durationController.text != widget.workout.duration.toString()) {
       return true;
+    }
     if (_selectedLevel != widget.workout.level) return true;
     if (_exercises.length != widget.workout.exercises.length) return true;
     for (int i = 0; i < _exercises.length; i++) {
@@ -329,7 +331,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
     final updatedWorkout = Workout(
       id: widget.workout.id,
       name: _nameController.text,
-      duration: int.parse(_durationController.text),
+      duration: int.tryParse(_durationController.text) ?? 30,
       exerciseCount: _exercises.length,
       level: _selectedLevel,
       imageUrl: widget.workout.imageUrl,

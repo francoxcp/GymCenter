@@ -54,7 +54,9 @@ class NotificationService {
     try {
       final localName = DateTime.now().timeZoneName;
       tz.setLocalLocation(tz.getLocation(localName));
-    } catch (_) {
+    } catch (e) {
+      debugPrint(
+          '⚠️ Timezone lookup failed ($e), defaulting to America/Caracas');
       tz.setLocalLocation(tz.getLocation('America/Caracas'));
     }
 
@@ -80,7 +82,8 @@ class NotificationService {
     );
 
     // Manejar lanzamiento desde notificación cuando la app estaba completamente cerrada
-    final launchDetails = await _notifications.getNotificationAppLaunchDetails();
+    final launchDetails =
+        await _notifications.getNotificationAppLaunchDetails();
     if (launchDetails?.didNotificationLaunchApp == true) {
       final payload = launchDetails!.notificationResponse?.payload;
       if (payload != null) {
@@ -303,14 +306,15 @@ class NotificationService {
           final daysSince = DateTime.now().difference(lastDate).inDays;
           if (daysSince >= 2) {
             title = '¿Todo bien? 💪';
-            body = 'Llevas $daysSince días sin entrenar. ¡Hoy es un buen día para retomar!';
+            body =
+                'Llevas $daysSince días sin entrenar. ¡Hoy es un buen día para retomar!';
           }
         } else {
           title = '¡Empieza hoy! 💪';
           body = '¿Listo para tu primera sesión? ¡Tu cuerpo te lo agradecerá!';
         }
-      } catch (_) {
-        // Error al consultar BD → usar mensaje por defecto
+      } catch (e) {
+        debugPrint('⚠️ Error querying last session for notification: $e');
       }
     }
 
@@ -357,7 +361,8 @@ class NotificationService {
     const androidDetails = AndroidNotificationDetails(
       'chamos_progress_channel',
       'Reportes de Progreso',
-      channelDescription: 'Reportes semanales de progreso de Chamos Fitness Center',
+      channelDescription:
+          'Reportes semanales de progreso de Chamos Fitness Center',
       importance: Importance.defaultImportance,
       priority: Priority.defaultPriority,
       icon: '@mipmap/ic_launcher',

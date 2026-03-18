@@ -700,9 +700,9 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
     final exercise = Exercise(
       id: '',
       name: _nameController.text.trim(),
-      sets: int.parse(_setsController.text),
-      reps: int.parse(_repsController.text),
-      restSeconds: int.parse(_restController.text),
+      sets: int.tryParse(_setsController.text) ?? 3,
+      reps: int.tryParse(_repsController.text) ?? 12,
+      restSeconds: int.tryParse(_restController.text) ?? 60,
       muscleGroup: _selectedMuscleGroup,
       difficulty: 'Intermedio',
       description: null,

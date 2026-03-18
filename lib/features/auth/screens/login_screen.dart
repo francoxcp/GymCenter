@@ -2,6 +2,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../providers/auth_provider.dart';
@@ -55,8 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleLogin() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      _showErrorDialog(
-        'Campos vacíos',
+      AppSnackbar.error(
+        context,
         'Por favor completa todos los campos',
       );
       return;
@@ -64,8 +65,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final email = _emailController.text.trim();
     if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
-      _showErrorDialog(
-        'Correo inválido',
+      AppSnackbar.error(
+        context,
         'Por favor ingresa un correo electrónico válido.',
       );
       return;
@@ -86,8 +87,8 @@ class _LoginScreenState extends State<LoginScreen> {
         final route = _authProvider.initialRoute;
         context.go(route);
       } else if (!success && mounted) {
-        _showErrorDialog(
-          'Error de autenticación',
+        AppSnackbar.error(
+          context,
           'No se pudo completar el inicio de sesión. Verifica tus credenciales.',
         );
       }
@@ -121,72 +122,28 @@ class _LoginScreenState extends State<LoginScreen> {
             'No existe una cuenta con este correo electrónico.\n\n¿Quieres registrarte?';
       }
 
-      _showErrorDialog(title, message);
+      _showLoginError(title, message);
     }
   }
 
-  void _showErrorDialog(String title, String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Row(
-          children: [
-            const Icon(
-              Icons.error_outline,
-              color: Colors.red,
-              size: 28,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          message,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 15,
-            height: 1.5,
+  void _showLoginError(String title, String message) {
+    // For "user not found" errors, show a SnackBar with a register action
+    if (message.contains('registrarte')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$title: $message'),
+          backgroundColor: Colors.red,
+          action: SnackBarAction(
+            label: 'Registrarme',
+            textColor: Colors.white,
+            onPressed: () => context.push('/register'),
           ),
+          duration: const Duration(seconds: 5),
         ),
-        actions: [
-          if (message.contains('registrarte'))
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                context.push('/register');
-              },
-              child: const Text(
-                'Registrarme',
-                style: TextStyle(color: AppColors.primary),
-              ),
-            ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cerrar',
-              style: TextStyle(
-                color: message.contains('registrarte')
-                    ? AppColors.textSecondary
-                    : AppColors.primary,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+      );
+    } else {
+      AppSnackbar.error(context, '$title: $message');
+    }
   }
 
   @override

@@ -233,6 +233,10 @@ class WorkoutProvider extends ChangeNotifier {
   }
 
   Future<void> addWorkout(Workout workout, {String? userId}) async {
+    if (_isOffline) {
+      throw Exception(
+          'No hay conexión a internet. Conéctate para crear una rutina.');
+    }
     try {
       // Insertar rutina
       final workoutData = await SupabaseConfig.client
@@ -292,6 +296,10 @@ class WorkoutProvider extends ChangeNotifier {
   }
 
   Future<void> updateWorkout(String workoutId, Workout workout) async {
+    if (_isOffline) {
+      throw Exception(
+          'No hay conexión a internet. Conéctate para editar la rutina.');
+    }
     try {
       // Actualizar rutina
       await SupabaseConfig.client.from('workouts').update({
@@ -341,6 +349,10 @@ class WorkoutProvider extends ChangeNotifier {
   }
 
   Future<void> deleteWorkout(String workoutId) async {
+    if (_isOffline) {
+      throw Exception(
+          'No hay conexión a internet. Conéctate para eliminar la rutina.');
+    }
     try {
       // Eliminar ejercicios primero (CASCADE debe hacerlo automático, pero por si acaso)
       await SupabaseConfig.client

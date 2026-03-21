@@ -75,6 +75,8 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       if (isAuth && path == '/login') return authProvider.initialRoute;
       // Admin siempre va al panel de administración
       if (isAuth && authProvider.isAdmin && path == '/home') return '/admin';
+      // Bloquear acceso a rutas admin para usuarios no-admin
+      if (isAuth && !authProvider.isAdmin && path == '/admin') return '/home';
       // Primer login: redirigir a onboarding si faltan datos de fitness
       if (isAuth && authProvider.needsOnboarding && path != '/onboarding') {
         return '/onboarding';

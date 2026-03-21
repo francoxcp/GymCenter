@@ -6,17 +6,11 @@ class SupabaseConfig {
   SupabaseConfig._();
 
   // Credenciales inyectadas en tiempo de compilación con --dart-define.
-  // El defaultValue permite correr con `flutter run` sin flags extra en desarrollo.
-  // En producción siempre se sobreescribirán con --dart-define.
-  static const String _supabaseUrl = String.fromEnvironment(
-    'SUPABASE_URL',
-    defaultValue: 'https://njjurkgagfypwjqnsqfc.supabase.co',
-  );
-  static const String _supabaseAnonKey = String.fromEnvironment(
-    'SUPABASE_ANON_KEY',
-    defaultValue:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qanVya2dhZ2Z5cHdqcW5zcWZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyMjYwNDUsImV4cCI6MjA4NTgwMjA0NX0.NigaukWUa7zwjUSWMBNq0wlefZlQNupYAaxfF8ZKwcc',
-  );
+  // Uso: flutter run --dart-define=SUPABASE_URL=xxx --dart-define=SUPABASE_ANON_KEY=yyy
+  // En desarrollo usar scripts/local_credentials.bat para proveer las variables.
+  static const String _supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+  static const String _supabaseAnonKey =
+      String.fromEnvironment('SUPABASE_ANON_KEY');
 
   /// Inicializa la conexión con Supabase.
   /// En producción pasar las credenciales con --dart-define:

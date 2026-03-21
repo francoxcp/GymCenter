@@ -1,6 +1,8 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
 import '../../profile/providers/user_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/models/user.dart';
@@ -16,9 +18,11 @@ class UserManagementScreen extends StatefulWidget {
 class _UserManagementScreenState extends State<UserManagementScreen> {
   final _searchController = TextEditingController();
   String _filterRole = 'Todos';
+  Timer? _debounce;
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -57,9 +61,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   Provider.of<UserProvider>(context, listen: false);
               userProvider.loadUsers();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Recargando usuarios...'),
-                  duration: Duration(seconds: 1),
+                SnackBar(
+                  content: Text(AppL10n.of(context).reloadingUsers),
+                  duration: const Duration(seconds: 1),
                 ),
               );
             },
@@ -76,7 +80,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 padding: const EdgeInsets.all(16),
                 child: TextField(
                   controller: _searchController,
-                  onChanged: userProvider.setSearchQuery,
+                  onChanged: (query) {
+                    _debounce?.cancel();
+                    _debounce = Timer(const Duration(milliseconds: 300), () {
+                      userProvider.setSearchQuery(query);
+                    });
+                  },
                   decoration: InputDecoration(
                     hintText: 'Buscar',
                     prefixIcon: const Icon(
@@ -191,8 +200,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               const SizedBox(height: 16),
               Text(
                 userProvider.searchQuery.isEmpty && _filterRole == 'Todos'
-                    ? 'No hay usuarios registrados'
-                    : 'No se encontraron usuarios',
+                    ? AppL10n.of(context).noRegisteredUsers
+                    : AppL10n.of(context).noUsersFound,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 16,
@@ -202,9 +211,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               const SizedBox(height: 8),
               Text(
                 userProvider.searchQuery.isNotEmpty
-                    ? 'Intenta con otra búsqueda'
+                    ? AppL10n.of(context).tryAnotherSearch
                     : _filterRole != 'Todos'
-                        ? 'No hay usuarios con este rol'
+                        ? AppL10n.of(context).noUsersWithRole
                         : 'Los usuarios aparecerán aquí cuando se registren',
                 style: const TextStyle(
                   color: AppColors.textSecondary,

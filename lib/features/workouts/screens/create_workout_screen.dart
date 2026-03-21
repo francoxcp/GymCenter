@@ -343,6 +343,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
               // Nombre
               TextFormField(
                 controller: _nameController,
+                maxLength: 50,
                 decoration: const InputDecoration(
                   labelText: 'Nombre de la rutina',
                   hintText: 'Ej: Fuerza',
@@ -361,6 +362,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
               // Descripción
               TextFormField(
                 controller: _descriptionController,
+                maxLength: 200,
                 decoration: const InputDecoration(
                   labelText: 'Descripción',
                   hintText: 'Describe los objetivos de esta rutina...',

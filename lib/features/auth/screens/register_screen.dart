@@ -59,6 +59,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    // Validar complejidad: mayúscula, minúscula y número
+    if (!password.contains(RegExp(r'[A-Z]'))) {
+      _showError('La contraseña debe tener al menos una letra mayúscula');
+      return;
+    }
+    if (!password.contains(RegExp(r'[a-z]'))) {
+      _showError('La contraseña debe tener al menos una letra minúscula');
+      return;
+    }
+    if (!password.contains(RegExp(r'[0-9]'))) {
+      _showError('La contraseña debe tener al menos un número');
+      return;
+    }
+
     // Validar que coincidan
     if (password != confirmPassword) {
       _showError('Las contraseñas no coinciden');

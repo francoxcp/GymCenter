@@ -1,10 +1,12 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../config/supabase_config.dart';
 import '../../../shared/widgets/custom_text_field.dart';
@@ -67,9 +69,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       await authProvider.refreshUser();
 
       if (mounted) {
+        HapticFeedback.mediumImpact();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Perfil actualizado correctamente'),
+          SnackBar(
+            content: Text(AppL10n.of(context).profileUpdated),
             backgroundColor: Colors.green,
           ),
         );
@@ -79,7 +82,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al guardar: $e'),
+            content: Text(AppL10n.of(context).errorSaving(e.toString())),
             backgroundColor: Colors.red,
           ),
         );

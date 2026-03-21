@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
@@ -155,11 +156,18 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
           }
         }
 
-        await achievementsProvider.checkAndUnlockAchievements(
+        final newlyUnlocked =
+            await achievementsProvider.checkAndUnlockAchievements(
           totalWorkouts: totalWorkouts,
           currentStreak: currentStreak,
           weightLoss: weightLoss,
         );
+
+        // Mostrar celebración si se desbloquearon logros
+        if (mounted && newlyUnlocked.isNotEmpty) {
+          HapticFeedback.heavyImpact();
+          _showAchievementCelebration(newlyUnlocked.length);
+        }
       }
     } catch (e) {
       debugPrint('❌ Error al guardar sesión: $e');
@@ -209,6 +217,48 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
   }
 
   // Métodos auxiliares
+  void _showAchievementCelebration(int count) {
+    final l10n = AppL10n.of(context);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.cardBackground,
+        title: Row(
+          children: [
+            const Text('🏆', style: TextStyle(fontSize: 32)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                l10n.isEn ? 'Achievement Unlocked!' : '¡Logro Desbloqueado!',
+                style: const TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          count == 1
+              ? (l10n.isEn
+                  ? 'You unlocked a new achievement! Check your progress to see it.'
+                  : '¡Desbloqueaste un nuevo logro! Revisa tu progreso para verlo.')
+              : (l10n.isEn
+                  ? 'You unlocked $count new achievements! Check your progress.'
+                  : '¡Desbloqueaste $count nuevos logros! Revisa tu progreso.'),
+          style: const TextStyle(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              l10n.isEn ? 'Awesome!' : '¡Genial!',
+              style: const TextStyle(
+                  color: AppColors.primary, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _formatDuration(int minutes) {
     final h = (minutes ~/ 60).toString().padLeft(2, '0');
     final m = (minutes % 60).toString().padLeft(2, '0');

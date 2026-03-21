@@ -1,7 +1,9 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
 import '../../settings/providers/preferences_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../shared/widgets/primary_button.dart';
@@ -22,6 +24,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _age = 25;
   String _sex = 'male'; // 'male' | 'female' | 'other'
   String _goal = 'Perder peso';
+  bool _statsModified = false;
 
   @override
   void dispose() {
@@ -30,6 +33,46 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _nextPage() {
+    // Cuando el usuario sale de la página de stats sin modificar, confirmar
+    if (_currentPage == 2 && !_statsModified) {
+      final l10n = AppL10n.of(context);
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: AppColors.cardBackground,
+          title: Text(
+            l10n.isEn ? 'Use default values?' : '¿Usar valores por defecto?',
+            style: const TextStyle(color: Colors.white),
+          ),
+          content: Text(
+            l10n.isEn
+                ? 'You haven\'t modified your data. Are you sure these values are correct?'
+                : 'No has modificado tus datos. ¿Estás seguro de que estos valores son correctos?',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _statsModified = true; // prevent re-asking
+                _pageController.nextPage(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              },
+              child: Text(l10n.confirm,
+                  style: const TextStyle(color: AppColors.primary)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     if (_currentPage < 3) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -89,6 +132,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
       if (mounted) {
         Navigator.of(context).pop();
+        HapticFeedback.mediumImpact();
         context.go('/home');
       }
     } catch (e) {
@@ -155,23 +199,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             // Navigation buttons
             Padding(
               padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  if (_currentPage > 0)
-                    TextButton(
-                      onPressed: _previousPage,
-                      child: const Text(
-                        'Atrás',
-                        style: TextStyle(color: AppColors.textSecondary),
+              child: Builder(
+                builder: (context) {
+                  final l10n = AppL10n.of(context);
+                  return Row(
+                    children: [
+                      if (_currentPage > 0)
+                        TextButton(
+                          onPressed: _previousPage,
+                          child: Text(
+                            l10n.back,
+                            style:
+                                const TextStyle(color: AppColors.textSecondary),
+                          ),
+                        ),
+                      const Spacer(),
+                      PrimaryButton(
+                        text: _currentPage == 3 ? l10n.start : l10n.next,
+                        onPressed: _nextPage,
+                        width: 150,
                       ),
-                    ),
-                  const Spacer(),
-                  PrimaryButton(
-                    text: _currentPage == 3 ? 'Comenzar' : 'Siguiente',
-                    onPressed: _nextPage,
-                    width: 150,
-                  ),
-                ],
+                    ],
+                  );
+                },
               ),
             ),
           ],
@@ -181,34 +231,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildWelcomePage() {
+    final l10n = AppL10n.of(context);
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
         child: ConstrainedBox(
           constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.fitness_center,
                   size: 80,
                   color: AppColors.primary,
                 ),
-                SizedBox(height: 28),
+                const SizedBox(height: 28),
                 Text(
-                  '¡Bienvenido a Chamos Fitness!',
-                  style: TextStyle(
+                  l10n.onboardingWelcome,
+                  style: const TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
-                  'Tu compañero perfecto para alcanzar tus metas de fitness. Vamos a personalizar tu experiencia.',
-                  style: TextStyle(
+                  l10n.onboardingWelcomeBody,
+                  style: const TextStyle(
                     fontSize: 15,
                     color: AppColors.textSecondary,
                     height: 1.5,
@@ -224,6 +275,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildLevelPage() {
+    final l10n = AppL10n.of(context);
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
         child: ConstrainedBox(
@@ -233,9 +285,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  '¿Cuál es tu nivel de fitness?',
-                  style: TextStyle(
+                Text(
+                  l10n.onboardingLevelTitle,
+                  style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -245,23 +297,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 const SizedBox(height: 24),
                 _buildLevelOption(
                   'Principiante',
-                  'Nuevo en el entrenamiento',
+                  l10n.beginnerDesc,
                   Icons.trending_up,
                   AppColors.badgePrincipiante,
+                  l10n.beginner,
                 ),
                 const SizedBox(height: 12),
                 _buildLevelOption(
                   'Intermedio',
-                  'Entreno regularmente',
+                  l10n.intermediateDesc,
                   Icons.fitness_center,
                   AppColors.badgeIntermedio,
+                  l10n.intermediate,
                 ),
                 const SizedBox(height: 12),
                 _buildLevelOption(
                   'Avanzado',
-                  'Atleta experimentado',
+                  l10n.advancedDesc,
                   Icons.emoji_events,
                   AppColors.badgeAvanzado,
+                  l10n.advanced,
                 ),
               ],
             ),
@@ -271,8 +326,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildLevelOption(
-      String level, String description, IconData icon, Color color) {
+  Widget _buildLevelOption(String level, String description, IconData icon,
+      Color color, String displayLabel) {
     final isSelected = _selectedLevel == level;
 
     return GestureDetector(
@@ -307,7 +362,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    level,
+                    displayLabel,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -332,15 +387,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildStatsPage() {
+    final l10n = AppL10n.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(30),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const SizedBox(height: 20),
-          const Text(
-            'Tus datos personales',
-            style: TextStyle(
+          Text(
+            l10n.onboardingStatsTitle,
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Colors.white,
@@ -348,28 +404,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Estos datos nos ayudan a calcular tus calorías con precisión',
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+          Text(
+            l10n.onboardingStatsSubtitle,
+            style:
+                const TextStyle(fontSize: 14, color: AppColors.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
           _buildStatSlider(
-            'Peso',
+            l10n.weightLabel,
             _weight,
             'kg',
             30,
             180,
-            (value) => setState(() => _weight = value),
+            (value) => setState(() {
+              _weight = value;
+              _statsModified = true;
+            }),
           ),
           const SizedBox(height: 24),
           _buildStatSlider(
-            'Altura',
+            l10n.heightLabel,
             _height,
             'cm',
             140,
             220,
-            (value) => setState(() => _height = value),
+            (value) => setState(() {
+              _height = value;
+              _statsModified = true;
+            }),
           ),
           const SizedBox(height: 24),
           _buildAgeSlider(),
@@ -382,12 +445,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildAgeSlider() {
+    final l10n = AppL10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Edad',
-          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+        Text(
+          l10n.ageLabel,
+          style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 8),
         Row(
@@ -400,7 +464,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 divisions: 78,
                 activeColor: AppColors.primary,
                 inactiveColor: AppColors.cardBackground,
-                onChanged: (value) => setState(() => _age = value.round()),
+                onChanged: (value) => setState(() {
+                  _age = value.round();
+                  _statsModified = true;
+                }),
               ),
             ),
             Container(
@@ -411,7 +478,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '$_age años',
+                l10n.ageValue(_age),
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
@@ -429,23 +496,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildSexSelector() {
+    final l10n = AppL10n.of(context);
     final options = [
-      {'value': 'male', 'label': 'Hombre', 'icon': Icons.male},
-      {'value': 'female', 'label': 'Mujer', 'icon': Icons.female},
-      {'value': 'other', 'label': 'Prefiero no decir', 'icon': Icons.person},
+      {'value': 'male', 'label': l10n.male, 'icon': Icons.male},
+      {'value': 'female', 'label': l10n.female, 'icon': Icons.female},
+      {'value': 'other', 'label': l10n.preferNotToSay, 'icon': Icons.person},
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Sexo biológico',
-          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+        Text(
+          l10n.biologicalSex,
+          style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 4),
-        const Text(
-          'Usado para la fórmula de calorías',
-          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        Text(
+          l10n.biologicalSexHint,
+          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 12),
         Row(
@@ -454,7 +522,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             const color = AppColors.primary;
             return Expanded(
               child: GestureDetector(
-                onTap: () => setState(() => _sex = opt['value'] as String),
+                onTap: () => setState(() {
+                  _sex = opt['value'] as String;
+                  _statsModified = true;
+                }),
                 child: Container(
                   margin: EdgeInsets.only(
                     right: opt['value'] != 'other' ? 8 : 0,
@@ -556,24 +627,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildGoalPage() {
+    final l10n = AppL10n.of(context);
     final goals = [
       {
-        'title': 'Perder peso',
+        'key': 'Perder peso',
+        'title': l10n.goalLoseWeight,
         'icon': Icons.trending_down,
         'color': Colors.red,
       },
       {
-        'title': 'Ganar músculo',
+        'key': 'Ganar músculo',
+        'title': l10n.goalGainMuscle,
         'icon': Icons.fitness_center,
         'color': Colors.blue,
       },
       {
-        'title': 'Mantenerme en forma',
+        'key': 'Mantener peso',
+        'title': l10n.goalMaintain,
         'icon': Icons.favorite,
         'color': Colors.green,
       },
       {
-        'title': 'Mejorar resistencia',
+        'key': 'Mejorar salud',
+        'title': l10n.goalImproveHealth,
         'icon': Icons.directions_run,
         'color': Colors.orange,
       },
@@ -588,9 +664,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  '¿Cuál es tu objetivo?',
-                  style: TextStyle(
+                Text(
+                  l10n.onboardingGoalTitle,
+                  style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -601,6 +677,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ...goals.map((goal) => Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: _buildGoalOption(
+                        goal['key'] as String,
                         goal['title'] as String,
                         goal['icon'] as IconData,
                         goal['color'] as Color,
@@ -614,13 +691,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildGoalOption(String title, IconData icon, Color color) {
-    final isSelected = _goal == title;
+  Widget _buildGoalOption(
+      String key, String title, IconData icon, Color color) {
+    final isSelected = _goal == key;
 
     return GestureDetector(
       onTap: () {
         setState(() {
-          _goal = title;
+          _goal = key;
         });
       },
       child: Container(

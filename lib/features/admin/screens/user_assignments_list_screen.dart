@@ -1,6 +1,8 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
 import '../../profile/providers/user_provider.dart';
 import '../../auth/models/user.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
@@ -16,6 +18,7 @@ class UserAssignmentsListScreen extends StatefulWidget {
 
 class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
   final _searchController = TextEditingController();
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -28,6 +31,7 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -68,7 +72,12 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
                 padding: const EdgeInsets.all(16),
                 child: TextField(
                   controller: _searchController,
-                  onChanged: userProvider.setSearchQuery,
+                  onChanged: (query) {
+                    _debounce?.cancel();
+                    _debounce = Timer(const Duration(milliseconds: 300), () {
+                      userProvider.setSearchQuery(query);
+                    });
+                  },
                   decoration: InputDecoration(
                     hintText: 'Buscar',
                     prefixIcon: const Icon(
@@ -97,18 +106,18 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
                       color: AppColors.primary.withOpacity(0.3),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.info_outline,
                         color: AppColors.primary,
                         size: 20,
                       ),
-                      SizedBox(width: 12),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Usa los 3 puntos de cada usuario para asignar o editar su rutina semanal',
-                          style: TextStyle(
+                          AppL10n.of(context).assignHint,
+                          style: const TextStyle(
                             color: AppColors.primary,
                             fontSize: 12,
                           ),
@@ -131,10 +140,10 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
                             const ShimmerListTile(),
                       )
                     : userProvider.filteredUsers.isEmpty
-                        ? const Center(
+                        ? Center(
                             child: Text(
-                              'No se encontraron usuarios',
-                              style: TextStyle(
+                              AppL10n.of(context).noUsersFound,
+                              style: const TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 14,
                               ),

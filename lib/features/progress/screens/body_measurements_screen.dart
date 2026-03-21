@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -616,6 +617,35 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                             }
                           }
 
+                          // Validar rangos máximos razonables
+                          final maxRanges = <TextEditingController, double>{
+                            weightController: 300,
+                            heightController: 250,
+                            chestController: 200,
+                            waistController: 200,
+                            hipsController: 200,
+                            bicepsLeftController: 80,
+                            bicepsRightController: 80,
+                            thighLeftController: 120,
+                            thighRightController: 120,
+                          };
+                          for (final entry in maxRanges.entries) {
+                            final text = entry.key.text.trim();
+                            if (text.isNotEmpty) {
+                              final val = double.tryParse(text);
+                              if (val != null && val > entry.value) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        'Valor demasiado alto (máx: ${entry.value.toInt()})'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+                            }
+                          }
+
                           final measurementProvider =
                               Provider.of<BodyMeasurementProvider>(
                             context,
@@ -650,6 +680,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
 
                           if (context.mounted) {
                             Navigator.pop(context);
+                            if (success) HapticFeedback.mediumImpact();
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(

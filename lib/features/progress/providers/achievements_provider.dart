@@ -193,48 +193,65 @@ class AchievementsProvider with ChangeNotifier {
     }
   }
 
-  /// Verificar y desbloquear logros automáticamente
-  Future<void> checkAndUnlockAchievements({
+  /// Verificar y desbloquear logros automáticamente.
+  /// Retorna la lista de códigos de logros recién desbloqueados.
+  Future<List<String>> checkAndUnlockAchievements({
     int? totalWorkouts,
     int? currentStreak,
     double? weightLoss,
   }) async {
+    final unlocked = <String>[];
+
     // Primer entrenamiento
     if (totalWorkouts == 1 && !isUnlocked('first_workout')) {
-      await unlockAchievement('first_workout');
+      if (await unlockAchievement('first_workout')) {
+        unlocked.add('first_workout');
+      }
     }
 
     // Primera semana
     if (totalWorkouts == 7 && !isUnlocked('first_week')) {
-      await unlockAchievement('first_week');
+      if (await unlockAchievement('first_week')) {
+        unlocked.add('first_week');
+      }
     }
 
     // 10 entrenamientos
     if (totalWorkouts != null &&
         totalWorkouts >= 10 &&
         !isUnlocked('ten_workouts')) {
-      await unlockAchievement('ten_workouts');
+      if (await unlockAchievement('ten_workouts')) {
+        unlocked.add('ten_workouts');
+      }
     }
 
     // Racha de 7 días
     if (currentStreak != null &&
         currentStreak >= 7 &&
         !isUnlocked('streak_7')) {
-      await unlockAchievement('streak_7');
+      if (await unlockAchievement('streak_7')) {
+        unlocked.add('streak_7');
+      }
     }
 
     // Racha de 30 días
     if (currentStreak != null &&
         currentStreak >= 30 &&
         !isUnlocked('streak_30')) {
-      await unlockAchievement('streak_30');
+      if (await unlockAchievement('streak_30')) {
+        unlocked.add('streak_30');
+      }
     }
 
     // Pérdida de 5kg
     if (weightLoss != null &&
         weightLoss >= 5.0 &&
         !isUnlocked('weight_loss_5kg')) {
-      await unlockAchievement('weight_loss_5kg');
+      if (await unlockAchievement('weight_loss_5kg')) {
+        unlocked.add('weight_loss_5kg');
+      }
     }
+
+    return unlocked;
   }
 }

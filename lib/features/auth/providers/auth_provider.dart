@@ -19,6 +19,12 @@ class AuthProvider extends ChangeNotifier {
   static const int _maxAttempts = 5;
   static const Duration _lockoutDuration = Duration(seconds: 30);
 
+  // Rate limiting para register y forgot password
+  int _registerAttempts = 0;
+  DateTime? _registerLockoutUntil;
+  int _forgotPwdAttempts = 0;
+  DateTime? _forgotPwdLockoutUntil;
+
   bool get isAuthenticated => _isAuthenticated;
   User? get currentUser => _currentUser;
   bool get isAdmin => _currentUser?.role == 'admin';
@@ -142,6 +148,12 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> register(String email, String password, String name) async {
+    // Rate limiting
+    if (_registerLockoutUntil != null &&
+        DateTime.now().isBefore(_registerLockoutUntil!)) {
+      throw Exception('Demasiados intentos. Espera 30 segundos.');
+    }
+
     try {
       _isLoading = true;
       notifyListeners();
@@ -168,6 +180,11 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     } catch (e) {
+      _registerAttempts++;
+      if (_registerAttempts >= _maxAttempts) {
+        _registerLockoutUntil = DateTime.now().add(_lockoutDuration);
+        _registerAttempts = 0;
+      }
       _isLoading = false;
       notifyListeners();
       debugPrint('Register error: $e');
@@ -176,6 +193,12 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> forgotPassword(String email) async {
+    // Rate limiting
+    if (_forgotPwdLockoutUntil != null &&
+        DateTime.now().isBefore(_forgotPwdLockoutUntil!)) {
+      throw Exception('Demasiados intentos. Espera 30 segundos.');
+    }
+
     try {
       _isLoading = true;
       notifyListeners();
@@ -186,6 +209,11 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
+      _forgotPwdAttempts++;
+      if (_forgotPwdAttempts >= _maxAttempts) {
+        _forgotPwdLockoutUntil = DateTime.now().add(_lockoutDuration);
+        _forgotPwdAttempts = 0;
+      }
       _isLoading = false;
       notifyListeners();
       debugPrint('Forgot password error: $e');

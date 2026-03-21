@@ -152,6 +152,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                     children: [
                       TextFormField(
                         controller: _nameController,
+                        maxLength: 50,
                         decoration: const InputDecoration(
                           labelText: 'Nombre de la rutina',
                           border: OutlineInputBorder(),
@@ -167,6 +168,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                       TextFormField(
                         controller: _descriptionController,
                         maxLines: 3,
+                        maxLength: 200,
                         decoration: const InputDecoration(
                           labelText: 'Descripción',
                           border: OutlineInputBorder(),

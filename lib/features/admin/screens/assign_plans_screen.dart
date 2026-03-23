@@ -46,7 +46,9 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
     // Interceptar navegación del navbar mientras haya cambios sin guardar.
     UnsavedChangesGuard.register(() async {
       if (!_hasAnyWorkoutInSchedule) return true;

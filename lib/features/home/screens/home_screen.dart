@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     // Cargar datos al iniciar
-    Future.microtask(() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final workoutProvider =
@@ -279,7 +279,9 @@ class _UserHomeContentState extends State<_UserHomeContent> {
   @override
   void initState() {
     super.initState();
-    _loadNextWorkout();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadNextWorkout();
+    });
   }
 
   Future<void> _loadNextWorkout() async {

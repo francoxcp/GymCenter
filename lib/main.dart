@@ -50,19 +50,33 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late final AuthProvider _authProvider;
+  late final UserProvider _userProvider;
+  late final PreferencesProvider _preferencesProvider;
   late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
     _authProvider = AuthProvider();
+    _userProvider = UserProvider()..setAuthProvider(_authProvider);
+    _preferencesProvider = PreferencesProvider();
     _router = createAppRouter(_authProvider);
     // Registrar el router en NotificationService para manejar deep links
     NotificationService.setRouter(_router);
+
+    // Propagar cambios de auth a los providers dependientes fuera del build
+    _authProvider.addListener(_onAuthChanged);
+    // Trigger inicial para que PreferencesProvider cargue si ya hay sesión
+    _preferencesProvider.onAuthChanged(_authProvider);
+  }
+
+  void _onAuthChanged() {
+    _preferencesProvider.onAuthChanged(_authProvider);
   }
 
   @override
   void dispose() {
+    _authProvider.removeListener(_onAuthChanged);
     _authProvider.dispose();
     super.dispose();
   }
@@ -74,21 +88,9 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider.value(value: _authProvider),
         ChangeNotifierProvider(create: (_) => WorkoutProvider()),
         ChangeNotifierProvider(create: (_) => MealPlanProvider()),
-        ChangeNotifierProxyProvider<AuthProvider, UserProvider>(
-          create: (_) => UserProvider(),
-          update: (_, authProvider, userProvider) {
-            userProvider!.setAuthProvider(authProvider);
-            return userProvider;
-          },
-        ),
+        ChangeNotifierProvider.value(value: _userProvider),
         ChangeNotifierProvider(create: (_) => BodyMeasurementProvider()),
-        ChangeNotifierProxyProvider<AuthProvider, PreferencesProvider>(
-          create: (_) => PreferencesProvider(),
-          update: (_, auth, prefs) {
-            prefs!.onAuthChanged(auth);
-            return prefs;
-          },
-        ),
+        ChangeNotifierProvider.value(value: _preferencesProvider),
         ChangeNotifierProvider(create: (_) => AchievementsProvider()),
         ChangeNotifierProvider(create: (_) => WorkoutSessionProvider()),
         ChangeNotifierProvider(create: (_) => WorkoutProgressProvider()),

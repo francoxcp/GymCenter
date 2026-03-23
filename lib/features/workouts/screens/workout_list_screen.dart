@@ -13,6 +13,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../../shared/widgets/filter_chip_button.dart';
 import '../../../shared/widgets/assigned_workout_card.dart';
 import '../../../shared/widgets/coming_soon_workout_card.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 
 class WorkoutListScreen extends StatefulWidget {
   const WorkoutListScreen({super.key});
@@ -219,22 +220,15 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                     try {
                       await workoutProvider.deleteWorkout(workout.id);
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(AppL10n.of(context).workoutDeletedOk),
-                            backgroundColor: AppColors.primary,
-                          ),
-                        );
+                        AppSnackbar.success(
+                            context, AppL10n.of(context).workoutDeletedOk);
                       }
                     } catch (e) {
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(AppL10n.of(context)
-                                .workoutDeleteError(e.toString())),
-                            backgroundColor: Colors.redAccent,
-                          ),
-                        );
+                        AppSnackbar.error(
+                            context,
+                            AppL10n.of(context)
+                                .workoutDeleteError(e.toString()));
                       }
                     }
                   }

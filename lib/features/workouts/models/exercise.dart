@@ -27,10 +27,10 @@ class Exercise {
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
     return Exercise(
-      id: json['id'].toString(),
-      name: json['name'],
+      id: json['id']?.toString() ?? '',
+      name: json['name'] as String? ?? 'Unknown',
       description: json['instructions'] ?? json['description'],
-      sets: json['sets'],
+      sets: json['sets'] as int? ?? 3,
       reps: int.tryParse(json['reps'].toString()) ?? 12,
       restSeconds: json['rest_time'] ?? json['restSeconds'] ?? 60,
       videoUrl: json['video_url'] ?? json['videoUrl'],

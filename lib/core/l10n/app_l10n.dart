@@ -517,4 +517,81 @@ class AppL10n {
       isEn ? 'New workout routine' : 'Nueva rutina de entrenamiento';
   String get editUserLabel => isEn ? 'Edit user' : 'Editar usuario';
   String get deleteUser => isEn ? 'Delete user' : 'Eliminar usuario';
+
+  // ── Workout screens ────────────────────────────────────────────────────
+  String get addAtLeastOneExercise =>
+      isEn ? 'Add at least one exercise' : 'Agrega al menos un ejercicio';
+  String get routineCreated =>
+      isEn ? 'Routine created successfully' : 'Rutina creada exitosamente';
+  String get couldNotCreateRoutine => isEn
+      ? 'Could not create routine. Try again.'
+      : 'No se pudo crear la rutina. Intenta de nuevo.';
+  String get routineUpdated => isEn
+      ? 'Routine updated successfully'
+      : 'Rutina actualizada correctamente';
+  String errorUpdating(String e) =>
+      isEn ? 'Error updating: $e' : 'Error al actualizar: $e';
+  String get routineDeletedOk =>
+      isEn ? 'Routine deleted successfully' : 'Rutina eliminada correctamente';
+  String errorDeleting(String e) =>
+      isEn ? 'Error deleting: $e' : 'Error al eliminar: $e';
+  String errorSelectingVideo(String e) =>
+      isEn ? 'Error selecting video: $e' : 'Error al seleccionar video: $e';
+  String get videoUploaded =>
+      isEn ? 'Video uploaded successfully' : 'Video subido exitosamente';
+  String errorUploadingVideo(String e) =>
+      isEn ? 'Error uploading video: $e' : 'Error al subir video: $e';
+  String get exerciseNameRequired => isEn
+      ? 'Exercise name is required'
+      : 'El nombre del ejercicio es requerido';
+
+  // ── Today workout ──────────────────────────────────────────────────────
+  String get couldNotSaveProgress => isEn
+      ? 'Could not save progress. Check your connection.'
+      : 'No se pudo guardar el progreso. Verifica tu conexión.';
+  String get couldNotSaveWeights => isEn
+      ? 'Could not save session weights'
+      : 'No se pudieron guardar los pesos de esta sesión';
+  String get enterValidNumber =>
+      isEn ? 'Enter a valid number' : 'Ingresa un número válido';
+  String get weightMustBePositive =>
+      isEn ? 'Weight must be greater than 0' : 'El peso debe ser mayor a 0';
+  String newPersonalRecord(String w) =>
+      isEn ? 'New personal record! $w' : '¡Nuevo récord personal! $w';
+
+  // ── Body measurements ──────────────────────────────────────────────────
+  String get enterAtLeastOneMeasure =>
+      isEn ? 'Enter at least one measurement' : 'Ingresa al menos una medida';
+  String get valuesMustBePositive => isEn
+      ? 'Values must be positive numbers'
+      : 'Los valores deben ser números positivos';
+  String valueTooHigh(int max) =>
+      isEn ? 'Value too high (max: $max)' : 'Valor demasiado alto (máx: $max)';
+  String get measureSaved =>
+      isEn ? 'Measurement saved' : 'Medida guardada correctamente';
+  String get errorSavingMeasure =>
+      isEn ? 'Error saving measurement' : 'Error al guardar medida';
+
+  // ── Change password ────────────────────────────────────────────────────
+  String get passwordChanged => isEn
+      ? 'Password changed successfully ✅'
+      : 'Contraseña cambiada exitosamente ✅';
+  String errorChangingPassword(String e) =>
+      isEn ? 'Error changing password: $e' : 'Error al cambiar contraseña: $e';
+
+  // ── Profile photo ──────────────────────────────────────────────────────
+  String get unsupportedFormat => isEn
+      ? 'Unsupported format. Use JPG, PNG or WebP.'
+      : 'Formato no soportado. Usa JPG, PNG o WebP.';
+  String get imageTooLarge => isEn
+      ? 'Image too large. Max 5 MB.'
+      : 'La imagen es muy grande. Máximo 5 MB.';
+  String get profilePhotoUpdated =>
+      isEn ? 'Profile photo updated' : 'Foto de perfil actualizada';
+  String errorUploadingPhoto(String e) =>
+      isEn ? 'Error uploading photo: $e' : 'Error al subir foto: $e';
+
+  // ── Workout detail readonly ────────────────────────────────────────────
+  String get cancelLabel => isEn ? 'Cancel' : 'Cancelar';
+  String get deleteConfirm => isEn ? 'Delete' : 'Eliminar';
 }

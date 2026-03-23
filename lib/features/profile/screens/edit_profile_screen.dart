@@ -426,12 +426,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final extension = image.name.split('.').last.toLowerCase();
       if (!['jpg', 'jpeg', 'png', 'webp'].contains(extension)) {
         setState(() => _isUploadingPhoto = false);
-        scaffoldMessenger.showSnackBar(
-          const SnackBar(
-            content: Text('Formato no soportado. Usa JPG, PNG o WebP.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        if (!mounted) return;
+        AppSnackbar.error(context, AppL10n.of(context).unsupportedFormat);
         return;
       }
 
@@ -439,12 +435,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final fileSize = await image.length();
       if (fileSize > 5 * 1024 * 1024) {
         setState(() => _isUploadingPhoto = false);
-        scaffoldMessenger.showSnackBar(
-          const SnackBar(
-            content: Text('La imagen es muy grande. Máximo 5 MB.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        if (!mounted) return;
+        AppSnackbar.error(context, AppL10n.of(context).imageTooLarge);
         return;
       }
 
@@ -484,8 +476,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         );
 
         scaffoldMessenger.showSnackBar(
-          const SnackBar(
-            content: Text('Foto de perfil actualizada'),
+          SnackBar(
+            content:
+                Text(mounted ? AppL10n.of(context).profilePhotoUpdated : ''),
             backgroundColor: Colors.green,
           ),
         );
@@ -494,7 +487,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       debugPrint('Error al cambiar foto: $e');
       scaffoldMessenger.showSnackBar(
         SnackBar(
-          content: Text('Error al subir foto: $e'),
+          content: Text(mounted
+              ? AppL10n.of(context).errorUploadingPhoto(e.toString())
+              : e.toString()),
           backgroundColor: Colors.red,
         ),
       );

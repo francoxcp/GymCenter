@@ -2,6 +2,8 @@
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import '../providers/workout_provider.dart';
 import '../providers/workout_progress_provider.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -207,14 +209,16 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                                     TextButton(
                                       onPressed: () =>
                                           Navigator.pop(ctx, false),
-                                      child: const Text('Cancelar',
-                                          style: TextStyle(
+                                      child: Text(
+                                          AppL10n.of(context).cancelLabel,
+                                          style: const TextStyle(
                                               color: AppColors.textSecondary)),
                                     ),
                                     TextButton(
                                       onPressed: () => Navigator.pop(ctx, true),
-                                      child: const Text('Eliminar',
-                                          style: TextStyle(
+                                      child: Text(
+                                          AppL10n.of(context).deleteConfirm,
+                                          style: const TextStyle(
                                               color: Colors.redAccent)),
                                     ),
                                   ],
@@ -224,23 +228,16 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                                 try {
                                   await wp.deleteWorkout(workoutId);
                                   if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                            'Rutina eliminada correctamente'),
-                                        backgroundColor: AppColors.primary,
-                                      ),
-                                    );
+                                    AppSnackbar.success(context,
+                                        AppL10n.of(context).routineDeletedOk);
                                     context.pop();
                                   }
                                 } catch (e) {
                                   if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Error al eliminar: $e'),
-                                        backgroundColor: Colors.redAccent,
-                                      ),
-                                    );
+                                    AppSnackbar.error(
+                                        context,
+                                        AppL10n.of(context)
+                                            .errorDeleting(e.toString()));
                                   }
                                 }
                               }

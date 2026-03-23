@@ -10,6 +10,7 @@ import '../providers/body_measurement_provider.dart';
 import '../models/body_measurement.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 
 class BodyMeasurementsScreen extends StatefulWidget {
   const BodyMeasurementsScreen({super.key});
@@ -592,12 +593,8 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                             (c) => c.text.trim().isNotEmpty,
                           );
                           if (!hasAnyValue) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Ingresa al menos una medida'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
+                            AppSnackbar.error(context,
+                                AppL10n.of(context).enterAtLeastOneMeasure);
                             return;
                           }
                           // Validar que los valores sean numéricos positivos
@@ -605,13 +602,8 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                             if (c.text.trim().isNotEmpty) {
                               final val = double.tryParse(c.text.trim());
                               if (val == null || val <= 0) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                        'Los valores deben ser números positivos'),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
+                                AppSnackbar.error(context,
+                                    AppL10n.of(context).valuesMustBePositive);
                                 return;
                               }
                             }
@@ -634,13 +626,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                             if (text.isNotEmpty) {
                               final val = double.tryParse(text);
                               if (val != null && val > entry.value) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        'Valor demasiado alto (máx: ${entry.value.toInt()})'),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
+                                AppSnackbar.error(
+                                    context,
+                                    AppL10n.of(context)
+                                        .valueTooHigh(entry.value.toInt()));
                                 return;
                               }
                             }
@@ -680,18 +669,14 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
 
                           if (context.mounted) {
                             Navigator.pop(context);
-                            if (success) HapticFeedback.mediumImpact();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  success
-                                      ? 'Medida guardada correctamente'
-                                      : 'Error al guardar medida',
-                                ),
-                                backgroundColor:
-                                    success ? Colors.green : AppColors.error,
-                              ),
-                            );
+                            if (success) {
+                              HapticFeedback.mediumImpact();
+                              AppSnackbar.success(
+                                  context, AppL10n.of(context).measureSaved);
+                            } else {
+                              AppSnackbar.error(context,
+                                  AppL10n.of(context).errorSavingMeasure);
+                            }
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -701,9 +686,9 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          'Guardar',
-                          style: TextStyle(
+                        child: Text(
+                          AppL10n.of(context).save,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,

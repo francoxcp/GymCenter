@@ -6,6 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/l10n/app_l10n.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import '../models/workout.dart';
 import '../models/exercise.dart';
 import '../providers/workout_provider.dart';
@@ -200,12 +202,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   Future<void> _saveWorkout() async {
     if (!_formKey.currentState!.validate()) return;
     if (_exercises.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Agrega al menos un ejercicio'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnackbar.error(context, AppL10n.of(context).addAtLeastOneExercise);
       return;
     }
 
@@ -238,23 +235,13 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
       await workoutProvider.addWorkout(workout, userId: currentUserId);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Rutina creada exitosamente'),
-            backgroundColor: AppColors.success,
-          ),
-        );
+        AppSnackbar.success(context, AppL10n.of(context).routineCreated);
         Navigator.pop(context, true);
       }
     } catch (e) {
       debugPrint('Error al crear rutina: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No se pudo crear la rutina. Intenta de nuevo.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackbar.error(context, AppL10n.of(context).couldNotCreateRoutine);
       }
     } finally {
       if (mounted) {
@@ -626,12 +613,8 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al seleccionar video: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackbar.error(
+            context, AppL10n.of(context).errorSelectingVideo(e.toString()));
       }
     }
   }
@@ -672,24 +655,15 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
         });
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Video subido exitosamente'),
-              backgroundColor: AppColors.success,
-            ),
-          );
+          AppSnackbar.success(context, AppL10n.of(context).videoUploaded);
         }
       } else {
         throw Exception('No se pudo subir el video');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al subir video: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackbar.error(
+            context, AppL10n.of(context).errorUploadingVideo(e.toString()));
       }
     } finally {
       setState(() => _isUploadingVideo = false);

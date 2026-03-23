@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/l10n/app_l10n.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import 'dart:async';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -13,6 +14,7 @@ import '../providers/workout_provider.dart';
 import '../providers/workout_progress_provider.dart';
 import '../models/exercise.dart';
 import '../models/workout.dart';
+import '../models/workout_progress.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/video_player_widget.dart';
 import 'workout_summary_screen.dart';
@@ -254,7 +256,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     }
   }
 
-  void _showRestoreDialog(progress, String workoutName) {
+  void _showRestoreDialog(WorkoutProgress progress, String workoutName) {
     final progressPercent = progress.progressPercentage.toInt();
     final timeAgo = _getTimeAgoText(progress.timeSinceUpdate);
 
@@ -629,19 +631,12 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content:
-                Text('No se pudo guardar el progreso. Verifica tu conexión.'),
-            backgroundColor: Colors.redAccent,
-            duration: Duration(seconds: 4),
-          ),
-        );
+        AppSnackbar.error(context, AppL10n.of(context).couldNotSaveProgress);
       }
     }
   }
 
-  void _nextExercise(Exercise currentExercise, workout) {
+  void _nextExercise(Exercise currentExercise, Workout workout) {
     debugPrint(
         '🔄 _nextExercise: currentIndex=$_currentExerciseIndex, total=${_completedSets.length}');
 
@@ -887,12 +882,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     } catch (e) {
       debugPrint('Error guardando pesos: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No se pudieron guardar los pesos de esta sesión'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackbar.error(context, AppL10n.of(context).couldNotSaveWeights);
       }
     }
   }
@@ -984,21 +974,13 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               final inputLbs =
                   double.tryParse(controller.text.replaceAll(',', '.'));
               if (controller.text.trim().isNotEmpty && inputLbs == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Ingresa un número válido'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
+                AppSnackbar.error(
+                    context, AppL10n.of(context).enterValidNumber);
                 return;
               }
               if (inputLbs != null && inputLbs <= 0) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('El peso debe ser mayor a 0'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
+                AppSnackbar.error(
+                    context, AppL10n.of(context).weightMustBePositive);
                 return;
               }
               // Convertir libras → kg para almacenar internamente
@@ -1022,7 +1004,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         const Text('🏆', style: TextStyle(fontSize: 18)),
                         const SizedBox(width: 10),
                         Text(
-                          '¡Nuevo récord personal! ${_fmtWeight(weight)}',
+                          AppL10n.of(context)
+                              .newPersonalRecord(_fmtWeight(weight)),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.black,

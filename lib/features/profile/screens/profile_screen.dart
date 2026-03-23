@@ -11,6 +11,7 @@ import '../../../shared/widgets/primary_button.dart';
 import '../../../config/supabase_config.dart';
 import '../../../shared/services/storage_service.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -86,21 +87,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() => _hasChanges = false);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppL10n.of(context).profileUpdated),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AppSnackbar.success(context, AppL10n.of(context).profileUpdated);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppL10n.of(context).errorSavingMsg(e.toString())),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackbar.error(
+            context, AppL10n.of(context).errorSavingMsg(e.toString()));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -141,8 +133,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     setState(() => _isUploadingPhoto = true);
     // ignore: use_build_context_synchronously
-    final messenger = ScaffoldMessenger.of(context);
-    // ignore: use_build_context_synchronously
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     // ignore: use_build_context_synchronously
     final l10n = AppL10n.of(context);
@@ -181,17 +171,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         authProvider
             .updateUser(authProvider.currentUser!.copyWith(photoUrl: photoUrl));
 
-        messenger.showSnackBar(
-          SnackBar(
-              content: Text(l10n.photoUpdated), backgroundColor: Colors.green),
-        );
+        if (mounted) {
+          AppSnackbar.success(context, l10n.photoUpdated);
+        }
       }
     } catch (e) {
-      messenger.showSnackBar(
-        SnackBar(
-            content: Text('${l10n.uploadPhotoError}: $e'),
-            backgroundColor: Colors.red),
-      );
+      if (mounted) {
+        AppSnackbar.error(context, '${l10n.uploadPhotoError}: $e');
+      }
     } finally {
       if (mounted) setState(() => _isUploadingPhoto = false);
     }

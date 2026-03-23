@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import '../models/workout.dart';
 import '../models/exercise.dart';
 import '../providers/workout_provider.dart';
@@ -346,21 +348,12 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
 
       if (mounted) {
         Navigator.pop(context, true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Rutina actualizada correctamente'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AppSnackbar.success(context, AppL10n.of(context).routineUpdated);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al actualizar: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackbar.error(
+            context, AppL10n.of(context).errorUpdating(e.toString()));
       }
     } finally {
       if (mounted) {
@@ -406,21 +399,12 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
 
       if (mounted) {
         Navigator.pop(context, true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Rutina eliminada correctamente'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AppSnackbar.success(context, AppL10n.of(context).routineDeletedOk);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al eliminar: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackbar.error(
+            context, AppL10n.of(context).errorDeleting(e.toString()));
       }
     } finally {
       if (mounted) {
@@ -572,12 +556,8 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al seleccionar video: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackbar.error(
+            context, AppL10n.of(context).errorSelectingVideo(e.toString()));
       }
     }
   }
@@ -621,24 +601,15 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
         });
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Video subido exitosamente'),
-              backgroundColor: AppColors.success,
-            ),
-          );
+          AppSnackbar.success(context, AppL10n.of(context).videoUploaded);
         }
       } else {
         throw Exception('No se pudo subir el video');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al subir video: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackbar.error(
+            context, AppL10n.of(context).errorUploadingVideo(e.toString()));
       }
     } finally {
       setState(() => _isUploadingVideo = false);
@@ -647,12 +618,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
 
   void _save() {
     if (_nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('El nombre del ejercicio es requerido'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnackbar.error(context, AppL10n.of(context).exerciseNameRequired);
       return;
     }
 

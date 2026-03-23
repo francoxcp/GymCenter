@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import '../../../shared/services/security_service.dart';
 import '../../auth/providers/auth_provider.dart';
 
@@ -371,10 +372,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         if (result['success']) {
           // Mostrar éxito
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Contraseña cambiada exitosamente ✅'),
+            SnackBar(
+              content: Text(AppL10n.of(context).passwordChanged),
               backgroundColor: AppColors.success,
-              duration: Duration(seconds: 3),
+              duration: const Duration(seconds: 3),
             ),
           );
 
@@ -390,19 +391,15 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      _showError('Error al cambiar contraseña: ${e.toString()}');
+      if (mounted) {
+        _showError(AppL10n.of(context).errorChangingPassword(e.toString()));
+      }
     }
   }
 
   void _showError(String message) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      AppSnackbar.error(context, message);
     }
   }
 }

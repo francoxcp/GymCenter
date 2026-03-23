@@ -119,6 +119,13 @@ class _MyAppState extends State<MyApp> {
           routeInformationProvider: _router.routeInformationProvider,
           routerDelegate: _router.routerDelegate,
           backButtonDispatcher: _backButtonDispatcher,
+          // Siempre indicarle al sistema que nosotros manejamos el botón atrás.
+          // Sin esto, Flutter envía canHandlePop=false en pantallas raíz y
+          // Android cierra la app directamente sin pasar por nuestro dispatcher.
+          onNavigationNotification: (notification) {
+            SystemNavigator.setFrameworkHandlesBack(true);
+            return true;
+          },
         ),
       ),
     );

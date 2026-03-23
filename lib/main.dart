@@ -163,8 +163,8 @@ class _DoubleBackButtonDispatcher extends RootBackButtonDispatcher {
       _lastBackPress = now;
       final locale = preferencesProvider.appLocale.languageCode;
       final message = locale == 'en'
-          ? 'Press back again to exit'
-          : 'Presiona atrás de nuevo para salir';
+          ? 'Press back again to exit the app'
+          : 'Presiona atrás de nuevo para salir de la aplicación';
       scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
       );

@@ -48,13 +48,13 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+class _MyAppState extends State<MyApp> {
   late final AuthProvider _authProvider;
   late final UserProvider _userProvider;
   late final PreferencesProvider _preferencesProvider;
   late final GoRouter _router;
+  late final _DoubleBackButtonDispatcher _backButtonDispatcher;
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
-  DateTime? _lastBackPress;
 
   @override
   void initState() {
@@ -64,6 +64,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _userProvider = UserProvider()..setAuthProvider(_authProvider);
     _preferencesProvider = PreferencesProvider();
     _router = createAppRouter(_authProvider);
+    _backButtonDispatcher = _DoubleBackButtonDispatcher(
+      scaffoldMessengerKey: _scaffoldMessengerKey,
+      preferencesProvider: _preferencesProvider,
+    );
     // Registrar el router en NotificationService para manejar deep links
     NotificationService.setRouter(_router);
 
@@ -71,13 +75,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _authProvider.addListener(_onAuthChanged);
     // Trigger inicial para que PreferencesProvider cargue si ya hay sesión
     _preferencesProvider.onAuthChanged(_authProvider);
-
-    // Registrar observer DESPUÉS del primer frame para que Router (go_router)
-    // se registre primero. Así go_router maneja pops normales y nuestro
-    // observer solo se invoca cuando go_router ya no puede hacer pop (raíz).
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      WidgetsBinding.instance.addObserver(this);
-    });
   }
 
   void _onAuthChanged() {
@@ -86,34 +83,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     _authProvider.removeListener(_onAuthChanged);
     _authProvider.dispose();
     super.dispose();
-  }
-
-  @override
-  Future<bool> didPopRoute() async {
-    // Este método solo se invoca cuando go_router ya no puede hacer pop
-    // (estamos en una ruta raíz sin historial de navegación).
-    // Requiere doble atrás para salir de la app.
-    final now = DateTime.now();
-    if (_lastBackPress == null ||
-        now.difference(_lastBackPress!) > const Duration(seconds: 2)) {
-      _lastBackPress = now;
-      final locale = _preferencesProvider.appLocale.languageCode;
-      final message = locale == 'en'
-          ? 'Press back again to exit'
-          : 'Presiona atrás de nuevo para salir';
-      _scaffoldMessengerKey.currentState?.showSnackBar(
-        SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
-      );
-      return true; // Interceptamos — no salir
-    }
-
-    // Segunda pulsación dentro de 2 s — salir de la app
-    SystemNavigator.pop();
-    return true;
   }
 
   @override
@@ -143,9 +115,57 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          routerConfig: _router,
+          routeInformationParser: _router.routeInformationParser,
+          routeInformationProvider: _router.routeInformationProvider,
+          routerDelegate: _router.routerDelegate,
+          backButtonDispatcher: _backButtonDispatcher,
         ),
       ),
     );
+  }
+}
+
+/// Dispatcher personalizado que intercepta el botón atrás del sistema.
+/// Primero deja que go_router intente hacer pop normalmente (vía invokeCallback).
+/// Solo si go_router no puede hacer pop (pantalla raíz), aplica doble-atrás.
+class _DoubleBackButtonDispatcher extends RootBackButtonDispatcher {
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
+  final PreferencesProvider preferencesProvider;
+  DateTime? _lastBackPress;
+
+  _DoubleBackButtonDispatcher({
+    required this.scaffoldMessengerKey,
+    required this.preferencesProvider,
+  });
+
+  @override
+  Future<bool> didPopRoute() async {
+    // invokeCallback ejecuta el callback registrado por el widget Router,
+    // que a su vez llama a routerDelegate.popRoute().
+    // Si go_router puede hacer pop (pantalla interna) → retorna true.
+    // Si no puede (pantalla raíz) → retorna false.
+    final handled = await invokeCallback(Future<bool>.value(false));
+    if (handled) {
+      return true; // go_router hizo pop normalmente
+    }
+
+    // Estamos en una pantalla raíz — requiere doble atrás para salir.
+    final now = DateTime.now();
+    if (_lastBackPress == null ||
+        now.difference(_lastBackPress!) > const Duration(seconds: 2)) {
+      _lastBackPress = now;
+      final locale = preferencesProvider.appLocale.languageCode;
+      final message = locale == 'en'
+          ? 'Press back again to exit'
+          : 'Presiona atrás de nuevo para salir';
+      scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+      );
+      return true; // Interceptado — no salir
+    }
+
+    // Segunda pulsación dentro de 2 s — salir de la app
+    SystemNavigator.pop();
+    return true;
   }
 }

@@ -131,15 +131,20 @@ class PreferencesProvider with ChangeNotifier {
 
   /// Llamado por el ProxyProvider en main.dart cuando AuthProvider cambia.
   /// Carga las preferencias automáticamente al iniciar sesión.
+  /// Usa addPostFrameCallback para evitar notifyListeners durante build.
   void onAuthChanged(AuthProvider auth) {
     final userId = auth.currentUser?.id;
     if (userId != null && userId != _lastUserId) {
       _lastUserId = userId;
-      loadPreferences();
-    } else if (userId == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        loadPreferences();
+      });
+    } else if (userId == null && _lastUserId != null) {
       _lastUserId = null;
       _preferences = null;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 

@@ -1,13 +1,12 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
 import '../../../config/supabase_config.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/user_provider.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
-import '../../workouts/screens/create_workout_screen.dart';
-import 'user_management_screen.dart';
-import 'user_assignments_list_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -274,9 +273,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               ),
                       ),
                 const SizedBox(height: AppSpacing.xxl),
-                const Text(
-                  'GESTIÓN RÁPIDA',
-                  style: TextStyle(
+                Text(
+                  AppL10n.of(context).quickManagement,
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textSecondary,
@@ -287,43 +286,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 _QuickActionButton(
                   icon: Icons.people,
                   iconColor: Colors.blue,
-                  title: 'Gestión de usuarios',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const UserManagementScreen(),
-                      ),
-                    );
-                  },
+                  title: AppL10n.of(context).userManagement,
+                  onTap: () => context.push('/admin/users'),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 _QuickActionButton(
                   icon: Icons.assignment_ind,
                   iconColor: Colors.orange,
-                  title: 'Asignaciones de usuarios',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const UserAssignmentsListScreen(),
-                      ),
-                    );
-                  },
+                  title: AppL10n.of(context).userAssignments,
+                  onTap: () => context.push('/admin/assignments'),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 _QuickActionButton(
                   icon: Icons.fitness_center,
                   iconColor: Colors.green,
-                  title: 'Nueva rutina de entrenamiento',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CreateWorkoutScreen(),
-                      ),
-                    );
-                  },
+                  title: AppL10n.of(context).newWorkoutRoutine,
+                  onTap: () => context.push('/admin/create-workout'),
                 ),
               ],
             ),

@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../config/supabase_config.dart';
 import '../../../shared/widgets/custom_text_field.dart';
@@ -70,22 +71,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (mounted) {
         HapticFeedback.mediumImpact();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppL10n.of(context).profileUpdated),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AppSnackbar.success(context, AppL10n.of(context).profileUpdated);
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppL10n.of(context).errorSaving(e.toString())),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnackbar.error(
+            context, AppL10n.of(context).errorSaving(e.toString()));
       }
     } finally {
       if (mounted) {

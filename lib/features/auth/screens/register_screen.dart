@@ -2,6 +2,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/app_validators.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/app_snackbar.dart';
@@ -43,7 +44,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     // Validar formato de email
-    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+    if (!AppValidators.isValidEmail(email)) {
       _showError('Por favor ingresa un correo electrónico válido');
       return;
     }
@@ -205,8 +206,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) return null;
-                  if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
-                      .hasMatch(value.trim())) {
+                  if (!AppValidators.isValidEmail(value.trim())) {
                     return 'Ingresa un correo electrónico válido';
                   }
                   return null;

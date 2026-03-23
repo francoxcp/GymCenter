@@ -459,4 +459,63 @@ class AppL10n {
       isEn ? 'No exercises found' : 'No se encontraron ejercicios';
   String errorSaving(String e) =>
       isEn ? 'Error saving: $e' : 'Error al guardar: $e';
+
+  // ── Onboarding dialog ────────────────────────────────────────────────────
+  String get useDefaultValues =>
+      isEn ? 'Use default values?' : '¿Usar valores por defecto?';
+  String get defaultValuesBody => isEn
+      ? 'You haven\'t modified your data. Are you sure these values are correct?'
+      : 'No has modificado tus datos. ¿Estás seguro de que estos valores son correctos?';
+  String get onboardingErrorSaving =>
+      isEn ? 'Error saving' : 'Error al guardar';
+
+  // ── Admin management ─────────────────────────────────────────────────────
+  String get userUpdated =>
+      isEn ? 'User updated successfully' : 'Usuario actualizado correctamente';
+  String get editUser => isEn ? 'Edit user' : 'Editar usuario';
+  String get nameLabel => isEn ? 'Name' : 'Nombre';
+  String get save => isEn ? 'Save' : 'Guardar';
+  String get removeAdmin => isEn ? 'Remove admin' : 'Quitar admin';
+  String get makeAdmin => isEn ? 'Make admin' : 'Hacer admin';
+  String userNowAdmin(String name) =>
+      isEn ? '$name is now admin' : '$name es ahora administrador';
+  String adminRemovedFrom(String name) => isEn
+      ? 'Admin permissions removed from $name'
+      : 'Permisos de admin removidos de $name';
+  String get confirmDeletion =>
+      isEn ? 'Confirm deletion' : 'Confirmar eliminación';
+  String confirmDeleteUser(String name) => isEn
+      ? 'Are you sure you want to delete $name? This action cannot be undone.'
+      : '¿Estás seguro de eliminar a $name? Esta acción no se puede deshacer.';
+  String get userDeleted =>
+      isEn ? 'User deleted successfully' : 'Usuario eliminado correctamente';
+  String get deleteLabel => isEn ? 'Delete' : 'Eliminar';
+  String get routineDeleted => isEn ? 'Routine removed' : 'Rutina eliminada';
+  String errorDeletingRoutine(String e) =>
+      isEn ? 'Error deleting routine: $e' : 'Error al eliminar la rutina: $e';
+  String get routineSaved =>
+      isEn ? 'Routine saved successfully' : 'Rutina guardada correctamente';
+  String get discardChanges =>
+      isEn ? 'Discard changes?' : '¿Descartar cambios?';
+  String get discardChangesBody => isEn
+      ? 'You have unsaved changes. Do you want to discard them?'
+      : 'Hay cambios no guardados. ¿Deseas descartarlos?';
+  String get discard => isEn ? 'Discard' : 'Descartar';
+
+  // ── Auth / errors ────────────────────────────────────────────────────────
+  String get enterEmail =>
+      isEn ? 'Enter your email' : 'Ingresa tu correo electrónico';
+  String get pressBackToExit =>
+      isEn ? 'Press back again to exit' : 'Presiona atrás de nuevo para salir';
+  String get search => isEn ? 'Search' : 'Buscar';
+
+  // ── Admin dashboard ──────────────────────────────────────────────────────
+  String get quickManagement => isEn ? 'QUICK MANAGEMENT' : 'GESTIÓN RÁPIDA';
+  String get userManagement => isEn ? 'User management' : 'Gestión de usuarios';
+  String get userAssignments =>
+      isEn ? 'User assignments' : 'Asignaciones de usuarios';
+  String get newWorkoutRoutine =>
+      isEn ? 'New workout routine' : 'Nueva rutina de entrenamiento';
+  String get editUserLabel => isEn ? 'Edit user' : 'Editar usuario';
+  String get deleteUser => isEn ? 'Delete user' : 'Eliminar usuario';
 }

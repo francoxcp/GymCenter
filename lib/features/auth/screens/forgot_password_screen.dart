@@ -1,6 +1,8 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/services/security_service.dart';
@@ -126,12 +128,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   Future<void> _handlePasswordReset() async {
     if (_emailController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ingresa tu correo electrónico'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnackbar.error(context, AppL10n.of(context).enterEmail);
       return;
     }
 
@@ -145,13 +142,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() => _isLoading = false);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message']),
-          backgroundColor: result['success'] ? AppColors.success : Colors.red,
-          duration: const Duration(seconds: 4),
-        ),
-      );
+      if (result['success']) {
+        AppSnackbar.success(context, result['message']);
+      } else {
+        AppSnackbar.error(context, result['message']);
+      }
 
       if (result['success']) {
         // Esperar un momento y volver al login

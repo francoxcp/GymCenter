@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import '../../profile/providers/user_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/models/user.dart';
@@ -60,12 +61,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               final userProvider =
                   Provider.of<UserProvider>(context, listen: false);
               userProvider.loadUsers();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(AppL10n.of(context).reloadingUsers),
-                  duration: const Duration(seconds: 1),
-                ),
-              );
+              AppSnackbar.info(context, AppL10n.of(context).reloadingUsers);
             },
             tooltip: 'Recargar usuarios',
           ),
@@ -87,7 +83,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     });
                   },
                   decoration: InputDecoration(
-                    hintText: 'Buscar',
+                    hintText: AppL10n.of(context).search,
                     prefixIcon: const Icon(
                       Icons.search,
                       color: AppColors.textSecondary,
@@ -279,7 +275,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               const SizedBox(height: 20),
               ListTile(
                 leading: const Icon(Icons.edit, color: Colors.blue),
-                title: const Text('Editar usuario'),
+                title: Text(AppL10n.of(context).editUserLabel),
                 onTap: () {
                   Navigator.pop(context);
                   _showEditUserDialog(user);
@@ -289,8 +285,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 ListTile(
                   leading: const Icon(Icons.admin_panel_settings,
                       color: Colors.orange),
-                  title: Text(
-                      user.role == 'admin' ? 'Quitar admin' : 'Hacer admin'),
+                  title: Text(user.role == 'admin'
+                      ? AppL10n.of(context).removeAdmin
+                      : AppL10n.of(context).makeAdmin),
                   onTap: () {
                     Navigator.pop(context);
                     _toggleAdminRole(user);
@@ -299,8 +296,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               if (user.id != currentUserId)
                 ListTile(
                   leading: const Icon(Icons.delete, color: Colors.red),
-                  title: const Text('Eliminar usuario',
-                      style: TextStyle(color: Colors.red)),
+                  title: Text(AppL10n.of(context).deleteUser,
+                      style: const TextStyle(color: Colors.red)),
                   onTap: () {
                     Navigator.pop(context);
                     _confirmDeleteUser(user);
@@ -321,18 +318,18 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: const Text('Editar usuario'),
+        title: Text(AppL10n.of(context).editUser),
         content: TextField(
           controller: nameController,
-          decoration: const InputDecoration(
-            labelText: 'Nombre',
+          decoration: InputDecoration(
+            labelText: AppL10n.of(context).nameLabel,
             border: OutlineInputBorder(),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(AppL10n.of(context).cancel),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -345,20 +342,15 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 );
                 if (context.mounted) {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Usuario actualizado correctamente')),
-                  );
+                  AppSnackbar.success(context, AppL10n.of(context).userUpdated);
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $e')),
-                  );
+                  AppSnackbar.error(context, 'Error: $e');
                 }
               }
             },
-            child: const Text('Guardar'),
+            child: Text(AppL10n.of(context).save),
           ),
         ],
       ),
@@ -378,21 +370,17 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     try {
       await userProvider.updateUser(user.id, role: newRole);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              newRole == 'admin'
-                  ? '${user.name} es ahora administrador'
-                  : 'Permisos de admin removidos de ${user.name}',
-            ),
-          ),
+        final l10n = AppL10n.of(context);
+        AppSnackbar.success(
+          context,
+          newRole == 'admin'
+              ? l10n.userNowAdmin(user.name)
+              : l10n.adminRemovedFrom(user.name),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        AppSnackbar.error(context, 'Error: $e');
       }
     } finally {
       if (mounted) setState(() => _isProcessing = false);
@@ -407,16 +395,16 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         return StatefulBuilder(
           builder: (context, setState) => AlertDialog(
             backgroundColor: AppColors.cardBackground,
-            title: const Text('Confirmar eliminación'),
+            title: Text(AppL10n.of(context).confirmDeletion),
             content: Text(
-              '¿Estás seguro de eliminar a ${user.name}? Esta acción no se puede deshacer.',
+              AppL10n.of(context).confirmDeleteUser(user.name),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
             actions: [
               TextButton(
                 onPressed: isDeleting ? null : () => Navigator.pop(context),
-                child: const Text('Cancelar'),
+                child: Text(AppL10n.of(context).cancel),
               ),
               ElevatedButton(
                 onPressed: isDeleting
@@ -429,18 +417,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                           await userProvider.deleteUser(user.id);
                           if (context.mounted) {
                             Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('Usuario eliminado correctamente')),
-                            );
+                            AppSnackbar.success(
+                                context, AppL10n.of(context).userDeleted);
                           }
                         } catch (e) {
                           if (context.mounted) {
                             Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error: $e')),
-                            );
+                            AppSnackbar.error(context, 'Error: $e');
                           }
                         }
                       },
@@ -454,7 +437,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('Eliminar'),
+                    : Text(AppL10n.of(context).deleteLabel),
               ),
             ],
           ),

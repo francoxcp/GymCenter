@@ -2,6 +2,7 @@
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import '../../auth/models/user.dart';
 import '../../profile/providers/user_provider.dart';
 import '../../workouts/models/workout.dart';
@@ -309,20 +310,10 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
 
       if (!mounted) return;
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Rutina guardada correctamente'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      AppSnackbar.success(context, AppL10n.of(context).routineSaved);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppL10n.of(context).errorSaving(e.toString())),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnackbar.error(context, AppL10n.of(context).errorSaving(e.toString()));
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -333,23 +324,23 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: const Text(
-          '¿Descartar cambios?',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          AppL10n.of(context).discardChanges,
+          style: const TextStyle(color: Colors.white),
         ),
-        content: const Text(
-          'Tienes días con rutinas asignadas que no se han guardado. ¿Salir de todos modos?',
-          style: TextStyle(color: AppColors.textSecondary),
+        content: Text(
+          AppL10n.of(context).discardChangesBody,
+          style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Continuar editando'),
+            child: Text(AppL10n.of(context).cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'Descartar',
+            child: Text(
+              AppL10n.of(context).discard,
               style: TextStyle(color: Colors.redAccent),
             ),
           ),

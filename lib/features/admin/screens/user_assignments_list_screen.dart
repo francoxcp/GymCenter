@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import '../../profile/providers/user_provider.dart';
 import '../../auth/models/user.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
@@ -283,20 +284,12 @@ class _UserAssignmentCard extends StatelessWidget {
                     if (!context.mounted) return;
                     await userProvider.loadUsers();
                     if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Rutina eliminada'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
+                    final l10n = AppL10n.of(context);
+                    AppSnackbar.info(context, l10n.routineDeleted);
                   } catch (e) {
                     if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error al eliminar la rutina: $e'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
+                    AppSnackbar.error(context,
+                        AppL10n.of(context).errorDeletingRoutine(e.toString()));
                   }
                 }
               },

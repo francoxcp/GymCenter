@@ -2,7 +2,7 @@
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/app_theme.dart';\nimport '../../../shared/widgets/app_snackbar.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../settings/providers/preferences_provider.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -41,13 +41,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         builder: (ctx) => AlertDialog(
           backgroundColor: AppColors.cardBackground,
           title: Text(
-            l10n.isEn ? 'Use default values?' : '¿Usar valores por defecto?',
+            l10n.useDefaultValues,
             style: const TextStyle(color: Colors.white),
           ),
           content: Text(
-            l10n.isEn
-                ? 'You haven\'t modified your data. Are you sure these values are correct?'
-                : 'No has modificado tus datos. ¿Estás seguro de que estos valores son correctos?',
+            l10n.defaultValuesBody,
             style: const TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
@@ -138,12 +136,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     } catch (e) {
       if (mounted) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al guardar: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        AppSnackbar.error(context, '${l10n.onboardingErrorSaving}: $e');
       }
     }
   }

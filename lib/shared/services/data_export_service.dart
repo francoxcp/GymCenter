@@ -13,8 +13,9 @@ class DataExportService {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) throw Exception('Usuario no autenticado');
 
-    // Recopilar todos los datos del usuario en paralelo
-    final results = await Future.wait([
+    // Recopilar todos los datos del usuario en paralelo.
+    // Cada consulta captura sus errores para que un fallo parcial no bloquee la exportación.
+    final queries = <Future<dynamic>>[
       _supabase.from('users').select().eq('id', userId).maybeSingle(),
       _supabase
           .from('workout_sessions')
@@ -42,7 +43,11 @@ class DataExportService {
           .select()
           .eq('user_id', userId)
           .maybeSingle(),
-    ]);
+    ];
+
+    final results = await Future.wait(
+      queries.map((q) => q.catchError((_) => null)),
+    );
 
     final exportData = {
       'exported_at': DateTime.now().toIso8601String(),

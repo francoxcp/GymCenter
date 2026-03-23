@@ -18,6 +18,39 @@ class NotificationService {
 
   bool _isInitialized = false;
 
+  /// Mapa offset UTC → zona IANA representativa.
+  static String _ianaFromOffset(Duration offset) {
+    final hours = offset.inHours;
+    const map = {
+      -12: 'Etc/GMT+12',
+      -11: 'Pacific/Pago_Pago',
+      -10: 'Pacific/Honolulu',
+      -9: 'America/Anchorage',
+      -8: 'America/Los_Angeles',
+      -7: 'America/Denver',
+      -6: 'America/Chicago',
+      -5: 'America/New_York',
+      -4: 'America/Caracas',
+      -3: 'America/Sao_Paulo',
+      -2: 'Atlantic/South_Georgia',
+      -1: 'Atlantic/Azores',
+      0: 'Europe/London',
+      1: 'Europe/Paris',
+      2: 'Europe/Berlin',
+      3: 'Europe/Moscow',
+      4: 'Asia/Dubai',
+      5: 'Asia/Karachi',
+      6: 'Asia/Dhaka',
+      7: 'Asia/Bangkok',
+      8: 'Asia/Shanghai',
+      9: 'Asia/Tokyo',
+      10: 'Australia/Sydney',
+      11: 'Pacific/Noumea',
+      12: 'Pacific/Auckland',
+    };
+    return map[hours] ?? 'Etc/UTC';
+  }
+
   // ── Deep links ──────────────────────────────────────────────────────────
   GoRouter? _router;
   String? _pendingPayload;
@@ -50,14 +83,18 @@ class NotificationService {
 
     // Inicializar zonas horarias (solo las necesarias — mucho más rápido)
     tz.initializeTimeZones();
-    // Usar la zona local del dispositivo si está disponible, si no Caracas
+    // Usar la zona local del dispositivo si está disponible
     try {
       final localName = DateTime.now().timeZoneName;
       tz.setLocalLocation(tz.getLocation(localName));
-    } catch (e) {
+    } catch (_) {
+      // timeZoneName devuelve abreviaturas (VET, EST...) que tz no reconoce.
+      // Elegir zona IANA por offset UTC del dispositivo como fallback.
+      final offset = DateTime.now().timeZoneOffset;
+      final fallback = _ianaFromOffset(offset);
       debugPrint(
-          '⚠️ Timezone lookup failed ($e), defaulting to America/Caracas');
-      tz.setLocalLocation(tz.getLocation('America/Caracas'));
+          '⚠️ Timezone lookup failed, using offset-based fallback: $fallback');
+      tz.setLocalLocation(tz.getLocation(fallback));
     }
 
     // Configuración para Android

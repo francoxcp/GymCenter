@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/auth/screens/forgot_password_screen.dart';
+import '../../shared/widgets/app_snackbar.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/workouts/screens/workout_list_screen.dart';
 import '../../features/workouts/screens/today_workout_screen.dart';
@@ -23,6 +25,9 @@ import '../../features/settings/screens/settings_screen.dart';
 import '../../features/settings/screens/change_password_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
+import '../../features/admin/screens/user_management_screen.dart';
+import '../../features/admin/screens/user_assignments_list_screen.dart';
+import '../../features/workouts/screens/create_workout_screen.dart';
 import '../../features/legal/screens/terms_and_conditions_screen.dart';
 import '../../features/legal/screens/privacy_policy_screen.dart';
 import '../../features/settings/screens/privacy_settings_screen.dart';
@@ -251,6 +256,18 @@ GoRouter createAppRouter(AuthProvider authProvider) {
             path: '/admin',
             builder: (context, state) => const AdminDashboardScreen(),
           ),
+          GoRoute(
+            path: '/admin/users',
+            builder: (context, state) => const UserManagementScreen(),
+          ),
+          GoRoute(
+            path: '/admin/assignments',
+            builder: (context, state) => const UserAssignmentsListScreen(),
+          ),
+          GoRoute(
+            path: '/admin/create-workout',
+            builder: (context, state) => const CreateWorkoutScreen(),
+          ),
         ],
       ),
     ],
@@ -283,13 +300,7 @@ class _DoubleBackToExitState extends State<_DoubleBackToExit> {
         if (_lastBackPress == null ||
             now.difference(_lastBackPress!) > twoSeconds) {
           _lastBackPress = now;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Presiona atrás de nuevo para salir'),
-              duration: Duration(seconds: 2),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          AppSnackbar.info(context, AppL10n.of(context).pressBackToExit);
         } else {
           SystemNavigator.pop();
         }

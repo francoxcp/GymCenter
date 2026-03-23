@@ -2,6 +2,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/app_validators.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
@@ -64,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     final email = _emailController.text.trim();
-    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+    if (!AppValidators.isValidEmail(email)) {
       AppSnackbar.error(
         context,
         'Por favor ingresa un correo electrónico válido.',
@@ -324,8 +325,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) return null;
-                  if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
-                      .hasMatch(value.trim())) {
+                  if (!AppValidators.isValidEmail(value.trim())) {
                     return 'Ingresa un correo electrónico válido';
                   }
                   return null;

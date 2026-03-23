@@ -48,15 +48,30 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late final AuthProvider _authProvider;
   late final UserProvider _userProvider;
   late final PreferencesProvider _preferencesProvider;
   late final GoRouter _router;
+  final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  DateTime? _lastBackPress;
+
+  /// Rutas raíz donde se requiere doble atrás para salir.
+  static const _rootPaths = {
+    '/home',
+    '/admin',
+    '/workouts',
+    '/meal-plans',
+    '/profile'
+  };
 
   @override
   void initState() {
     super.initState();
+    // Registrar ANTES de que Router se registre (se crea en build),
+    // así nuestro didPopRoute se ejecuta primero.
+    WidgetsBinding.instance.addObserver(this);
+
     _authProvider = AuthProvider();
     _userProvider = UserProvider()..setAuthProvider(_authProvider);
     _preferencesProvider = PreferencesProvider();
@@ -76,9 +91,40 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _authProvider.removeListener(_onAuthChanged);
     _authProvider.dispose();
     super.dispose();
+  }
+
+  @override
+  Future<bool> didPopRoute() async {
+    // Obtener la ruta actual del router
+    final path = _router.routeInformationProvider.value.uri.path;
+
+    if (!_rootPaths.contains(path)) {
+      // Ruta no-raíz: dejar que go_router maneje el pop normalmente
+      return super.didPopRoute();
+    }
+
+    // Ruta raíz: requiere doble atrás para salir
+    final now = DateTime.now();
+    if (_lastBackPress == null ||
+        now.difference(_lastBackPress!) > const Duration(seconds: 2)) {
+      _lastBackPress = now;
+      final locale = _preferencesProvider.appLocale.languageCode;
+      final message = locale == 'en'
+          ? 'Press back again to exit'
+          : 'Presiona atrás de nuevo para salir';
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+      );
+      return true; // Interceptamos — no salir
+    }
+
+    // Segunda pulsación dentro de 2 s — salir de la app
+    SystemNavigator.pop();
+    return true;
   }
 
   @override
@@ -97,6 +143,7 @@ class _MyAppState extends State<MyApp> {
       ],
       child: Consumer<PreferencesProvider>(
         builder: (context, prefsProvider, _) => MaterialApp.router(
+          scaffoldMessengerKey: _scaffoldMessengerKey,
           title: 'Chamos Fitness Center',
           debugShowCheckedModeBanner: false,
           theme: darkTheme,

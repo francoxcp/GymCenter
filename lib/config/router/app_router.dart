@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/auth/screens/forgot_password_screen.dart';
-import '../../shared/widgets/app_snackbar.dart';
-import '../../core/l10n/app_l10n.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/workouts/screens/workout_list_screen.dart';
 import '../../features/workouts/screens/today_workout_screen.dart';
@@ -109,45 +106,33 @@ GoRouter createAppRouter(AuthProvider authProvider) {
 
       ShellRoute(
         builder: (context, state, child) {
-          final authProvider = Provider.of<AuthProvider>(context);
+          final authProvider =
+              Provider.of<AuthProvider>(context, listen: false);
           final isAdmin = authProvider.isAdmin;
           final location = state.uri.path;
 
-          // Rutas raíz donde el gesto atrás saldría de la app
-          const rootPaths = {
-            '/home',
-            '/admin',
-            '/workouts',
-            '/meal-plans',
-            '/profile'
-          };
-          final isRootRoute = rootPaths.contains(location);
-
-          return _DoubleBackToExit(
-            enabled: isRootRoute,
-            child: Scaffold(
-              body: child,
-              bottomNavigationBar: BottomNavBar(
-                currentIndex: _locationToIndex(location),
-                onTap: (index) async {
-                  if (!await UnsavedChangesGuard.canNavigate()) return;
-                  if (!context.mounted) return;
-                  switch (index) {
-                    case 0:
-                      context.go(isAdmin ? '/admin' : '/home');
-                      break;
-                    case 1:
-                      context.go('/workouts');
-                      break;
-                    case 2:
-                      context.go('/meal-plans');
-                      break;
-                    case 3:
-                      context.go('/profile');
-                      break;
-                  }
-                },
-              ),
+          return Scaffold(
+            body: child,
+            bottomNavigationBar: BottomNavBar(
+              currentIndex: _locationToIndex(location),
+              onTap: (index) async {
+                if (!await UnsavedChangesGuard.canNavigate()) return;
+                if (!context.mounted) return;
+                switch (index) {
+                  case 0:
+                    context.go(isAdmin ? '/admin' : '/home');
+                    break;
+                  case 1:
+                    context.go('/workouts');
+                    break;
+                  case 2:
+                    context.go('/meal-plans');
+                    break;
+                  case 3:
+                    context.go('/profile');
+                    break;
+                }
+              },
             ),
           );
         },
@@ -272,40 +257,4 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       ),
     ],
   );
-}
-
-class _DoubleBackToExit extends StatefulWidget {
-  final Widget child;
-  final bool enabled;
-
-  const _DoubleBackToExit({required this.child, required this.enabled});
-
-  @override
-  State<_DoubleBackToExit> createState() => _DoubleBackToExitState();
-}
-
-class _DoubleBackToExitState extends State<_DoubleBackToExit> {
-  DateTime? _lastBackPress;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!widget.enabled) return widget.child;
-
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) return;
-        final now = DateTime.now();
-        const twoSeconds = Duration(seconds: 2);
-        if (_lastBackPress == null ||
-            now.difference(_lastBackPress!) > twoSeconds) {
-          _lastBackPress = now;
-          AppSnackbar.info(context, AppL10n.of(context).pressBackToExit);
-        } else {
-          SystemNavigator.pop();
-        }
-      },
-      child: widget.child,
-    );
-  }
 }

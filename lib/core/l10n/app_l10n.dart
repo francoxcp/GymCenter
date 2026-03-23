@@ -474,7 +474,6 @@ class AppL10n {
       isEn ? 'User updated successfully' : 'Usuario actualizado correctamente';
   String get editUser => isEn ? 'Edit user' : 'Editar usuario';
   String get nameLabel => isEn ? 'Name' : 'Nombre';
-  String get save => isEn ? 'Save' : 'Guardar';
   String get removeAdmin => isEn ? 'Remove admin' : 'Quitar admin';
   String get makeAdmin => isEn ? 'Make admin' : 'Hacer admin';
   String userNowAdmin(String name) =>

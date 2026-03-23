@@ -323,7 +323,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           controller: nameController,
           decoration: InputDecoration(
             labelText: AppL10n.of(context).nameLabel,
-            border: OutlineInputBorder(),
+            border: const OutlineInputBorder(),
           ),
         ),
         actions: [

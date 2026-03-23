@@ -2,7 +2,8 @@
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../../core/theme/app_theme.dart';\nimport '../../../shared/widgets/app_snackbar.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/app_snackbar.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../settings/providers/preferences_provider.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -136,7 +137,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     } catch (e) {
       if (mounted) {
         Navigator.of(context).pop();
-        AppSnackbar.error(context, '${l10n.onboardingErrorSaving}: $e');
+        AppSnackbar.error(
+            context, '${AppL10n.of(context).onboardingErrorSaving}: $e');
       }
     }
   }

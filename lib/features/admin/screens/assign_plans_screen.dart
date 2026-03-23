@@ -341,7 +341,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
               AppL10n.of(context).discard,
-              style: TextStyle(color: Colors.redAccent),
+              style: const TextStyle(color: Colors.redAccent),
             ),
           ),
         ],

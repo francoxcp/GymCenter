@@ -56,21 +56,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   DateTime? _lastBackPress;
 
-  /// Rutas raíz donde se requiere doble atrás para salir.
-  static const _rootPaths = {
-    '/home',
-    '/admin',
-    '/workouts',
-    '/meal-plans',
-    '/profile'
-  };
-
   @override
   void initState() {
     super.initState();
-    // Registrar ANTES de que Router se registre (se crea en build),
-    // así nuestro didPopRoute se ejecuta primero.
-    WidgetsBinding.instance.addObserver(this);
 
     _authProvider = AuthProvider();
     _userProvider = UserProvider()..setAuthProvider(_authProvider);
@@ -83,6 +71,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _authProvider.addListener(_onAuthChanged);
     // Trigger inicial para que PreferencesProvider cargue si ya hay sesión
     _preferencesProvider.onAuthChanged(_authProvider);
+
+    // Registrar observer DESPUÉS del primer frame para que Router (go_router)
+    // se registre primero. Así go_router maneja pops normales y nuestro
+    // observer solo se invoca cuando go_router ya no puede hacer pop (raíz).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addObserver(this);
+    });
   }
 
   void _onAuthChanged() {
@@ -99,15 +94,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Future<bool> didPopRoute() async {
-    // Obtener la ruta actual del router
-    final path = _router.routeInformationProvider.value.uri.path;
-
-    if (!_rootPaths.contains(path)) {
-      // Ruta no-raíz: dejar que go_router maneje el pop normalmente
-      return super.didPopRoute();
-    }
-
-    // Ruta raíz: requiere doble atrás para salir
+    // Este método solo se invoca cuando go_router ya no puede hacer pop
+    // (estamos en una ruta raíz sin historial de navegación).
+    // Requiere doble atrás para salir de la app.
     final now = DateTime.now();
     if (_lastBackPress == null ||
         now.difference(_lastBackPress!) > const Duration(seconds: 2)) {

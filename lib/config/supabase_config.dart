@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Configuración centralizada de Supabase
@@ -7,7 +8,7 @@ class SupabaseConfig {
 
   // Credenciales inyectadas en tiempo de compilación con --dart-define.
   // Uso: flutter run --dart-define=SUPABASE_URL=xxx --dart-define=SUPABASE_ANON_KEY=yyy
-  // En desarrollo usar scripts/local_credentials.bat para proveer las variables.
+  // En desarrollo usar scripts/run_dev.bat para proveer las variables automáticamente.
   static const String _supabaseUrl = String.fromEnvironment('SUPABASE_URL');
   static const String _supabaseAnonKey =
       String.fromEnvironment('SUPABASE_ANON_KEY');
@@ -16,6 +17,26 @@ class SupabaseConfig {
   /// En producción pasar las credenciales con --dart-define:
   ///   flutter build apk --dart-define=SUPABASE_URL=xxx --dart-define=SUPABASE_ANON_KEY=yyy
   static Future<void> initialize() async {
+    if (_supabaseUrl.isEmpty || _supabaseAnonKey.isEmpty) {
+      throw StateError(
+        'Supabase credentials not configured.\n'
+        'Run with: flutter run '
+        '--dart-define=SUPABASE_URL=<url> '
+        '--dart-define=SUPABASE_ANON_KEY=<key>\n'
+        'Or use: scripts\\run_dev.bat',
+      );
+    }
+
+    if (kDebugMode) {
+      final uri = Uri.tryParse(_supabaseUrl);
+      if (uri == null || !uri.hasScheme || !uri.hasAuthority) {
+        throw StateError(
+          'SUPABASE_URL is not a valid URL: "$_supabaseUrl"\n'
+          'Expected format: https://your-project.supabase.co',
+        );
+      }
+    }
+
     await Supabase.initialize(
       url: _supabaseUrl,
       anonKey: _supabaseAnonKey,

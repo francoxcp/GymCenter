@@ -126,7 +126,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildStatColumn(
-                'Peso',
+                AppL10n.of(context).weightLabel,
                 latest.weight != null
                     ? UnitConverter.formatWeight(latest.weight!, units)
                     : '--',
@@ -136,7 +136,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                 weightChange < 0 ? Colors.green : Colors.red,
               ),
               _buildStatColumn(
-                'Cintura',
+                AppL10n.of(context).waistLabel,
                 latest.waist != null
                     ? UnitConverter.formatLength(latest.waist!, units)
                     : '--',
@@ -196,20 +196,20 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       crossAxisSpacing: 12,
       childAspectRatio: 0.82,
       children: [
-        _buildMeasurementTile(
-            'Pecho', measurement.chest, Icons.fitness_center, units),
-        _buildMeasurementTile('Bícep Izq.', measurement.effectiveBicepsLeft,
-            Icons.sports_gymnastics, units),
-        _buildMeasurementTile('Bícep Der.', measurement.effectiveBicepsRight,
-            Icons.sports_gymnastics, units),
-        _buildMeasurementTile('Muslo Izq.', measurement.effectiveThighLeft,
-            Icons.directions_run, units),
-        _buildMeasurementTile('Muslo Der.', measurement.effectiveThighRight,
-            Icons.directions_run, units),
-        _buildMeasurementTile(
-            'Cadera', measurement.hips, Icons.accessibility_new, units),
-        _buildMeasurementTile(
-            'Altura', measurement.height, Icons.height, units),
+        _buildMeasurementTile(AppL10n.of(context).chestLabel, measurement.chest,
+            Icons.fitness_center, units),
+        _buildMeasurementTile(AppL10n.of(context).leftBicep,
+            measurement.effectiveBicepsLeft, Icons.sports_gymnastics, units),
+        _buildMeasurementTile(AppL10n.of(context).rightBicep,
+            measurement.effectiveBicepsRight, Icons.sports_gymnastics, units),
+        _buildMeasurementTile(AppL10n.of(context).leftThigh,
+            measurement.effectiveThighLeft, Icons.directions_run, units),
+        _buildMeasurementTile(AppL10n.of(context).rightThigh,
+            measurement.effectiveThighRight, Icons.directions_run, units),
+        _buildMeasurementTile(AppL10n.of(context).hipLabel, measurement.hips,
+            Icons.accessibility_new, units),
+        _buildMeasurementTile(AppL10n.of(context).heightLabel,
+            measurement.height, Icons.height, units),
       ],
     );
   }
@@ -264,13 +264,14 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
     final now = DateTime.now();
     final difference = now.difference(measurement.date).inDays;
 
+    final l10n = AppL10n.of(context);
     String timeAgo;
     if (difference == 0) {
-      timeAgo = 'Hoy';
+      timeAgo = l10n.todayLabel;
     } else if (difference == 1) {
-      timeAgo = 'Ayer';
+      timeAgo = l10n.yesterdayLabel;
     } else if (difference < 30) {
-      timeAgo = 'Hace $difference días';
+      timeAgo = l10n.daysAgo(difference);
     } else {
       timeAgo = dateStr;
     }
@@ -322,19 +323,23 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildSmallMeasurement('Pecho', measurement.chest),
-              _buildSmallMeasurement('Cintura', measurement.waist),
-              _buildSmallMeasurement('Cadera', measurement.hips),
-              _buildSmallMeasurement('B.Izq', measurement.effectiveBicepsLeft),
-              _buildSmallMeasurement('B.Der', measurement.effectiveBicepsRight),
+              _buildSmallMeasurement(l10n.chestLabel, measurement.chest),
+              _buildSmallMeasurement(l10n.waistLabel, measurement.waist),
+              _buildSmallMeasurement(l10n.hipLabel, measurement.hips),
+              _buildSmallMeasurement(
+                  l10n.leftBicepShort, measurement.effectiveBicepsLeft),
+              _buildSmallMeasurement(
+                  l10n.rightBicepShort, measurement.effectiveBicepsRight),
             ],
           ),
           const SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildSmallMeasurement('M.Izq', measurement.effectiveThighLeft),
-              _buildSmallMeasurement('M.Der', measurement.effectiveThighRight),
+              _buildSmallMeasurement(
+                  l10n.leftThighShort, measurement.effectiveThighLeft),
+              _buildSmallMeasurement(
+                  l10n.rightThighShort, measurement.effectiveThighRight),
               const SizedBox(width: 40),
               const SizedBox(width: 40),
               const SizedBox(width: 40),
@@ -456,23 +461,26 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       if (!hasContent()) return true;
       final shouldPop = await showDialog<bool>(
         context: ctx,
-        builder: (context) => AlertDialog(
-          title: const Text('¿Descartar medidas?'),
-          content: const Text(
-            '¿Estás seguro de que quieres salir sin guardar las medidas?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
+        builder: (context) {
+          final l10n = AppL10n.of(context);
+          return AlertDialog(
+            title: Text(l10n.discardMeasurementsTitle),
+            content: Text(
+              l10n.discardMeasurementsBody,
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Descartar'),
-            ),
-          ],
-        ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(l10n.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: Text(l10n.discardLabel),
+              ),
+            ],
+          );
+        },
       );
       return shouldPop == true;
     }
@@ -498,38 +506,51 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Nueva Medida',
-                  style: TextStyle(
+                Text(
+                  AppL10n.of(context).newMeasurement,
+                  style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 20),
+                _buildMeasurementField(AppL10n.of(context).weightUnit('kg'),
+                    weightController, Icons.monitor_weight),
+                _buildMeasurementField(AppL10n.of(context).heightUnit('cm'),
+                    heightController, Icons.height),
                 _buildMeasurementField(
-                    'Peso (kg)', weightController, Icons.monitor_weight),
+                    AppL10n.of(context)
+                        .measureUnit(AppL10n.of(context).chestLabel, 'cm'),
+                    chestController,
+                    Icons.fitness_center),
                 _buildMeasurementField(
-                    'Altura (cm)', heightController, Icons.height),
+                    AppL10n.of(context)
+                        .measureUnit(AppL10n.of(context).waistLabel, 'cm'),
+                    waistController,
+                    Icons.straighten),
                 _buildMeasurementField(
-                    'Pecho (cm)', chestController, Icons.fitness_center),
-                _buildMeasurementField(
-                    'Cintura (cm)', waistController, Icons.straighten),
-                _buildMeasurementField(
-                    'Cadera (cm)', hipsController, Icons.accessibility_new),
+                    AppL10n.of(context)
+                        .measureUnit(AppL10n.of(context).hipLabel, 'cm'),
+                    hipsController,
+                    Icons.accessibility_new),
                 // Bíceps lado a lado
                 _buildPairedFields(
-                  'Bícep Izquierdo (cm)',
+                  AppL10n.of(context)
+                      .measureUnit(AppL10n.of(context).leftBicepFull, 'cm'),
                   bicepsLeftController,
-                  'Bícep Derecho (cm)',
+                  AppL10n.of(context)
+                      .measureUnit(AppL10n.of(context).rightBicepFull, 'cm'),
                   bicepsRightController,
                   Icons.sports_gymnastics,
                 ),
                 // Muslos lado a lado
                 _buildPairedFields(
-                  'Muslo Izquierdo (cm)',
+                  AppL10n.of(context)
+                      .measureUnit(AppL10n.of(context).leftThighFull, 'cm'),
                   thighLeftController,
-                  'Muslo Derecho (cm)',
+                  AppL10n.of(context)
+                      .measureUnit(AppL10n.of(context).rightThighFull, 'cm'),
                   thighRightController,
                   Icons.directions_run,
                 ),
@@ -539,7 +560,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                   style: const TextStyle(color: Colors.white),
                   maxLines: 3,
                   decoration: InputDecoration(
-                    hintText: 'Notas (opcional)',
+                    hintText: AppL10n.of(context).notesOptional,
                     hintStyle: const TextStyle(color: AppColors.textSecondary),
                     filled: true,
                     fillColor: AppColors.background,
@@ -567,9 +588,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          'Cancelar',
-                          style: TextStyle(color: AppColors.textSecondary),
+                        child: Text(
+                          AppL10n.of(context).cancel,
+                          style:
+                              const TextStyle(color: AppColors.textSecondary),
                         ),
                       ),
                     ),

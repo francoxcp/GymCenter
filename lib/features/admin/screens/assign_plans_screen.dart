@@ -25,23 +25,23 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
   bool _isLoadingSchedule = true;
   bool _isSaving = false;
 
-  static const _dayNames = {
-    1: 'Lunes',
-    2: 'Martes',
-    3: 'Miércoles',
-    4: 'Jueves',
-    5: 'Viernes',
-    6: 'Sábado',
-  };
+  Map<int, String> _localizedDayNames(AppL10n l10n) => {
+        1: l10n.mondayFull,
+        2: l10n.tuesdayFull,
+        3: l10n.wednesdayFull,
+        4: l10n.thursdayFull,
+        5: l10n.fridayFull,
+        6: l10n.saturdayFull,
+      };
 
-  static const _dayShort = {
-    1: 'LU',
-    2: 'MA',
-    3: 'MI',
-    4: 'JU',
-    5: 'VI',
-    6: 'SÁ',
-  };
+  Map<int, String> _localizedDayShort(AppL10n l10n) => {
+        1: l10n.monShort,
+        2: l10n.tueShort,
+        3: l10n.wedShort,
+        4: l10n.thuShort,
+        5: l10n.friShort,
+        6: l10n.satShort,
+      };
 
   @override
   void initState() {
@@ -101,11 +101,12 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
   /// Devuelve el nombre del próximo día (después de [fromDay]) que tenga
   /// rutina asignada en el horario actual. Wrappea si es necesario.
   String? _nextTrainingDayLabel(int fromDay) {
+    final dayNames = _localizedDayNames(AppL10n.of(context));
     for (int d = fromDay + 1; d <= 6; d++) {
-      if (_schedule[d] != null) return _dayNames[d];
+      if (_schedule[d] != null) return dayNames[d];
     }
     for (int d = 1; d < fromDay; d++) {
-      if (_schedule[d] != null) return _dayNames[d];
+      if (_schedule[d] != null) return dayNames[d];
     }
     return null;
   }
@@ -121,10 +122,10 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) {
-        String selectedCategory = 'Todos';
+        String selectedCategory = 'all';
         return StatefulBuilder(
           builder: (ctx, setSheetState) {
-            final filtered = selectedCategory == 'Todos'
+            final filtered = selectedCategory == 'all'
                 ? workouts
                 : workouts
                     .where((w) => w.category == selectedCategory)
@@ -159,7 +160,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                         child: Row(
                           children: [
                             Text(
-                              _dayNames[day]!,
+                              _localizedDayNames(AppL10n.of(context))[day]!,
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -169,8 +170,8 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                             const Spacer(),
                             TextButton(
                               onPressed: () => Navigator.pop(ctx),
-                              child: const Text('Cerrar',
-                                  style: TextStyle(
+                              child: Text(AppL10n.of(context).closeLabel,
+                                  style: const TextStyle(
                                       color: AppColors.textSecondary)),
                             ),
                           ],
@@ -183,13 +184,24 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                         child: ListView(
                           scrollDirection: Axis.horizontal,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          children: ['Todos', ...Workout.categories].map((cat) {
-                            final isSelected = selectedCategory == cat;
+                          children: [
+                            AppL10n.of(context).filterAll,
+                            ...Workout.categories
+                          ].map((cat) {
+                            final isSelected = selectedCategory ==
+                                (cat == AppL10n.of(context).filterAll
+                                    ? 'all'
+                                    : cat);
                             return Padding(
                               padding: const EdgeInsets.only(right: 8),
                               child: GestureDetector(
-                                onTap: () =>
-                                    setSheetState(() => selectedCategory = cat),
+                                onTap: () {
+                                  final value =
+                                      cat == AppL10n.of(context).filterAll
+                                          ? 'all'
+                                          : cat;
+                                  setSheetState(() => selectedCategory = value);
+                                },
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 180),
                                   padding: const EdgeInsets.symmetric(
@@ -228,10 +240,10 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 8),
                           children: [
-                            if (selectedCategory == 'Todos')
+                            if (selectedCategory == 'all')
                               _BottomSheetTile(
-                                title: 'Día de descanso',
-                                subtitle: 'Sin rutina asignada',
+                                title: AppL10n.of(context).restDay,
+                                subtitle: AppL10n.of(context).noRoutineAssigned,
                                 icon: Icons.hotel,
                                 isSelected: currentId == null,
                                 onTap: () {
@@ -239,7 +251,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                   _selectDay(day, null);
                                 },
                               ),
-                            if (selectedCategory == 'Todos')
+                            if (selectedCategory == 'all')
                               const SizedBox(height: 8),
                             if (filtered.isEmpty)
                               Padding(
@@ -260,8 +272,9 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                 final sel = currentId == w.id;
                                 return _BottomSheetTile(
                                   title: w.name,
-                                  subtitle:
-                                      '${w.duration} min · ${w.exerciseCount} ejercicios',
+                                  subtitle: AppL10n.of(context)
+                                      .durationMinExercises(
+                                          w.duration, w.exerciseCount),
                                   icon: Icons.fitness_center,
                                   isSelected: sel,
                                   badge: w.category,
@@ -370,9 +383,9 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'ASIGNAR RUTINA',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).assignRoutineSubtitle,
+                style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
@@ -391,7 +404,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
           ),
           actions: [
             IconButton(
-              tooltip: 'Limpiar horario',
+              tooltip: AppL10n.of(context).clearScheduleTooltip,
               icon: const Icon(Icons.cleaning_services_outlined,
                   color: AppColors.textSecondary),
               onPressed: _isSaving
@@ -401,18 +414,19 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                         context: context,
                         builder: (ctx) => AlertDialog(
                           backgroundColor: AppColors.cardBackground,
-                          title: const Text(
-                            '¿Limpiar horario?',
-                            style: TextStyle(color: Colors.white),
+                          title: Text(
+                            AppL10n.of(context).clearScheduleTitle,
+                            style: const TextStyle(color: Colors.white),
                           ),
-                          content: const Text(
-                            'Se quitarán todas las rutinas asignadas a los días. Debes guardar para aplicar los cambios.',
-                            style: TextStyle(color: AppColors.textSecondary),
+                          content: Text(
+                            AppL10n.of(context).clearScheduleBody,
+                            style:
+                                const TextStyle(color: AppColors.textSecondary),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx),
-                              child: const Text('Cancelar'),
+                              child: Text(AppL10n.of(context).cancel),
                             ),
                             TextButton(
                               onPressed: () {
@@ -423,9 +437,9 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                   }
                                 });
                               },
-                              child: const Text(
-                                'Limpiar',
-                                style: TextStyle(color: Colors.redAccent),
+                              child: Text(
+                                AppL10n.of(context).clearLabel,
+                                style: const TextStyle(color: Colors.redAccent),
                               ),
                             ),
                           ],
@@ -447,9 +461,9 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                     const SizedBox(height: 28),
                     Row(
                       children: [
-                        const Text(
-                          'RUTINA SEMANAL',
-                          style: TextStyle(
+                        Text(
+                          AppL10n.of(context).weeklyRoutineHeader,
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: AppColors.textSecondary,
@@ -464,9 +478,9 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                             color: AppColors.primary.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Text(
-                            'Toca un día para asignar',
-                            style: TextStyle(
+                          child: Text(
+                            AppL10n.of(context).tapDayToAssign,
+                            style: const TextStyle(
                               fontSize: 11,
                               color: AppColors.primary,
                               fontWeight: FontWeight.w500,
@@ -499,7 +513,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                             final hasChange =
                                 _originalSchedule[day] != workoutId;
 
-                            String workoutName = 'Día de descanso';
+                            String workoutName = AppL10n.of(context).restDay;
                             if (workoutId != null) {
                               final match = workouts
                                   .where((w) => w.id == workoutId)
@@ -560,7 +574,8 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                             Row(
                                               children: [
                                                 Text(
-                                                  _dayNames[day]!,
+                                                  _localizedDayNames(AppL10n.of(
+                                                      context))[day]!,
                                                   style: const TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     color: Colors.white,
@@ -581,9 +596,10 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                                           BorderRadius.circular(
                                                               6),
                                                     ),
-                                                    child: const Text(
-                                                      'modificado',
-                                                      style: TextStyle(
+                                                    child: Text(
+                                                      AppL10n.of(context)
+                                                          .modifiedBadge,
+                                                      style: const TextStyle(
                                                         fontSize: 10,
                                                         color:
                                                             AppColors.primary,
@@ -596,9 +612,10 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                               ],
                                             ),
                                             const SizedBox(height: 3),
-                                            const Text(
-                                              '¡Día de descanso! 💤',
-                                              style: TextStyle(
+                                            Text(
+                                              AppL10n.of(context)
+                                                  .restDayMessage,
+                                              style: const TextStyle(
                                                 fontSize: 12,
                                                 color: Colors.amber,
                                                 fontWeight: FontWeight.w500,
@@ -607,7 +624,8 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                             if (nextDay != null) ...[
                                               const SizedBox(height: 2),
                                               Text(
-                                                'Próximo entreno: $nextDay',
+                                                AppL10n.of(context)
+                                                    .nextTrainingDay(nextDay),
                                                 style: const TextStyle(
                                                   fontSize: 11,
                                                   color:
@@ -658,7 +676,8 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                   ),
                                   child: Center(
                                     child: Text(
-                                      _dayShort[day]!,
+                                      _localizedDayShort(
+                                          AppL10n.of(context))[day]!,
                                       style: const TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -670,7 +689,8 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                 title: Row(
                                   children: [
                                     Text(
-                                      _dayNames[day]!,
+                                      _localizedDayNames(
+                                          AppL10n.of(context))[day]!,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
@@ -688,9 +708,9 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                           borderRadius:
                                               BorderRadius.circular(6),
                                         ),
-                                        child: const Text(
-                                          'modificado',
-                                          style: TextStyle(
+                                        child: Text(
+                                          AppL10n.of(context).modifiedBadge,
+                                          style: const TextStyle(
                                             fontSize: 10,
                                             color: AppColors.primary,
                                             fontWeight: FontWeight.w600,
@@ -748,9 +768,9 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                             color: Colors.black,
                           ),
                         )
-                      : const Text(
-                          'Guardar rutina',
-                          style: TextStyle(
+                      : Text(
+                          AppL10n.of(context).saveRoutine,
+                          style: const TextStyle(
                             color: Colors.black,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -816,7 +836,7 @@ class _UserInfoCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Nivel: ${user.level}',
+                  AppL10n.of(context).levelInfo(user.level),
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.primary,

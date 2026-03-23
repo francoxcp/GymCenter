@@ -43,7 +43,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            tooltip: 'Volver',
+            tooltip: AppL10n.of(context).backTooltip,
             onPressed: () => context.pop(),
           ),
           title: Text(l10n.settings),
@@ -64,7 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Volver',
+          tooltip: AppL10n.of(context).backTooltip,
           onPressed: () => context.pop(),
         ),
         title: Text(l10n.settings),
@@ -95,7 +95,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             if (prefs.workoutReminders) ...[
               _buildOptionTile(
-                title: 'Hora del recordatorio',
+                title: l10n.reminderTime,
                 subtitle: () {
                   final t = preferencesProvider.workoutReminderTime;
                   final period = t.period == DayPeriod.am ? 'AM' : 'PM';
@@ -109,7 +109,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   final picked = await showTimePicker(
                     context: context,
                     initialTime: current,
-                    helpText: 'Hora del recordatorio de entrenamiento',
+                    helpText: l10n.workoutReminderTime,
                     builder: (context, child) => Localizations.override(
                       context: context,
                       locale: const Locale('en', 'US'),
@@ -136,8 +136,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       final h =
                           picked.hourOfPeriod == 0 ? 12 : picked.hourOfPeriod;
                       final m = picked.minute.toString().padLeft(2, '0');
-                      AppSnackbar.success(context,
-                          'Recordatorio programado para las $h:$m $period todos los días');
+                      AppSnackbar.success(
+                          context, l10n.reminderScheduled('$h', m, period));
                     }
                   }
                 },
@@ -154,8 +154,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 8),
             _buildOptionTile(
-              title: 'Probar notificación',
-              subtitle: 'Envía una notificación de entrenamiento ahora',
+              title: l10n.testNotification,
+              subtitle: l10n.testNotificationSubtitle,
               icon: Icons.notifications_active_outlined,
               onTap: () async {
                 final svc = NotificationService();
@@ -163,19 +163,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 final granted = await svc.requestPermissions();
                 if (!context.mounted) return;
                 if (!granted) {
-                  AppSnackbar.error(context,
-                      'Permiso de notificaciones denegado. Actívalo desde Ajustes del sistema.');
+                  AppSnackbar.error(context, l10n.notifPermissionDenied);
                   return;
                 }
                 await svc.showNotification(
                   id: 999,
-                  title: '💪 Hora de entrenar',
-                  body:
-                      '¡No olvides tu rutina de hoy! Tu cuerpo te lo agradecerá.',
+                  title: l10n.workoutTimeTitle,
+                  body: l10n.workoutTimeBody,
                   payload: 'workout_reminder',
                 );
                 if (context.mounted) {
-                  AppSnackbar.success(context, 'Notificación enviada');
+                  AppSnackbar.success(context, l10n.notificationSent);
                 }
               },
             ),
@@ -208,8 +206,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => context.push('/privacy-settings'),
           ),
           _buildOptionTile(
-            title: 'Exportar mis datos',
-            subtitle: 'Descarga toda tu información en formato JSON',
+            title: l10n.exportMyData,
+            subtitle: l10n.exportMyDataSubtitle,
             icon: Icons.download_outlined,
             onTap: () => _exportUserData(),
           ),
@@ -478,11 +476,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.fitness_center, color: AppColors.primary, size: 32),
-            SizedBox(width: 12),
-            Text('Chamos Fitness', style: TextStyle(color: Colors.white)),
+            const Icon(Icons.fitness_center,
+                color: AppColors.primary, size: 32),
+            const SizedBox(width: 12),
+            Text(l10n.chamosFitness,
+                style: const TextStyle(color: Colors.white)),
           ],
         ),
         content: Text(
@@ -503,12 +503,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _exportUserData() async {
+    final l10n = AppL10n.of(context);
     try {
-      AppSnackbar.info(context, 'Preparando exportación...');
+      AppSnackbar.info(context, l10n.preparingExport);
       await DataExportService().exportUserData(context);
     } catch (e) {
       if (mounted) {
-        AppSnackbar.error(context, 'Error al exportar datos: $e');
+        AppSnackbar.error(context, l10n.errorExportingData(e.toString()));
       }
     }
   }
@@ -610,17 +611,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
           showDialog<bool>(
             context: context,
             builder: (ctx) => AlertDialog(
-              title: const Text('¿Descartar cambios?'),
-              content: const Text('¿Salir sin cambiar la contraseña?'),
+              title: Text(l10n.discardChangesTitle),
+              content: Text(l10n.discardPasswordBody),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Cancelar'),
+                  child: Text(l10n.cancel),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(ctx, true),
                   style: TextButton.styleFrom(foregroundColor: Colors.red),
-                  child: const Text('Salir'),
+                  child: Text(l10n.exitLabel),
                 ),
               ],
             ),
@@ -725,9 +726,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     : () async {
                         if (newPasswordController.text !=
                             confirmPasswordController.text) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.passwordsDontMatch)),
-                          );
+                          AppSnackbar.error(context, l10n.passwordsDontMatch);
                           return;
                         }
 
@@ -743,13 +742,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                         if (context.mounted) {
                           Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(result['message']),
-                              backgroundColor:
-                                  result['success'] ? Colors.green : Colors.red,
-                            ),
-                          );
+                          if (result['success']) {
+                            AppSnackbar.success(context, result['message']);
+                          } else {
+                            AppSnackbar.error(context, result['message']);
+                          }
                         }
                       },
                 child: isLoading
@@ -829,9 +826,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ? null
                   : () async {
                       if (passwordController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(l10n.enterPassword)),
-                        );
+                        AppSnackbar.error(context, l10n.enterPassword);
                         return;
                       }
 
@@ -850,19 +845,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         if (result['success']) {
                           // Redirigir al login
                           context.go('/login');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(result['message']),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
+                          AppSnackbar.success(context, result['message']);
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(result['message']),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
+                          AppSnackbar.error(context, result['message']);
                         }
                       }
                     },

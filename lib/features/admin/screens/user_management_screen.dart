@@ -18,7 +18,7 @@ class UserManagementScreen extends StatefulWidget {
 
 class _UserManagementScreenState extends State<UserManagementScreen> {
   final _searchController = TextEditingController();
-  String _filterRole = 'Todos';
+  String _filterRole = 'all';
   Timer? _debounce;
 
   @override
@@ -32,10 +32,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'ADMIN PORTAL',
               style: TextStyle(
                 fontSize: 10,
@@ -45,8 +45,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               ),
             ),
             Text(
-              'Gestión de usuarios',
-              style: TextStyle(
+              AppL10n.of(context).userManagement,
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -63,7 +63,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               userProvider.loadUsers();
               AppSnackbar.info(context, AppL10n.of(context).reloadingUsers);
             },
-            tooltip: 'Recargar usuarios',
+            tooltip: AppL10n.of(context).reloadUsersTooltip,
           ),
         ],
       ),
@@ -104,19 +104,19 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 child: Row(
                   children: [
                     _FilterChip(
-                      label: 'Todos',
-                      isSelected: _filterRole == 'Todos',
-                      onTap: () => setState(() => _filterRole = 'Todos'),
+                      label: AppL10n.of(context).filterAll,
+                      isSelected: _filterRole == 'all',
+                      onTap: () => setState(() => _filterRole = 'all'),
                     ),
                     const SizedBox(width: 8),
                     _FilterChip(
-                      label: 'Admins',
+                      label: AppL10n.of(context).filterAdmins,
                       isSelected: _filterRole == 'admin',
                       onTap: () => setState(() => _filterRole = 'admin'),
                     ),
                     const SizedBox(width: 8),
                     _FilterChip(
-                      label: 'Usuarios',
+                      label: AppL10n.of(context).filterUsers,
                       isSelected: _filterRole == 'user',
                       onTap: () => setState(() => _filterRole = 'user'),
                     ),
@@ -134,7 +134,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     Expanded(
                       child: _StatCard(
                         icon: Icons.people,
-                        label: 'Total usuarios',
+                        label: AppL10n.of(context).totalUsersLabel,
                         value: userProvider.users.length.toString(),
                       ),
                     ),
@@ -142,7 +142,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     Expanded(
                       child: _StatCard(
                         icon: Icons.admin_panel_settings,
-                        label: 'Administradores',
+                        label: AppL10n.of(context).administratorsLabel,
                         value: userProvider.users
                             .where((u) => u.role == 'admin')
                             .length
@@ -177,7 +177,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     List<User> users = userProvider.filteredUsers;
 
     // Apply role filter
-    if (_filterRole != 'Todos') {
+    if (_filterRole != 'all') {
       users = users.where((u) => u.role == _filterRole).toList();
     }
 
@@ -195,7 +195,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                userProvider.searchQuery.isEmpty && _filterRole == 'Todos'
+                userProvider.searchQuery.isEmpty && _filterRole == 'all'
                     ? AppL10n.of(context).noRegisteredUsers
                     : AppL10n.of(context).noUsersFound,
                 style: const TextStyle(
@@ -208,9 +208,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               Text(
                 userProvider.searchQuery.isNotEmpty
                     ? AppL10n.of(context).tryAnotherSearch
-                    : _filterRole != 'Todos'
+                    : _filterRole != 'all'
                         ? AppL10n.of(context).noUsersWithRole
-                        : 'Los usuarios aparecerán aquí cuando se registren',
+                        : AppL10n.of(context).usersWillAppear,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 12,
@@ -220,7 +220,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 icon: const Icon(Icons.refresh),
-                label: const Text('Recargar'),
+                label: Text(AppL10n.of(context).reloadLabel),
                 onPressed: () {
                   Provider.of<UserProvider>(context, listen: false).loadUsers();
                 },
@@ -589,7 +589,8 @@ class _UserCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Nivel: ${user.level} • ${user.completedWorkouts} entrenamientos',
+              AppL10n.of(context)
+                  .levelAndWorkoutsInfo(user.level, user.completedWorkouts),
               style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.textSecondary,

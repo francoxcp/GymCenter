@@ -65,21 +65,21 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Nueva categoría'),
+        title: Text(AppL10n.of(ctx).newCategory),
         content: TextField(
           controller: _newCategoryController,
           autofocus: true,
           textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(
-            hintText: 'Ej: Hombros, HIIT, Funcional...',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            hintText: AppL10n.of(ctx).categoryHint,
+            border: const OutlineInputBorder(),
           ),
           onSubmitted: (_) => _confirmAddCategory(ctx),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(AppL10n.of(ctx).cancel),
           ),
           ElevatedButton(
             onPressed: () => _confirmAddCategory(ctx),
@@ -87,7 +87,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.black,
             ),
-            child: const Text('Agregar'),
+            child: Text(AppL10n.of(ctx).addLabel),
           ),
         ],
       ),
@@ -115,16 +115,16 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('Gestionar categorías'),
+          title: Text(AppL10n.of(ctx).manageCategories),
           content: SizedBox(
             width: double.maxFinite,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Las categorías predeterminadas no se pueden eliminar.',
-                  style: TextStyle(
+                Text(
+                  AppL10n.of(ctx).defaultCategoriesInfo,
+                  style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
                   ),
@@ -161,7 +161,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cerrar'),
+              child: Text(AppL10n.of(ctx).closeLabel),
             ),
           ],
         ),
@@ -273,23 +273,26 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
         // Confirmar si quiere salir sin guardar
         final shouldPop = await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('¿Descartar cambios?'),
-            content: const Text(
-              '¿Estás seguro de que quieres salir sin guardar la rutina?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancelar'),
+          builder: (context) {
+            final l10n = AppL10n.of(context);
+            return AlertDialog(
+              title: Text(l10n.discardChangesTitle),
+              content: Text(
+                l10n.discardWorkoutBody,
               ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('Salir'),
-              ),
-            ],
-          ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(l10n.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  child: Text(l10n.exitLabel),
+                ),
+              ],
+            );
+          },
         );
 
         if (shouldPop == true && context.mounted) {
@@ -298,7 +301,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Nueva rutina'),
+          title: Text(AppL10n.of(context).newRoutine),
           actions: [
             if (_isLoading)
               const Center(
@@ -331,14 +334,14 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
               TextFormField(
                 controller: _nameController,
                 maxLength: 50,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre de la rutina',
-                  hintText: 'Ej: Fuerza',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppL10n.of(context).routineNameLabel,
+                  hintText: AppL10n.of(context).routineNameHint,
+                  border: const OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Ingresa un nombre';
+                    return AppL10n.of(context).enterAName;
                   }
                   return null;
                 },
@@ -350,15 +353,15 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
               TextFormField(
                 controller: _descriptionController,
                 maxLength: 200,
-                decoration: const InputDecoration(
-                  labelText: 'Descripción',
-                  hintText: 'Describe los objetivos de esta rutina...',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppL10n.of(context).descriptionLabel,
+                  hintText: AppL10n.of(context).descriptionHint,
+                  border: const OutlineInputBorder(),
                 ),
                 maxLines: 3,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Ingresa una descripción';
+                    return AppL10n.of(context).enterADescription;
                   }
                   return null;
                 },
@@ -369,9 +372,9 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
               // Nivel
               DropdownButtonFormField<String>(
                 value: _selectedLevel,
-                decoration: const InputDecoration(
-                  labelText: 'Nivel',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppL10n.of(context).levelLabel,
+                  border: const OutlineInputBorder(),
                 ),
                 items: const [
                   AppConstants.beginnerLevel,
@@ -399,30 +402,31 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: _selectedCategory,
-                      decoration: const InputDecoration(
-                        labelText: 'Categoría',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: AppL10n.of(context).categoryLabel,
+                        border: const OutlineInputBorder(),
                       ),
-                      hint: const Text('Selecciona una categoría'),
+                      hint: Text(AppL10n.of(context).selectACategory),
                       items: [
                         ..._categories.map((cat) => DropdownMenuItem(
                               value: cat,
                               child: Text(cat),
                             )),
-                        const DropdownMenuItem(
+                        DropdownMenuItem(
                           value: _kNoCategory,
-                          child: Text('Sin categoría'),
+                          child: Text(AppL10n.of(context).noCategory),
                         ),
-                        const DropdownMenuItem(
+                        DropdownMenuItem(
                           value: _kAddCategory,
                           child: Row(
                             children: [
-                              Icon(Icons.add_circle_outline,
+                              const Icon(Icons.add_circle_outline,
                                   size: 16, color: AppColors.primary),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Text(
-                                'Nueva categoría',
-                                style: TextStyle(color: AppColors.primary),
+                                AppL10n.of(context).newCategory,
+                                style:
+                                    const TextStyle(color: AppColors.primary),
                               ),
                             ],
                           ),
@@ -438,7 +442,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                       },
                       validator: (value) {
                         if (value == null || value == _kAddCategory) {
-                          return 'Selecciona una categoría';
+                          return AppL10n.of(context).selectACategory;
                         }
                         return null;
                       },
@@ -450,7 +454,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                     child: IconButton(
                       onPressed: _showManageCategoriesDialog,
                       icon: const Icon(Icons.tune),
-                      tooltip: 'Gestionar categorías',
+                      tooltip: AppL10n.of(context).manageCategories,
                       color: AppColors.textSecondary,
                     ),
                   ),
@@ -463,9 +467,9 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Ejercicios',
-                    style: TextStyle(
+                  Text(
+                    AppL10n.of(context).exercisesSection,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -473,7 +477,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                   ElevatedButton.icon(
                     onPressed: _addExercise,
                     icon: const Icon(Icons.add),
-                    label: const Text('Agregar'),
+                    label: Text(AppL10n.of(context).addLabel),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.black,
@@ -492,25 +496,25 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.white24),
                   ),
-                  child: const Column(
+                  child: Column(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.fitness_center,
                         size: 48,
                         color: Colors.white24,
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       Text(
-                        'No hay ejercicios',
-                        style: TextStyle(
+                        AppL10n.of(context).noExercises,
+                        style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 16,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
-                        'Agrega ejercicios para crear la rutina',
-                        style: TextStyle(
+                        AppL10n.of(context).addExercisesHint,
+                        style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 12,
                         ),
@@ -711,23 +715,26 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
     // Preguntar si desea descartar el ejercicio
     final shouldPop = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('¿Descartar ejercicio?'),
-        content: const Text(
-          '¿Estás seguro de que quieres salir sin agregar este ejercicio?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+      builder: (context) {
+        final l10n = AppL10n.of(context);
+        return AlertDialog(
+          title: Text(l10n.discardExerciseTitle),
+          content: Text(
+            l10n.discardExerciseBody,
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Descartar'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: Text(l10n.discardLabel),
+            ),
+          ],
+        );
+      },
     );
 
     if (shouldPop == true) {
@@ -746,7 +753,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
         _handleCancel();
       },
       child: AlertDialog(
-        title: const Text('Agregar Ejercicio'),
+        title: Text(AppL10n.of(context).addExerciseTitle),
         content: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -755,12 +762,13 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
               children: [
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre del ejercicio',
-                    hintText: 'Ej: Press de banca',
+                  decoration: InputDecoration(
+                    labelText: AppL10n.of(context).exerciseNameLabel,
+                    hintText: AppL10n.of(context).exerciseNameHint,
                   ),
-                  validator: (value) =>
-                      value?.trim().isEmpty ?? true ? 'Requerido' : null,
+                  validator: (value) => value?.trim().isEmpty ?? true
+                      ? AppL10n.of(context).requiredField
+                      : null,
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -768,14 +776,15 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                     Expanded(
                       child: TextFormField(
                         controller: _setsController,
-                        decoration: const InputDecoration(labelText: 'Series'),
+                        decoration: InputDecoration(
+                            labelText: AppL10n.of(context).setsLabel),
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Requerido';
+                            return AppL10n.of(context).requiredField;
                           }
                           if (int.tryParse(value) == null) {
-                            return 'Número inválido';
+                            return AppL10n.of(context).invalidNumber;
                           }
                           return null;
                         },
@@ -785,14 +794,15 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                     Expanded(
                       child: TextFormField(
                         controller: _repsController,
-                        decoration: const InputDecoration(labelText: 'Reps'),
+                        decoration: InputDecoration(
+                            labelText: AppL10n.of(context).repsLabel),
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Requerido';
+                            return AppL10n.of(context).requiredField;
                           }
                           if (int.tryParse(value) == null) {
-                            return 'Número inválido';
+                            return AppL10n.of(context).invalidNumber;
                           }
                           return null;
                         },
@@ -803,22 +813,26 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _restController,
-                  decoration: const InputDecoration(
-                    labelText: 'Descanso (segundos)',
+                  decoration: InputDecoration(
+                    labelText: AppL10n.of(context).restSecondsLabel,
                   ),
                   keyboardType: TextInputType.number,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Requerido';
-                    if (int.tryParse(value) == null) return 'Número inválido';
+                    if (value == null || value.isEmpty) {
+                      return AppL10n.of(context).requiredField;
+                    }
+                    if (int.tryParse(value) == null) {
+                      return AppL10n.of(context).invalidNumber;
+                    }
                     return null;
                   },
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _weightController,
-                  decoration: const InputDecoration(
-                    labelText: 'Peso (lbs)',
-                    hintText: 'Ej: 20  —  dejar vacío si es peso corporal',
+                  decoration: InputDecoration(
+                    labelText: AppL10n.of(context).weightLbs,
+                    hintText: AppL10n.of(context).weightLbsHint,
                     suffixText: 'kg',
                   ),
                   keyboardType:
@@ -826,7 +840,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                   validator: (value) {
                     if (value != null && value.isNotEmpty) {
                       if (double.tryParse(value) == null) {
-                        return 'Número inválido';
+                        return AppL10n.of(context).invalidNumber;
                       }
                     }
                     return null;
@@ -838,15 +852,17 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                   const SizedBox(height: 16),
                   const Divider(),
                   const SizedBox(height: 8),
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.videocam, color: AppColors.primary),
-                      SizedBox(width: 8),
-                      Text(
-                        'Video del ejercicio (opcional)',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                      const Icon(Icons.videocam, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          AppL10n.of(context).exerciseVideoOptional,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ],
@@ -856,7 +872,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                     OutlinedButton.icon(
                       onPressed: _pickVideo,
                       icon: const Icon(Icons.upload_file),
-                      label: const Text('Seleccionar video'),
+                      label: Text(AppL10n.of(context).selectVideo),
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 44),
                       ),
@@ -906,8 +922,8 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                                 )
                               : const Icon(Icons.cloud_upload),
                           label: Text(_isUploadingVideo
-                              ? 'Subiendo...'
-                              : 'Subir Video'),
+                              ? AppL10n.of(context).uploading
+                              : AppL10n.of(context).uploadVideo),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.black,
@@ -929,10 +945,10 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                           const Icon(Icons.check_circle,
                               color: AppColors.success),
                           const SizedBox(width: 8),
-                          const Expanded(
+                          Expanded(
                             child: Text(
-                              'Video subido exitosamente',
-                              style: TextStyle(
+                              AppL10n.of(context).videoUploadedOk,
+                              style: const TextStyle(
                                 color: AppColors.success,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -958,7 +974,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
         actions: [
           TextButton(
             onPressed: _handleCancel,
-            child: const Text('Cancelar'),
+            child: Text(AppL10n.of(context).cancel),
           ),
           ElevatedButton(
             onPressed: _save,
@@ -966,7 +982,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.black,
             ),
-            child: const Text('Agregar'),
+            child: Text(AppL10n.of(context).addLabel),
           ),
         ],
       ),

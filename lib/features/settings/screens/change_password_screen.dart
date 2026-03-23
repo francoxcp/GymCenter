@@ -371,13 +371,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       if (mounted) {
         if (result['success']) {
           // Mostrar éxito
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppL10n.of(context).passwordChanged),
-              backgroundColor: AppColors.success,
-              duration: const Duration(seconds: 3),
-            ),
-          );
+          AppSnackbar.success(context, AppL10n.of(context).passwordChanged);
 
           // Volver a la pantalla anterior después de un breve delay
           Future.delayed(const Duration(seconds: 1), () {

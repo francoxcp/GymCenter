@@ -504,8 +504,6 @@ class AppL10n {
   // ── Auth / errors ────────────────────────────────────────────────────────
   String get enterEmail =>
       isEn ? 'Enter your email' : 'Ingresa tu correo electrónico';
-  String get pressBackToExit =>
-      isEn ? 'Press back again to exit' : 'Presiona atrás de nuevo para salir';
   String get search => isEn ? 'Search' : 'Buscar';
 
   // ── Admin dashboard ──────────────────────────────────────────────────────
@@ -594,4 +592,232 @@ class AppL10n {
   // ── Workout detail readonly ────────────────────────────────────────────
   String get cancelLabel => isEn ? 'Cancel' : 'Cancelar';
   String get deleteConfirm => isEn ? 'Delete' : 'Eliminar';
+
+  // ── User management ──────────────────────────────────────────────────
+  String get filterAll => isEn ? 'All' : 'Todos';
+  String get filterAdmins => isEn ? 'Admins' : 'Admins';
+  String get filterUsers => isEn ? 'Users' : 'Usuarios';
+  String get totalUsersLabel => isEn ? 'Total users' : 'Total usuarios';
+  String get administratorsLabel => isEn ? 'Administrators' : 'Administradores';
+  String get reloadUsersTooltip => isEn ? 'Reload users' : 'Recargar usuarios';
+  String get usersWillAppear => isEn
+      ? 'Users will appear here once they register'
+      : 'Los usuarios aparecerán aquí cuando se registren';
+  String get reloadLabel => isEn ? 'Reload' : 'Recargar';
+  String levelAndWorkoutsInfo(String level, int workouts) => isEn
+      ? 'Level: $level · $workouts workouts'
+      : 'Nivel: $level · $workouts entrenamientos';
+
+  // ── Assign plans ─────────────────────────────────────────────────────
+  String get mondayFull => isEn ? 'Monday' : 'Lunes';
+  String get tuesdayFull => isEn ? 'Tuesday' : 'Martes';
+  String get wednesdayFull => isEn ? 'Wednesday' : 'Miércoles';
+  String get thursdayFull => isEn ? 'Thursday' : 'Jueves';
+  String get fridayFull => isEn ? 'Friday' : 'Viernes';
+  String get saturdayFull => isEn ? 'Saturday' : 'Sábado';
+  String get monShort => isEn ? 'MO' : 'LU';
+  String get tueShort => isEn ? 'TU' : 'MA';
+  String get wedShort => isEn ? 'WE' : 'MI';
+  String get thuShort => isEn ? 'TH' : 'JU';
+  String get friShort => isEn ? 'FR' : 'VI';
+  String get satShort => isEn ? 'SA' : 'SÁ';
+  String get restDay => isEn ? 'Rest day' : 'Día de descanso';
+  String get noRoutineAssigned =>
+      isEn ? 'No routine assigned' : 'Sin rutina asignada';
+  String exerciseCountLabel(int count) =>
+      isEn ? '$count exercises' : '$count ejercicios';
+  String get assignRoutineSubtitle =>
+      isEn ? 'ASSIGN ROUTINE' : 'ASIGNAR RUTINA';
+  String get clearScheduleTooltip =>
+      isEn ? 'Clear schedule' : 'Limpiar horario';
+  String get clearScheduleTitle =>
+      isEn ? 'Clear schedule?' : '¿Limpiar horario?';
+  String get clearScheduleBody => isEn
+      ? 'All assigned routines for these days will be removed. You must save to apply changes.'
+      : 'Se quitarán todas las rutinas asignadas a los días. Debes guardar para aplicar los cambios.';
+  String get clearLabel => isEn ? 'Clear' : 'Limpiar';
+  String get weeklyRoutineHeader => isEn ? 'WEEKLY ROUTINE' : 'RUTINA SEMANAL';
+  String get tapDayToAssign =>
+      isEn ? 'Tap a day to assign' : 'Toca un día para asignar';
+  String get restDayMessage => isEn ? 'Rest day! 💤' : '¡Día de descanso! 💤';
+  String nextTrainingDay(String day) =>
+      isEn ? 'Next training: $day' : 'Próximo entreno: $day';
+  String get modifiedBadge => isEn ? 'modified' : 'modificado';
+  String get saveRoutine => isEn ? 'Save routine' : 'Guardar rutina';
+  String levelInfo(String level) => isEn ? 'Level: $level' : 'Nivel: $level';
+  String get closeLabel => isEn ? 'Close' : 'Cerrar';
+
+  // ── Settings extra ───────────────────────────────────────────────────
+  String get backTooltip => isEn ? 'Back' : 'Volver';
+  String get reminderTime => isEn ? 'Reminder time' : 'Hora del recordatorio';
+  String get workoutReminderTime =>
+      isEn ? 'Workout reminder time' : 'Hora del recordatorio de entrenamiento';
+  String reminderScheduled(String h, String m, String period) => isEn
+      ? 'Reminder scheduled for $h:$m $period every day'
+      : 'Recordatorio programado para las $h:$m $period todos los días';
+  String get testNotification =>
+      isEn ? 'Test notification' : 'Probar notificación';
+  String get testNotificationSubtitle => isEn
+      ? 'Send a workout notification now'
+      : 'Envía una notificación de entrenamiento ahora';
+  String get notifPermissionDenied => isEn
+      ? 'Notification permission denied. Enable it from system Settings.'
+      : 'Permiso de notificaciones denegado. Actívalo desde Ajustes del sistema.';
+  String get workoutTimeTitle =>
+      isEn ? '💪 Time to train' : '💪 Hora de entrenar';
+  String get workoutTimeBody => isEn
+      ? "Don't forget today's routine! Your body will thank you."
+      : '¡No olvides tu rutina de hoy! Tu cuerpo te lo agradecerá.';
+  String get notificationSent =>
+      isEn ? 'Notification sent' : 'Notificación enviada';
+  String get exportMyData => isEn ? 'Export my data' : 'Exportar mis datos';
+  String get exportMyDataSubtitle => isEn
+      ? 'Download all your information in JSON format'
+      : 'Descarga toda tu información en formato JSON';
+  String get chamosFitness => 'Chamos Fitness';
+  String get preparingExport =>
+      isEn ? 'Preparing export...' : 'Preparando exportación...';
+  String errorExportingData(String e) =>
+      isEn ? 'Error exporting data: $e' : 'Error al exportar datos: $e';
+  String get discardChangesTitle =>
+      isEn ? 'Discard changes?' : '¿Descartar cambios?';
+  String get discardPasswordBody => isEn
+      ? 'Leave without changing the password?'
+      : '¿Salir sin cambiar la contraseña?';
+  String get exitLabel => isEn ? 'Exit' : 'Salir';
+
+  // ── Edit profile ─────────────────────────────────────────────────────
+  String get editProfile => isEn ? 'Edit profile' : 'Editar perfil';
+  String get discardProfileBody => isEn
+      ? 'Are you sure you want to leave without saving changes?'
+      : '¿Estás seguro de que quieres salir sin guardar los cambios?';
+  String get personalInfo =>
+      isEn ? 'Personal information' : 'Información personal';
+  String get trainingLevelSection =>
+      isEn ? 'Training level' : 'Nivel de entrenamiento';
+  String get bodyMeasurementsTip => isEn
+      ? 'Record your weight, height, and measurements in the "Body Measurements" section.'
+      : 'Registra tu peso, altura y medidas en la sección "Medidas Corporales".';
+
+  // ── Body measurements extra ──────────────────────────────────────────
+  String get chestLabel => isEn ? 'Chest' : 'Pecho';
+  String get waistLabel => isEn ? 'Waist' : 'Cintura';
+  String get hipLabel => isEn ? 'Hip' : 'Cadera';
+  String get leftBicep => isEn ? 'Left Bicep' : 'Bícep Izq.';
+  String get rightBicep => isEn ? 'Right Bicep' : 'Bícep Der.';
+  String get leftThigh => isEn ? 'Left Thigh' : 'Muslo Izq.';
+  String get rightThigh => isEn ? 'Right Thigh' : 'Muslo Der.';
+  String get leftBicepFull => isEn ? 'Left Bicep' : 'Bícep Izquierdo';
+  String get rightBicepFull => isEn ? 'Right Bicep' : 'Bícep Derecho';
+  String get leftThighFull => isEn ? 'Left Thigh' : 'Muslo Izquierdo';
+  String get rightThighFull => isEn ? 'Right Thigh' : 'Muslo Derecho';
+  String daysAgo(int days) => isEn ? '$days days ago' : 'Hace $days días';
+  String get leftBicepShort => isEn ? 'L.Bic' : 'B.Izq';
+  String get rightBicepShort => isEn ? 'R.Bic' : 'B.Der';
+  String get leftThighShort => isEn ? 'L.Thi' : 'M.Izq';
+  String get rightThighShort => isEn ? 'R.Thi' : 'M.Der';
+  String get discardMeasurementsTitle =>
+      isEn ? 'Discard measurements?' : '¿Descartar medidas?';
+  String get discardMeasurementsBody => isEn
+      ? 'Are you sure you want to leave without saving the measurements?'
+      : '¿Estás seguro de que quieres salir sin guardar las medidas?';
+  String get discardLabel => isEn ? 'Discard' : 'Descartar';
+  String weightUnit(String unit) => isEn ? 'Weight ($unit)' : 'Peso ($unit)';
+  String heightUnit(String unit) => isEn ? 'Height ($unit)' : 'Altura ($unit)';
+  String measureUnit(String label, String unit) => '$label ($unit)';
+  String get notesOptional => isEn ? 'Notes (optional)' : 'Notas (opcional)';
+
+  // ── Create workout ───────────────────────────────────────────────────
+  String get newCategory => isEn ? 'New category' : 'Nueva categoría';
+  String get categoryHint => isEn
+      ? 'E.g.: Shoulders, HIIT, Functional...'
+      : 'Ej: Hombros, HIIT, Funcional...';
+  String get addLabel => isEn ? 'Add' : 'Agregar';
+  String get manageCategories =>
+      isEn ? 'Manage categories' : 'Gestionar categorías';
+  String get defaultCategoriesInfo => isEn
+      ? 'Default categories cannot be deleted.'
+      : 'Las categorías predeterminadas no se pueden eliminar.';
+  String get discardWorkoutBody => isEn
+      ? 'Are you sure you want to leave without saving the routine?'
+      : '¿Estás seguro de que quieres salir sin guardar la rutina?';
+  String get newRoutine => isEn ? 'New routine' : 'Nueva rutina';
+  String get routineNameLabel => isEn ? 'Routine name' : 'Nombre de la rutina';
+  String get routineNameHint => isEn ? 'E.g.: Strength' : 'Ej: Fuerza';
+  String get enterAName => isEn ? 'Enter a name' : 'Ingresa un nombre';
+  String get descriptionLabel => isEn ? 'Description' : 'Descripción';
+  String get descriptionHint => isEn
+      ? 'Describe the goals of this routine...'
+      : 'Describe los objetivos de esta rutina...';
+  String get enterADescription =>
+      isEn ? 'Enter a description' : 'Ingresa una descripción';
+  String get levelLabel => isEn ? 'Level' : 'Nivel';
+  String get categoryLabel => isEn ? 'Category' : 'Categoría';
+  String get selectACategory =>
+      isEn ? 'Select a category' : 'Selecciona una categoría';
+  String get noCategory => isEn ? 'No category' : 'Sin categoría';
+  String get exercisesSection => isEn ? 'Exercises' : 'Ejercicios';
+  String get noExercises => isEn ? 'No exercises' : 'No hay ejercicios';
+  String get addExercisesHint => isEn
+      ? 'Add exercises to create the routine'
+      : 'Agrega ejercicios para crear la rutina';
+  String get addExerciseTitle => isEn ? 'Add Exercise' : 'Agregar Ejercicio';
+  String get exerciseNameLabel =>
+      isEn ? 'Exercise name' : 'Nombre del ejercicio';
+  String get exerciseNameHint =>
+      isEn ? 'E.g.: Bench press' : 'Ej: Press de banca';
+  String get requiredField => isEn ? 'Required' : 'Requerido';
+  String get setsLabel => isEn ? 'Sets' : 'Series';
+  String get repsLabel => isEn ? 'Reps' : 'Reps';
+  String get invalidNumber => isEn ? 'Invalid number' : 'Número inválido';
+  String get restSecondsLabel =>
+      isEn ? 'Rest (seconds)' : 'Descanso (segundos)';
+  String get weightLbs => isEn ? 'Weight (lbs)' : 'Peso (lbs)';
+  String get weightLbsHint => isEn
+      ? 'E.g.: 20 — leave empty for bodyweight'
+      : 'Ej: 20  —  dejar vacío si es peso corporal';
+  String get exerciseVideoOptional =>
+      isEn ? 'Exercise video (optional)' : 'Video del ejercicio (opcional)';
+  String get selectVideo => isEn ? 'Select video' : 'Seleccionar video';
+  String get uploading => isEn ? 'Uploading...' : 'Subiendo...';
+  String get uploadVideo => isEn ? 'Upload Video' : 'Subir Video';
+  String get videoUploadedOk =>
+      isEn ? 'Video uploaded successfully' : 'Video subido exitosamente';
+  String get discardExerciseTitle =>
+      isEn ? 'Discard exercise?' : '¿Descartar ejercicio?';
+  String get discardExerciseBody => isEn
+      ? 'Are you sure you want to leave without adding this exercise?'
+      : '¿Estás seguro de que quieres salir sin agregar este ejercicio?';
+
+  // ── Notification service ─────────────────────────────────────────────
+  String get notifChannelName => 'Chamos Fitness';
+  String get notifChannelDesc => isEn
+      ? 'Chamos Fitness Center notifications'
+      : 'Notificaciones de Chamos Fitness Center';
+  String get notifInactiveTitle =>
+      isEn ? 'Everything ok? 💪' : '¿Todo bien? 💪';
+  String notifInactiveBody(int daysSince) => isEn
+      ? "You haven't trained in $daysSince days. Today is a great day to get back!"
+      : 'Llevas $daysSince días sin entrenar. ¡Hoy es un buen día para retomar!';
+  String get notifFirstSessionTitle =>
+      isEn ? 'Start today! 💪' : '¡Empieza hoy! 💪';
+  String get notifFirstSessionBody => isEn
+      ? 'Ready for your first session? Your body will thank you!'
+      : '¿Listo para tu primera sesión? ¡Tu cuerpo te lo agradecerá!';
+  String get notifAchievementTitle =>
+      isEn ? '🏆 Achievement Unlocked!' : '🏆 ¡Logro Desbloqueado!';
+  String get progressReportsChannel =>
+      isEn ? 'Progress Reports' : 'Reportes de Progreso';
+  String get progressReportsChannelDesc => isEn
+      ? 'Chamos Fitness Center weekly progress reports'
+      : 'Reportes semanales de progreso de Chamos Fitness Center';
+  String get weeklyReportTitle =>
+      isEn ? '📊 Weekly report' : '📊 Reporte semanal';
+  String get weeklyReportBody => isEn
+      ? 'Open the app to see your summary for this week.'
+      : 'Abre la app para ver tu resumen de esta semana.';
+
+  // ── Misc / duration format ───────────────────────────────────────────
+  String durationMinExercises(int min, int count) =>
+      isEn ? '$min min · $count exercises' : '$min min · $count ejercicios';
 }

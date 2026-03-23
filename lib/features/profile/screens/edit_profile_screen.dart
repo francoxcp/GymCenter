@@ -109,19 +109,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         final shouldPop = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('¿Descartar cambios?'),
-            content: const Text(
-              '¿Estás seguro de que quieres salir sin guardar los cambios?',
+            title: Text(AppL10n.of(context).discardChangesTitle),
+            content: Text(
+              AppL10n.of(context).discardProfileBody,
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancelar'),
+                child: Text(AppL10n.of(context).cancel),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('Salir'),
+                child: Text(AppL10n.of(context).exitLabel),
               ),
             ],
           ),
@@ -134,7 +134,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Editar perfil'),
+          title: Text(AppL10n.of(context).editProfile),
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -208,9 +208,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 const SizedBox(height: 32),
 
                 // Información personal
-                const Text(
-                  'Información personal',
-                  style: TextStyle(
+                Text(
+                  AppL10n.of(context).personalInfo,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -220,11 +220,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                 CustomTextField(
                   controller: _nameController,
-                  hintText: 'Nombre completo',
+                  hintText: AppL10n.of(context).fullName,
                   prefixIcon: Icons.person_outline,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Ingresa tu nombre';
+                      return AppL10n.of(context).enterYourName;
                     }
                     return null;
                   },
@@ -241,9 +241,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 const SizedBox(height: 32),
 
                 // Nivel de entrenamiento
-                const Text(
-                  'Nivel de entrenamiento',
-                  style: TextStyle(
+                Text(
+                  AppL10n.of(context).trainingLevelSection,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -263,15 +263,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     border: Border.all(
                         color: AppColors.primary.withOpacity(0.25), width: 1),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.straighten,
+                      const Icon(Icons.straighten,
                           color: AppColors.primary, size: 18),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Registra tu peso, altura y medidas en la sección "Medidas Corporales".',
-                          style: TextStyle(
+                          AppL10n.of(context).bodyMeasurementsTip,
+                          style: const TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
                           ),
@@ -292,14 +292,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.lock_outline, color: AppColors.primary),
-                      SizedBox(width: 8),
+                      const Icon(Icons.lock_outline, color: AppColors.primary),
+                      const SizedBox(width: 8),
                       Text(
-                        'Cambiar contraseña',
-                        style: TextStyle(
+                        AppL10n.of(context).changePassword,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
@@ -312,7 +312,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                 // Botón guardar
                 PrimaryButton(
-                  text: 'Guardar cambios',
+                  text: AppL10n.of(context).saveChanges,
                   onPressed: _isLoading ? null : _saveProfile,
                   isLoading: _isLoading,
                 ),
@@ -382,17 +382,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_camera),
-              title: const Text('Tomar foto'),
+              title: Text(AppL10n.of(context).takePhoto),
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Galería'),
+              title: Text(AppL10n.of(context).galleryLabel),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
             ListTile(
               leading: const Icon(Icons.cancel),
-              title: const Text('Cancelar'),
+              title: Text(AppL10n.of(context).cancel),
               onTap: () => Navigator.pop(context),
             ),
           ],

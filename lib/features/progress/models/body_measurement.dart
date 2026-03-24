@@ -39,10 +39,13 @@ class BodyMeasurement {
 
   /// Effective left bicep: new field → fallback to legacy value (Option B).
   double? get effectiveBicepsLeft => bicepsLeft ?? biceps;
+
   /// Effective right bicep: new field → fallback to legacy value (Option B).
   double? get effectiveBicepsRight => bicepsRight ?? biceps;
+
   /// Effective left thigh: new field → fallback to legacy value (Option B).
   double? get effectiveThighLeft => thighLeft ?? thighs;
+
   /// Effective right thigh: new field → fallback to legacy value (Option B).
   double? get effectiveThighRight => thighRight ?? thighs;
 
@@ -50,7 +53,7 @@ class BodyMeasurement {
     return BodyMeasurement(
       id: json['id'],
       userId: json['user_id'],
-      date: DateTime.parse(json['date']),
+      date: DateTime.tryParse(json['date'] ?? '') ?? DateTime.now(),
       weight: (json['weight'] as num?)?.toDouble(),
       height: (json['height'] as num?)?.toDouble(),
       chest: (json['chest'] as num?)?.toDouble(),

@@ -36,8 +36,10 @@ class WorkoutProgress {
       exerciseIndex: json['exercise_index'] as int,
       completedSets: sets,
       accumulatedSeconds: (json['accumulated_seconds'] as int?) ?? 0,
-      startedAt: DateTime.parse(json['started_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      startedAt: DateTime.tryParse(json['started_at'] as String? ?? '') ??
+          DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
+          DateTime.now(),
     );
   }
 

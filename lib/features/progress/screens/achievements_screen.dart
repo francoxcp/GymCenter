@@ -149,9 +149,10 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       children: provider.allAchievements.map((achievement) {
         final unlocked = provider.isUnlocked(achievement.code);
         final userAchievement = unlocked
-            ? provider.unlockedAchievements.firstWhere(
-                (ua) => ua.achievement?.code == achievement.code,
-              )
+            ? provider.unlockedAchievements.cast<UserAchievement?>().firstWhere(
+                  (ua) => ua?.achievement?.code == achievement.code,
+                  orElse: () => null,
+                )
             : null;
 
         return _buildAchievementCard(achievement, unlocked, userAchievement);

@@ -46,8 +46,8 @@ class UserPreferences {
       progressReports: json['progress_reports'] ?? true,
       theme: json['theme'] ?? 'system',
       language: json['language'] ?? 'es',
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
+      createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
     );
   }
 

@@ -29,7 +29,7 @@ class Achievement {
       description: json['description'],
       icon: json['icon'],
       points: json['points'],
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
     );
   }
 }
@@ -54,7 +54,8 @@ class UserAchievement {
       id: json['id'],
       userId: json['user_id'],
       achievementId: json['achievement_id'],
-      unlockedAt: DateTime.parse(json['unlocked_at']),
+      unlockedAt:
+          DateTime.tryParse(json['unlocked_at'] ?? '') ?? DateTime.now(),
       achievement: json['achievements'] != null
           ? Achievement.fromJson(json['achievements'])
           : null,

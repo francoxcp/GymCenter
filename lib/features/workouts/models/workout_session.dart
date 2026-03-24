@@ -26,7 +26,7 @@ class WorkoutSession {
       id: json['id'],
       userId: json['userId'],
       workoutId: json['workoutId'],
-      date: DateTime.parse(json['date']),
+      date: DateTime.tryParse(json['date'] ?? '') ?? DateTime.now(),
       durationMinutes: json['durationMinutes'] ?? 0,
       caloriesBurned: json['caloriesBurned'] ?? 0,
       totalVolumeKg: (json['totalVolumeKg'] ?? 0).toDouble(),

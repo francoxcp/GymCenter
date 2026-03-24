@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/l10n/app_l10n.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/models/user.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -33,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Provider.of<WorkoutProgressProvider>(context, listen: false);
       final userId = authProvider.currentUser?.id;
 
-      // Cargar rutinas para que estén disponibles
+      // Cargar rutinas para que est�n disponibles
       workoutProvider.loadWorkouts(
         userId: userId,
         isAdmin: authProvider.isAdmin,
@@ -43,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (userId != null) {
         progressProvider.loadProgress(userId);
 
-        // Cargar sesiones usando caché (5 min) al cambiar de tab.
+        // Cargar sesiones usando cach� (5 min) al cambiar de tab.
         // Solo el pull-to-refresh obliga a re-descargar desde red.
         final sessionProvider =
             Provider.of<WorkoutSessionProvider>(context, listen: false);
@@ -168,7 +169,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            '¡Hola, ${currentUser.name.split(' ')[0]}!',
+                            AppL10n.of(context)
+                                .welcomeUser(currentUser.name.split(' ')[0]),
                             style: const TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
@@ -199,15 +201,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         border:
                             Border.all(color: Colors.orange.withOpacity(0.5)),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.wifi_off_rounded,
+                          const Icon(Icons.wifi_off_rounded,
                               color: Colors.orange, size: 18),
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Sin conexión · Mostrando datos guardados',
-                              style: TextStyle(
+                              AppL10n.of(context).offlineBanner,
+                              style: const TextStyle(
                                 fontSize: 13,
                                 color: Colors.orange,
                                 fontWeight: FontWeight.w500,
@@ -227,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     // No mostrar si no hay progreso, si es admin,
                     // o si ese workout ya fue completado hoy (evita race condition
                     // entre el delete en BD y la recarga de loadProgress),
-                    // ni mientras loadProgress está cargando (evita flash residual)
+                    // ni mientras loadProgress est� cargando (evita flash residual)
                     if (!progressProvider.isLoading &&
                         progressProvider.hasProgress &&
                         progress != null &&
@@ -291,7 +293,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         Provider.of<AuthProvider>(context, listen: false).currentUser?.id;
     if (userId == null) return;
 
-    // Cargar próxima sesión y verificar si hoy es día de descanso en paralelo
+    // Cargar pr�xima sesi�n y verificar si hoy es d�a de descanso en paralelo
     final results = await Future.wait([
       progressProvider.getNextScheduledWorkout(userId),
       progressProvider.isTodayScheduled(userId),
@@ -309,12 +311,12 @@ class _UserHomeContentState extends State<_UserHomeContent> {
     if (widget.currentUser.assignedWorkoutId == null) return false;
     final assignedId = widget.currentUser.assignedWorkoutId!;
 
-    // 1️⃣ Primero revisar el flag en memoria (instantáneo, sin red)
+    // 1?? Primero revisar el flag en memoria (instant�neo, sin red)
     final progressProvider =
         Provider.of<WorkoutProgressProvider>(context, listen: false);
     if (progressProvider.completedWorkoutIdToday == assignedId) return true;
 
-    // 2️⃣ Verificar las sesiones cargadas de Supabase
+    // 2?? Verificar las sesiones cargadas de Supabase
     final today = DateTime.now();
     return sessionProvider.sessions.any((s) {
       final localDate = s.date.toLocal();
@@ -326,32 +328,25 @@ class _UserHomeContentState extends State<_UserHomeContent> {
   }
 
   String _dayName(int dayOfWeek) {
-    const days = [
-      'lunes',
-      'martes',
-      'miércoles',
-      'jueves',
-      'viernes',
-      'sábado',
-      'domingo',
-    ];
+    final days = AppL10n.of(context).dayNamesFull;
     return days[(dayOfWeek - 1).clamp(0, 6)];
   }
 
   String get _availableLabel {
-    if (_nextSchedule == null) return 'Disponible mañana';
+    final l10n = AppL10n.of(context);
+    if (_nextSchedule == null) return l10n.availableTomorrow;
     final daysUntil = _nextSchedule!['days_until'] as int? ?? 1;
-    if (daysUntil == 1) return 'Disponible mañana';
+    if (daysUntil == 1) return l10n.availableTomorrow;
     final nextDay = _nextSchedule!['day_of_week'] as int?;
-    if (nextDay != null) return 'Disponible el ${_dayName(nextDay)}';
-    return 'Disponible en $daysUntil días';
+    if (nextDay != null) return l10n.availableOnDay(_dayName(nextDay));
+    return l10n.availableInDays(daysUntil);
   }
 
   @override
   Widget build(BuildContext context) {
     final workoutProvider = Provider.of<WorkoutProvider>(context);
     final sessionProvider = Provider.of<WorkoutSessionProvider>(context);
-    // Escuchar también WorkoutProgressProvider para capturar el flag en memoria
+    // Escuchar tambi�n WorkoutProgressProvider para capturar el flag en memoria
     Provider.of<WorkoutProgressProvider>(context); // listen:true para rebuild
     final hasAssignedWorkout = widget.currentUser.assignedWorkoutId != null;
     final assignedWorkout = hasAssignedWorkout
@@ -359,7 +354,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         : null;
     final todayCompleted = _isTodayCompleted(sessionProvider);
 
-    // Calcular stats reales desde sesiones cargadas (más precisos que los campos BD)
+    // Calcular stats reales desde sesiones cargadas (m�s precisos que los campos BD)
     final realSessions = sessionProvider.sessions;
     final realCompletedCount = realSessions.isNotEmpty
         ? realSessions.length
@@ -403,9 +398,9 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                           color: Colors.white,
                         ),
                       ),
-                      const Text(
-                        'Días activos',
-                        style: TextStyle(
+                      Text(
+                        AppL10n.of(context).activeDaysLabel,
+                        style: const TextStyle(
                           fontSize: 10.5,
                           color: AppColors.textSecondary,
                         ),
@@ -439,9 +434,9 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                           color: Colors.white,
                         ),
                       ),
-                      const Text(
-                        'Sesiones',
-                        style: TextStyle(
+                      Text(
+                        AppL10n.of(context).sessionsStatLabel,
+                        style: const TextStyle(
                           fontSize: 10.5,
                           color: AppColors.textSecondary,
                         ),
@@ -459,10 +454,10 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         // Today's Workout
         Text(
           todayCompleted
-              ? 'Próxima rutina'
+              ? AppL10n.of(context).nextRoutineLabel
               : _isRestDay
-                  ? 'Descanso programado'
-                  : 'Tu rutina asignada',
+                  ? AppL10n.of(context).scheduledRest
+                  : AppL10n.of(context).yourAssignedRoutine,
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -472,7 +467,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
 
         const SizedBox(height: 16),
 
-        // Mostrar loading si está cargando
+        // Mostrar loading si est� cargando
         if (workoutProvider.isLoading) ...[
           FadeInCard(
             delay: 200,
@@ -487,16 +482,16 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                   border: Border.all(color: AppColors.surface),
                 ),
                 padding: const EdgeInsets.all(40),
-                child: const Center(
+                child: Center(
                   child: Column(
                     children: [
-                      CircularProgressIndicator(
+                      const CircularProgressIndicator(
                         color: AppColors.primary,
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Text(
-                        'Cargando rutinas...',
-                        style: TextStyle(
+                        AppL10n.of(context).loadingRoutines,
+                        style: const TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
                         ),
@@ -511,7 +506,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
             assignedWorkout != null &&
             !todayCompleted &&
             _isRestDay) ...[
-          // Día de descanso
+          // D�a de descanso
           FadeInCard(
             delay: 200,
             child: Container(
@@ -540,9 +535,9 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    '¡Día de descanso! 💤',
-                    style: TextStyle(
+                  Text(
+                    AppL10n.of(context).restDayTitleHome,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -552,8 +547,9 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                   const SizedBox(height: 8),
                   Text(
                     _nextSchedule != null
-                        ? 'Descansa y recupera músculos.\nTu próxima sesión es el ${_dayName(_nextSchedule!["day_of_week"] as int)}.'
-                        : 'Hoy no tienes entrenamiento programado.\nDescansa y recupera músculos.',
+                        ? AppL10n.of(context).restDayMsgWithDay(
+                            _dayName(_nextSchedule!['day_of_week'] as int))
+                        : AppL10n.of(context).noWorkoutToday,
                     style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
@@ -568,7 +564,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         ] else if (hasAssignedWorkout &&
             assignedWorkout != null &&
             todayCompleted) ...[
-          // Workout de hoy completado → mostrar próxima rutina en estilo "próximamente"
+          // Workout de hoy completado ? mostrar pr�xima rutina en estilo "pr�ximamente"
           ComingSoonWorkoutCard(
             workout: assignedWorkout,
             availableLabel: _availableLabel,
@@ -623,7 +619,8 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                             size: 18, color: Colors.black87),
                         const SizedBox(width: 6),
                         Text(
-                          '${assignedWorkout.exerciseCount} ejercicios',
+                          AppL10n.of(context).exerciseCountSimple(
+                              assignedWorkout.exerciseCount),
                           style: const TextStyle(
                             color: Colors.black87,
                             fontSize: 14,
@@ -648,14 +645,14 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.play_arrow, size: 22),
-                            SizedBox(width: 8),
+                            const Icon(Icons.play_arrow, size: 22),
+                            const SizedBox(width: 8),
                             Text(
-                              'ENTRENAR AHORA',
-                              style: TextStyle(
+                              AppL10n.of(context).trainNow,
+                              style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 1.2,
@@ -671,7 +668,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
             ),
           ),
         ] else if (hasAssignedWorkout && assignedWorkout == null) ...[
-          // Tiene rutina asignada pero no se encontró
+          // Tiene rutina asignada pero no se encontr�
           FadeInCard(
             delay: 200,
             child: AnimatedCard(
@@ -693,9 +690,9 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                       color: Colors.orange,
                     ),
                     const SizedBox(height: 14),
-                    const Text(
-                      'Rutina no encontrada',
-                      style: TextStyle(
+                    Text(
+                      AppL10n.of(context).routineNotFound,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -704,7 +701,8 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'La rutina asignada (ID: ${widget.currentUser.assignedWorkoutId}) no está disponible.',
+                      AppL10n.of(context).assignedRoutineUnavailable(
+                          widget.currentUser.assignedWorkoutId ?? ''),
                       style: const TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,
@@ -731,27 +729,27 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                   border: Border.all(color: AppColors.surface),
                 ),
                 padding: const EdgeInsets.all(20),
-                child: const Column(
+                child: Column(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.fitness_center_outlined,
                       size: 56,
                       color: AppColors.textSecondary,
                     ),
-                    SizedBox(height: 14),
+                    const SizedBox(height: 14),
                     Text(
-                      'No tienes rutina asignada',
-                      style: TextStyle(
+                      AppL10n.of(context).noAssignedRoutineTitle,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Text(
-                      'Tu entrenador te asignará una rutina pronto',
-                      style: TextStyle(
+                      AppL10n.of(context).trainerWillAssign,
+                      style: const TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,
                       ),
@@ -767,9 +765,9 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         const SizedBox(height: 28),
 
         // Quick Actions
-        const Text(
-          'Explorar',
-          style: TextStyle(
+        Text(
+          AppL10n.of(context).exploreLabel,
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -785,7 +783,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
               child: FadeInCard(
                 delay: 300,
                 child: _QuickActionCard(
-                  title: 'Rutinas',
+                  title: AppL10n.of(context).routinesLabel,
                   icon: Icons.fitness_center,
                   onTap: () => context.push('/workouts'),
                 ),
@@ -796,7 +794,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
               child: FadeInCard(
                 delay: 400,
                 child: _QuickActionCard(
-                  title: 'Planes',
+                  title: AppL10n.of(context).plansLabel,
                   icon: Icons.restaurant_menu,
                   onTap: () => context.push('/meal-plans'),
                 ),
@@ -927,7 +925,7 @@ class _PendingWorkoutBanner extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'RUTINA EN PROGRESO',
+                        AppL10n.of(context).routineInProgressBanner,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -950,7 +948,8 @@ class _PendingWorkoutBanner extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '$progressPercent% completado',
+                        AppL10n.of(context)
+                            .percentCompletedSimple(progressPercent),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -958,7 +957,7 @@ class _PendingWorkoutBanner extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        ' • $timeAgo',
+                        ' � $timeAgo',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.black.withOpacity(0.7),

@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/l10n/app_l10n.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/app_validators.dart';
 import '../../../shared/widgets/app_snackbar.dart';
@@ -59,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       AppSnackbar.error(
         context,
-        'Por favor completa todos los campos',
+        AppL10n.of(context).fillAllFields,
       );
       return;
     }
@@ -68,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!AppValidators.isValidEmail(email)) {
       AppSnackbar.error(
         context,
-        'Por favor ingresa un correo electrónico válido.',
+        AppL10n.of(context).enterValidEmail,
       );
       return;
     }
@@ -90,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
       } else if (!success && mounted) {
         AppSnackbar.error(
           context,
-          'No se pudo completar el inicio de sesión. Verifica tus credenciales.',
+          AppL10n.of(context).loginFailed,
         );
       }
     } catch (e) {
@@ -99,8 +100,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       // Mensajes de error específicos
-      String title = 'Error al iniciar sesión';
-      String message = 'Ocurrió un error inesperado. Intenta nuevamente.';
+      final l10n = AppL10n.of(context);
+      String title = l10n.loginErrorTitle;
+      String message = l10n.unexpectedError;
 
       final errorMessage = e.toString().toLowerCase();
 
@@ -108,19 +110,16 @@ class _LoginScreenState extends State<LoginScreen> {
           errorMessage.contains('credentials') ||
           errorMessage.contains('email') ||
           errorMessage.contains('password')) {
-        title = 'Credenciales incorrectas';
-        message =
-            'El correo electrónico o la contraseña son incorrectos.\n\n¿Olvidaste tu contraseña?';
+        title = l10n.wrongCredentialsTitle;
+        message = l10n.wrongCredentialsMsg;
       } else if (errorMessage.contains('network') ||
           errorMessage.contains('connection')) {
-        title = 'Error de conexión';
-        message =
-            'No se pudo conectar al servidor.\nVerifica tu conexión a internet.';
+        title = l10n.connectionErrorTitle;
+        message = l10n.connectionErrorMsg;
       } else if (errorMessage.contains('user') &&
           errorMessage.contains('not found')) {
-        title = 'Usuario no encontrado';
-        message =
-            'No existe una cuenta con este correo electrónico.\n\n¿Quieres registrarte?';
+        title = l10n.userNotFoundTitle;
+        message = l10n.userNotFoundMsg;
       }
 
       _showLoginError(title, message);
@@ -129,13 +128,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _showLoginError(String title, String message) {
     // For "user not found" errors, show a SnackBar with a register action
-    if (message.contains('registrarte')) {
+    if (message.contains('register') || message.contains('registrarte')) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('$title: $message'),
           backgroundColor: Colors.red,
           action: SnackBarAction(
-            label: 'Registrarme',
+            label: AppL10n.of(context).signMeUp,
             textColor: Colors.white,
             onPressed: () => context.push('/register'),
           ),
@@ -153,22 +152,23 @@ class _LoginScreenState extends State<LoginScreen> {
     // hacer flash del formulario de login y luego redirigir.
     final authProvider = Provider.of<AuthProvider>(context);
     if (authProvider.isInitializing) {
-      return const Scaffold(
+      final l10n = AppL10n.of(context);
+      return Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'CHAMOS FITNESS CENTER',
-                style: TextStyle(
+                l10n.appTitleUpper,
+                style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: AppColors.primary,
                   letterSpacing: 2,
                 ),
               ),
-              SizedBox(height: 28),
-              CircularProgressIndicator(
+              const SizedBox(height: 28),
+              const CircularProgressIndicator(
                 color: AppColors.primary,
                 strokeWidth: 2.5,
               ),
@@ -241,12 +241,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                         child: Text(
-                          'Iniciar sesión',
+                          AppL10n.of(context).signInTab,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: AppColors.primary,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -267,12 +267,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Text(
-                            'Registrarse',
+                            AppL10n.of(context).signUpTab,
                             textAlign: TextAlign.center,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: AppColors.textSecondary,
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
@@ -287,18 +287,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 32),
 
-              const Text(
-                'Bienvenido',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).welcomeTitle,
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Tu mejor versión comienza aquí.',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).welcomeSubtitle,
+                style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                 ),
@@ -307,9 +307,9 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 32),
 
               // Email Field
-              const Text(
-                'Correo Electrónico',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).emailLabel,
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
@@ -319,14 +319,14 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 8),
               CustomTextField(
                 controller: _emailController,
-                hintText: 'ejemplo@chamos.com',
+                hintText: AppL10n.of(context).emailPlaceholder,
                 prefixIcon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) return null;
                   if (!AppValidators.isValidEmail(value.trim())) {
-                    return 'Ingresa un correo electrónico válido';
+                    return AppL10n.of(context).enterValidEmail;
                   }
                   return null;
                 },
@@ -335,9 +335,9 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
 
               // Password Field
-              const Text(
-                'Contraseña',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).passwordFieldLabel,
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
@@ -353,7 +353,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
                   if (value == null || value.isEmpty) return null;
-                  if (value.length < 8) return 'Mínimo 8 caracteres';
+                  if (value.length < 8) return AppL10n.of(context).min8Chars;
                   return null;
                 },
                 suffixIcon: IconButton(
@@ -375,9 +375,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () => context.push('/forgot-password'),
-                  child: const Text(
-                    '¿Olvidaste tu contraseña?',
-                    style: TextStyle(
+                  child: Text(
+                    AppL10n.of(context).forgotPassword,
+                    style: const TextStyle(
                       color: AppColors.primary,
                       fontSize: 14,
                     ),
@@ -389,7 +389,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // Login Button
               PrimaryButton(
-                text: _isLoading ? 'Ingresando...' : 'Entrar al gimnasio',
+                text: _isLoading
+                    ? AppL10n.of(context).signingIn
+                    : AppL10n.of(context).enterGym,
                 onPressed: _isLoading ? () {} : _handleLogin,
               ),
 
@@ -397,24 +399,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
               Center(
                 child: RichText(
-                  text: const TextSpan(
-                    text: 'Al continuar, confirmas que aceptas nuestros\n',
-                    style: TextStyle(
+                  text: TextSpan(
+                    text: AppL10n.of(context).acceptTermsText,
+                    style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
                     ),
                     children: [
                       TextSpan(
-                        text: 'TÉRMINOS DE SERVICIO',
-                        style: TextStyle(
+                        text: AppL10n.of(context).termsOfServiceLabel,
+                        style: const TextStyle(
                           color: AppColors.primary,
                           decoration: TextDecoration.underline,
                         ),
                       ),
-                      TextSpan(text: ' • '),
+                      const TextSpan(text: ' • '),
                       TextSpan(
-                        text: 'PRIVACIDAD',
-                        style: TextStyle(
+                        text: AppL10n.of(context).privacyLabel,
+                        style: const TextStyle(
                           color: AppColors.primary,
                           decoration: TextDecoration.underline,
                         ),

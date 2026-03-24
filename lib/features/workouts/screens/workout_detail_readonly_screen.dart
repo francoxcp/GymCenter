@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -28,31 +28,32 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
       return;
     }
     if (progressProvider.hasProgress) {
+      final l10n = AppL10n.of(context);
       final choice = await showDialog<String>(
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: AppColors.surface,
-          title: const Text('Rutina en progreso',
-              style: TextStyle(color: Colors.white)),
-          content: const Text(
-            'Tienes una rutina en curso. ¿Quieres continuarla o iniciar esta como extra?',
-            style: TextStyle(color: AppColors.textSecondary),
+          title: Text(l10n.routineInProgressTitle,
+              style: const TextStyle(color: Colors.white)),
+          content: Text(
+            l10n.routineInProgressMsg,
+            style: const TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, 'cancel'),
-              child: const Text('Cancelar',
-                  style: TextStyle(color: AppColors.textSecondary)),
+              child: Text(l10n.cancel,
+                  style: const TextStyle(color: AppColors.textSecondary)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, 'continue_assigned'),
-              child: const Text('Continuar en progreso',
-                  style: TextStyle(color: AppColors.primary)),
+              child: Text(l10n.continueInProgress,
+                  style: const TextStyle(color: AppColors.primary)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, 'start_extra'),
-              child: const Text('Iniciar esta',
-                  style: TextStyle(color: Colors.white)),
+              child: Text(l10n.startThisLabel,
+                  style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -69,12 +70,12 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
   }
 
   Color _getLevelColor(String level) {
-    switch (level) {
-      case 'Principiante':
+    switch (level.toLowerCase()) {
+      case 'principiante':
         return AppColors.badgePrincipiante;
-      case 'Intermedio':
+      case 'intermedio':
         return AppColors.badgeIntermedio;
-      case 'Avanzado':
+      case 'avanzado':
         return AppColors.badgeAvanzado;
       default:
         return AppColors.primary;
@@ -87,14 +88,15 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
     final workout = workoutProvider.getWorkoutById(workoutId);
 
     if (workout == null) {
+      final l10n = AppL10n.of(context);
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Rutina'),
+          title: Text(l10n.workoutLabel),
         ),
-        body: const Center(
+        body: Center(
           child: Text(
-            'Rutina no encontrada',
-            style: TextStyle(color: AppColors.textSecondary),
+            l10n.routineNotFound,
+            style: const TextStyle(color: AppColors.textSecondary),
           ),
         ),
       );
@@ -102,6 +104,7 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
 
     return Consumer2<AuthProvider, WorkoutProgressProvider>(
       builder: (context, authProvider, progressProvider, _) {
+        final l10n = AppL10n.of(context);
         final currentUserId = authProvider.currentUser?.id;
         final canManage =
             authProvider.isAdmin || workout.createdBy == currentUserId;
@@ -111,7 +114,7 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
           appBar: AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              tooltip: 'Volver',
+              tooltip: l10n.goBackTooltip,
               onPressed: () => context.pop(),
             ),
             title: Text(
@@ -127,7 +130,7 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // ▶ Iniciar Rutina — siempre visible
+                  // ? Iniciar Rutina � siempre visible
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -141,9 +144,9 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                         ),
                       ),
                       icon: const Icon(Icons.play_arrow_rounded, size: 26),
-                      label: const Text(
-                        'INICIAR RUTINA',
-                        style: TextStyle(
+                      label: Text(
+                        l10n.startRoutine,
+                        style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1,
@@ -151,7 +154,7 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Editar / Eliminar — solo si admin o dueño
+                  // Editar / Eliminar � solo si admin o due�o
                   if (canManage) ...[
                     const SizedBox(height: 10),
                     Row(
@@ -184,7 +187,7 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                             icon: const Icon(Icons.edit_outlined, size: 18),
-                            label: const Text('Editar'),
+                            label: Text(l10n.edit),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -196,12 +199,12 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                                 context: context,
                                 builder: (ctx) => AlertDialog(
                                   backgroundColor: AppColors.surface,
-                                  title: const Text(
-                                    '¿Eliminar rutina?',
-                                    style: TextStyle(color: Colors.white),
+                                  title: Text(
+                                    l10n.deleteRoutineTitle,
+                                    style: const TextStyle(color: Colors.white),
                                   ),
                                   content: Text(
-                                    '¿Estás seguro de eliminar "${workout.name}"? Esta acción no se puede deshacer.',
+                                    l10n.deleteWorkoutConfirm(workout.name),
                                     style: const TextStyle(
                                         color: AppColors.textSecondary),
                                   ),
@@ -251,7 +254,7 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                             icon: const Icon(Icons.delete_outline, size: 18),
-                            label: const Text('Eliminar'),
+                            label: Text(l10n.delete),
                           ),
                         ),
                       ],
@@ -307,7 +310,7 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          workout.level.toUpperCase(),
+                          l10n.levelDisplay(workout.level).toUpperCase(),
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -321,18 +324,18 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           _buildInfoCard(
-                            'Duración',
+                            l10n.durationLabel,
                             '${workout.duration} min',
                             Icons.access_time,
                           ),
                           _buildInfoCard(
-                            'Ejercicios',
+                            l10n.exercisesLabel,
                             '${workout.exerciseCount}',
                             Icons.fitness_center,
                           ),
                           _buildInfoCard(
-                            'Nivel',
-                            workout.level,
+                            l10n.levelLabel,
+                            l10n.levelDisplay(workout.level),
                             Icons.trending_up,
                           ),
                         ],
@@ -347,9 +350,9 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Ejercicios de la rutina',
-                        style: TextStyle(
+                      Text(
+                        l10n.routineExercises,
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -357,12 +360,12 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       if (workout.exercises.isEmpty)
-                        const Center(
+                        Center(
                           child: Padding(
-                            padding: EdgeInsets.all(32.0),
+                            padding: const EdgeInsets.all(32.0),
                             child: Text(
-                              'No hay ejercicios',
-                              style: TextStyle(
+                              l10n.noExercises,
+                              style: const TextStyle(
                                 color: AppColors.textSecondary,
                               ),
                             ),
@@ -496,9 +499,11 @@ class _ExerciseCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    _buildDetail(Icons.repeat, '$sets series'),
+                    _buildDetail(
+                        Icons.repeat, AppL10n.of(context).setsCount(sets)),
                     const SizedBox(width: 16),
-                    _buildDetail(Icons.fitness_center, '$reps reps'),
+                    _buildDetail(Icons.fitness_center,
+                        AppL10n.of(context).repsCount(reps)),
                     const SizedBox(width: 16),
                     _buildDetail(Icons.timer, '${restTime}s'),
                   ],

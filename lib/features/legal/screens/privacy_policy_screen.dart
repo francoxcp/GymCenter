@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
@@ -49,7 +49,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         const Text(
-                          'Última actualización: 11 de febrero de 2026',
+                          '�ltima actualizaci�n: 11 de febrero de 2026',
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
@@ -65,139 +65,139 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             _buildSection(
-              'Introducción',
+              'Introducci�n',
               'En Chamos Fitness Center, respetamos su privacidad y nos comprometemos a proteger '
-                  'sus datos personales. Esta política explica cómo recopilamos, usamos y protegemos '
-                  'su información cuando utiliza nuestra aplicación.',
+                  'sus datos personales. Esta pol�tica explica c�mo recopilamos, usamos y protegemos '
+                  'su informaci�n cuando utiliza nuestra aplicaci�n.',
             ),
 
             _buildSection(
-              '1. Información que Recopilamos',
-              'Recopilamos los siguientes tipos de información:\n\n'
-                  'Información de Cuenta:\n'
-                  '• Nombre completo\n'
-                  '• Correo electrónico\n'
-                  '• Contraseña (encriptada)\n'
-                  '• Fecha de nacimiento\n\n'
-                  'Información física:\n'
-                  '• Peso y altura\n'
-                  '• Medidas corporales (pecho, cintura, cadera, bíceps, muslos)\n'
-                  '• Fotografías de progreso (opcional)\n'
-                  '• Nivel de experiencia\n\n'
-                  'Información de Actividad:\n'
-                  '• Entrenamientos completados\n'
-                  '• Duración de sesiones\n'
-                  '• Calorías quemadas\n'
-                  '• Metas y objetivos\n'
-                  '• Historial de progreso',
+              '1. Informaci�n que Recopilamos',
+              'Recopilamos los siguientes tipos de informaci�n:\n\n'
+                  'Informaci�n de Cuenta:\n'
+                  '� Nombre completo\n'
+                  '� Correo electr�nico\n'
+                  '� Contrase�a (encriptada)\n'
+                  '� Fecha de nacimiento\n\n'
+                  'Informaci�n f�sica:\n'
+                  '� Peso y altura\n'
+                  '� Medidas corporales (pecho, cintura, cadera, b�ceps, muslos)\n'
+                  '� Fotograf�as de progreso (opcional)\n'
+                  '� Nivel de experiencia\n\n'
+                  'Informaci�n de Actividad:\n'
+                  '� Entrenamientos completados\n'
+                  '� Duraci�n de sesiones\n'
+                  '� Calor�as quemadas\n'
+                  '� Metas y objetivos\n'
+                  '� Historial de progreso',
             ),
 
             _buildSection(
-              '2. Cómo Usamos su Información',
-              'Utilizamos su información para:\n\n'
-                  '• Proporcionar y personalizar nuestros servicios\n'
-                  '• Crear rutinas de entrenamiento personalizadas\n'
-                  '• Hacer seguimiento de su progreso físico\n'
-                  '• Enviar notificaciones sobre entrenamientos\n'
-                  '• Mejorar la experiencia del usuario\n'
-                  '• Comunicarnos con usted sobre actualizaciones\n'
-                  '• Cumplir con requisitos legales',
+              '2. C�mo Usamos su Informaci�n',
+              'Utilizamos su informaci�n para:\n\n'
+                  '� Proporcionar y personalizar nuestros servicios\n'
+                  '� Crear rutinas de entrenamiento personalizadas\n'
+                  '� Hacer seguimiento de su progreso f�sico\n'
+                  '� Enviar notificaciones sobre entrenamientos\n'
+                  '� Mejorar la experiencia del usuario\n'
+                  '� Comunicarnos con usted sobre actualizaciones\n'
+                  '� Cumplir con requisitos legales',
             ),
 
             _buildSection(
               '3. Almacenamiento de Datos',
               'Sus datos se almacenan de forma segura en servidores cloud de Supabase:\n\n'
-                  '• Encriptación en tránsito y en reposo\n'
-                  '• Acceso restringido mediante autenticación\n'
-                  '• Copias de seguridad regulares\n'
-                  '• Cumplimiento con estándares de seguridad internacionales',
+                  '� Encriptaci�n en tr�nsito y en reposo\n'
+                  '� Acceso restringido mediante autenticaci�n\n'
+                  '� Copias de seguridad regulares\n'
+                  '� Cumplimiento con est�ndares de seguridad internacionales',
             ),
 
             _buildSection(
-              '4. Compartir Información',
-              'NO vendemos ni compartimos su información personal con terceros, excepto:\n\n'
-                  '• Con su consentimiento explícito\n'
-                  '• Para cumplir con requisitos legales\n'
-                  '• Con proveedores de servicios (Supabase) bajo estrictos acuerdos de confidencialidad\n\n'
-                  'Cuando comparte su progreso usando la función "Compartir", usted controla qué información se comparte.',
+              '4. Compartir Informaci�n',
+              'NO vendemos ni compartimos su informaci�n personal con terceros, excepto:\n\n'
+                  '� Con su consentimiento expl�cito\n'
+                  '� Para cumplir con requisitos legales\n'
+                  '� Con proveedores de servicios (Supabase) bajo estrictos acuerdos de confidencialidad\n\n'
+                  'Cuando comparte su progreso usando la funci�n "Compartir", usted controla qu� informaci�n se comparte.',
             ),
 
             _buildSection(
               '5. Sus Derechos',
               'Usted tiene derecho a:\n\n'
-                  '**Acceso:** Ver toda su información personal\n'
-                  '**Rectificación:** Corregir datos incorrectos\n'
-                  '**Eliminación:** Borrar su cuenta y datos permanentemente\n'
+                  '**Acceso:** Ver toda su informaci�n personal\n'
+                  '**Rectificaci�n:** Corregir datos incorrectos\n'
+                  '**Eliminaci�n:** Borrar su cuenta y datos permanentemente\n'
                   '**Portabilidad:** Exportar sus datos\n'
-                  '**Revocación:** Retirar consentimientos en cualquier momento',
+                  '**Revocaci�n:** Retirar consentimientos en cualquier momento',
             ),
 
             _buildSection(
-              '6. Retención de Datos',
-              'Conservamos su información mientras:\n\n'
-                  '• Su cuenta esté activa\n'
-                  '• Sea necesario para proporcionar servicios\n'
-                  '• Lo requieran obligaciones legales\n\n'
-                  'Al eliminar su cuenta, todos sus datos se borran permanentemente en un plazo de 30 días.',
+              '6. Retenci�n de Datos',
+              'Conservamos su informaci�n mientras:\n\n'
+                  '� Su cuenta est� activa\n'
+                  '� Sea necesario para proporcionar servicios\n'
+                  '� Lo requieran obligaciones legales\n\n'
+                  'Al eliminar su cuenta, todos sus datos se borran permanentemente en un plazo de 30 d�as.',
             ),
 
             _buildSection(
               '7. Seguridad',
-              'Implementamos medidas de seguridad técnicas y organizativas:\n\n'
-                  '• Autenticación segura (JWT tokens)\n'
-                  '• Encriptación de contraseñas con bcrypt\n'
-                  '• Row Level Security (RLS) en base de datos\n'
-                  '• Conexiones HTTPS/SSL\n'
-                  '• Auditorías de seguridad regulares\n'
-                  '• Validación de entrada de datos',
+              'Implementamos medidas de seguridad t�cnicas y organizativas:\n\n'
+                  '� Autenticaci�n segura (JWT tokens)\n'
+                  '� Encriptaci�n de contrase�as con bcrypt\n'
+                  '� Row Level Security (RLS) en base de datos\n'
+                  '� Conexiones HTTPS/SSL\n'
+                  '� Auditor�as de seguridad regulares\n'
+                  '� Validaci�n de entrada de datos',
             ),
 
             _buildSection(
-              '8. Cookies y Tecnologías Similares',
-              'Utilizamos tecnologías de almacenamiento local para:\n\n'
-                  '• Mantener su sesión activa\n'
-                  '• Recordar preferencias de la aplicación\n'
-                  '• Mejorar el rendimiento\n\n'
+              '8. Cookies y Tecnolog�as Similares',
+              'Utilizamos tecnolog�as de almacenamiento local para:\n\n'
+                  '� Mantener su sesi�n activa\n'
+                  '� Recordar preferencias de la aplicaci�n\n'
+                  '� Mejorar el rendimiento\n\n'
                   'No utilizamos cookies de terceros para rastreo o publicidad.',
             ),
 
             _buildSection(
               '9. Menores de Edad',
-              'Nuestra aplicación está dirigida a personas mayores de 18 años. '
-                  'Los menores entre 13-16 años requieren consentimiento parental. '
-                  'No recopilamos intencionalmente datos de menores de 13 años.',
+              'Nuestra aplicaci�n est� dirigida a personas mayores de 18 a�os. '
+                  'Los menores entre 13-16 a�os requieren consentimiento parental. '
+                  'No recopilamos intencionalmente datos de menores de 13 a�os.',
             ),
 
             _buildSection(
               '10. Transferencias Internacionales',
               'Sus datos pueden ser procesados en servidores ubicados fuera de Venezuela. '
-                  'Garantizamos que estas transferencias cumplan con las leyes de protección de datos aplicables.',
+                  'Garantizamos que estas transferencias cumplan con las leyes de protecci�n de datos aplicables.',
             ),
 
             _buildSection(
-              '11. Cambios a esta Política',
-              'Podemos actualizar esta política ocasionalmente. Le notificaremos de cambios '
+              '11. Cambios a esta Pol�tica',
+              'Podemos actualizar esta pol�tica ocasionalmente. Le notificaremos de cambios '
                   'significativos mediante:\n\n'
-                  '• Notificación en la aplicación\n'
-                  '• Email a su dirección registrada\n'
-                  '• Actualización de la fecha al inicio de este documento',
+                  '� Notificaci�n en la aplicaci�n\n'
+                  '� Email a su direcci�n registrada\n'
+                  '� Actualizaci�n de la fecha al inicio de este documento',
             ),
 
             _buildSection(
               '12. Contacto',
               'Para ejercer sus derechos o preguntas sobre privacidad:\n\n'
-                  '• Email: privacy@chamosfitnesscenter.com\n'
-                  '• Sección de Ajustes → Privacidad\n'
-                  '• Responderemos en un plazo de 30 días',
+                  '� Email: privacy@chamosfitnesscenter.com\n'
+                  '� Secci�n de Ajustes ? Privacidad\n'
+                  '� Responderemos en un plazo de 30 d�as',
             ),
 
             _buildSection(
               'Cumplimiento Legal',
-              'Esta política cumple con:\n\n'
-                  '• GDPR (Reglamento General de Protección de Datos - UE)\n'
-                  '• CCPA (California Consumer Privacy Act)\n'
-                  '• Ley Orgánica de Protección de Datos Personales (Venezuela)\n'
-                  '• Mejores prácticas internacionales de privacidad',
+              'Esta pol�tica cumple con:\n\n'
+                  '� GDPR (Reglamento General de Protecci�n de Datos - UE)\n'
+                  '� CCPA (California Consumer Privacy Act)\n'
+                  '� Ley Org�nica de Protecci�n de Datos Personales (Venezuela)\n'
+                  '� Mejores pr�cticas internacionales de privacidad',
             ),
 
             const SizedBox(height: 32),
@@ -222,7 +222,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Nos comprometemos a proteger sus datos personales con los más altos estándares de seguridad.',
+                    'Nos comprometemos a proteger sus datos personales con los m�s altos est�ndares de seguridad.',
                     style: TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,

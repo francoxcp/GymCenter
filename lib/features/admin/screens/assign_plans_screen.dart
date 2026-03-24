@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
@@ -49,7 +49,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
-    // Interceptar navegación del navbar mientras haya cambios sin guardar.
+    // Interceptar navegaci�n del navbar mientras haya cambios sin guardar.
     UnsavedChangesGuard.register(() async {
       if (!_hasAnyWorkoutInSchedule) return true;
       return await _confirmDiscard();
@@ -76,8 +76,8 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
   Future<void> _loadSchedule(UserProvider userProvider) async {
     try {
       // Si el usuario no tiene assigned_workout_id activo, sus registros en
-      // user_workout_schedule pueden ser datos huérfanos de sesiones anteriores.
-      // Mostramos todos los días vacíos para que el admin parta de cero.
+      // user_workout_schedule pueden ser datos hu�rfanos de sesiones anteriores.
+      // Mostramos todos los d�as vac�os para que el admin parta de cero.
       final Map<int, String> weekMap = widget.user.assignedWorkoutId == null
           ? {}
           : await userProvider.getWeekWorkouts(widget.user.id);
@@ -95,10 +95,10 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
     }
   }
 
-  /// True si al menos un día del horario actual tiene rutina asignada.
+  /// True si al menos un d�a del horario actual tiene rutina asignada.
   bool get _hasAnyWorkoutInSchedule => _schedule.values.any((v) => v != null);
 
-  /// Devuelve el nombre del próximo día (después de [fromDay]) que tenga
+  /// Devuelve el nombre del pr�ximo d�a (despu�s de [fromDay]) que tenga
   /// rutina asignada en el horario actual. Wrappea si es necesario.
   String? _nextTrainingDayLabel(int fromDay) {
     final dayNames = _localizedDayNames(AppL10n.of(context));
@@ -178,7 +178,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                         ),
                       ),
                       const Divider(color: AppColors.surface),
-                      // Chips de categoría
+                      // Chips de categor�a
                       SizedBox(
                         height: 40,
                         child: ListView(
@@ -315,9 +315,9 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
         }
       }
 
-      // Siempre sincronizar assigned_workout_id con el primer día con rutina.
-      // Esto corrige el caso donde el horario existía pero assigned_workout_id
-      // nunca se actualizó (p.ej. guardado parcial anterior).
+      // Siempre sincronizar assigned_workout_id con el primer d�a con rutina.
+      // Esto corrige el caso donde el horario exist�a pero assigned_workout_id
+      // nunca se actualiz� (p.ej. guardado parcial anterior).
       final firstWorkout = [1, 2, 3, 4, 5, 6]
           .map((d) => _schedule[d])
           .firstWhere((w) => w != null, orElse: () => null);
@@ -526,7 +526,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                             final hasWorkout = workoutId != null;
 
                             if (!hasWorkout) {
-                              // ── Tarjeta día de descanso ──────────────────
+                              // -- Tarjeta d�a de descanso ------------------
                               final nextDay = _nextTrainingDayLabel(day);
                               return GestureDetector(
                                 onTap: _isSaving
@@ -647,7 +647,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                               );
                             }
 
-                            // ── Tarjeta día con rutina ────────────────────
+                            // -- Tarjeta d�a con rutina --------------------
                             return AnimatedContainer(
                               duration: const Duration(milliseconds: 250),
                               margin: const EdgeInsets.only(bottom: 10),
@@ -743,7 +743,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
               ),
             ),
 
-            // Botón guardar
+            // Bot�n guardar
             Padding(
               padding: const EdgeInsets.all(16),
               child: SizedBox(
@@ -786,7 +786,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
   }
 }
 
-// ─── Helper widgets ─────────────────────────────────────────────────────────
+// --- Helper widgets ---------------------------------------------------------
 
 class _UserInfoCard extends StatelessWidget {
   final User user;
@@ -806,7 +806,7 @@ class _UserInfoCard extends StatelessWidget {
             backgroundColor: AppColors.primary,
             radius: 30,
             child: Text(
-              user.name[0].toUpperCase(),
+              user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,

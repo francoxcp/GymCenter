@@ -19,7 +19,7 @@ class SecurityService {
       if (user == null) {
         return {
           'success': false,
-          'message': 'No hay sesión activa',
+          'message': 'no_active_session',
         };
       }
 
@@ -41,7 +41,7 @@ class SecurityService {
       } catch (e) {
         return {
           'success': false,
-          'message': 'La contraseña actual es incorrecta',
+          'message': 'wrong_current_password',
         };
       }
 
@@ -53,19 +53,19 @@ class SecurityService {
       if (response.user != null) {
         return {
           'success': true,
-          'message': 'Contraseña actualizada correctamente',
+          'message': 'password_updated',
         };
       } else {
         return {
           'success': false,
-          'message': 'No se pudo cambiar la contraseña',
+          'message': 'password_change_failed',
         };
       }
     } catch (e) {
-      debugPrint('Error al cambiar contraseña: $e');
+      debugPrint('Error changing password: $e');
       return {
         'success': false,
-        'message': 'Error: ${e.toString()}',
+        'message': 'error_change_password',
       };
     }
   }
@@ -79,7 +79,7 @@ class SecurityService {
       if (!_isValidEmail(email)) {
         return {
           'success': false,
-          'message': 'Email inválido',
+          'message': 'invalid_email',
         };
       }
 
@@ -90,14 +90,13 @@ class SecurityService {
 
       return {
         'success': true,
-        'message':
-            'Email de recuperación enviado. Revisa tu bandeja de entrada.',
+        'message': 'recovery_email_sent',
       };
     } catch (e) {
-      debugPrint('Error al enviar email de recuperación: $e');
+      debugPrint('Error sending recovery email: $e');
       return {
         'success': false,
-        'message': 'Error al enviar email: ${e.toString()}',
+        'message': 'error_send_email',
       };
     }
   }
@@ -124,19 +123,19 @@ class SecurityService {
       if (response.user != null) {
         return {
           'success': true,
-          'message': 'Contraseña restablecida exitosamente',
+          'message': 'password_reset_success',
         };
       } else {
         return {
           'success': false,
-          'message': 'No se pudo restablecer la contraseña',
+          'message': 'password_reset_failed',
         };
       }
     } catch (e) {
-      debugPrint('Error al restablecer contraseña: $e');
+      debugPrint('Error resetting password: $e');
       return {
         'success': false,
-        'message': 'Error: ${e.toString()}',
+        'message': 'error_reset_password',
       };
     }
   }
@@ -152,7 +151,7 @@ class SecurityService {
       if (user == null) {
         return {
           'success': false,
-          'message': 'No hay sesión activa',
+          'message': 'no_active_session',
         };
       }
 
@@ -165,7 +164,7 @@ class SecurityService {
       } catch (e) {
         return {
           'success': false,
-          'message': 'Contraseña incorrecta',
+          'message': 'wrong_password',
         };
       }
 
@@ -184,13 +183,13 @@ class SecurityService {
 
       return {
         'success': true,
-        'message': 'Cuenta eliminada exitosamente',
+        'message': 'account_deleted',
       };
     } catch (e) {
-      debugPrint('Error al eliminar cuenta: $e');
+      debugPrint('Error deleting account: $e');
       return {
         'success': false,
-        'message': 'Error al eliminar cuenta: ${e.toString()}',
+        'message': 'error_delete_account',
       };
     }
   }
@@ -205,10 +204,10 @@ class SecurityService {
       await _supabase.from('user_preferences').delete().eq('user_id', userId);
       await _supabase.from('users').delete().eq('id', userId);
 
-      debugPrint('Datos del usuario eliminados');
+      debugPrint('User data deleted');
     } catch (e) {
-      debugPrint('Error al eliminar datos: $e');
-      throw Exception('No se pudieron eliminar los datos del usuario');
+      debugPrint('Error deleting user data: $e');
+      throw Exception('Could not delete user data');
     }
   }
 
@@ -225,34 +224,34 @@ class SecurityService {
     if (password.length < 8) {
       return {
         'isValid': false,
-        'message': 'La contraseña debe tener al menos 8 caracteres',
+        'message': 'password_min_8',
       };
     }
 
     if (!password.contains(RegExp(r'[A-Z]'))) {
       return {
         'isValid': false,
-        'message': 'La contraseña debe contener al menos una mayúscula',
+        'message': 'password_needs_uppercase',
       };
     }
 
     if (!password.contains(RegExp(r'[a-z]'))) {
       return {
         'isValid': false,
-        'message': 'La contraseña debe contener al menos una minúscula',
+        'message': 'password_needs_lowercase',
       };
     }
 
     if (!password.contains(RegExp(r'[0-9]'))) {
       return {
         'isValid': false,
-        'message': 'La contraseña debe contener al menos un número',
+        'message': 'password_needs_number',
       };
     }
 
     return {
       'isValid': true,
-      'message': 'Contraseña válida',
+      'message': 'password_valid',
     };
   }
 
@@ -274,19 +273,19 @@ class SecurityService {
       if (response.user != null) {
         return {
           'success': true,
-          'message': 'Contraseña verificada',
+          'message': 'password_verified',
         };
       } else {
         return {
           'success': false,
-          'message': 'Contraseña incorrecta',
+          'message': 'wrong_password',
         };
       }
     } catch (e) {
-      debugPrint('Error al verificar contraseña: $e');
+      debugPrint('Error verifying password: $e');
       return {
         'success': false,
-        'message': 'Contraseña incorrecta',
+        'message': 'wrong_password',
       };
     }
   }
@@ -312,19 +311,19 @@ class SecurityService {
       if (response.user != null) {
         return {
           'success': true,
-          'message': 'Contraseña actualizada exitosamente',
+          'message': 'password_updated',
         };
       } else {
         return {
           'success': false,
-          'message': 'No se pudo actualizar la contraseña',
+          'message': 'password_update_failed',
         };
       }
     } catch (e) {
-      debugPrint('Error al actualizar contraseña: $e');
+      debugPrint('Error updating password: $e');
       return {
         'success': false,
-        'message': 'Error al actualizar contraseña: ${e.toString()}',
+        'message': 'error_update_password',
       };
     }
   }

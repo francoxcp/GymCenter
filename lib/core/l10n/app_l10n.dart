@@ -457,6 +457,8 @@ class AppL10n {
       isEn ? 'No workouts available' : 'No hay rutinas disponibles';
   String get noExercisesFound =>
       isEn ? 'No exercises found' : 'No se encontraron ejercicios';
+  String get searchExercisesHint =>
+      isEn ? 'Search exercises...' : 'Buscar ejercicios...';
   String errorSaving(String e) =>
       isEn ? 'Error saving: $e' : 'Error al guardar: $e';
 
@@ -820,4 +822,631 @@ class AppL10n {
   // ── Misc / duration format ───────────────────────────────────────────
   String durationMinExercises(int min, int count) =>
       isEn ? '$min min · $count exercises' : '$min min · $count ejercicios';
+
+  // ── Auth ──────────────────────────────────────────────────────────────
+  String get fillAllFields => isEn
+      ? 'Please fill in all fields'
+      : 'Por favor completa todos los campos';
+  String get enterValidEmail => isEn
+      ? 'Please enter a valid email address'
+      : 'Por favor ingresa un correo electrónico válido';
+  String get loginFailed => isEn
+      ? 'Could not complete login. Check your credentials.'
+      : 'No se pudo completar el inicio de sesión. Verifica tus credenciales.';
+  String get loginErrorTitle =>
+      isEn ? 'Login error' : 'Error al iniciar sesión';
+  String get unexpectedError => isEn
+      ? 'An unexpected error occurred. Try again.'
+      : 'Ocurrió un error inesperado. Intenta nuevamente.';
+  String get wrongCredentialsTitle =>
+      isEn ? 'Wrong credentials' : 'Credenciales incorrectas';
+  String get wrongCredentialsMsg => isEn
+      ? 'The email or password is incorrect.\n\nForgot your password?'
+      : 'El correo electrónico o la contraseña son incorrectos.\n\n¿Olvidaste tu contraseña?';
+  String get connectionErrorTitle =>
+      isEn ? 'Connection error' : 'Error de conexión';
+  String get connectionErrorMsg => isEn
+      ? 'Could not connect to the server.\nCheck your internet connection.'
+      : 'No se pudo conectar al servidor.\nVerifica tu conexión a internet.';
+  String get userNotFoundTitle =>
+      isEn ? 'User not found' : 'Usuario no encontrado';
+  String get userNotFoundMsg => isEn
+      ? 'No account exists with this email.\n\nWould you like to register?'
+      : 'No existe una cuenta con este correo electrónico.\n\n¿Quieres registrarte?';
+  String get signMeUp => isEn ? 'Sign up' : 'Registrarme';
+  String get signInTab => isEn ? 'Sign in' : 'Iniciar sesión';
+  String get signUpTab => isEn ? 'Sign up' : 'Registrarse';
+  String get welcomeTitle => isEn ? 'Welcome' : 'Bienvenido';
+  String get welcomeSubtitle => isEn
+      ? 'Your best version starts here.'
+      : 'Tu mejor versión comienza aquí.';
+  String get emailLabel => isEn ? 'Email' : 'Correo Electrónico';
+  String get emailLabelUpper => isEn ? 'EMAIL' : 'CORREO ELECTRÓNICO';
+  String get passwordFieldLabel => isEn ? 'Password' : 'Contraseña';
+  String get passwordLabelUpper => isEn ? 'PASSWORD' : 'CONTRASEÑA';
+  String get min8Chars => isEn ? 'Minimum 8 characters' : 'Mínimo 8 caracteres';
+  String get max15Chars =>
+      isEn ? 'Maximum 15 characters' : 'Máximo 15 caracteres';
+  String get forgotPassword =>
+      isEn ? 'Forgot your password?' : '¿Olvidaste tu contraseña?';
+  String get signingIn => isEn ? 'Signing in...' : 'Ingresando...';
+  String get enterGym => isEn ? 'Enter the gym' : 'Entrar al gimnasio';
+  String get acceptTermsText => isEn
+      ? 'By continuing, you confirm that you accept our\n'
+      : 'Al continuar, confirmas que aceptas nuestros\n';
+  String get termsOfServiceLabel =>
+      isEn ? 'TERMS OF SERVICE' : 'TÉRMINOS DE SERVICIO';
+  String get privacyLabel => isEn ? 'PRIVACY' : 'PRIVACIDAD';
+  String get passwordMin8 => isEn
+      ? 'Password must be at least 8 characters'
+      : 'La contraseña debe tener al menos 8 caracteres';
+  String get passwordMax15 => isEn
+      ? 'Password cannot be longer than 15 characters'
+      : 'La contraseña no puede tener más de 15 caracteres';
+  String get passwordNeedsUppercase => isEn
+      ? 'Password must have at least one uppercase letter'
+      : 'La contraseña debe tener al menos una letra mayúscula';
+  String get passwordNeedsLowercase => isEn
+      ? 'Password must have at least one lowercase letter'
+      : 'La contraseña debe tener al menos una letra minúscula';
+  String get passwordNeedsNumber => isEn
+      ? 'Password must have at least one number'
+      : 'La contraseña debe tener al menos un número';
+  String get registerFailed => isEn
+      ? 'Could not complete registration. Try again.'
+      : 'No se pudo completar el registro. Intenta nuevamente.';
+  String get emailAlreadyExists => isEn
+      ? 'An account with this email already exists.'
+      : 'Ya existe una cuenta con este correo electrónico.';
+  String get connectionError => isEn
+      ? 'Connection error. Check your internet.'
+      : 'Error de conexión. Verifica tu internet.';
+  String registerError(String e) =>
+      isEn ? 'Registration error: $e' : 'Error al registrar: $e';
+  String get createYourAccount =>
+      isEn ? 'Create your account' : 'Crea tu cuenta';
+  String get registerSubtitle => isEn
+      ? 'Enter your details to start training.'
+      : 'Ingresa tus datos para empezar el entrenamiento.';
+  String get confirmPasswordLabelUpper =>
+      isEn ? 'CONFIRM PASSWORD' : 'CONFIRMAR CONTRASEÑA';
+  String get iAcceptThe => isEn ? 'I accept the ' : 'Acepto los ';
+  String get termsOfServiceLink =>
+      isEn ? 'Terms of Service' : 'Términos de Servicio';
+  String get andThe => isEn ? ' and the ' : ' y la ';
+  String get privacyPolicyLinkText =>
+      isEn ? 'Privacy Policy' : 'Política de Privacidad';
+  String get ofChamosFitness =>
+      isEn ? ' of Chamos Fitness Center.' : ' de Chamos Fitness Center.';
+  String get signUpButton => isEn ? 'SIGN UP' : 'REGISTRARSE';
+  String get alreadyMember =>
+      isEn ? 'Already a member? ' : '¿Ya eres miembro? ';
+  String get signInLink => isEn ? 'Sign in' : 'Inicio Sesión';
+
+  // ── Forgot password ──────────────────────────────────────────────────
+  String get recoverPasswordTitle =>
+      isEn ? 'Recover password' : 'Recuperar contraseña';
+  String get recoverPasswordDesc => isEn
+      ? 'Enter your email and we will send you instructions to reset your access to the training center.'
+      : 'Ingresa tu correo electrónico y te enviaremos las instrucciones para restablecer tu acceso al centro de entrenamiento.';
+  String get emailFieldLabel => isEn ? 'Email' : 'Correo electrónico';
+  String get checkSpamHint => isEn
+      ? "If you don't receive the email in a few minutes, check your spam folder."
+      : 'Si no recibes el correo en unos minutos, revisa tu carpeta de spam.';
+  String get sendRecoveryLink =>
+      isEn ? 'Send recovery link' : 'Enviar enlace de recuperación';
+  String get rememberedPassword =>
+      isEn ? 'Remembered your password? ' : '¿Recordaste tu contraseña? ';
+
+  // ── Home extra ───────────────────────────────────────────────────────
+  String get offlineBanner => isEn
+      ? 'No connection · Showing saved data'
+      : 'Sin conexión · Mostrando datos guardados';
+  List<String> get dayNamesFull => isEn
+      ? [
+          'monday',
+          'tuesday',
+          'wednesday',
+          'thursday',
+          'friday',
+          'saturday',
+          'sunday'
+        ]
+      : [
+          'lunes',
+          'martes',
+          'miércoles',
+          'jueves',
+          'viernes',
+          'sábado',
+          'domingo'
+        ];
+  String get availableTomorrow =>
+      isEn ? 'Available tomorrow' : 'Disponible mañana';
+  String availableOnDay(String day) =>
+      isEn ? 'Available on $day' : 'Disponible el $day';
+  String availableInDays(int count) =>
+      isEn ? 'Available in $count days' : 'Disponible en $count días';
+  String get activeDaysLabel => isEn ? 'Active days' : 'Días activos';
+  String get sessionsStatLabel => isEn ? 'Sessions' : 'Sesiones';
+  String get nextRoutineLabel => isEn ? 'Next routine' : 'Próxima rutina';
+  String get scheduledRest => isEn ? 'Scheduled rest' : 'Descanso programado';
+  String get yourAssignedRoutine =>
+      isEn ? 'Your assigned routine' : 'Tu rutina asignada';
+  String get loadingRoutines =>
+      isEn ? 'Loading routines...' : 'Cargando rutinas...';
+  String get restDayTitleHome => isEn ? 'Rest day! 💤' : '¡Día de descanso! 💤';
+  String restDayMsgWithDay(String day) => isEn
+      ? 'Rest and recover your muscles.\nYour next session is on $day'
+      : 'Descansa y recupera músculos.\nTu próxima sesión es el $day';
+  String get noWorkoutToday => isEn
+      ? "You don't have a scheduled workout today.\nRest and recover your muscles."
+      : 'Hoy no tienes entrenamiento programado.\nDescansa y recupera músculos.';
+  String exerciseCountSimple(int count) =>
+      isEn ? '$count exercises' : '$count ejercicios';
+  String get trainNow => isEn ? 'TRAIN NOW' : 'ENTRENAR AHORA';
+  String get routineNotFound =>
+      isEn ? 'Routine not found' : 'Rutina no encontrada';
+  String assignedRoutineUnavailable(String id) => isEn
+      ? 'The assigned routine (ID: $id) is not available.'
+      : 'La rutina asignada (ID: $id) no está disponible.';
+  String get noAssignedRoutineTitle =>
+      isEn ? "You don't have an assigned routine" : 'No tienes rutina asignada';
+  String get trainerWillAssign => isEn
+      ? 'Your trainer will assign you a routine soon'
+      : 'Tu entrenador te asignará una rutina pronto';
+  String get exploreLabel => isEn ? 'Explore' : 'Explorar';
+  String get routinesLabel => isEn ? 'Routines' : 'Rutinas';
+  String get plansLabel => isEn ? 'Plans' : 'Planes';
+  String agoMin(int m) => isEn ? '${m}m ago' : 'hace $m min';
+  String agoHours(int h) => isEn ? '${h}h ago' : 'hace ${h}h';
+  String agoDays(int d) => isEn ? '${d}d ago' : 'hace ${d}d';
+  String get routineInProgressBanner =>
+      isEn ? 'ROUTINE IN PROGRESS' : 'RUTINA EN PROGRESO';
+  String percentCompletedSimple(int p) =>
+      isEn ? '$p% completed' : '$p% completado';
+
+  // ── Workout list extra ───────────────────────────────────────────────
+  String get routineFallback => isEn ? 'Routine' : 'Rutina';
+  String get endRoutineTitle => isEn ? 'End routine' : 'Terminar rutina';
+  String get endRoutineConfirm => isEn
+      ? 'Are you sure you want to end the routine? Current progress will be lost.'
+      : '¿Seguro que quieres terminar la rutina? Se perderá el progreso actual.';
+  String get endAction => isEn ? 'End' : 'Terminar';
+  String get allRoutines => isEn ? 'All routines' : 'Todas las rutinas';
+  String get noRoutinesAvailable =>
+      isEn ? 'No routines available' : 'No hay rutinas disponibles';
+  String get officialRoutines =>
+      isEn ? 'Official routines' : 'Rutinas oficiales';
+  String get userRoutinesLabel =>
+      isEn ? 'User routines' : 'Rutinas de usuarios';
+  String get myRoutines => isEn ? 'My routines' : 'Mis rutinas';
+
+  // ── Today workout extra ──────────────────────────────────────────────
+  String get routineInCourseTitle =>
+      isEn ? 'ROUTINE IN PROGRESS' : 'RUTINA EN CURSO';
+  String get whatDoYouWantToDo =>
+      isEn ? 'What do you want to do?' : '¿Qué quieres hacer?';
+  String get continueRoutine => isEn ? 'Continue routine' : 'Continuar rutina';
+  String get continueLater => isEn ? 'Continue later' : 'Continuar después';
+  String get endRoutine => isEn ? 'End routine' : 'Terminar rutina';
+  String weightSetTitle(int set) =>
+      isEn ? 'Weight · Set $set' : 'Peso · Serie $set';
+  String get noPreviousHistory =>
+      isEn ? 'No previous history' : 'Sin historial previo';
+  String get resumeTooltip => isEn ? 'Resume' : 'Reanudar';
+  String get pauseTooltip => isEn ? 'Pause' : 'Pausar';
+
+  // ── Edit workout ─────────────────────────────────────────────────────
+  String get adminPortal => isEn ? 'ADMIN PORTAL' : 'ADMIN PORTAL';
+  String get editRoutineTitle => isEn ? 'Edit Routine' : 'Editar Rutina';
+  String get pleaseEnterName =>
+      isEn ? 'Please enter a name' : 'Por favor ingresa un nombre';
+  String get durationMinutesLabel =>
+      isEn ? 'Duration (minutes)' : 'Duración (minutos)';
+  String get pleaseEnterDuration =>
+      isEn ? 'Please enter duration' : 'Por favor ingresa la duración';
+  String get mustBeNumber => isEn ? 'Must be a number' : 'Debe ser un número';
+  String get exercisesSectionUpper => isEn ? 'EXERCISES' : 'EJERCICIOS';
+  String get addButton => isEn ? 'Add' : 'Agregar';
+  String get noExercisesEditHint => isEn
+      ? 'No exercises. Tap "Add" to start.'
+      : 'No hay ejercicios. Toca "Agregar" para comenzar.';
+  String confirmDeleteExercise(String name) => isEn
+      ? 'Are you sure you want to delete "$name"? This cannot be undone.'
+      : '¿Estás seguro de eliminar "$name"? Esta acción no se puede deshacer.';
+  String get videoUploadFailed =>
+      isEn ? 'Could not upload video' : 'No se pudo subir el video';
+  String get newExercise => isEn ? 'New exercise' : 'Nuevo ejercicio';
+  String get editExercise => isEn ? 'Edit exercise' : 'Editar ejercicio';
+  String get muscleGroupLabel => isEn ? 'Muscle Group' : 'Grupo Muscular';
+  String get exerciseVideoLabel =>
+      isEn ? 'Exercise video' : 'Video del ejercicio';
+  String get videoAvailable => isEn ? 'Video available' : 'Video disponible';
+  String get restSecsLabel => isEn ? 'Rest (sec)' : 'Descanso (seg)';
+
+  // ── Workout summary extra ────────────────────────────────────────────
+  String get achievementUnlockedTitle =>
+      isEn ? 'Achievement Unlocked!' : '¡Logro Desbloqueado!';
+  String get achievementUnlockedMsg => isEn
+      ? 'You unlocked a new achievement! Keep training to unlock more.'
+      : '¡Desbloqueaste un nuevo logro! Sigue entrenando para desbloquear más.';
+  String achievementUnlockedMsgCount(int count) => count == 1
+      ? (isEn
+          ? 'You unlocked a new achievement! Check your progress to see it.'
+          : '¡Desbloqueaste un nuevo logro! Revisa tu progreso para verlo.')
+      : (isEn
+          ? 'You unlocked $count new achievements! Check your progress.'
+          : '¡Desbloqueaste $count nuevos logros! Revisa tu progreso.');
+  String get awesomeButton => isEn ? 'Awesome!' : '¡Genial!';
+  String get comingSoonLabel => isEn ? 'Coming soon' : 'Próximamente';
+  String get tomorrowLabel => isEn ? 'Tomorrow' : 'Mañana';
+  String inDaysWithDate(int days, String date) =>
+      isEn ? 'In $days days ($date)' : 'En $days días ($date)';
+  String get timeStatLabel => isEn ? 'TIME' : 'TIEMPO';
+  String get caloriesStatLabelUpper => isEn ? 'CALORIES' : 'CALORÍAS';
+  String get volumeStatLabel => isEn ? 'VOLUME' : 'VOLUMEN';
+  String get totalStatLabel => isEn ? 'TOTAL' : 'TOTAL';
+
+  // ── Workout calendar extra ───────────────────────────────────────────
+  String get workoutFallback => isEn ? 'Workout' : 'Entrenamiento';
+  String get refreshTooltip => isEn ? 'Refresh' : 'Actualizar';
+  String get totalTimeCalendar => isEn ? 'Total time' : 'Tiempo total';
+  String get complianceLabel => isEn ? 'Compliance' : 'Cumplimiento';
+  String get noScheduledWorkouts =>
+      isEn ? 'No scheduled workouts' : 'Sin entrenamientos programados';
+  String minutesCompletedLabel(int m) =>
+      isEn ? '$m minutes completed' : '$m minutos completados';
+  String get scheduledLabel => isEn ? 'Scheduled' : 'Programado';
+  String get doneLabel => isEn ? '✓ Done' : '✓ Hecho';
+  List<String> get monthNames => isEn
+      ? [
+          'january',
+          'february',
+          'march',
+          'april',
+          'may',
+          'june',
+          'july',
+          'august',
+          'september',
+          'october',
+          'november',
+          'december'
+        ]
+      : [
+          'enero',
+          'febrero',
+          'marzo',
+          'abril',
+          'mayo',
+          'junio',
+          'julio',
+          'agosto',
+          'septiembre',
+          'octubre',
+          'noviembre',
+          'diciembre'
+        ];
+
+  // ── Workout detail readonly extra ────────────────────────────────────
+  String get routineInProgressTitle =>
+      isEn ? 'Routine in progress' : 'Rutina en progreso';
+  String get routineInProgressMsg => isEn
+      ? 'You have a routine in progress. Continue it or start this one as extra?'
+      : 'Tienes una rutina en curso. ¿Quieres continuarla o iniciar esta como extra?';
+  String get startThisLabel => isEn ? 'Start this' : 'Iniciar esta';
+  String get goBackTooltip => isEn ? 'Back' : 'Volver';
+  String get startRoutine => isEn ? 'START ROUTINE' : 'INICIAR RUTINA';
+  String get deleteRoutineTitle =>
+      isEn ? 'Delete routine?' : '¿Eliminar rutina?';
+  String get durationLabel => isEn ? 'Duration' : 'Duración';
+  String get exercisesLabel => isEn ? 'Exercises' : 'Ejercicios';
+  String get routineExercises =>
+      isEn ? 'Routine exercises' : 'Ejercicios de la rutina';
+  String setsCount(int n) => isEn ? '$n sets' : '$n series';
+  String repsCount(int n) => isEn ? '$n reps' : '$n reps';
+
+  // ── Admin dashboard extra ────────────────────────────────────────────
+  String get goodMorning => isEn ? 'Good morning' : 'Buenos días';
+  String get goodAfternoon => isEn ? 'Good afternoon' : 'Buenas tardes';
+  String get goodEvening => isEn ? 'Good evening' : 'Buenas noches';
+  String get weeklyActivity => isEn ? 'Weekly activity' : 'Actividad semanal';
+  String get last7Days => isEn ? 'Last 7 days' : 'Últimos 7 días';
+  String get errorLoadingData => isEn
+      ? 'Error loading data. Check your connection.'
+      : 'Error al cargar datos. Verifica tu conexión.';
+  String get retryButton => isEn ? 'Retry' : 'Reintentar';
+  String get usersStatLabel => isEn ? 'USERS' : 'USUARIOS';
+  String get sessionsStatLabelUpper => isEn ? 'SESSIONS' : 'SESIONES';
+  String get noSessionsThisWeek =>
+      isEn ? 'No sessions this week' : 'Sin sesiones esta semana';
+  List<String> get weekdayAbbreviations => isEn
+      ? ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
+      : ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
+  String get todayUpper => isEn ? 'TODAY' : 'HOY';
+  String get yesterdayUpper => isEn ? 'YESTERDAY' : 'AYER';
+
+  // ── User assignments extra ───────────────────────────────────────────
+  String get userAssignmentsTitle =>
+      isEn ? 'User assignments' : 'Asignaciones de usuarios';
+  String get noAssignedRoutine =>
+      isEn ? 'No assigned routine' : 'Sin rutina asignada';
+  String get routineAssigned => isEn ? 'Routine assigned' : 'Rutina asignada';
+  String get addRoutine => isEn ? 'Add routine' : 'Agregar rutina';
+  String get editRoutineMenu => isEn ? 'Edit routine' : 'Editar rutina';
+  String get removeRoutine => isEn ? 'Remove routine' : 'Quitar rutina';
+
+  // ── Change password screen ───────────────────────────────────────────
+  String get accountSecurity =>
+      isEn ? 'Account security' : 'Seguridad de tu cuenta';
+  String get changePasswordScreenHint => isEn
+      ? 'Change your password regularly to keep your account secure'
+      : 'Cambia tu contraseña regularmente para mantener tu cuenta segura';
+  String get enterCurrentPassword =>
+      isEn ? 'Enter your current password' : 'Ingresa tu contraseña actual';
+  String get confirmNewPassword =>
+      isEn ? 'Confirm new password' : 'Confirmar nueva contraseña';
+  String get repeatNewPassword =>
+      isEn ? 'Repeat the new password' : 'Repite la nueva contraseña';
+  String get passwordRequirements =>
+      isEn ? 'Password requirements:' : 'Requisitos de contraseña:';
+  String get passwordRecommendation => isEn
+      ? 'We recommend using letters, numbers and symbols'
+      : 'Se recomienda usar letras, números y símbolos';
+  String get changePasswordButton =>
+      isEn ? 'Change Password' : 'Cambiar Contraseña';
+  String get forgotPasswordInstructions => isEn
+      ? 'If you don\'t remember your current password, you must log out and use the "Recover password" option on the login screen.'
+      : 'Si no recuerdas tu contraseña actual, debes cerrar sesión y usar la opción "Recuperar contraseña" en la pantalla de inicio de sesión.';
+  String get understood => isEn ? 'Understood' : 'Entendido';
+  String get dontRememberPassword => isEn
+      ? "Don't remember your current password?"
+      : '¿No recuerdas tu contraseña actual?';
+  String get newPasswordMin8 => isEn
+      ? 'New password must be at least 8 characters'
+      : 'La nueva contraseña debe tener al menos 8 caracteres';
+  String get newPasswordsDoNotMatch => isEn
+      ? 'New passwords do not match'
+      : 'Las contraseñas nuevas no coinciden';
+  String get newPasswordMustDiffer => isEn
+      ? 'New password must be different from current'
+      : 'La nueva contraseña debe ser diferente a la actual';
+  String get currentPasswordIncorrect => isEn
+      ? 'Current password is incorrect'
+      : 'La contraseña actual es incorrecta';
+
+  // ── Coming soon workout card ─────────────────────────────────────────
+  String get goodJob => isEn ? 'Good job!' : '¡Buen trabajo!';
+  String get workoutCompletedBanner =>
+      isEn ? 'Workout completed!' : '¡Entrenamiento completado!';
+  String get nextRoutineLabelUpper => isEn ? 'NEXT ROUTINE' : 'PRÓXIMA RUTINA';
+
+  // ── Video widgets ────────────────────────────────────────────────────
+  String get videoUrlUnavailable =>
+      isEn ? 'Video URL unavailable' : 'URL del video no disponible';
+  String get videoLoadError =>
+      isEn ? 'Error loading video' : 'Error al cargar el video';
+  String get loadingVideo => isEn ? 'Loading video...' : 'Cargando video...';
+
+  // ── Profile extra ────────────────────────────────────────────────────
+  String get personalRecords =>
+      isEn ? 'Personal Records' : 'Récords Personales';
+  String get settingsTooltip => isEn ? 'Settings' : 'Ajustes';
+
+  // ── Level display (DB keys → labels) ─────────────────────────────────
+  String levelDisplay(String dbKey) {
+    switch (dbKey) {
+      case 'Principiante':
+        return beginner;
+      case 'Intermedio':
+        return intermediate;
+      case 'Avanzado':
+        return advanced;
+      default:
+        return dbKey;
+    }
+  }
+
+  // ── Today workout extra (batch 2) ──────────────────────────────────────
+  String exerciseProgress(int current, int total) =>
+      isEn ? 'Exercise $current of $total' : 'Ejercicio $current de $total';
+  String get videoUnavailable =>
+      isEn ? 'Video unavailable' : 'Video no disponible';
+  String get instructionsLabel => isEn ? 'Instructions:' : 'Instrucciones:';
+  String get restingTitle => isEn ? 'RESTING' : 'DESCANSANDO';
+  String get secondsLabel => isEn ? 'seconds' : 'segundos';
+  String get skipRest => isEn ? 'Skip rest' : 'Saltar descanso';
+  String get markCompletedSets =>
+      isEn ? 'Mark the completed sets:' : 'Marca las series completadas:';
+  String setNumber(int n) => isEn ? 'Set $n' : 'Serie $n';
+  String get nextExercise => isEn ? 'NEXT EXERCISE' : 'SIGUIENTE EJERCICIO';
+  String get finishRoutine => isEn ? 'FINISH ROUTINE' : 'FINALIZAR RUTINA';
+  String get restLabel => isEn ? 'Rest' : 'Descanso';
+
+  // ── Service error/success codes ──────────────────────────────────────────
+  /// Translates a service-layer error/success code into a localised message.
+  /// Services (which have no BuildContext) return short string codes;
+  /// the UI passes them through this method before displaying.
+  String serviceMessage(String code) {
+    switch (code) {
+      // ── SecurityService ──
+      case 'no_active_session':
+        return isEn ? 'No active session' : 'No hay sesión activa';
+      case 'wrong_current_password':
+        return isEn
+            ? 'Current password is incorrect'
+            : 'La contraseña actual es incorrecta';
+      case 'password_updated':
+        return isEn
+            ? 'Password updated successfully'
+            : 'Contraseña actualizada correctamente';
+      case 'password_change_failed':
+        return isEn
+            ? 'Could not change password'
+            : 'No se pudo cambiar la contraseña';
+      case 'invalid_email':
+        return isEn ? 'Invalid email' : 'Email inválido';
+      case 'recovery_email_sent':
+        return isEn
+            ? 'Recovery email sent. Check your inbox.'
+            : 'Email de recuperación enviado. Revisa tu bandeja de entrada.';
+      case 'password_reset_success':
+        return isEn
+            ? 'Password reset successfully'
+            : 'Contraseña restablecida exitosamente';
+      case 'password_reset_failed':
+        return isEn
+            ? 'Could not reset password'
+            : 'No se pudo restablecer la contraseña';
+      case 'wrong_password':
+        return isEn ? 'Incorrect password' : 'Contraseña incorrecta';
+      case 'account_deleted':
+        return isEn
+            ? 'Account deleted successfully'
+            : 'Cuenta eliminada exitosamente';
+      case 'password_min_8':
+        return isEn
+            ? 'Password must be at least 8 characters'
+            : 'La contraseña debe tener al menos 8 caracteres';
+      case 'password_needs_uppercase':
+        return isEn
+            ? 'Password must contain at least one uppercase letter'
+            : 'La contraseña debe contener al menos una mayúscula';
+      case 'password_needs_lowercase':
+        return isEn
+            ? 'Password must contain at least one lowercase letter'
+            : 'La contraseña debe contener al menos una minúscula';
+      case 'password_needs_number':
+        return isEn
+            ? 'Password must contain at least one number'
+            : 'La contraseña debe contener al menos un número';
+      case 'password_valid':
+        return isEn ? 'Valid password' : 'Contraseña válida';
+      case 'password_verified':
+        return isEn ? 'Password verified' : 'Contraseña verificada';
+      case 'password_update_failed':
+        return isEn
+            ? 'Could not update password'
+            : 'No se pudo actualizar la contraseña';
+      case 'error_change_password':
+        return isEn
+            ? 'Error changing password'
+            : 'Error al cambiar la contraseña';
+      case 'error_send_email':
+        return isEn
+            ? 'Error sending recovery email'
+            : 'Error al enviar email de recuperación';
+      case 'error_reset_password':
+        return isEn
+            ? 'Error resetting password'
+            : 'Error al restablecer contraseña';
+      case 'error_delete_account':
+        return isEn ? 'Error deleting account' : 'Error al eliminar cuenta';
+      case 'error_update_password':
+        return isEn
+            ? 'Error updating password'
+            : 'Error al actualizar contraseña';
+      // ── WorkoutProvider ──
+      case 'server_connection_failed':
+        return isEn
+            ? 'Could not connect to server. Showing saved data.'
+            : 'No se pudo conectar al servidor. Mostrando datos guardados.';
+      default:
+        return code;
+    }
+  }
+
+  // ── Offline workout errors ───────────────────────────────────────────────
+  String get offlineCannotCreate => isEn
+      ? 'No internet connection. Connect to create a routine.'
+      : 'No hay conexión a internet. Conéctate para crear una rutina.';
+  String get offlineCannotEdit => isEn
+      ? 'No internet connection. Connect to edit the routine.'
+      : 'No hay conexión a internet. Conéctate para editar la rutina.';
+  String get offlineCannotDelete => isEn
+      ? 'No internet connection. Connect to delete the routine.'
+      : 'No hay conexión a internet. Conéctate para eliminar la rutina.';
+
+  // ── Workout list extra (batch 2) ──────────────────────────────────────
+  String get appTitleUpper => 'CHAMOS FITNESS CENTER';
+  String get officialBadge => isEn ? 'OFFICIAL' : 'OFICIAL';
+  String get routinePausedTitle => isEn ? 'ROUTINE PAUSED' : 'RUTINA EN PAUSA';
+  String exerciseNumber(int n) => isEn ? 'Exercise $n' : 'Ejercicio $n';
+  String get continueButton => isEn ? 'Continue' : 'Continuar';
+
+  // ── Workout summary extra (batch 2) ──────────────────────────────────
+  List<String> get motivationalPhrases => isEn
+      ? [
+          'INCREDIBLE WORK!',
+          'YOU DID IT!',
+          'EXCELLENT!',
+          'UNSTOPPABLE!',
+          'BRUTAL WORKOUT!',
+          'KEEP IT UP CHAMP!',
+          'SPECTACULAR!',
+          'WHAT A MACHINE!',
+        ]
+      : [
+          '¡INCREÍBLE TRABAJO!',
+          '¡LO LOGRASTE!',
+          '¡EXCELENTE!',
+          '¡ERES IMPARABLE!',
+          '¡BRUTAL ENTRENAMIENTO!',
+          '¡SIGUE ASÍ CAMPEÓN!',
+          '¡ESPECTACULAR!',
+          '¡QUÉ MÁQUINA!',
+        ];
+
+  // ── Auth extra (batch 2) ──────────────────────────────────────────────
+  String get emailPlaceholder =>
+      isEn ? 'example@email.com' : 'ejemplo@correo.com';
+
+  // ── User management extra ─────────────────────────────────────────────
+  String get adminBadge => 'ADMIN';
+  String genericError(String e) => isEn ? 'Error: $e' : 'Error: $e';
+
+  // ── Privacy settings screen ───────────────────────────────────────────
+  String get dataUsageSection => isEn ? 'Data Usage' : 'Uso de Datos';
+  String get analyticsTitle => isEn ? 'Analytics' : 'Analíticas';
+  String get analyticsSubtitle => isEn
+      ? 'Help us improve by sharing anonymous usage data'
+      : 'Ayúdanos a mejorar compartiendo datos anónimos de uso';
+  String get personalizationTitle =>
+      isEn ? 'Personalization' : 'Personalización';
+  String get personalizationSubtitle => isEn
+      ? 'Allow us to personalize your experience'
+      : 'Permítenos personalizar tu experiencia';
+  String get workoutInsightsTitle =>
+      isEn ? 'Workout Insights' : 'Análisis de Entrenamientos';
+  String get workoutInsightsSubtitle => isEn
+      ? 'Generate statistics from your workouts'
+      : 'Generar estadísticas de tus entrenamientos';
+  String get yourDataSection => isEn ? 'Your Data' : 'Tus Datos';
+  String get whatWeCollectTitle => isEn ? 'What we collect' : 'Qué recopilamos';
+  String get whatWeCollectSubtitle => isEn
+      ? 'Basic profile info and workout data'
+      : 'Información básica del perfil y datos de entrenamientos';
+  String get howWeStoreTitle =>
+      isEn ? 'How we store it' : 'Cómo lo almacenamos';
+  String get howWeStoreSubtitle => isEn
+      ? 'Encrypted and secure on our servers'
+      : 'Encriptado y seguro en nuestros servidores';
+  String get thirdPartiesTitle => isEn ? 'Third parties' : 'Terceros';
+  String get thirdPartiesSubtitle => isEn
+      ? 'We do not share your data with third parties'
+      : 'No compartimos tus datos con terceros';
+  String get legalSection => isEn ? 'Legal' : 'Legal';
+
+  // ── Achievements screen ───────────────────────────────────────────────
+  String get totalPoints => isEn ? 'Total points' : 'Puntos totales';
+  String get unlockedLabel => isEn ? 'unlocked' : 'desbloqueados';
+
+  // ── Assigned workout card ─────────────────────────────────────────────
+  String get myAssignedRoutine =>
+      isEn ? 'MY ASSIGNED ROUTINE' : 'MI RUTINA ASIGNADA';
+  String get startWorkout => isEn ? 'START WORKOUT' : 'INICIAR ENTRENAMIENTO';
+
+  // ── Misc ──────────────────────────────────────────────────────────────
+  String get watchVideo => isEn ? 'Watch video' : 'Ver video';
 }

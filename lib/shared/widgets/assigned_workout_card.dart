@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../features/workouts/models/workout.dart';
 
 class AssignedWorkoutCard extends StatelessWidget {
@@ -15,6 +16,7 @@ class AssignedWorkoutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: 600),
       tween: Tween(begin: 0.0, end: 1.0),
@@ -76,10 +78,10 @@ class AssignedWorkoutCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'MI RUTINA ASIGNADA',
-                          style: TextStyle(
+                          l10n.myAssignedRoutine,
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
@@ -160,17 +162,17 @@ class AssignedWorkoutCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.play_arrow_rounded,
                             size: 28,
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
-                            'INICIAR ENTRENAMIENTO',
-                            style: TextStyle(
+                            l10n.startWorkout,
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,

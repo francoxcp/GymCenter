@@ -36,14 +36,6 @@ class AppConstants {
   static const Duration defaultTimeout = Duration(seconds: 30);
   static const Duration userCreationDelay = Duration(milliseconds: 500);
 
-  // Mensajes
-  static const String errorLoadingUsers = 'Error al cargar usuarios';
-  static const String errorLoadingWorkouts = 'Error al cargar rutinas';
-  static const String errorLoadingMealPlans =
-      'Error al cargar planes de comida';
-  static const String errorAssigning = 'Error al asignar';
-  static const String successAssigned = 'Asignado correctamente';
-
   // Configuración de Supabase (claves usadas con --dart-define)
   static const String supabaseUrlKey = 'SUPABASE_URL';
   static const String supabaseAnonKeyKey = 'SUPABASE_ANON_KEY';

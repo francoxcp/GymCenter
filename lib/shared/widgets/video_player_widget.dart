@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:video_player/video_player.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_theme.dart';
 import 'fullscreen_video_player.dart';
 
@@ -50,12 +51,12 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       if (widget.videoUrl.isEmpty) {
         setState(() {
           _hasError = true;
-          _errorMessage = 'URL del video no disponible';
+          _errorMessage = 'url_unavailable';
         });
         return;
       }
 
-      // Non-blocking cache lookup — returns instantly if not cached.
+      // Non-blocking cache lookup � returns instantly if not cached.
       FileInfo? cacheInfo;
       try {
         cacheInfo =
@@ -65,10 +66,10 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       }
 
       if (cacheInfo != null) {
-        // Cache hit → play from disk instantly
+        // Cache hit ? play from disk instantly
         _controller = VideoPlayerController.file(cacheInfo.file);
       } else {
-        // Cache miss → stream from network immediately (no wait),
+        // Cache miss ? stream from network immediately (no wait),
         // and download in background so next time it's instant.
         _controller = VideoPlayerController.networkUrl(
           Uri.parse(widget.videoUrl),
@@ -80,6 +81,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
 
       await _controller.initialize();
 
+      if (!mounted) return;
       setState(() {
         _isInitialized = true;
       });
@@ -89,9 +91,10 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       }
     } catch (e) {
       debugPrint('Error al inicializar video: $e');
+      if (!mounted) return;
       setState(() {
         _hasError = true;
-        _errorMessage = 'Error al cargar el video';
+        _errorMessage = 'load_error';
       });
     }
   }
@@ -115,6 +118,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
   @override
   Widget build(BuildContext context) {
     super.build(context); // required by AutomaticKeepAliveClientMixin
+    final l10n = AppL10n.of(context);
     if (_hasError) {
       return Container(
         height: 200,
@@ -134,7 +138,9 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
               ),
               const SizedBox(height: 12),
               Text(
-                _errorMessage,
+                _errorMessage == 'url_unavailable'
+                    ? l10n.videoUrlUnavailable
+                    : l10n.videoLoadError,
                 style: const TextStyle(
                   color: Colors.red,
                   fontSize: 14,
@@ -178,17 +184,17 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
               // Dark overlay
               Container(color: Colors.black54),
               // Spinner + label
-              const Column(
+              Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(
+                  const CircularProgressIndicator(
                     valueColor:
                         AlwaysStoppedAnimation<Color>(AppColors.primary),
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Text(
-                    'Cargando video...',
-                    style: TextStyle(
+                    l10n.loadingVideo,
+                    style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 14,
                     ),
@@ -244,7 +250,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
               ),
             ),
 
-            // Botón de pantalla completa
+            // Bot�n de pantalla completa
             if (widget.showFullscreenButton)
               Positioned(
                 top: 8,
@@ -354,6 +360,7 @@ class VideoThumbnailWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     if (videoUrl.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -418,18 +425,18 @@ class VideoThumbnailWidget extends StatelessWidget {
                   color: Colors.black54,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.videocam,
                       color: AppColors.primary,
                       size: 14,
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Text(
-                      'Ver video',
-                      style: TextStyle(
+                      l10n.watchVideo,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 11,
                         fontWeight: FontWeight.w500,

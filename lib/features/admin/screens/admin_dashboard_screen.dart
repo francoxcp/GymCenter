@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -42,7 +42,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
       final totalUsers = (usersResponse as List).length;
 
-      // Obtener sesiones de los últimos 7 días
+      // Obtener sesiones de los �ltimos 7 d�as
       final now = DateTime.now();
       final sevenDaysAgo = now.subtract(const Duration(days: 6));
       final startOfDay =
@@ -55,17 +55,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
       final sessions = sessionsResponse as List;
 
-      // Calcular sesiones por día
+      // Calcular sesiones por d�a
       final dailyCounts = List<int>.filled(7, 0);
       for (var session in sessions) {
         final completedAt = DateTime.parse(session['completed_at']);
         final daysDiff = now.difference(completedAt).inDays;
         if (daysDiff >= 0 && daysDiff < 7) {
           dailyCounts[6 -
-              daysDiff]++; // Invertido para que el más reciente esté a la derecha
+              daysDiff]++; // Invertido para que el m�s reciente est� a la derecha
         }
       }
 
+      if (!mounted) return;
       setState(() {
         _totalUsers = totalUsers;
         _totalSessions = sessions.length;
@@ -75,6 +76,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       });
     } catch (e) {
       debugPrint('Error loading dashboard data: $e');
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _hasError = true;
@@ -84,14 +86,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'ADMIN PORTAL',
-              style: TextStyle(
+              l10n.adminPortal,
+              style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: AppColors.primary,
@@ -99,8 +102,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
             Text(
-              'Chamos Fitness Center',
-              style: TextStyle(
+              l10n.appTitleUpper,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -124,14 +127,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     final name = auth.currentUser?.name ?? 'Admin';
                     final hour = DateTime.now().hour;
                     final greeting = hour < 12
-                        ? 'Buenos días'
+                        ? l10n.goodMorning
                         : hour < 19
-                            ? 'Buenas tardes'
-                            : 'Buenas noches';
+                            ? l10n.goodAfternoon
+                            : l10n.goodEvening;
                     return Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
                       child: Text(
-                        '$greeting, $name 👋',
+                        '$greeting, $name ??',
                         style: const TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
@@ -140,20 +143,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     );
                   },
                 ),
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Actividad semanal',
-                      style: TextStyle(
+                      l10n.weeklyActivity,
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
                     Text(
-                      'Últimos 7 días',
-                      style: TextStyle(
+                      l10n.last7Days,
+                      style: const TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,
                       ),
@@ -175,10 +178,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       children: [
                         const Icon(Icons.wifi_off, color: Colors.red, size: 20),
                         const SizedBox(width: AppSpacing.sm),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Error al cargar datos. Verifica tu conexión.',
-                            style: TextStyle(color: Colors.red, fontSize: 13),
+                            l10n.errorLoadingData,
+                            style: const TextStyle(
+                                color: Colors.red, fontSize: 13),
                           ),
                         ),
                         TextButton(
@@ -189,7 +193,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             });
                             _loadDashboardData();
                           },
-                          child: const Text('Reintentar'),
+                          child: Text(l10n.retryButton),
                         ),
                       ],
                     ),
@@ -211,7 +215,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           Expanded(
                             child: _StatCard(
                               icon: Icons.people,
-                              title: 'USUARIOS',
+                              title: l10n.usersStatLabel,
                               value: _totalUsers.toString(),
                               change: '',
                             ),
@@ -221,9 +225,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             child: _StatCard(
                               icon: Icons.bolt,
                               iconColor: AppColors.primary,
-                              title: 'SESIONES',
+                              title: l10n.sessionsStatLabelUpper,
                               value: _totalSessions.toString(),
-                              change: 'Últimos 7 días',
+                              change: l10n.last7Days,
                               isNegative: false,
                             ),
                           ),
@@ -249,17 +253,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           borderRadius: BorderRadius.circular(AppSpacing.lg),
                         ),
                         child: _totalSessions == 0
-                            ? const Center(
+                            ? Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.bar_chart,
+                                    const Icon(Icons.bar_chart,
                                         color: AppColors.textSecondary,
                                         size: 40),
-                                    SizedBox(height: AppSpacing.sm),
+                                    const SizedBox(height: AppSpacing.sm),
                                     Text(
-                                      'Sin sesiones esta semana',
-                                      style: TextStyle(
+                                      l10n.noSessionsThisWeek,
+                                      style: const TextStyle(
                                         color: AppColors.textSecondary,
                                         fontSize: 14,
                                       ),
@@ -271,7 +275,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceAround,
                                 crossAxisAlignment: CrossAxisAlignment.end,
-                                children: _buildChartBars(),
+                                children: _buildChartBars(l10n),
                               ),
                       ),
                 const SizedBox(height: AppSpacing.xxl),
@@ -313,12 +317,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  List<Widget> _buildChartBars() {
-    const weekdays = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
+  List<Widget> _buildChartBars(AppL10n l10n) {
+    final weekdays = l10n.weekdayAbbreviations;
     final now = DateTime.now();
     final labels = List.generate(7, (i) {
-      if (i == 6) return 'HOY';
-      if (i == 5) return 'AYER';
+      if (i == 6) return l10n.todayUpper;
+      if (i == 5) return l10n.yesterdayUpper;
       final day = now.subtract(Duration(days: 6 - i));
       return '${weekdays[day.weekday - 1]}\n${day.day}';
     });
@@ -327,7 +331,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         : _dailySessions.reduce((a, b) => a > b ? a : b);
     // Espacio disponible: 200 container - 16*2 padding - 14px label - 8px spacer - 18px count = ~128px para barra
     const maxBarHeight = 110.0;
-    // El array siempre tiene hoy en el índice 6 (el más reciente a la derecha)
+    // El array siempre tiene hoy en el �ndice 6 (el m�s reciente a la derecha)
     const todayIndex = 6;
 
     return List.generate(7, (index) {

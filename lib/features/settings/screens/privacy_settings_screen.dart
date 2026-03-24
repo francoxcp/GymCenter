@@ -24,6 +24,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
 
   Future<void> _loadPrivacySettings() async {
     final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       _analyticsEnabled = prefs.getBool('privacy_analytics') ?? true;
       _personalizationEnabled =
@@ -89,12 +90,10 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           const SizedBox(height: 24),
 
           // Data usage section
-          _buildSectionTitle(l10n.isEn ? 'Data Usage' : 'Uso de Datos'),
+          _buildSectionTitle(l10n.dataUsageSection),
           _buildSwitchTile(
-            title: l10n.isEn ? 'Analytics' : 'Analíticas',
-            subtitle: l10n.isEn
-                ? 'Help improve the app by sharing anonymous usage data'
-                : 'Ayuda a mejorar la app compartiendo datos de uso anónimos',
+            title: l10n.analyticsTitle,
+            subtitle: l10n.analyticsSubtitle,
             icon: Icons.bar_chart_outlined,
             value: _analyticsEnabled,
             onChanged: (v) {
@@ -103,10 +102,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
             },
           ),
           _buildSwitchTile(
-            title: l10n.isEn ? 'Personalization' : 'Personalización',
-            subtitle: l10n.isEn
-                ? 'Use your activity to personalize recommendations'
-                : 'Usar tu actividad para personalizar recomendaciones',
+            title: l10n.personalizationTitle,
+            subtitle: l10n.personalizationSubtitle,
             icon: Icons.tune_outlined,
             value: _personalizationEnabled,
             onChanged: (v) {
@@ -115,11 +112,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
             },
           ),
           _buildSwitchTile(
-            title:
-                l10n.isEn ? 'Workout Insights' : 'Análisis de Entrenamientos',
-            subtitle: l10n.isEn
-                ? 'Analyze workout patterns to give better suggestions'
-                : 'Analizar tus patrones de entrenamiento para mejores sugerencias',
+            title: l10n.workoutInsightsTitle,
+            subtitle: l10n.workoutInsightsSubtitle,
             icon: Icons.fitness_center_outlined,
             value: _workoutInsights,
             onChanged: (v) {
@@ -130,32 +124,26 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           const SizedBox(height: 24),
 
           // Your data section
-          _buildSectionTitle(l10n.isEn ? 'Your Data' : 'Tus Datos'),
+          _buildSectionTitle(l10n.yourDataSection),
           _buildInfoTile(
-            title: l10n.isEn ? 'What we collect' : 'Qué recopilamos',
-            subtitle: l10n.isEn
-                ? 'Workout history, body measurements, preferences'
-                : 'Historial de entrenamientos, medidas corporales, preferencias',
+            title: l10n.whatWeCollectTitle,
+            subtitle: l10n.whatWeCollectSubtitle,
             icon: Icons.info_outline,
           ),
           _buildInfoTile(
-            title: l10n.isEn ? 'How we store it' : 'Cómo lo almacenamos',
-            subtitle: l10n.isEn
-                ? 'Encrypted and stored securely on our servers'
-                : 'Cifrado y almacenado de forma segura en nuestros servidores',
+            title: l10n.howWeStoreTitle,
+            subtitle: l10n.howWeStoreSubtitle,
             icon: Icons.lock_outline,
           ),
           _buildInfoTile(
-            title: l10n.isEn ? 'Third parties' : 'Terceros',
-            subtitle: l10n.isEn
-                ? 'We never sell your personal data to third parties'
-                : 'Nunca vendemos tus datos personales a terceros',
+            title: l10n.thirdPartiesTitle,
+            subtitle: l10n.thirdPartiesSubtitle,
             icon: Icons.block_outlined,
           ),
           const SizedBox(height: 24),
 
           // Legal section
-          _buildSectionTitle(l10n.isEn ? 'Legal' : 'Legal'),
+          _buildSectionTitle(l10n.legalSection),
           _buildNavTile(
             title: l10n.privacyPolicy,
             subtitle: l10n.privacyPolicySubtitle,

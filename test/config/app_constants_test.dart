@@ -64,22 +64,6 @@ void main() {
       });
     });
 
-    group('Error Messages', () {
-      test('has all error messages', () {
-        expect(AppConstants.errorLoadingUsers, 'Error al cargar usuarios');
-        expect(AppConstants.errorLoadingWorkouts, 'Error al cargar rutinas');
-        expect(AppConstants.errorLoadingMealPlans,
-            'Error al cargar planes de comida');
-        expect(AppConstants.errorAssigning, 'Error al asignar');
-      });
-    });
-
-    group('Success Messages', () {
-      test('has success messages', () {
-        expect(AppConstants.successAssigned, 'Asignado correctamente');
-      });
-    });
-
     group('Supabase Configuration', () {
       test('has Supabase config keys', () {
         expect(AppConstants.supabaseUrlKey, 'SUPABASE_URL');

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -79,9 +79,9 @@ class MealPlanDetailScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildInfoCard('Calorías', '${mealPlan.calories}',
+                      _buildInfoCard('Calor�as', '${mealPlan.calories}',
                           Icons.local_fire_department),
-                      _buildInfoCard('Proteínas', '150g', Icons.egg),
+                      _buildInfoCard('Prote�nas', '150g', Icons.egg),
                       _buildInfoCard('Carbos', '200g', Icons.rice_bowl),
                     ],
                   ),
@@ -89,14 +89,14 @@ class MealPlanDetailScreen extends StatelessWidget {
               ),
             ),
 
-            // Lista de comidas del día
+            // Lista de comidas del d�a
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Plan del Día',
+                    'Plan del D�a',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -112,11 +112,11 @@ class MealPlanDetailScreen extends StatelessWidget {
                     [
                       'Avena con frutas (300 cal)',
                       '2 huevos revueltos (140 cal)',
-                      'Café con leche (60 cal)',
+                      'Caf� con leche (60 cal)',
                     ],
                   ),
                   _buildMealCard(
-                    'Media Mañana',
+                    'Media Ma�ana',
                     '10:00 AM',
                     Icons.coffee,
                     Colors.brown,
@@ -134,7 +134,7 @@ class MealPlanDetailScreen extends StatelessWidget {
                       'Pechuga de pollo a la plancha (200 cal)',
                       'Arroz integral (150 cal)',
                       'Ensalada verde (50 cal)',
-                      'Agua de limón (0 cal)',
+                      'Agua de lim�n (0 cal)',
                     ],
                   ),
                   _buildMealCard(
@@ -143,8 +143,8 @@ class MealPlanDetailScreen extends StatelessWidget {
                     Icons.lunch_dining,
                     Colors.purple,
                     [
-                      'Batido de proteína (150 cal)',
-                      'Plátano (90 cal)',
+                      'Batido de prote�na (150 cal)',
+                      'Pl�tano (90 cal)',
                     ],
                   ),
                   _buildMealCard(
@@ -153,7 +153,7 @@ class MealPlanDetailScreen extends StatelessWidget {
                     Icons.dinner_dining,
                     Colors.blue,
                     [
-                      'Salmón a la plancha (250 cal)',
+                      'Salm�n a la plancha (250 cal)',
                       'Vegetales al vapor (80 cal)',
                       'Batata asada (120 cal)',
                     ],
@@ -190,12 +190,12 @@ class MealPlanDetailScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    _buildTip('Bebe al menos 2 litros de agua al día'),
+                    _buildTip('Bebe al menos 2 litros de agua al d�a'),
                     _buildTip(
-                        'Puedes ajustar las porciones según tu peso y objetivo'),
+                        'Puedes ajustar las porciones seg�n tu peso y objetivo'),
                     _buildTip(
-                        'Prepara las comidas con anticipación para ahorrar tiempo'),
-                    _buildTip('Evita alimentos procesados y azúcares añadidos'),
+                        'Prepara las comidas con anticipaci�n para ahorrar tiempo'),
+                    _buildTip('Evita alimentos procesados y az�cares a�adidos'),
                   ],
                 ),
               ),
@@ -327,7 +327,7 @@ class MealPlanDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            '• ',
+            '� ',
             style: TextStyle(color: AppColors.primary, fontSize: 16),
           ),
           Expanded(
@@ -361,7 +361,7 @@ class MealPlanDetailScreen extends StatelessWidget {
     return MealPlan(
       id: mealPlanId,
       name: 'Plan balanceado 2000 Cal',
-      description: 'Nutrición equilibrada para mantener tu peso ideal',
+      description: 'Nutrici�n equilibrada para mantener tu peso ideal',
       calories: 2000,
       category: 'Mantenimiento',
       iconType: 'fork',

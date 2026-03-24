@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:video_player/video_player.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_theme.dart';
 
 /// Pantalla para ver videos en modo fullscreen vertical
@@ -59,7 +60,7 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
       if (widget.videoUrl.isEmpty) {
         setState(() {
           _hasError = true;
-          _errorMessage = 'URL del video no disponible';
+          _errorMessage = 'url_unavailable';
         });
         return;
       }
@@ -85,6 +86,7 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
       _controller.setLooping(true);
       await _controller.initialize();
 
+      if (!mounted) return;
       setState(() {
         _isInitialized = true;
       });
@@ -102,9 +104,10 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
       });
     } catch (e) {
       debugPrint('Error al inicializar video: $e');
+      if (!mounted) return;
       setState(() {
         _hasError = true;
-        _errorMessage = 'Error al cargar el video';
+        _errorMessage = 'load_error';
       });
     }
   }
@@ -183,6 +186,7 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
   }
 
   Widget _buildErrorWidget() {
+    final l10n = AppL10n.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -194,7 +198,9 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
           ),
           const SizedBox(height: 16),
           Text(
-            _errorMessage,
+            _errorMessage == 'url_unavailable'
+                ? l10n.videoUrlUnavailable
+                : l10n.videoLoadError,
             style: const TextStyle(
               color: Colors.red,
               fontSize: 16,
@@ -207,7 +213,7 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.black,
             ),
-            child: const Text('Cerrar'),
+            child: Text(l10n.close),
           ),
         ],
       ),
@@ -215,17 +221,18 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
   }
 
   Widget _buildLoadingWidget() {
-    return const Center(
+    final l10n = AppL10n.of(context);
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
+          const CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
-            'Cargando video...',
-            style: TextStyle(
+            l10n.loadingVideo,
+            style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 16,
             ),

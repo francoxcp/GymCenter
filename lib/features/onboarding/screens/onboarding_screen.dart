@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -34,7 +34,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _nextPage() {
-    // Cuando el usuario sale de la página de stats sin modificar, confirmar
+    // Cuando el usuario sale de la p�gina de stats sin modificar, confirmar
     if (_currentPage == 2 && !_statsModified) {
       final l10n = AppL10n.of(context);
       showDialog(
@@ -631,7 +631,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         'color': Colors.red,
       },
       {
-        'key': 'Ganar músculo',
+        'key': 'Ganar m�sculo',
         'title': l10n.goalGainMuscle,
         'icon': Icons.fitness_center,
         'color': Colors.blue,

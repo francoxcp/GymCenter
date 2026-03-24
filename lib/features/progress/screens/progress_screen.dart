@@ -51,15 +51,16 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(AppL10n.of(context).myProgress),
+        title: Text(l10n.myProgress),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () => context.push('/settings'),
-            tooltip: 'Ajustes',
+            tooltip: l10n.settingsTooltip,
           ),
         ],
       ),

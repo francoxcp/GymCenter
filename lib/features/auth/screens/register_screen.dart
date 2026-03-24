@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/l10n/app_l10n.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/app_validators.dart';
 import '../../../shared/widgets/custom_text_field.dart';
@@ -39,44 +40,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     // Validar campos vacíos
     if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
-      _showError('Por favor completa todos los campos');
+      _showError(AppL10n.of(context).fillAllFields);
       return;
     }
 
     // Validar formato de email
     if (!AppValidators.isValidEmail(email)) {
-      _showError('Por favor ingresa un correo electrónico válido');
+      _showError(AppL10n.of(context).enterValidEmail);
       return;
     }
 
     // Validar largo de contraseña
     if (password.length < 8) {
-      _showError('La contraseña debe tener al menos 8 caracteres');
+      _showError(AppL10n.of(context).passwordMin8);
       return;
     }
 
     if (password.length > 15) {
-      _showError('La contraseña no puede tener más de 15 caracteres');
+      _showError(AppL10n.of(context).passwordMax15);
       return;
     }
 
     // Validar complejidad: mayúscula, minúscula y número
     if (!password.contains(RegExp(r'[A-Z]'))) {
-      _showError('La contraseña debe tener al menos una letra mayúscula');
+      _showError(AppL10n.of(context).passwordNeedsUppercase);
       return;
     }
     if (!password.contains(RegExp(r'[a-z]'))) {
-      _showError('La contraseña debe tener al menos una letra minúscula');
+      _showError(AppL10n.of(context).passwordNeedsLowercase);
       return;
     }
     if (!password.contains(RegExp(r'[0-9]'))) {
-      _showError('La contraseña debe tener al menos un número');
+      _showError(AppL10n.of(context).passwordNeedsNumber);
       return;
     }
 
     // Validar que coincidan
     if (password != confirmPassword) {
-      _showError('Las contraseñas no coinciden');
+      _showError(AppL10n.of(context).newPasswordsDoNotMatch);
       return;
     }
 
@@ -92,19 +93,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (success && mounted) {
         context.go(authProvider.initialRoute);
       } else if (mounted) {
-        _showError('No se pudo completar el registro. Intenta nuevamente.');
+        _showError(AppL10n.of(context).registerFailed);
       }
     } catch (e) {
       if (mounted) {
         final errorMsg = e.toString().toLowerCase();
         if (errorMsg.contains('already registered') ||
             errorMsg.contains('already exists')) {
-          _showError('Ya existe una cuenta con este correo electrónico.');
+          _showError(AppL10n.of(context).emailAlreadyExists);
         } else if (errorMsg.contains('network') ||
             errorMsg.contains('connection')) {
-          _showError('Error de conexión. Verifica tu internet.');
+          _showError(AppL10n.of(context).connectionError);
         } else {
-          _showError('Error al registrar: ${e.toString()}');
+          _showError(AppL10n.of(context).registerError(e.toString()));
         }
       }
     } finally {
@@ -168,18 +169,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               const SizedBox(height: 32),
 
-              const Text(
-                'Crea tu cuenta',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).createYourAccount,
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Ingresa tus datos para empezar el entrenamiento.',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).registerSubtitle,
+                style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                 ),
@@ -188,9 +189,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 32),
 
               // Email Field
-              const Text(
-                'CORREO ELECTRÓNICO',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).emailLabelUpper,
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
@@ -200,14 +201,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 8),
               CustomTextField(
                 controller: _emailController,
-                hintText: 'ejemplo@correo.com',
+                hintText: AppL10n.of(context).emailPlaceholder,
                 prefixIcon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) return null;
                   if (!AppValidators.isValidEmail(value.trim())) {
-                    return 'Ingresa un correo electrónico válido';
+                    return AppL10n.of(context).enterValidEmail;
                   }
                   return null;
                 },
@@ -216,9 +217,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 20),
 
               // Password Field
-              const Text(
-                'CONTRASEÑA',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).passwordLabelUpper,
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
@@ -234,8 +235,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
                   if (value == null || value.isEmpty) return null;
-                  if (value.length < 8) return 'Mínimo 8 caracteres';
-                  if (value.length > 15) return 'Máximo 15 caracteres';
+                  if (value.length < 8) return AppL10n.of(context).min8Chars;
+                  if (value.length > 15) return AppL10n.of(context).max15Chars;
                   return null;
                 },
                 suffixIcon: IconButton(
@@ -254,9 +255,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 20),
 
               // Confirm Password Field
-              const Text(
-                'CONFIRMAR CONTRASEÑA',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).confirmPasswordLabelUpper,
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
@@ -273,7 +274,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 validator: (value) {
                   if (value == null || value.isEmpty) return null;
                   if (value != _passwordController.text) {
-                    return 'Las contraseñas no coinciden';
+                    return AppL10n.of(context).newPasswordsDoNotMatch;
                   }
                   return null;
                 },
@@ -313,29 +314,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   Expanded(
                     child: RichText(
-                      text: const TextSpan(
-                        text: 'Acepto los ',
-                        style: TextStyle(
+                      text: TextSpan(
+                        text: AppL10n.of(context).iAcceptThe,
+                        style: const TextStyle(
                           fontSize: 13,
                           color: Colors.white,
                         ),
                         children: [
                           TextSpan(
-                            text: 'Términos de Servicio',
-                            style: TextStyle(
+                            text: AppL10n.of(context).termsOfServiceLink,
+                            style: const TextStyle(
                               color: AppColors.primary,
                               decoration: TextDecoration.underline,
                             ),
                           ),
-                          TextSpan(text: ' y la '),
+                          TextSpan(text: AppL10n.of(context).andThe),
                           TextSpan(
-                            text: 'Política de Privacidad',
-                            style: TextStyle(
+                            text: AppL10n.of(context).privacyPolicyLinkText,
+                            style: const TextStyle(
                               color: AppColors.primary,
                               decoration: TextDecoration.underline,
                             ),
                           ),
-                          TextSpan(text: ' de Chamos Fitness Center.'),
+                          TextSpan(text: AppL10n.of(context).ofChamosFitness),
                         ],
                       ),
                     ),
@@ -347,7 +348,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               // Register Button
               PrimaryButton(
-                text: 'REGISTRARSE',
+                text: AppL10n.of(context).signUpButton,
                 isLoading: _isLoading,
                 onPressed:
                     _acceptedTerms && !_isLoading ? _handleRegister : null,
@@ -359,9 +360,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      '¿Ya eres miembro? ',
-                      style: TextStyle(
+                    Text(
+                      AppL10n.of(context).alreadyMember,
+                      style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,
                       ),
@@ -373,9 +374,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         minimumSize: const Size(0, 0),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      child: const Text(
-                        'Inicio Sesión',
-                        style: TextStyle(
+                      child: Text(
+                        AppL10n.of(context).signInLink,
+                        style: const TextStyle(
                           fontSize: 14,
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,

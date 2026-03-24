@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -36,6 +36,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -51,7 +52,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header con información
+              // Header con informaci�n
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -61,30 +62,30 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     color: AppColors.primary.withOpacity(0.3),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.lock_reset,
                       color: AppColors.primary,
                       size: 32,
                     ),
-                    SizedBox(width: 16),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Seguridad de tu cuenta',
-                            style: TextStyle(
+                            l10n.accountSecurity,
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
-                            'Cambia tu contraseña regularmente para mantener tu cuenta segura',
-                            style: TextStyle(
+                            l10n.changePasswordScreenHint,
+                            style: const TextStyle(
                               fontSize: 12,
                               color: AppColors.textSecondary,
                             ),
@@ -98,10 +99,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
               const SizedBox(height: 32),
 
-              // Contraseña actual
-              const Text(
-                'Contraseña Actual',
-                style: TextStyle(
+              // Contrase�a actual
+              Text(
+                l10n.currentPassword,
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -110,7 +111,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               const SizedBox(height: 8),
               CustomTextField(
                 controller: _currentPasswordController,
-                hintText: 'Ingresa tu contraseña actual',
+                hintText: l10n.enterCurrentPassword,
                 prefixIcon: Icons.lock_outline,
                 obscureText: _obscureCurrentPassword,
                 suffixIcon: IconButton(
@@ -130,10 +131,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
               const SizedBox(height: 24),
 
-              // Nueva contraseña
-              const Text(
-                'Nueva Contraseña',
-                style: TextStyle(
+              // Nueva contrase�a
+              Text(
+                l10n.newPassword,
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -142,7 +143,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               const SizedBox(height: 8),
               CustomTextField(
                 controller: _newPasswordController,
-                hintText: 'Mínimo 8 caracteres',
+                hintText: l10n.min8Chars,
                 prefixIcon: Icons.lock,
                 obscureText: _obscureNewPassword,
                 suffixIcon: IconButton(
@@ -162,10 +163,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
               const SizedBox(height: 24),
 
-              // Confirmar contraseña
-              const Text(
-                'Confirmar nueva contraseña',
-                style: TextStyle(
+              // Confirmar contrase�a
+              Text(
+                l10n.confirmNewPassword,
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -174,7 +175,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               const SizedBox(height: 8),
               CustomTextField(
                 controller: _confirmPasswordController,
-                hintText: 'Repite la nueva contraseña',
+                hintText: l10n.repeatNewPassword,
                 prefixIcon: Icons.lock,
                 obscureText: _obscureConfirmPassword,
                 suffixIcon: IconButton(
@@ -194,7 +195,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
               const SizedBox(height: 12),
 
-              // Requisitos de contraseña
+              // Requisitos de contrase�a
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -207,28 +208,27 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Requisitos de contraseña:',
-                      style: TextStyle(
+                    Text(
+                      l10n.passwordRequirements,
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _buildRequirement('Mínimo 8 caracteres'),
-                    _buildRequirement('Máximo 15 caracteres'),
-                    _buildRequirement(
-                        'Se recomienda usar letras, números y símbolos'),
+                    _buildRequirement(l10n.min8Chars),
+                    _buildRequirement(l10n.max15Chars),
+                    _buildRequirement(l10n.passwordRecommendation),
                   ],
                 ),
               ),
 
               const SizedBox(height: 32),
 
-              // Botón de cambiar contraseña
+              // Bot�n de cambiar contrase�a
               PrimaryButton(
-                text: 'Cambiar Contraseña',
+                text: l10n.changePasswordButton,
                 isLoading: _isLoading,
                 onPressed: _isLoading ? null : _handleChangePassword,
               ),
@@ -243,29 +243,30 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       context: context,
                       builder: (context) => AlertDialog(
                         backgroundColor: AppColors.cardBackground,
-                        title: const Text(
-                          '¿Olvidaste tu contraseña?',
-                          style: TextStyle(color: Colors.white),
+                        title: Text(
+                          l10n.forgotPassword,
+                          style: const TextStyle(color: Colors.white),
                         ),
-                        content: const Text(
-                          'Si no recuerdas tu contraseña actual, debes cerrar sesión y usar la opción "Recuperar contraseña" en la pantalla de inicio de sesión.',
-                          style: TextStyle(color: AppColors.textSecondary),
+                        content: Text(
+                          l10n.forgotPasswordInstructions,
+                          style:
+                              const TextStyle(color: AppColors.textSecondary),
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context),
-                            child: const Text(
-                              'Entendido',
-                              style: TextStyle(color: AppColors.primary),
+                            child: Text(
+                              l10n.understood,
+                              style: const TextStyle(color: AppColors.primary),
                             ),
                           ),
                         ],
                       ),
                     );
                   },
-                  child: const Text(
-                    '¿No recuerdas tu contraseña actual?',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.dontRememberPassword,
+                    style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
                       decoration: TextDecoration.underline,
@@ -304,35 +305,35 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   }
 
   Future<void> _handleChangePassword() async {
-    // Validar campos vacíos
+    // Validar campos vac�os
     if (_currentPasswordController.text.isEmpty ||
         _newPasswordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
-      _showError('Por favor completa todos los campos');
+      _showError(AppL10n.of(context).fillAllFields);
       return;
     }
 
-    // Validar largo mínimo
+    // Validar largo m�nimo
     if (_newPasswordController.text.length < 8) {
-      _showError('La nueva contraseña debe tener al menos 8 caracteres');
+      _showError(AppL10n.of(context).newPasswordMin8);
       return;
     }
 
-    // Validar largo máximo
+    // Validar largo m�ximo
     if (_newPasswordController.text.length > 15) {
-      _showError('La contraseña no puede tener más de 15 caracteres');
+      _showError(AppL10n.of(context).passwordMax15);
       return;
     }
 
-    // Validar que las contraseñas nuevas coincidan
+    // Validar que las contrase�as nuevas coincidan
     if (_newPasswordController.text != _confirmPasswordController.text) {
-      _showError('Las contraseñas nuevas no coinciden');
+      _showError(AppL10n.of(context).newPasswordsDoNotMatch);
       return;
     }
 
-    // Validar que la nueva contraseña sea diferente
+    // Validar que la nueva contrase�a sea diferente
     if (_currentPasswordController.text == _newPasswordController.text) {
-      _showError('La nueva contraseña debe ser diferente a la actual');
+      _showError(AppL10n.of(context).newPasswordMustDiffer);
       return;
     }
 
@@ -343,12 +344,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       final currentUser = authProvider.currentUser;
 
       if (currentUser == null || currentUser.email.isEmpty) {
-        _showError('Usuario no encontrado');
+        _showError(AppL10n.of(context).userNotFoundTitle);
         setState(() => _isLoading = false);
         return;
       }
 
-      // Primero verificar la contraseña actual intentando iniciar sesión
+      // Primero verificar la contrase�a actual intentando iniciar sesi�n
       final securityService = SecurityService();
       final loginResult = await securityService.verifyCurrentPassword(
         currentUser.email,
@@ -356,12 +357,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       );
 
       if (!loginResult['success']) {
-        _showError('La contraseña actual es incorrecta');
+        if (!mounted) return;
+        _showError(AppL10n.of(context).currentPasswordIncorrect);
         setState(() => _isLoading = false);
         return;
       }
 
-      // Cambiar la contraseña
+      // Cambiar la contrase�a
       final result = await securityService.updatePassword(
         _newPasswordController.text,
       );
@@ -370,17 +372,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
       if (mounted) {
         if (result['success']) {
-          // Mostrar éxito
+          // Mostrar �xito
           AppSnackbar.success(context, AppL10n.of(context).passwordChanged);
 
-          // Volver a la pantalla anterior después de un breve delay
+          // Volver a la pantalla anterior despu�s de un breve delay
           Future.delayed(const Duration(seconds: 1), () {
             if (mounted) {
               context.pop();
             }
           });
         } else {
-          _showError(result['message']);
+          _showError(AppL10n.of(context).serviceMessage(result['message']));
         }
       }
     } catch (e) {

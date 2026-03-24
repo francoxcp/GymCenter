@@ -152,8 +152,7 @@ class WorkoutProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       // Network error — keep whatever we already have (stale memory or disk cache)
-      _errorMessage =
-          'No se pudo conectar al servidor. Mostrando datos guardados.';
+      _errorMessage = 'server_connection_failed';
       if (_workouts.isEmpty) {
         try {
           final cached = await OfflineCacheService().loadWorkouts();
@@ -234,8 +233,7 @@ class WorkoutProvider extends ChangeNotifier {
 
   Future<void> addWorkout(Workout workout, {String? userId}) async {
     if (_isOffline) {
-      throw Exception(
-          'No hay conexión a internet. Conéctate para crear una rutina.');
+      throw Exception('offline_create');
     }
     try {
       // Insertar rutina
@@ -297,8 +295,7 @@ class WorkoutProvider extends ChangeNotifier {
 
   Future<void> updateWorkout(String workoutId, Workout workout) async {
     if (_isOffline) {
-      throw Exception(
-          'No hay conexión a internet. Conéctate para editar la rutina.');
+      throw Exception('offline_edit');
     }
     try {
       // Actualizar rutina
@@ -350,8 +347,7 @@ class WorkoutProvider extends ChangeNotifier {
 
   Future<void> deleteWorkout(String workoutId) async {
     if (_isOffline) {
-      throw Exception(
-          'No hay conexión a internet. Conéctate para eliminar la rutina.');
+      throw Exception('offline_delete');
     }
     try {
       // Eliminar ejercicios primero (CASCADE debe hacerlo automático, pero por si acaso)

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:go_router/go_router.dart';
@@ -56,16 +56,16 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   int _summaryCaloriesBurned = 0;
   double _summaryTotalVolume = 0;
 
-  // ── Historial de peso por ejercicio ───────────────────────────────────────
-  // [exerciseIndex][setIndex] → peso en kg (null = no ingresado)
+  // -- Historial de peso por ejercicio ---------------------------------------
+  // [exerciseIndex][setIndex] ? peso en kg (null = no ingresado)
   Map<int, Map<int, double?>> _setWeights = {};
   bool _hasLoadedWeights = false;
 
-  // PR histórico por ejercicio (max weight ever logged)
+  // PR hist�rico por ejercicio (max weight ever logged)
   Map<int, double> _exercisePRs = {};
-  // Ejercicios que superaron su PR en esta sesión
+  // Ejercicios que superaron su PR en esta sesi�n
   final Set<int> _newPRsThisSession = {};
-  // Pre-caché de videos: solo se lanza una vez por sesión
+  // Pre-cach� de videos: solo se lanza una vez por sesi�n
   bool _videosCacheStarted = false;
 
   @override
@@ -81,16 +81,16 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     _resumeTime = DateTime.now();
     WidgetsBinding.instance.addObserver(this);
 
-    // Guard de navegación: interceptar taps en la barra inferior durante la rutina
+    // Guard de navegaci�n: interceptar taps en la barra inferior durante la rutina
     UnsavedChangesGuard.register(() async {
       if (_workoutCompleted) return true;
       if (!mounted) return true;
       final choice = await _showExitWorkoutDialog();
       await _handleExitChoice(choice);
-      return false; // siempre bloqueamos; la navegación la manejamos nosotros
+      return false; // siempre bloqueamos; la navegaci�n la manejamos nosotros
     });
 
-    // Verificar progreso pendiente después de que se construya el widget
+    // Verificar progreso pendiente despu�s de que se construya el widget
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Ensure exercises are loaded before the workout begins
       final authProvider = context.read<AuthProvider>();
@@ -115,7 +115,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     super.dispose();
   }
 
-  // ── Ciclo de vida de la app: auto-pausa al ir a segundo plano ──────────────
+  // -- Ciclo de vida de la app: auto-pausa al ir a segundo plano --------------
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (_workoutCompleted) return;
@@ -126,7 +126,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     }
   }
 
-  // ── Cronómetro activo ──────────────────────────────────────────────────────
+  // -- Cron�metro activo ------------------------------------------------------
   int _getActiveDurationSeconds() {
     if (_isPaused || _resumeTime == null) return _accumulatedSeconds;
     return _accumulatedSeconds +
@@ -183,7 +183,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   }
 
   /// Pre-descarga todos los videos de la rutina en background.
-  /// No bloquea — se ejecuta una sola vez por sesión.
+  /// No bloquea � se ejecuta una sola vez por sesi�n.
   void _preCacheVideos(List<Exercise> exercises) {
     final cache = DefaultCacheManager();
     for (final ex in exercises) {
@@ -191,7 +191,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       if (url != null && url.isNotEmpty) {
         cache.getFileFromCache(url).then((info) {
           if (info == null) {
-            // No está en caché → descargar en background silenciosamente
+            // No est� en cach� ? descargar en background silenciosamente
             cache.downloadFile(url).ignore();
           }
         }).ignore();
@@ -207,7 +207,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     final progressProvider = context.read<WorkoutProgressProvider>();
     final workoutProvider = context.read<WorkoutProvider>();
 
-    // Cargar últimos pesos usados para este workout
+    // Cargar �ltimos pesos usados para este workout
     final effectiveId =
         widget.extraWorkoutId ?? authProvider.currentUser?.assignedWorkoutId;
     final userId = authProvider.currentUser?.id;
@@ -228,7 +228,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           .getWorkoutById(authProvider.currentUser!.assignedWorkoutId!);
 
       if (workout != null && progress.workoutId == workout.id) {
-        // Verificar si el progreso es del mismo día
+        // Verificar si el progreso es del mismo d�a
         final progressDate = DateTime(
           progress.updatedAt.year,
           progress.updatedAt.month,
@@ -241,12 +241,12 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         );
 
         if (progressDate.isBefore(today)) {
-          // El progreso es de un día anterior, eliminarlo automáticamente
-          debugPrint('🗑️ Progreso del día anterior detectado, eliminando...');
+          // El progreso es de un d�a anterior, eliminarlo autom�ticamente
+          debugPrint('??? Progreso del d�a anterior detectado, eliminando...');
           await progressProvider.deleteProgress();
-          debugPrint('✅ Progreso anterior eliminado');
+          debugPrint('? Progreso anterior eliminado');
         } else {
-          // El progreso es del mismo día, mostrar diálogo
+          // El progreso es del mismo d�a, mostrar di�logo
           _showRestoreDialog(progress, workout.name);
         }
       } else {
@@ -363,7 +363,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       _resumeTime = DateTime.now();
       _isPaused = false;
     });
-    // También cargar timer local (SharedPrefs) en paralelo
+    // Tambi�n cargar timer local (SharedPrefs) en paralelo
     _loadTimerLocally().then((_) {
       // Si SharedPrefs tiene un valor mayor, usarlo
       setState(() => _resumeTime = DateTime.now());
@@ -398,7 +398,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       setState(() {
         if (_remainingSeconds > 0) {
           _remainingSeconds--;
-          // Haptic feedback en los últimos 3 segundos
+          // Haptic feedback en los �ltimos 3 segundos
           if (_remainingSeconds <= 3 && _remainingSeconds > 0) {
             HapticFeedback.selectionClick();
           }
@@ -429,7 +429,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       _celebrationController.forward(from: 0);
 
       // Iniciar descanso al completar cualquier serie,
-      // excepto cuando es la última serie del último ejercicio
+      // excepto cuando es la �ltima serie del �ltimo ejercicio
       final totalSets = _completedSets[exerciseIndex].length;
       final isLastExercise = exerciseIndex == _completedSets.length - 1;
       final isLastSet = setIndex == totalSets - 1;
@@ -465,7 +465,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     }
   }
 
-  // ── Diálogo de salida ────────────────────────────────────────────────────
+  // -- Di�logo de salida ----------------------------------------------------
   Future<String?> _showExitWorkoutDialog() async {
     return showDialog<String>(
       context: context,
@@ -483,9 +483,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 size: 80,
               ),
               const SizedBox(height: 16),
-              const Text(
-                'RUTINA EN CURSO',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).routineInCourseTitle,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -493,9 +493,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                '¿Qué quieres hacer?',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).whatDoYouWantToDo,
+                style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 14,
                 ),
@@ -504,9 +504,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               ElevatedButton.icon(
                 onPressed: () => Navigator.pop(ctx, 'stay'),
                 icon: const Icon(Icons.arrow_back_rounded, color: Colors.black),
-                label: const Text(
-                  'Continuar rutina',
-                  style: TextStyle(
+                label: Text(
+                  AppL10n.of(context).continueRoutine,
+                  style: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -528,9 +528,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   color: AppColors.textSecondary,
                   size: 20,
                 ),
-                label: const Text(
-                  'Continuar después',
-                  style: TextStyle(
+                label: Text(
+                  AppL10n.of(context).continueLater,
+                  style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -552,9 +552,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   color: Colors.redAccent,
                   size: 20,
                 ),
-                label: const Text(
-                  'Terminar rutina',
-                  style: TextStyle(
+                label: Text(
+                  AppL10n.of(context).endRoutine,
+                  style: const TextStyle(
                     color: Colors.redAccent,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -580,18 +580,19 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           backgroundColor: AppColors.surface,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text(
-            'Terminar rutina',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          title: Text(
+            AppL10n.of(context).endRoutineTitle,
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold),
           ),
-          content: const Text(
-            '¿Seguro que quieres terminar? Se perderá el progreso actual.',
-            style: TextStyle(color: AppColors.textSecondary),
+          content: Text(
+            AppL10n.of(context).endRoutineConfirm,
+            style: const TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar'),
+              child: Text(AppL10n.of(context).cancel),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx, true),
@@ -599,7 +600,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 backgroundColor: Colors.redAccent,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Terminar'),
+              child: Text(AppL10n.of(context).endAction),
             ),
           ],
         ),
@@ -609,7 +610,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         if (mounted) context.go('/workouts');
       }
     }
-    // 'stay' o null → no hace nada
+    // 'stay' o null ? no hace nada
   }
 
   Future<void> _saveProgressToDatabase() async {
@@ -638,7 +639,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
   void _nextExercise(Exercise currentExercise, Workout workout) {
     debugPrint(
-        '🔄 _nextExercise: currentIndex=$_currentExerciseIndex, total=${_completedSets.length}');
+        '?? _nextExercise: currentIndex=$_currentExerciseIndex, total=${_completedSets.length}');
 
     if (_currentExerciseIndex < _completedSets.length - 1) {
       debugPrint('Avanzando al siguiente ejercicio');
@@ -652,7 +653,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         curve: Curves.easeOutCubic,
       );
     } else {
-      debugPrint('Último ejercicio completado, mostrando resumen');
+      debugPrint('�ltimo ejercicio completado, mostrando resumen');
       _showWorkoutSummary(workout);
     }
   }
@@ -688,14 +689,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           workoutId: workoutId, userId: userId, workout: workout));
     }
 
-    // Obtener peso: medidas corporales → perfil de usuario → default 70kg
+    // Obtener peso: medidas corporales ? perfil de usuario ? default 70kg
     final measurementProvider = context.read<BodyMeasurementProvider>();
     final authUser = context.read<AuthProvider>().currentUser;
     final userWeightKg = measurementProvider.latestMeasurement?.weight ??
         authUser?.weightKg ??
         70.0;
 
-    // Cálculo de calorías mejorado con datos del perfil de usuario
+    // C�lculo de calor�as mejorado con datos del perfil de usuario
     final caloriesBurned = _estimateCalories(
       workout,
       durationMinutes,
@@ -722,11 +723,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   int _estimateCalories(Workout workout, int durationMinutes, double weightKg) {
     if (durationMinutes == 0) return 0;
 
-    // ── Datos del usuario ──────────────────────────────────────────────────────
+    // -- Datos del usuario ------------------------------------------------------
     final authUser = context.read<AuthProvider>().currentUser;
     final age = authUser?.age ?? 30;
     final sex = authUser?.sex ?? 'male';
-    // Altura: perfil de usuario → medidas corporales → default 170 cm
+    // Altura: perfil de usuario ? medidas corporales ? default 170 cm
     final heightCm = (authUser?.heightCm ??
             context
                 .read<BodyMeasurementProvider>()
@@ -736,14 +737,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             170)
         .toDouble();
 
-    // ── BMR (Harris-Benedict revisado) ────────────────────────────────────────
-    // Hombre:  13.397×kg + 4.799×cm − 5.677×años + 88.362
-    // Mujer:   9.247×kg  + 3.098×cm − 4.330×años + 447.593
+    // -- BMR (Harris-Benedict revisado) ----------------------------------------
+    // Hombre:  13.397�kg + 4.799�cm - 5.677�a�os + 88.362
+    // Mujer:   9.247�kg  + 3.098�cm - 4.330�a�os + 447.593
     final double bmr = sex == 'female'
         ? 9.247 * weightKg + 3.098 * heightCm - 4.330 * age + 447.593
         : 13.397 * weightKg + 4.799 * heightCm - 5.677 * age + 88.362;
 
-    // ── Detección de ejercicios cardio ────────────────────────────────────────
+    // -- Detecci�n de ejercicios cardio ----------------------------------------
     final exercises = workout.exercises;
     int cardioCount = 0;
     for (final ex in exercises) {
@@ -755,27 +756,27 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         exercises.isNotEmpty ? cardioCount / exercises.length : 0.0;
     final avgMet = 5.0 + (cardioRatio * 4.0);
 
-    // ── Fórmula: kcal = BMR/1440 × min × MET ──────────────────────────────────
-    // (BMR/1440 es el gasto calórico por minuto en reposo)
+    // -- F�rmula: kcal = BMR/1440 � min � MET ----------------------------------
+    // (BMR/1440 es el gasto cal�rico por minuto en reposo)
     final calories = (bmr / 1440.0) * durationMinutes * avgMet;
     return calories.round();
   }
 
-  /// Detecta si un ejercicio es cardiovascular usando múltiples señales:
-  /// 1. Campo muscleGroup == 'Cardio' (señal primaria, más fiable)
+  /// Detecta si un ejercicio es cardiovascular usando m�ltiples se�ales:
+  /// 1. Campo muscleGroup == 'Cardio' (se�al primaria, m�s fiable)
   /// 2. Nombre del ejercicio contra lista de palabras clave (ES + EN)
   bool _isCardioExercise(Exercise exercise) {
-    // Señal primaria: grupo muscular clasificado como Cardio en la DB
+    // Se�al primaria: grupo muscular clasificado como Cardio en la DB
     if (exercise.muscleGroup.toLowerCase() == 'cardio') return true;
 
-    // Señal secundaria: keywords en el nombre
+    // Se�al secundaria: keywords en el nombre
     final name = exercise.name.toLowerCase();
     const keywords = [
-      // Español
+      // Espa�ol
       'burpee', 'salto', 'saltar', 'carrera', 'correr', 'trote',
       'trotar', 'bicicleta', 'cuerda', 'comba', 'cardio', 'hiit',
-      'sprint', 'escalador', 'escaladora', 'aeróbico', 'aerobico',
-      'elíptica', 'eliptica', 'remo', 'nadar', 'natación', 'natacion',
+      'sprint', 'escalador', 'escaladora', 'aer�bico', 'aerobico',
+      'el�ptica', 'eliptica', 'remo', 'nadar', 'nataci�n', 'natacion',
       'step', 'zumba', 'baile', 'bailar', 'patinar',
       // English
       'jump', 'jumping', 'run', 'running', 'jog', 'jogging',
@@ -798,7 +799,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     return 50;
   }
 
-  // ── Peso por serie ────────────────────────────────────────────────────────────────
+  // -- Peso por serie ----------------------------------------------------------------
 
   Future<void> _loadLastWeights({
     required String workoutId,
@@ -818,7 +819,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       final logs = response as List;
       final Map<int, Map<int, double?>> weights = {};
       final Map<int, double> prs = {};
-      // La respuesta está ordenada desc → la primera entrada de cada combo es la más reciente
+      // La respuesta est� ordenada desc ? la primera entrada de cada combo es la m�s reciente
       for (final log in logs) {
         final exIdx = log['exercise_index'] as int;
         final setIdx = log['set_index'] as int;
@@ -828,7 +829,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           weights[exIdx] ??= {};
           weights[exIdx]![setIdx] = weightKg;
         }
-        // PR = máximo histórico por ejercicio
+        // PR = m�ximo hist�rico por ejercicio
         if (weightKg != null) {
           if (!prs.containsKey(exIdx) || weightKg > prs[exIdx]!) {
             prs[exIdx] = weightKg;
@@ -842,7 +843,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         });
       }
     } catch (e) {
-      debugPrint('Error cargando últimos pesos: $e');
+      debugPrint('Error cargando �ltimos pesos: $e');
     }
   }
 
@@ -877,7 +878,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       }
       if (logs.isNotEmpty) {
         await supabase.from('exercise_set_logs').insert(logs);
-        debugPrint('💪 Pesos guardados: ${logs.length} registros');
+        debugPrint('?? Pesos guardados: ${logs.length} registros');
       }
     } catch (e) {
       debugPrint('Error guardando pesos: $e');
@@ -904,8 +905,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     final pr = _exercisePRs[exerciseIndex];
     final adminWeight = exercise.weight > 0 ? exercise.weight : null;
 
-    // Sugerencia: peso actual de sesión > PR histórico > sugerencia admin
-    // La sugerencia está en kg → convertir a lbs para mostrar en el campo
+    // Sugerencia: peso actual de sesi�n > PR hist�rico > sugerencia admin
+    // La sugerencia est� en kg ? convertir a lbs para mostrar en el campo
     final suggestion = currentWeight ?? pr ?? adminWeight;
     final suggestionLbs = suggestion != null ? _toLbs(suggestion) : null;
     final controller = TextEditingController(
@@ -922,7 +923,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Peso · Serie ${setIndex + 1}',
+          AppL10n.of(context).weightSetTitle(setIndex + 1),
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -964,9 +965,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              'Cancelar',
-              style: TextStyle(color: AppColors.textSecondary),
+            child: Text(
+              AppL10n.of(context).cancel,
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -983,7 +984,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                     context, AppL10n.of(context).weightMustBePositive);
                 return;
               }
-              // Convertir libras → kg para almacenar internamente
+              // Convertir libras ? kg para almacenar internamente
               final weight = inputLbs != null ? _toKg(inputLbs) : null;
               final isNewPR = weight != null && (pr == null || weight > pr);
               setState(() {
@@ -1001,7 +1002,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   SnackBar(
                     content: Row(
                       children: [
-                        const Text('🏆', style: TextStyle(fontSize: 18)),
+                        const Text('??', style: TextStyle(fontSize: 18)),
                         const SizedBox(width: 10),
                         Text(
                           AppL10n.of(context)
@@ -1028,9 +1029,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
             ),
-            child: const Text(
-              'Guardar',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            child: Text(
+              AppL10n.of(context).save,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -1038,7 +1039,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     );
   }
 
-  /// Bottom sheet con historial de las últimas sesiones del ejercicio.
+  /// Bottom sheet con historial de las �ltimas sesiones del ejercicio.
   Future<void> _showExerciseHistory(
       int exerciseIndex, String exerciseName) async {
     final userId =
@@ -1066,7 +1067,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
     if (!mounted) return;
 
-    // Agrupar por fecha (día)
+    // Agrupar por fecha (d�a)
     final Map<String, List<Map>> byDate = {};
     for (final log in logs) {
       final dt = DateTime.tryParse(log['logged_at'] as String? ?? '');
@@ -1132,7 +1133,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         ),
                         child: Row(
                           children: [
-                            const Text('🏆', style: TextStyle(fontSize: 13)),
+                            const Text('??', style: TextStyle(fontSize: 13)),
                             const SizedBox(width: 4),
                             Text(
                               _fmtWeight(_exercisePRs[exerciseIndex]!),
@@ -1151,10 +1152,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               const Divider(height: 24, color: AppColors.surface),
               Expanded(
                 child: sessions.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Text(
-                          'Sin historial previo',
-                          style: TextStyle(
+                          AppL10n.of(context).noPreviousHistory,
+                          style: const TextStyle(
                               color: AppColors.textSecondary, fontSize: 14),
                         ),
                       )
@@ -1208,8 +1209,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                                             ),
                                             child: Text(
                                               w != null
-                                                  ? '${_fmtWeight(w)}${r != null ? ' × $r' : ''}'
-                                                  : '—',
+                                                  ? '${_fmtWeight(w)}${r != null ? ' � $r' : ''}'
+                                                  : '�',
                                               style: const TextStyle(
                                                 fontSize: 12,
                                                 color: Colors.white70,
@@ -1378,7 +1379,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 ],
               ),
               actions: [
-                // Botón pausa / reanudar
+                // Bot�n pausa / reanudar
                 IconButton(
                   onPressed: _isPaused ? _resumeWorkout : _onManualPause,
                   icon: Icon(
@@ -1386,7 +1387,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                     color:
                         _isPaused ? AppColors.primary : AppColors.textSecondary,
                   ),
-                  tooltip: _isPaused ? 'Reanudar' : 'Pausar',
+                  tooltip: _isPaused
+                      ? AppL10n.of(context).resumeTooltip
+                      : AppL10n.of(context).pauseTooltip,
                 ),
                 // Contador de sets totales
                 Padding(
@@ -1450,7 +1453,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         },
                       ),
 
-                      // Botones de navegación lateral
+                      // Botones de navegaci�n lateral
                       if (_currentExerciseIndex > 0)
                         Positioned(
                           left: 8,
@@ -1498,7 +1501,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               ],
             ),
           ),
-          // ─ Overlay de PAUSA eliminado: el botón pause ahora usa _onManualPause
+          // - Overlay de PAUSA eliminado: el bot�n pause ahora usa _onManualPause
         ],
       ), // Stack
     ); // PopScope
@@ -1513,7 +1516,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Exercise Counter con animación
+          // Exercise Counter con animaci�n
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1521,7 +1524,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 duration: const Duration(milliseconds: 400),
                 tween: IntTween(begin: 0, end: exerciseIndex + 1),
                 builder: (context, value, child) => Text(
-                  'Ejercicio $value de ${workout.exercises.length}',
+                  AppL10n.of(context)
+                      .exerciseProgress(value, workout.exercises.length),
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,
@@ -1560,7 +1564,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
           const SizedBox(height: 16),
 
-          // Exercise Name con animación
+          // Exercise Name con animaci�n
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
             child: Text(
@@ -1601,7 +1605,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           if (exercise.videoUrl != null && exercise.videoUrl!.isNotEmpty)
             Container(
               constraints: const BoxConstraints(
-                maxHeight: 400, // Máximo para videos muy largos
+                maxHeight: 400, // M�ximo para videos muy largos
               ),
               child: VideoPlayerWidget(
                 videoUrl: exercise.videoUrl!,
@@ -1619,19 +1623,19 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Center(
+              child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.videocam_off_outlined,
                       size: 64,
                       color: AppColors.textSecondary,
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     Text(
-                      'Video no disponible',
-                      style: TextStyle(
+                      AppL10n.of(context).videoUnavailable,
+                      style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 14,
                       ),
@@ -1646,7 +1650,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           // Description
           if (exercise.description != null) ...[
             Builder(builder: (context) {
-              // Filtrar líneas de metadata importada (Ej: "Equipo: Otro")
+              // Filtrar l�neas de metadata importada (Ej: "Equipo: Otro")
               final filtered = exercise.description!
                   .split('\n')
                   .where((line) => !RegExp(r'^\s*(equipo|equipment)\s*:',
@@ -1658,9 +1662,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Instrucciones:',
-                    style: TextStyle(
+                  Text(
+                    AppL10n.of(context).instructionsLabel,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -1686,19 +1690,19 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             children: [
               _InfoCard(
                 icon: Icons.fitness_center,
-                label: 'Series',
+                label: AppL10n.of(context).setsLabel,
                 value: exercise.sets.toString(),
               ),
               const SizedBox(width: 12),
               _InfoCard(
                 icon: Icons.repeat,
-                label: 'Reps',
+                label: AppL10n.of(context).repsLabel,
                 value: exercise.reps.toString(),
               ),
               const SizedBox(width: 12),
               _InfoCard(
                 icon: Icons.timer,
-                label: 'Descanso',
+                label: AppL10n.of(context).restLabel,
                 value: '${exercise.restSeconds}s',
               ),
             ],
@@ -1718,9 +1722,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               ),
               child: Column(
                 children: [
-                  const Text(
-                    'DESCANSANDO',
-                    style: TextStyle(
+                  Text(
+                    AppL10n.of(context).restingTitle,
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
@@ -1743,9 +1747,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                               : AppColors.primary,
                         ),
                       ),
-                      const Text(
-                        'segundos',
-                        style: TextStyle(
+                      Text(
+                        AppL10n.of(context).secondsLabel,
+                        style: const TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
                         ),
@@ -1755,7 +1759,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
                   const SizedBox(height: 24),
 
-                  // Botón para saltar descanso
+                  // Bot�n para saltar descanso
                   TextButton(
                     onPressed: () {
                       _timer?.cancel();
@@ -1765,9 +1769,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                       });
                       HapticFeedback.lightImpact();
                     },
-                    child: const Text(
-                      'Saltar descanso',
-                      style: TextStyle(
+                    child: Text(
+                      AppL10n.of(context).skipRest,
+                      style: const TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1779,7 +1783,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             const SizedBox(height: 24),
           ],
 
-          // ── Barra de referencia (PR + sugerencia admin + historial) ──
+          // -- Barra de referencia (PR + sugerencia admin + historial) --
           _ExerciseReferenceBar(
             onHistoryTap: () =>
                 _showExerciseHistory(exerciseIndex, exercise.name),
@@ -1787,9 +1791,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           const SizedBox(height: 16),
 
           // Sets Checklist con animaciones
-          const Text(
-            'Marca las series completadas:',
-            style: TextStyle(
+          Text(
+            AppL10n.of(context).markCompletedSets,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.white,
@@ -1857,7 +1861,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         ),
                         const SizedBox(width: 16),
                         Text(
-                          'Serie ${setIndex + 1}',
+                          AppL10n.of(context).setNumber(setIndex + 1),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -1888,8 +1892,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           // Next Exercise Button
           PrimaryButton(
             text: exerciseIndex < workout.exercises.length - 1
-                ? 'SIGUIENTE EJERCICIO'
-                : 'FINALIZAR RUTINA',
+                ? AppL10n.of(context).nextExercise
+                : AppL10n.of(context).finishRoutine,
             onPressed: () => _nextExercise(exercise, workout),
             icon: exerciseIndex < workout.exercises.length - 1
                 ? Icons.arrow_forward
@@ -1951,7 +1955,7 @@ class _InfoCard extends StatelessWidget {
 }
 
 /// Muestra las reps del ejercicio y un chip para ingresar el peso usado.
-// ── Barra de referencia PR / sugerencia admin ───────────────────────────────
+// -- Barra de referencia PR / sugerencia admin -------------------------------
 class _ExerciseReferenceBar extends StatelessWidget {
   final VoidCallback onHistoryTap;
 
@@ -2019,7 +2023,7 @@ class _WeightChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasWeight = weight != null;
-    // weight está en kg internamente; mostrar en lbs
+    // weight est� en kg internamente; mostrar en lbs
     final lbs = hasWeight ? weight! * 2.20462 : null;
     final weightLabel = lbs != null
         ? (lbs == lbs.roundToDouble()
@@ -2062,7 +2066,7 @@ class _WeightChip extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (isNewPR) ...[
-                  const Text('🏆', style: TextStyle(fontSize: 11)),
+                  const Text('??', style: TextStyle(fontSize: 11)),
                   const SizedBox(width: 4),
                 ],
                 Text(

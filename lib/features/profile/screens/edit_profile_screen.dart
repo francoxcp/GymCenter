@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -207,7 +207,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Información personal
+                // Informaci�n personal
                 Text(
                   AppL10n.of(context).personalInfo,
                   style: const TextStyle(
@@ -254,7 +254,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 _buildLevelSelector(),
                 const SizedBox(height: 16),
 
-                // Tip: medidas corporales disponibles en sección aparte
+                // Tip: medidas corporales disponibles en secci�n aparte
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -282,7 +282,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Botón cambiar contraseña
+                // Bot�n cambiar contrase�a
                 OutlinedButton(
                   onPressed: () => context.push('/change-password'),
                   style: OutlinedButton.styleFrom(
@@ -310,7 +310,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Botón guardar
+                // Bot�n guardar
                 PrimaryButton(
                   text: AppL10n.of(context).saveChanges,
                   onPressed: _isLoading ? null : _saveProfile,
@@ -431,7 +431,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return;
       }
 
-      // Validar tamaño (máx 5 MB)
+      // Validar tama�o (m�x 5 MB)
       final fileSize = await image.length();
       if (fileSize > 5 * 1024 * 1024) {
         setState(() => _isUploadingPhoto = false);
@@ -448,7 +448,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       final storageService = StorageService();
 
-      // Subir según plataforma
+      // Subir seg�n plataforma
       String? photoUrl;
       if (kIsWeb) {
         final bytes = await image.readAsBytes();

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -534,7 +534,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                         .measureUnit(AppL10n.of(context).hipLabel, 'cm'),
                     hipsController,
                     Icons.accessibility_new),
-                // Bíceps lado a lado
+                // B�ceps lado a lado
                 _buildPairedFields(
                   AppL10n.of(context)
                       .measureUnit(AppL10n.of(context).leftBicepFull, 'cm'),
@@ -599,7 +599,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () async {
-                          // Validar que al menos un campo numérico tenga valor
+                          // Validar que al menos un campo num�rico tenga valor
                           final controllers = [
                             weightController,
                             heightController,
@@ -619,7 +619,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                                 AppL10n.of(context).enterAtLeastOneMeasure);
                             return;
                           }
-                          // Validar que los valores sean numéricos positivos
+                          // Validar que los valores sean num�ricos positivos
                           for (final c in controllers) {
                             if (c.text.trim().isNotEmpty) {
                               final val = double.tryParse(c.text.trim());
@@ -631,7 +631,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                             }
                           }
 
-                          // Validar rangos máximos razonables
+                          // Validar rangos m�ximos razonables
                           final maxRanges = <TextEditingController, double>{
                             weightController: 300,
                             heightController: 250,

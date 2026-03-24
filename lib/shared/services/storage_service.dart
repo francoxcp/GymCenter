@@ -91,7 +91,7 @@ class StorageService {
       }
 
       if (compressedData == null) {
-        throw Exception('No se pudo comprimir la imagen');
+        throw Exception('Image compression failed');
       }
 
       // Generar nombre único para el archivo
@@ -141,7 +141,7 @@ class StorageService {
       } else if (videoFile != null) {
         videoData = await videoFile.readAsBytes();
       } else {
-        throw Exception('Debe proporcionar videoFile o videoBytes');
+        throw Exception('Must provide videoFile or videoBytes');
       }
 
       // Para videos grandes, mostrar progreso

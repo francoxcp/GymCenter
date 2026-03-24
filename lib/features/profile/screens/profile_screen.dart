@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -213,7 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               child: Text(
-                level['name'] as String,
+                AppL10n.of(context).levelDisplay(level['name'] as String),
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -244,7 +244,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         border: Border.all(color: col.withOpacity(0.5)),
       ),
       child: Text(
-        _selectedLevel,
+        AppL10n.of(context).levelDisplay(_selectedLevel),
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w600,
@@ -271,14 +271,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     // ...variables eliminadas porque ya no se usan...
 
+    final l10n = AppL10n.of(context);
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Volver',
+          tooltip: l10n.goBackTooltip,
           onPressed: () => context.go('/home'),
         ),
-        title: Text(AppL10n.of(context).myProfile),
+        title: Text(l10n.myProfile),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -288,7 +290,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Cabecera: foto + campos editables ──────────────────
+                // -- Cabecera: foto + campos editables ------------------
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -382,11 +384,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // Campo nombre editable
                       CustomTextField(
                         controller: _nameController,
-                        hintText: 'Nombre completo',
+                        hintText: l10n.fullName,
                         prefixIcon: Icons.person_outline,
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Ingresa tu nombre';
+                            return l10n.enterYourName;
                           }
                           return null;
                         },
@@ -421,7 +423,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       const SizedBox(height: 20),
 
-                      // Botón guardar — aparece solo cuando hay cambios
+                      // Bot�n guardar � aparece solo cuando hay cambios
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 250),
                         child: _hasChanges
@@ -439,10 +441,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: 16),
 
-                // ── Menú ─────────────────────────────────────────────────
+                // -- Men� -------------------------------------------------
                 _MenuItem(
                   icon: Icons.emoji_events_outlined,
-                  title: 'Personal Records',
+                  title: l10n.personalRecords,
                   onTap: () => context.push('/personal-records'),
                 ),
                 const SizedBox(height: 10),
@@ -478,7 +480,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: 32),
 
-                // ── Cerrar sesión ─────────────────────────────────────────
+                // -- Cerrar sesi�n -----------------------------------------
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(

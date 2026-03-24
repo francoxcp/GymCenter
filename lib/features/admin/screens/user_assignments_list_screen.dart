@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -39,14 +39,15 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'ADMIN PORTAL',
-              style: TextStyle(
+              l10n.adminPortal,
+              style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: AppColors.primary,
@@ -54,8 +55,8 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
               ),
             ),
             Text(
-              'Asignaciones de usuarios',
-              style: TextStyle(
+              l10n.userAssignmentsTitle,
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -80,7 +81,7 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
                     });
                   },
                   decoration: InputDecoration(
-                    hintText: 'Buscar',
+                    hintText: l10n.search,
                     prefixIcon: const Icon(
                       Icons.search,
                       color: AppColors.textSecondary,
@@ -185,6 +186,7 @@ class _UserAssignmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return InkWell(
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -203,7 +205,7 @@ class _UserAssignmentCard extends StatelessWidget {
               backgroundColor: AppColors.primary,
               radius: 25,
               child: Text(
-                user.name[0].toUpperCase(),
+                user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -234,9 +236,9 @@ class _UserAssignmentCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   if (user.assignedWorkoutId == null)
-                    const Text(
-                      'Sin rutina asignada',
-                      style: TextStyle(
+                    Text(
+                      l10n.noAssignedRoutine,
+                      style: const TextStyle(
                         fontSize: 11,
                         color: AppColors.textSecondary,
                         fontStyle: FontStyle.italic,
@@ -250,9 +252,9 @@ class _UserAssignmentCard extends StatelessWidget {
                         color: AppColors.primary.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Text(
-                        'Rutina asignada',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.routineAssigned,
+                        style: const TextStyle(
                           fontSize: 11,
                           color: AppColors.primary,
                           fontWeight: FontWeight.w500,
@@ -307,22 +309,22 @@ class _UserAssignmentCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         user.assignedWorkoutId == null
-                            ? 'Agregar rutina'
-                            : 'Editar rutina',
+                            ? l10n.addRoutine
+                            : l10n.editRoutineMenu,
                       ),
                     ],
                   ),
                 ),
                 if (user.assignedWorkoutId != null)
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'remove',
                     child: Row(
                       children: [
-                        Icon(Icons.delete_outline,
+                        const Icon(Icons.delete_outline,
                             size: 18, color: Colors.redAccent),
-                        SizedBox(width: 8),
-                        Text('Quitar rutina',
-                            style: TextStyle(color: Colors.redAccent)),
+                        const SizedBox(width: 8),
+                        Text(l10n.removeRoutine,
+                            style: const TextStyle(color: Colors.redAccent)),
                       ],
                     ),
                   ),

@@ -86,7 +86,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
             ),
           ),
           Text(
-            l10n.isEn ? 'Total points' : 'Puntos totales',
+            l10n.totalPoints,
             style: const TextStyle(
               fontSize: 16,
               color: AppColors.textSecondary,
@@ -106,7 +106,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
               ),
               const SizedBox(width: 8),
               Text(
-                l10n.isEn ? 'unlocked' : 'desbloqueados',
+                l10n.unlockedLabel,
                 style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,

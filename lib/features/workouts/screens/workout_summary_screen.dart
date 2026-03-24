@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -38,33 +38,17 @@ class WorkoutSummaryScreen extends StatefulWidget {
 class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
   Map<String, dynamic>? _nextWorkout;
   bool _isLoadingNextWorkout = true;
-  bool _isSaving = true; // bloquea el botón hasta que la sesión quede guardada
-  String _motivationalMessage = '';
-
-  // Mensajes motivacionales — se asignan en initState después de conocer el idioma
-  List<String> _motivationalMessages = [
-    '¡INCREÍBLE TRABAJO!',
-    '¡LO LOGRASTE!',
-    '¡EXCELENTE!',
-    '¡ERES IMPARABLE!',
-    '¡BRUTAL ENTRENAMIENTO!',
-    '¡SIGUE ASÍ CAMPEÓN!',
-    '¡ESPECTACULAR!',
-    '¡QUÉ MÁQUINA!',
-  ];
+  bool _isSaving = true; // bloquea el bot�n hasta que la sesi�n quede guardada
+  late final int _motivationalIndex = math.Random().nextInt(8);
 
   @override
   void initState() {
     super.initState();
 
-    // Elegir mensaje motivacional aleatorio (se re-aplica en build si cambia idioma)
-    _motivationalMessage = _motivationalMessages[
-        math.Random().nextInt(_motivationalMessages.length)];
-
-    // Guardar sesión y actualizar estadísticas
+    // Guardar sesi�n y actualizar estad�sticas
     _saveWorkoutSession();
 
-    // Cargar próxima sesión programada
+    // Cargar pr�xima sesi�n programada
     _loadNextWorkout();
   }
 
@@ -79,10 +63,10 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
       if (userId == null) return;
 
       debugPrint(
-          '💾 _saveWorkoutSession: userId=$userId workoutId=${widget.workout.id}');
+          '?? _saveWorkoutSession: userId=$userId workoutId=${widget.workout.id}');
 
-      // Guardar sesión en workout_sessions y actualizar estadísticas
-      // Construir datos de ejercicios con series reales si están disponibles
+      // Guardar sesi�n en workout_sessions y actualizar estad�sticas
+      // Construir datos de ejercicios con series reales si est�n disponibles
       List<Map<String, dynamic>>? exercisesData;
       if (widget.completedSets != null &&
           widget.completedSets!.length == widget.workout.exercises.length) {
@@ -131,7 +115,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         }
       }
 
-      // Refrescar usuario para obtener estadísticas actualizadas
+      // Refrescar usuario para obtener estad�sticas actualizadas
       if (mounted) await authProvider.refreshUser();
 
       // Verificar y desbloquear logros
@@ -163,14 +147,14 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
           weightLoss: weightLoss,
         );
 
-        // Mostrar celebración si se desbloquearon logros
+        // Mostrar celebraci�n si se desbloquearon logros
         if (mounted && newlyUnlocked.isNotEmpty) {
           HapticFeedback.heavyImpact();
           _showAchievementCelebration(newlyUnlocked.length);
         }
       }
     } catch (e) {
-      debugPrint('❌ Error al guardar sesión: $e');
+      debugPrint('? Error al guardar sesi�n: $e');
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -201,7 +185,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
             .getWorkoutById(nextWorkoutData['workout_id'] as String)
             ?.name;
         nextWorkoutData['name'] =
-            workoutName; // null → fallback en _buildNextWorkoutInfo
+            workoutName; // null ? fallback en _buildNextWorkoutInfo
       }
 
       if (mounted) {
@@ -211,12 +195,12 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         });
       }
     } catch (e) {
-      debugPrint('❌ Error al cargar próxima sesión: $e');
+      debugPrint('? Error al cargar pr�xima sesi�n: $e');
       if (mounted) setState(() => _isLoadingNextWorkout = false);
     }
   }
 
-  // Métodos auxiliares
+  // M�todos auxiliares
   void _showAchievementCelebration(int count) {
     final l10n = AppL10n.of(context);
     showDialog(
@@ -225,31 +209,25 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         backgroundColor: AppColors.cardBackground,
         title: Row(
           children: [
-            const Text('🏆', style: TextStyle(fontSize: 32)),
+            const Text('??', style: TextStyle(fontSize: 32)),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                l10n.isEn ? 'Achievement Unlocked!' : '¡Logro Desbloqueado!',
+                l10n.achievementUnlockedTitle,
                 style: const TextStyle(color: Colors.white, fontSize: 20),
               ),
             ),
           ],
         ),
         content: Text(
-          count == 1
-              ? (l10n.isEn
-                  ? 'You unlocked a new achievement! Check your progress to see it.'
-                  : '¡Desbloqueaste un nuevo logro! Revisa tu progreso para verlo.')
-              : (l10n.isEn
-                  ? 'You unlocked $count new achievements! Check your progress.'
-                  : '¡Desbloqueaste $count nuevos logros! Revisa tu progreso.'),
+          l10n.achievementUnlockedMsgCount(count),
           style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
-              l10n.isEn ? 'Awesome!' : '¡Genial!',
+              l10n.awesomeButton,
               style: const TextStyle(
                   color: AppColors.primary, fontWeight: FontWeight.bold),
             ),
@@ -285,14 +263,12 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
     final daysUntil = (_nextWorkout?['days_until'] as int?) ?? 1;
     final dateStr = date != null
         ? '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}'
-        : (l10nDays.isEn ? 'Coming soon' : 'Próximamente');
+        : l10nDays.comingSoonLabel;
     final daysLabel = daysUntil == 0
         ? l10nDays.todayLabel
         : daysUntil == 1
-            ? (l10nDays.isEn ? 'Tomorrow' : 'Mañana')
-            : (l10nDays.isEn
-                ? 'In $daysUntil days ($dateStr)'
-                : 'En $daysUntil días ($dateStr)');
+            ? l10nDays.tomorrowLabel
+            : l10nDays.inDaysWithDate(daysUntil, dateStr);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -319,8 +295,9 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
   Widget build(BuildContext context) {
     const units = 'metric';
     final l10n = AppL10n.of(context);
-    // Actualizar mensajes según idioma actual
-    _motivationalMessages = l10n.motivationalMessages;
+    final motivationalMessages = l10n.motivationalMessages;
+    final motivationalMessage =
+        motivationalMessages[_motivationalIndex % motivationalMessages.length];
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -330,7 +307,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Header con imagen de celebración
+              // Header con imagen de celebraci�n
               Container(
                 height: 200,
                 decoration: BoxDecoration(
@@ -345,7 +322,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                 ),
                 child: Stack(
                   children: [
-                    // Botón cerrar
+                    // Bot�n cerrar
                     Positioned(
                       top: 16,
                       right: 16,
@@ -354,7 +331,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                         icon: const Icon(Icons.close, color: Colors.white),
                       ),
                     ),
-                    // Imagen de celebración (placeholder)
+                    // Imagen de celebraci�n (placeholder)
                     Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -383,7 +360,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                 child: Column(
                   children: [
                     Text(
-                      _motivationalMessage,
+                      motivationalMessage,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -412,13 +389,13 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    // Estadísticas en tarjetas amarillas
+                    // Estad�sticas en tarjetas amarillas
                     Row(
                       children: [
                         Expanded(
                           child: StatCard(
                             icon: Icons.timer,
-                            label: 'TIEMPO',
+                            label: l10n.timeStatLabel,
                             value: _formatDuration(widget.durationMinutes),
                           ),
                         ),
@@ -426,7 +403,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                         Expanded(
                           child: StatCard(
                             icon: Icons.local_fire_department,
-                            label: 'CALORÍAS',
+                            label: l10n.caloriesStatLabelUpper,
                             value: '${widget.caloriesBurned}',
                             unit: 'kcal',
                           ),
@@ -435,7 +412,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                         Expanded(
                           child: StatCard(
                             icon: Icons.fitness_center,
-                            label: 'VOLUMEN',
+                            label: l10n.volumeStatLabel,
                             value: UnitConverter.weightValue(
                                 widget.totalVolume, units),
                             unit: UnitConverter.weightUnit(units),
@@ -450,9 +427,9 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Resumen de ejercicios',
-                          style: TextStyle(
+                        Text(
+                          l10n.exerciseSummaryLabel,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -469,7 +446,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                             border: Border.all(color: AppColors.primary),
                           ),
                           child: Text(
-                            '${widget.workout.exercises.length} TOTAL',
+                            '${widget.workout.exercises.length} ${l10n.totalStatLabel}',
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
@@ -517,7 +494,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      '${exercise.sets} series × ${exercise.reps} reps',
+                                      '${l10n.setsCount(exercise.sets)} � ${l10n.repsCount(exercise.reps)}',
                                       style: const TextStyle(
                                         fontSize: 13,
                                         color: AppColors.textSecondary,
@@ -543,7 +520,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
 
                     const SizedBox(height: 32),
 
-                    // Próxima Sesión Programada
+                    // Pr�xima Sesi�n Programada
                     if (!_isLoadingNextWorkout && _nextWorkout != null) ...[
                       Container(
                         width: double.infinity,
@@ -601,7 +578,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                       const SizedBox(height: 32),
                     ],
 
-                    // Botón Volver al Inicio
+                    // Bot�n Volver al Inicio
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(

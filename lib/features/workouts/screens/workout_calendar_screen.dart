@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -50,15 +50,16 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
     final sessions = sessionProvider.sessions;
     final workouts = workoutProvider.workouts;
 
-    // Construir mapa de eventos por día normalizado (sin hora)
+    // Construir mapa de eventos por d�a normalizado (sin hora)
     final Map<DateTime, List<WorkoutEvent>> events = {};
+    final l10n = AppL10n.of(context);
     for (final session in sessions) {
       final key =
           DateTime(session.date.year, session.date.month, session.date.day);
-      // Buscar el nombre del workout; si no está cargado, usar ID corto
+      // Buscar el nombre del workout; si no est� cargado, usar ID corto
       final workout =
           workouts.where((w) => w.id == session.workoutId).firstOrNull;
-      final name = workout?.name ?? 'Entrenamiento';
+      final name = workout?.name ?? l10n.workoutFallback;
       events.putIfAbsent(key, () => []).add(
             WorkoutEvent(name, true, session.durationMinutes),
           );
@@ -101,7 +102,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
             IconButton(
               icon: const Icon(Icons.refresh),
               onPressed: _loadSessions,
-              tooltip: 'Actualizar',
+              tooltip: AppL10n.of(context).refreshTooltip,
             ),
           IconButton(
             icon: const Icon(Icons.today),
@@ -194,10 +195,10 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
             ),
           ),
 
-          // Estadísticas del mes
+          // Estad�sticas del mes
           _buildMonthStats(),
 
-          // Eventos del día seleccionado
+          // Eventos del d�a seleccionado
           Expanded(
             child: _buildSelectedDayEvents(),
           ),
@@ -237,21 +238,21 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
           _buildMonthStatItem(
             Icons.calendar_month,
             '$completedDays/$daysInMonth',
-            'Días activos',
+            AppL10n.of(context).activeDaysLabel,
             Colors.blue,
           ),
           Container(width: 1, height: 40, color: AppColors.background),
           _buildMonthStatItem(
             Icons.access_time,
             '${(totalMinutes / 60).toStringAsFixed(1)}h',
-            'Tiempo total',
+            AppL10n.of(context).totalTimeCalendar,
             Colors.orange,
           ),
           Container(width: 1, height: 40, color: AppColors.background),
           _buildMonthStatItem(
             Icons.local_fire_department,
             '${((completedDays / daysInMonth) * 100).toStringAsFixed(0)}%',
-            'Cumplimiento',
+            AppL10n.of(context).complianceLabel,
             Colors.green,
           ),
         ],
@@ -294,7 +295,8 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
     }
 
     final events = _getEventsForDay(_selectedDay!);
-    final dateStr = _formatDateInSpanish(_selectedDay!);
+    final l10n = AppL10n.of(context);
+    final dateStr = _formatLocalizedDate(_selectedDay!, l10n);
 
     return Container(
       margin: const EdgeInsets.all(16),
@@ -323,7 +325,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Sin entrenamientos programados',
+                      l10n.noScheduledWorkouts,
                       style: TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary.withOpacity(0.7),
@@ -339,7 +341,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
                 itemCount: events.length,
                 itemBuilder: (context, index) {
                   final event = events[index];
-                  return _buildEventCard(event);
+                  return _buildEventCard(event, l10n);
                 },
               ),
             ),
@@ -348,7 +350,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
     );
   }
 
-  Widget _buildEventCard(WorkoutEvent event) {
+  Widget _buildEventCard(WorkoutEvent event, AppL10n l10n) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -390,16 +392,16 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
                 ),
                 if (event.isCompleted)
                   Text(
-                    '${event.durationMinutes} minutos completados',
+                    l10n.minutesCompletedLabel(event.durationMinutes),
                     style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
                     ),
                   )
                 else
-                  const Text(
-                    'Programado',
-                    style: TextStyle(
+                  Text(
+                    l10n.scheduledLabel,
+                    style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
                     ),
@@ -414,9 +416,9 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
                 color: Colors.green.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Text(
-                '✓ Hecho',
-                style: TextStyle(
+              child: Text(
+                l10n.doneLabel,
+                style: const TextStyle(
                   fontSize: 12,
                   color: Colors.green,
                   fontWeight: FontWeight.bold,
@@ -428,34 +430,13 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
     );
   }
 
-  String _formatDateInSpanish(DateTime date) {
-    const days = [
-      'lunes',
-      'martes',
-      'miércoles',
-      'jueves',
-      'viernes',
-      'sábado',
-      'domingo'
-    ];
-    const months = [
-      'enero',
-      'febrero',
-      'marzo',
-      'abril',
-      'mayo',
-      'junio',
-      'julio',
-      'agosto',
-      'septiembre',
-      'octubre',
-      'noviembre',
-      'diciembre'
-    ];
-
-    final dayName = days[date.weekday - 1];
-    final monthName = months[date.month - 1];
-    return '${dayName[0].toUpperCase()}${dayName.substring(1)}, ${date.day} de $monthName';
+  String _formatLocalizedDate(DateTime date, AppL10n l10n) {
+    final dayName = l10n.dayNamesFull[date.weekday - 1];
+    final monthName = l10n.monthNames[date.month - 1];
+    final capitalized = '${dayName[0].toUpperCase()}${dayName.substring(1)}';
+    return l10n.isEn
+        ? '$capitalized, ${monthName[0].toUpperCase()}${monthName.substring(1)} ${date.day}'
+        : '$capitalized, ${date.day} de $monthName';
   }
 }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_l10n.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../workouts/providers/workout_provider.dart';
 import '../../workouts/models/workout.dart';
@@ -290,7 +291,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Personal Records'),
+        title: Text(AppL10n.of(context).personalRecords),
         centerTitle: false,
       ),
       body: SafeArea(
@@ -319,14 +320,14 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
             child: TextField(
               controller: _searchController,
               style: const TextStyle(color: Colors.white, fontSize: 14),
-              decoration: const InputDecoration(
-                hintText: 'Search exercises...',
-                hintStyle: TextStyle(color: AppColors.textSecondary),
-                prefixIcon: Icon(Icons.search,
+              decoration: InputDecoration(
+                hintText: AppL10n.of(context).searchExercisesHint,
+                hintStyle: const TextStyle(color: AppColors.textSecondary),
+                prefixIcon: const Icon(Icons.search,
                     color: AppColors.textSecondary, size: 20),
                 border: InputBorder.none,
                 contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               ),
               onChanged: (v) => setState(() => _search = v),
             ),
@@ -376,10 +377,10 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
         // ── Exercise list ─────────────────────────────────────────────
         Expanded(
           child: filtered.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
-                    'No se encontraron ejercicios',
-                    style: TextStyle(color: AppColors.textSecondary),
+                    AppL10n.of(context).noExercisesFound,
+                    style: const TextStyle(color: AppColors.textSecondary),
                   ),
                 )
               : RefreshIndicator(

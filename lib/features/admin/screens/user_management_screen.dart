@@ -35,9 +35,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'ADMIN PORTAL',
-              style: TextStyle(
+            Text(
+              AppL10n.of(context).adminPortal,
+              style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: AppColors.primary,
@@ -346,7 +346,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 }
               } catch (e) {
                 if (context.mounted) {
-                  AppSnackbar.error(context, 'Error: $e');
+                  AppSnackbar.error(
+                      context, AppL10n.of(context).genericError(e.toString()));
                 }
               }
             },
@@ -380,7 +381,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       }
     } catch (e) {
       if (mounted) {
-        AppSnackbar.error(context, 'Error: $e');
+        AppSnackbar.error(
+            context, AppL10n.of(context).genericError(e.toString()));
       }
     } finally {
       if (mounted) setState(() => _isProcessing = false);
@@ -423,7 +425,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         } catch (e) {
                           if (context.mounted) {
                             Navigator.pop(context);
-                            AppSnackbar.error(context, 'Error: $e');
+                            AppSnackbar.error(context,
+                                AppL10n.of(context).genericError(e.toString()));
                           }
                         }
                       },
@@ -544,7 +547,7 @@ class _UserCard extends StatelessWidget {
         leading: CircleAvatar(
           backgroundColor: AppColors.primary,
           child: Text(
-            user.name[0].toUpperCase(),
+            user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
             style: const TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.bold,
@@ -568,9 +571,9 @@ class _UserCard extends StatelessWidget {
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
-                  'ADMIN',
-                  style: TextStyle(
+                child: Text(
+                  AppL10n.of(context).adminBadge,
+                  style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,

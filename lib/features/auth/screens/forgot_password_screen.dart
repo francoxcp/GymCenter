@@ -40,27 +40,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 20),
-              const Text(
-                'Recuperar contraseña',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).recoverPasswordTitle,
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Ingresa tu correo electrónico y te enviaremos las instrucciones para restablecer tu acceso al centro de entrenamiento.',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).recoverPasswordDesc,
+                style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                   height: 1.5,
                 ),
               ),
               const SizedBox(height: 40),
-              const Text(
-                'Correo electrónico',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).emailFieldLabel,
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: Colors.white,
@@ -69,21 +69,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               const SizedBox(height: 8),
               CustomTextField(
                 controller: _emailController,
-                hintText: 'nombre@ejemplo.com',
+                hintText: AppL10n.of(context).emailPlaceholder,
                 prefixIcon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Si no recibes el correo en unos minutos, revisa tu carpeta de spam.',
-                style: TextStyle(
+              Text(
+                AppL10n.of(context).checkSpamHint,
+                style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
                 ),
               ),
               const Spacer(),
               PrimaryButton(
-                text: 'Enviar enlace de recuperación',
+                text: AppL10n.of(context).sendRecoveryLink,
                 isLoading: _isLoading,
                 onPressed: _isLoading ? null : _handlePasswordReset,
               ),
@@ -92,9 +92,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      '¿Recordaste tu contraseña? ',
-                      style: TextStyle(
+                    Text(
+                      AppL10n.of(context).rememberedPassword,
+                      style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,
                       ),
@@ -106,9 +106,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         minimumSize: const Size(0, 0),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      child: const Text(
-                        'Inicio de sesión',
-                        style: TextStyle(
+                      child: Text(
+                        AppL10n.of(context).signInLink,
+                        style: const TextStyle(
                           fontSize: 14,
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
@@ -142,10 +142,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() => _isLoading = false);
 
     if (mounted) {
+      final l10n = AppL10n.of(context);
       if (result['success']) {
-        AppSnackbar.success(context, result['message']);
+        AppSnackbar.success(context, l10n.serviceMessage(result['message']));
       } else {
-        AppSnackbar.error(context, result['message']);
+        AppSnackbar.error(context, l10n.serviceMessage(result['message']));
       }
 
       if (result['success']) {

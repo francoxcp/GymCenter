@@ -743,9 +743,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         if (context.mounted) {
                           Navigator.pop(context);
                           if (result['success']) {
-                            AppSnackbar.success(context, result['message']);
+                            AppSnackbar.success(context,
+                                l10n.serviceMessage(result['message']));
                           } else {
-                            AppSnackbar.error(context, result['message']);
+                            AppSnackbar.error(context,
+                                l10n.serviceMessage(result['message']));
                           }
                         }
                       },
@@ -845,9 +847,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         if (result['success']) {
                           // Redirigir al login
                           context.go('/login');
-                          AppSnackbar.success(context, result['message']);
+                          AppSnackbar.success(
+                              context, l10n.serviceMessage(result['message']));
                         } else {
-                          AppSnackbar.error(context, result['message']);
+                          AppSnackbar.error(
+                              context, l10n.serviceMessage(result['message']));
                         }
                       }
                     },

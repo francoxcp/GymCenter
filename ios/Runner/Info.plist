@@ -44,6 +44,10 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Necesitamos acceso a tu cámara para tomar fotos de perfil y registrar tu progreso físico.</string>
 	
+	<!-- Permisos de Face ID -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>Usamos Face ID para proteger el acceso a tu cuenta y datos de fitness.</string>
+	
 	<!-- Permisos de Galería -->
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Necesitamos acceso a tu galería para seleccionar fotos de perfil y progreso.</string>

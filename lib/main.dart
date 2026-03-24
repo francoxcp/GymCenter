@@ -8,6 +8,7 @@ import 'core/theme/dark_theme.dart';
 import 'config/router/app_router.dart';
 import 'config/supabase_config.dart';
 import 'features/auth/providers/auth_provider.dart';
+import 'features/auth/screens/biometric_lock_screen.dart';
 import 'features/workouts/providers/workout_provider.dart';
 import 'features/meal_plans/providers/meal_plan_provider.dart';
 import 'features/profile/providers/user_provider.dart';
@@ -16,6 +17,7 @@ import 'features/settings/providers/preferences_provider.dart';
 import 'features/progress/providers/achievements_provider.dart';
 import 'features/workouts/providers/workout_session_provider.dart';
 import 'features/workouts/providers/workout_progress_provider.dart';
+import 'shared/services/biometric_service.dart';
 import 'shared/services/notification_service.dart';
 
 void main() async {
@@ -48,17 +50,19 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late final AuthProvider _authProvider;
   late final UserProvider _userProvider;
   late final PreferencesProvider _preferencesProvider;
   late final GoRouter _router;
   late final _DoubleBackButtonDispatcher _backButtonDispatcher;
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  bool _isLocked = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     _authProvider = AuthProvider();
     _userProvider = UserProvider()..setAuthProvider(_authProvider);
@@ -77,12 +81,29 @@ class _MyAppState extends State<MyApp> {
     _preferencesProvider.onAuthChanged(_authProvider);
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      // Al salir de la app, marcar como bloqueada si biometría está activa
+      _checkAndLock();
+    }
+  }
+
+  Future<void> _checkAndLock() async {
+    if (!_authProvider.isAuthenticated) return;
+    final enabled = await BiometricService().isEnabled();
+    if (enabled && mounted) {
+      setState(() => _isLocked = true);
+    }
+  }
+
   void _onAuthChanged() {
     _preferencesProvider.onAuthChanged(_authProvider);
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _authProvider.removeListener(_onAuthChanged);
     _authProvider.dispose();
     super.dispose();
@@ -103,30 +124,44 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => WorkoutProgressProvider()),
       ],
       child: Consumer<PreferencesProvider>(
-        builder: (context, prefsProvider, _) => MaterialApp.router(
-          scaffoldMessengerKey: _scaffoldMessengerKey,
-          title: 'Chamos Fitness Center',
-          debugShowCheckedModeBanner: false,
-          theme: darkTheme,
-          locale: prefsProvider.appLocale,
-          supportedLocales: const [Locale('es'), Locale('en')],
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          routeInformationParser: _router.routeInformationParser,
-          routeInformationProvider: _router.routeInformationProvider,
-          routerDelegate: _router.routerDelegate,
-          backButtonDispatcher: _backButtonDispatcher,
-          // Siempre indicarle al sistema que nosotros manejamos el botón atrás.
-          // Sin esto, Flutter envía canHandlePop=false en pantallas raíz y
-          // Android cierra la app directamente sin pasar por nuestro dispatcher.
-          onNavigationNotification: (notification) {
-            SystemNavigator.setFrameworkHandlesBack(true);
-            return true;
-          },
-        ),
+        builder: (context, prefsProvider, _) {
+          final app = MaterialApp.router(
+            scaffoldMessengerKey: _scaffoldMessengerKey,
+            title: 'Chamos Fitness Center',
+            debugShowCheckedModeBanner: false,
+            theme: darkTheme,
+            locale: prefsProvider.appLocale,
+            supportedLocales: const [Locale('es'), Locale('en')],
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            routeInformationParser: _router.routeInformationParser,
+            routeInformationProvider: _router.routeInformationProvider,
+            routerDelegate: _router.routerDelegate,
+            backButtonDispatcher: _backButtonDispatcher,
+            // Siempre indicarle al sistema que nosotros manejamos el botón atrás.
+            // Sin esto, Flutter envía canHandlePop=false en pantallas raíz y
+            // Android cierra la app directamente sin pasar por nuestro dispatcher.
+            onNavigationNotification: (notification) {
+              SystemNavigator.setFrameworkHandlesBack(true);
+              return true;
+            },
+          );
+
+          if (_isLocked) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: darkTheme,
+              home: BiometricLockScreen(
+                onUnlocked: () => setState(() => _isLocked = false),
+              ),
+            );
+          }
+
+          return app;
+        },
       ),
     );
   }

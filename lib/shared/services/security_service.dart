@@ -197,8 +197,25 @@ class SecurityService {
   /// Elimina todos los datos asociados al usuario
   Future<void> _deleteUserData(String userId) async {
     try {
+      // Eliminar archivos de storage (fotos de perfil)
+      try {
+        final files =
+            await _supabase.storage.from('profile-photos').list(path: userId);
+        if (files.isNotEmpty) {
+          final paths = files.map((f) => '$userId/${f.name}').toList();
+          await _supabase.storage.from('profile-photos').remove(paths);
+        }
+      } catch (e) {
+        debugPrint('Error deleting profile photos from storage: $e');
+      }
+
       // Eliminar en orden para respetar foreign keys
       await _supabase.from('user_achievements').delete().eq('user_id', userId);
+      await _supabase
+          .from('user_workout_schedule')
+          .delete()
+          .eq('user_id', userId);
+      await _supabase.from('workout_progress').delete().eq('user_id', userId);
       await _supabase.from('body_measurements').delete().eq('user_id', userId);
       await _supabase.from('workout_sessions').delete().eq('user_id', userId);
       await _supabase.from('user_preferences').delete().eq('user_id', userId);

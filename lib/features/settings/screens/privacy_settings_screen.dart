@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
+import '../../../shared/services/biometric_service.dart';
+import '../providers/preferences_provider.dart';
 
 class PrivacySettingsScreen extends StatefulWidget {
   const PrivacySettingsScreen({super.key});
@@ -12,35 +14,49 @@ class PrivacySettingsScreen extends StatefulWidget {
 }
 
 class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
-  bool _analyticsEnabled = true;
-  bool _personalizationEnabled = true;
-  bool _workoutInsights = true;
+  bool _biometricAvailable = false;
+  bool _biometricEnabled = false;
 
   @override
   void initState() {
     super.initState();
-    _loadPrivacySettings();
+    _loadBiometricState();
   }
 
-  Future<void> _loadPrivacySettings() async {
-    final prefs = await SharedPreferences.getInstance();
+  Future<void> _loadBiometricState() async {
+    final service = BiometricService();
+    final available = await service.isAvailable();
+    final enabled = await service.isEnabled();
     if (!mounted) return;
     setState(() {
-      _analyticsEnabled = prefs.getBool('privacy_analytics') ?? true;
-      _personalizationEnabled =
-          prefs.getBool('privacy_personalization') ?? true;
-      _workoutInsights = prefs.getBool('privacy_workout_insights') ?? true;
+      _biometricAvailable = available;
+      _biometricEnabled = enabled;
     });
   }
 
-  Future<void> _saveBool(String key, bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(key, value);
+  Future<void> _toggleBiometric(bool value) async {
+    final service = BiometricService();
+    if (value) {
+      // Verificar identidad antes de activar
+      final authenticated = await service.authenticate(
+        reason: 'Verifica tu identidad para activar el bloqueo',
+      );
+      if (!authenticated) return;
+    }
+    await service.setEnabled(value);
+    if (!mounted) return;
+    setState(() => _biometricEnabled = value);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+    final prefsProvider = Provider.of<PreferencesProvider>(context);
+    final prefs = prefsProvider.preferences;
+
+    final analyticsEnabled = prefs?.privacyAnalytics ?? true;
+    final personalizationEnabled = prefs?.privacyPersonalization ?? true;
+    final workoutInsights = prefs?.privacyWorkoutInsights ?? true;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -89,36 +105,48 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           ),
           const SizedBox(height: 24),
 
+          // Security section
+          if (_biometricAvailable) ...[
+            _buildSectionTitle(l10n.isEn ? 'SECURITY' : 'SEGURIDAD'),
+            _buildSwitchTile(
+              title: l10n.isEn ? 'Biometric Lock' : 'Bloqueo Biométrico',
+              subtitle: l10n.isEn
+                  ? 'Require fingerprint or Face ID when opening the app'
+                  : 'Requiere huella o Face ID al abrir la app',
+              icon: Icons.fingerprint,
+              value: _biometricEnabled,
+              onChanged: _toggleBiometric,
+            ),
+            const SizedBox(height: 24),
+          ],
+
           // Data usage section
           _buildSectionTitle(l10n.dataUsageSection),
           _buildSwitchTile(
             title: l10n.analyticsTitle,
             subtitle: l10n.analyticsSubtitle,
             icon: Icons.bar_chart_outlined,
-            value: _analyticsEnabled,
+            value: analyticsEnabled,
             onChanged: (v) {
-              setState(() => _analyticsEnabled = v);
-              _saveBool('privacy_analytics', v);
+              prefsProvider.updatePrivacySetting('privacy_analytics', v);
             },
           ),
           _buildSwitchTile(
             title: l10n.personalizationTitle,
             subtitle: l10n.personalizationSubtitle,
             icon: Icons.tune_outlined,
-            value: _personalizationEnabled,
+            value: personalizationEnabled,
             onChanged: (v) {
-              setState(() => _personalizationEnabled = v);
-              _saveBool('privacy_personalization', v);
+              prefsProvider.updatePrivacySetting('privacy_personalization', v);
             },
           ),
           _buildSwitchTile(
             title: l10n.workoutInsightsTitle,
             subtitle: l10n.workoutInsightsSubtitle,
             icon: Icons.fitness_center_outlined,
-            value: _workoutInsights,
+            value: workoutInsights,
             onChanged: (v) {
-              setState(() => _workoutInsights = v);
-              _saveBool('privacy_workout_insights', v);
+              prefsProvider.updatePrivacySetting('privacy_workout_insights', v);
             },
           ),
           const SizedBox(height: 24),

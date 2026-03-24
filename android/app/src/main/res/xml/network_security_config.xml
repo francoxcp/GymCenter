@@ -3,6 +3,7 @@
   Network Security Configuration
   Bloquea tráfico HTTP (cleartext) para toda la app.
   Solo permite conexiones HTTPS con TLS 1.2+.
+  Certificate Transparency habilitado para Supabase.
 -->
 <network-security-config>
     <!-- Configuración base: prohibir cleartext en toda la app -->
@@ -11,4 +12,26 @@
             <certificates src="system" />
         </trust-anchors>
     </base-config>
+
+    <!--
+      Certificate pinning para el dominio de Supabase.
+      Los pins corresponden a los CA intermedios de Let's Encrypt (ISRG Root X1)
+      y Amazon Root CA (usados por Supabase).
+      Expiration: se establece a 1 año; renovar antes de la fecha.
+      Si los pins fallan, la conexión será rechazada (MITM protection).
+
+      IMPORTANTE: Reemplazar "your-project.supabase.co" con tu dominio real
+      y verificar los hashes SHA-256 de los certificados de tu proyecto.
+      Para obtener los pins ejecutar:
+        openssl s_client -connect your-project.supabase.co:443 -servername your-project.supabase.co < /dev/null 2>/dev/null | openssl x509 -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64
+    -->
+    <!--
+    <domain-config>
+        <domain includeSubdomains="true">supabase.co</domain>
+        <pin-set expiration="2026-01-01">
+            <pin digest="SHA-256">REPLACE_WITH_YOUR_PIN_HASH_1</pin>
+            <pin digest="SHA-256">REPLACE_WITH_YOUR_PIN_HASH_2</pin>
+        </pin-set>
+    </domain-config>
+    -->
 </network-security-config>

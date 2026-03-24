@@ -18,6 +18,9 @@ class UserPreferences {
   final bool progressReports;
   final String theme; // 'light', 'dark', 'system'
   final String language; // 'es', 'en'
+  final bool privacyAnalytics;
+  final bool privacyPersonalization;
+  final bool privacyWorkoutInsights;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -31,6 +34,9 @@ class UserPreferences {
     required this.progressReports,
     required this.theme,
     required this.language,
+    this.privacyAnalytics = true,
+    this.privacyPersonalization = true,
+    this.privacyWorkoutInsights = true,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -46,6 +52,9 @@ class UserPreferences {
       progressReports: json['progress_reports'] ?? true,
       theme: json['theme'] ?? 'system',
       language: json['language'] ?? 'es',
+      privacyAnalytics: json['privacy_analytics'] ?? true,
+      privacyPersonalization: json['privacy_personalization'] ?? true,
+      privacyWorkoutInsights: json['privacy_workout_insights'] ?? true,
       createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
     );
@@ -62,13 +71,13 @@ class UserPreferences {
       'progress_reports': progressReports,
       'theme': theme,
       'language': language,
+      'privacy_analytics': privacyAnalytics,
+      'privacy_personalization': privacyPersonalization,
+      'privacy_workout_insights': privacyWorkoutInsights,
     };
   }
 
   /// Usado para operaciones .update() de Supabase.
-  /// NOTA: progress_reports está excluido hasta que se ejecute en Supabase:
-  ///   ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS progress_reports BOOLEAN DEFAULT TRUE;
-  /// Una vez ejecutado, agrégalo de vuelta aquí.
   Map<String, dynamic> toUpdateJson() {
     return {
       'onboarding_completed': onboardingCompleted,
@@ -79,6 +88,9 @@ class UserPreferences {
       'theme': theme,
       'language': language,
       'progress_reports': progressReports,
+      'privacy_analytics': privacyAnalytics,
+      'privacy_personalization': privacyPersonalization,
+      'privacy_workout_insights': privacyWorkoutInsights,
     };
   }
 
@@ -91,6 +103,9 @@ class UserPreferences {
     bool? progressReports,
     String? theme,
     String? language,
+    bool? privacyAnalytics,
+    bool? privacyPersonalization,
+    bool? privacyWorkoutInsights,
   }) {
     return UserPreferences(
       userId: userId,
@@ -102,6 +117,11 @@ class UserPreferences {
       progressReports: progressReports ?? this.progressReports,
       theme: theme ?? this.theme,
       language: language ?? this.language,
+      privacyAnalytics: privacyAnalytics ?? this.privacyAnalytics,
+      privacyPersonalization:
+          privacyPersonalization ?? this.privacyPersonalization,
+      privacyWorkoutInsights:
+          privacyWorkoutInsights ?? this.privacyWorkoutInsights,
       createdAt: createdAt,
       updatedAt: DateTime.now(),
     );
@@ -205,10 +225,13 @@ class PreferencesProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
 
-      // Si el usuario tiene reportes de progreso habilitados,
+      // Si el usuario tiene reportes de progreso habilitados
+      // Y las estadísticas de entrenamiento no están desactivadas por privacidad,
       // verificar si corresponde enviar el resumen semanal.
       final userId = _supabase.auth.currentUser?.id;
-      if (userId != null && (_preferences?.progressReports ?? false)) {
+      if (userId != null &&
+          (_preferences?.progressReports ?? false) &&
+          (_preferences?.privacyWorkoutInsights ?? true)) {
         ProgressReportService().checkAndSend(
           userId: userId,
           isEnglish: (_preferences?.language ?? 'es') == 'en',
@@ -358,6 +381,28 @@ class PreferencesProvider with ChangeNotifier {
     if (_preferences == null) return false;
 
     final updated = _preferences!.copyWith(language: language);
+    return await updatePreferences(updated);
+  }
+
+  /// Actualizar una preferencia de privacidad individualmente.
+  Future<bool> updatePrivacySetting(String key, bool value) async {
+    if (_preferences == null) return false;
+
+    UserPreferences updated;
+    switch (key) {
+      case 'privacy_analytics':
+        updated = _preferences!.copyWith(privacyAnalytics: value);
+        break;
+      case 'privacy_personalization':
+        updated = _preferences!.copyWith(privacyPersonalization: value);
+        break;
+      case 'privacy_workout_insights':
+        updated = _preferences!.copyWith(privacyWorkoutInsights: value);
+        break;
+      default:
+        return false;
+    }
+
     return await updatePreferences(updated);
   }
 }

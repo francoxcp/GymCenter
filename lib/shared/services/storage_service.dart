@@ -14,6 +14,13 @@ class StorageService {
   static const String exerciseVideosBucket = 'exercise-videos';
   static const String exerciseThumbnailsBucket = 'exercise-thumbnails';
 
+  // Límites de tamaño
+  static const int _maxImageBytes = 5 * 1024 * 1024; // 5 MB
+  static const int _maxVideoBytes = 50 * 1024 * 1024; // 50 MB
+
+  // Extensiones de video permitidas
+  static const _allowedVideoExtensions = {'.mp4', '.mov', '.avi', '.webm'};
+
   /// Comprime una imagen manteniendo calidad óptima
   ///
   /// [imageFile] - Archivo de imagen a comprimir
@@ -94,6 +101,11 @@ class StorageService {
         throw Exception('Image compression failed');
       }
 
+      // Validar tamaño después de compresión
+      if (compressedData.length > _maxImageBytes) {
+        throw Exception('Image exceeds maximum size of 5 MB');
+      }
+
       // Generar nombre único para el archivo
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       const extension = 'jpg';
@@ -147,10 +159,20 @@ class StorageService {
       // Para videos grandes, mostrar progreso
       final videoSize = videoData.length;
 
+      // Validar tamaño
+      if (videoSize > _maxVideoBytes) {
+        throw Exception('Video exceeds maximum size of 50 MB');
+      }
+
       // Generar nombre único
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final extension =
           originalFileName != null ? path.extension(originalFileName) : '.mp4';
+
+      // Validar extensión permitida
+      if (!_allowedVideoExtensions.contains(extension.toLowerCase())) {
+        throw Exception('Video format not allowed: $extension');
+      }
       final fileName = 'exercise_$exerciseId${'_'}$timestamp$extension';
 
       // Subir video a Supabase Storage

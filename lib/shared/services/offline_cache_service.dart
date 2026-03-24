@@ -45,4 +45,17 @@ class OfflineCacheService {
     if (str == null) return null;
     return DateTime.tryParse(str);
   }
+
+  /// Elimina todos los datos cacheados (workouts + timestamps).
+  /// Debe llamarse al cerrar sesión para evitar que un siguiente usuario
+  /// vea datos del usuario anterior en un dispositivo compartido.
+  Future<void> clearCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_workoutsKey);
+      await prefs.remove(_cachedAtKey);
+    } catch (e) {
+      debugPrint('OfflineCacheService: error limpiando caché: $e');
+    }
+  }
 }

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Configuración centralizada de Supabase
@@ -27,14 +26,15 @@ class SupabaseConfig {
       );
     }
 
-    if (kDebugMode) {
-      final uri = Uri.tryParse(_supabaseUrl);
-      if (uri == null || !uri.hasScheme || !uri.hasAuthority) {
-        throw StateError(
-          'SUPABASE_URL is not a valid URL: "$_supabaseUrl"\n'
-          'Expected format: https://your-project.supabase.co',
-        );
-      }
+    final uri = Uri.tryParse(_supabaseUrl);
+    if (uri == null ||
+        !uri.hasScheme ||
+        !uri.hasAuthority ||
+        uri.scheme != 'https') {
+      throw StateError(
+        'SUPABASE_URL is not a valid HTTPS URL: "$_supabaseUrl"\n'
+        'Expected format: https://your-project.supabase.co',
+      );
     }
 
     await Supabase.initialize(

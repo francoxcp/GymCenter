@@ -8,6 +8,7 @@ import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 import '../providers/auth_provider.dart';
+import '../../../shared/services/secure_screen_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -26,7 +27,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    SecureScreenService.enable();
+  }
+
+  @override
   void dispose() {
+    SecureScreenService.disable();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();

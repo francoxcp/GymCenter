@@ -6,6 +6,7 @@ import '../../../shared/widgets/app_snackbar.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/services/security_service.dart';
+import '../../../shared/services/secure_screen_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -19,7 +20,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    SecureScreenService.enable();
+  }
+
+  @override
   void dispose() {
+    SecureScreenService.disable();
     _emailController.dispose();
     super.dispose();
   }

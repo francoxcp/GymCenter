@@ -8,6 +8,7 @@ import '../../../shared/widgets/app_snackbar.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../providers/auth_provider.dart';
+import '../../../shared/services/secure_screen_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -27,6 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    SecureScreenService.enable();
     _authProvider = context.read<AuthProvider>();
     // Escuchar cambios de auth para redirigir automáticamente cuando
     // Supabase restaura la sesión persistida (sin que el usuario tenga que
@@ -38,6 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    SecureScreenService.disable();
     _authProvider.removeListener(_onAuthChanged);
     _emailController.dispose();
     _passwordController.dispose();

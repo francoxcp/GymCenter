@@ -1,9 +1,11 @@
 ﻿import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import '../models/user.dart';
 import '../../../config/supabase_config.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../shared/services/offline_cache_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   bool _isAuthenticated = false;
@@ -54,13 +56,8 @@ class AuthProvider extends ChangeNotifier {
       if (session != null) {
         _loadCurrentUser(session.user.id);
       } else if (data.event == AuthChangeEvent.signedOut) {
-        // Solo limpiar sesión cuando el cierre es explícito (logout manual)
-        _isAuthenticated = false;
-        _currentUser = null;
-        notifyListeners();
+        _clearSessionData();
       }
-      // Otros eventos con session==null (ej: tokenRefreshFailed momentáneo)
-      // no cierran la sesión — Supabase reintentará el refresh automáticamente
     });
 
     // Verificar si ya hay sesión activa al arrancar
@@ -224,11 +221,32 @@ class AuthProvider extends ChangeNotifier {
   Future<void> logout() async {
     try {
       await SupabaseConfig.auth.signOut();
-      _isAuthenticated = false;
-      _currentUser = null;
-      notifyListeners();
+      await _clearSessionData();
     } catch (e) {
       debugPrint('Logout error: $e');
+    }
+  }
+
+  /// Limpia datos del usuario de memoria y SharedPreferences.
+  /// Evita filtración de datos en dispositivos compartidos.
+  Future<void> _clearSessionData() async {
+    _isAuthenticated = false;
+    _currentUser = null;
+    notifyListeners();
+    try {
+      await OfflineCacheService().clearCache();
+      final prefs = await SharedPreferences.getInstance();
+      // Limpiar timer de workouts y preferencias de sesión
+      final keys = prefs.getKeys().where(
+            (k) =>
+                k.startsWith('workout_timer_') ||
+                k == 'last_progress_report_date',
+          );
+      for (final key in keys) {
+        await prefs.remove(key);
+      }
+    } catch (e) {
+      debugPrint('Error clearing session data: $e');
     }
   }
 

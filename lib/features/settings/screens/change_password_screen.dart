@@ -8,6 +8,7 @@ import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 import '../../../shared/services/security_service.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../shared/services/secure_screen_service.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -27,7 +28,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    SecureScreenService.enable();
+  }
+
+  @override
   void dispose() {
+    SecureScreenService.disable();
     _currentPasswordController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();

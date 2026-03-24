@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Network Security Configuration
+  Bloquea tráfico HTTP (cleartext) para toda la app.
+  Solo permite conexiones HTTPS con TLS 1.2+.
+-->
+<network-security-config>
+    <!-- Configuración base: prohibir cleartext en toda la app -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

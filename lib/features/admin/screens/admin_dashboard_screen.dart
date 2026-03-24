@@ -170,9 +170,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     margin: const EdgeInsets.only(bottom: AppSpacing.lg),
                     padding: const EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
+                      color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
@@ -499,7 +499,7 @@ class _QuickActionButton extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: (iconColor ?? Colors.white).withOpacity(0.1),
+                color: (iconColor ?? Colors.white).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppSpacing.md),
               ),
               child: Icon(

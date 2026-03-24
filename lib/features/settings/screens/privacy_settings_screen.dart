@@ -58,10 +58,10 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: AppColors.primary.withOpacity(0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
               ),
             ),
             child: Row(
@@ -203,7 +203,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         ),
         value: value,
         onChanged: onChanged,
-        activeColor: AppColors.primary,
+        activeThumbColor: AppColors.primary,
       ),
     );
   }

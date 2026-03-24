@@ -485,7 +485,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                       Expanded(
                         child: Container(
                           height: 1,
-                          color: AppColors.textSecondary.withOpacity(0.3),
+                          color: AppColors.textSecondary.withValues(alpha: 0.3),
                         ),
                       ),
                       Padding(
@@ -503,7 +503,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                       Expanded(
                         child: Container(
                           height: 1,
-                          color: AppColors.textSecondary.withOpacity(0.3),
+                          color: AppColors.textSecondary.withValues(alpha: 0.3),
                         ),
                       ),
                     ],
@@ -683,7 +683,7 @@ class _WorkoutCard extends StatelessWidget {
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.primary.withOpacity(0.2),
+          color: AppColors.primary.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -693,7 +693,7 @@ class _WorkoutCard extends StatelessWidget {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.2),
+              color: AppColors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
@@ -733,10 +733,10 @@ class _WorkoutCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 5, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.15),
+                          color: AppColors.primary.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(5),
                           border: Border.all(
-                              color: AppColors.primary.withOpacity(0.45),
+                              color: AppColors.primary.withValues(alpha: 0.45),
                               width: 0.8),
                         ),
                         child: Row(
@@ -851,10 +851,10 @@ class _WorkoutCard extends StatelessWidget {
                 height: 38,
                 margin: const EdgeInsets.only(left: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.15),
+                  color: AppColors.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: AppColors.primary.withOpacity(0.6),
+                    color: AppColors.primary.withValues(alpha: 0.6),
                     width: 1,
                   ),
                 ),
@@ -892,14 +892,14 @@ class _PausedWorkoutBanner extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         gradient: LinearGradient(
           colors: [
-            AppColors.primary.withOpacity(0.22),
+            AppColors.primary.withValues(alpha: 0.22),
             AppColors.surface,
           ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
         border: Border.all(
-          color: AppColors.primary.withOpacity(0.45),
+          color: AppColors.primary.withValues(alpha: 0.45),
           width: 1.5,
         ),
       ),
@@ -913,7 +913,7 @@ class _PausedWorkoutBanner extends StatelessWidget {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.2),
+                    color: AppColors.primary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
@@ -979,7 +979,7 @@ class _PausedWorkoutBanner extends StatelessWidget {
           ),
           Divider(
             height: 1,
-            color: AppColors.primary.withOpacity(0.2),
+            color: AppColors.primary.withValues(alpha: 0.2),
           ),
           TextButton.icon(
             onPressed: onDiscard,
@@ -1027,7 +1027,7 @@ class _SectionHeader extends StatelessWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, size: 16, color: color),
@@ -1046,7 +1046,7 @@ class _SectionHeader extends StatelessWidget {
           Expanded(
             child: Container(
               height: 1,
-              color: color.withOpacity(0.25),
+              color: color.withValues(alpha: 0.25),
             ),
           ),
         ],

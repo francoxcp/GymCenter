@@ -181,7 +181,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.textSecondary.withOpacity(0.4),
+                  color: AppColors.textSecondary.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -220,10 +220,10 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.amber.withOpacity(0.15),
+                          color: Colors.amber.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(10),
                           border:
-                              Border.all(color: Colors.amber.withOpacity(0.6)),
+                              Border.all(color: Colors.amber.withValues(alpha: 0.6)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -246,7 +246,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
               ),
               const SizedBox(height: 4),
               Divider(
-                  color: AppColors.textSecondary.withOpacity(0.15), height: 20),
+                  color: AppColors.textSecondary.withValues(alpha: 0.15), height: 20),
               Expanded(
                 child: sessions.isEmpty
                     ? Center(
@@ -254,7 +254,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.fitness_center,
-                                color: AppColors.textSecondary.withOpacity(0.4),
+                                color: AppColors.textSecondary.withValues(alpha: 0.4),
                                 size: 40),
                             const SizedBox(height: 12),
                             const Text(
@@ -445,7 +445,7 @@ class _PRCard extends StatelessWidget {
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.2,
-                    color: AppColors.textSecondary.withOpacity(0.8),
+                    color: AppColors.textSecondary.withValues(alpha: 0.8),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -465,13 +465,13 @@ class _PRCard extends StatelessWidget {
                     children: [
                       Icon(Icons.history,
                           size: 13,
-                          color: AppColors.textSecondary.withOpacity(0.8)),
+                          color: AppColors.textSecondary.withValues(alpha: 0.8)),
                       const SizedBox(width: 4),
                       Text(
                         'Ver Historial',
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary.withOpacity(0.8),
+                          color: AppColors.textSecondary.withValues(alpha: 0.8),
                         ),
                       ),
                     ],
@@ -490,7 +490,7 @@ class _PRCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textSecondary.withOpacity(0.4),
+                color: AppColors.textSecondary.withValues(alpha: 0.4),
               ),
             ),
         ],
@@ -582,7 +582,7 @@ class _HistorySessionCard extends StatelessWidget {
                 color: AppColors.background,
                 borderRadius: BorderRadius.circular(8),
                 border:
-                    Border.all(color: AppColors.textSecondary.withOpacity(0.2)),
+                    Border.all(color: AppColors.textSecondary.withValues(alpha: 0.2)),
               ),
               child: Text(
                 r != null
@@ -594,7 +594,7 @@ class _HistorySessionCard extends StatelessWidget {
           }).toList(),
         ),
         const SizedBox(height: 4),
-        Divider(color: AppColors.textSecondary.withOpacity(0.1)),
+        Divider(color: AppColors.textSecondary.withValues(alpha: 0.1)),
       ],
     );
   }

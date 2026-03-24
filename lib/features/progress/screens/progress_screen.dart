@@ -115,7 +115,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.3),
+                          color: AppColors.primary.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -147,7 +147,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.orange.withOpacity(0.3),
+            Colors.orange.withValues(alpha: 0.3),
             AppColors.cardBackground,
           ],
           begin: Alignment.topLeft,
@@ -376,7 +376,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: Colors.amber.withOpacity(0.2),
+                color: Colors.amber.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child:
@@ -476,7 +476,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     horizontalInterval: 5,
                     getDrawingHorizontalLine: (value) {
                       return FlLine(
-                        color: AppColors.textSecondary.withOpacity(0.1),
+                        color: AppColors.textSecondary.withValues(alpha: 0.1),
                         strokeWidth: 1,
                       );
                     },
@@ -562,7 +562,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       ),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                       ),
                     ),
                   ],
@@ -655,13 +655,13 @@ class _ProgressScreenState extends State<ProgressScreen> {
         Row(
           children: [
             Icon(Icons.bar_chart,
-                color: AppColors.primary.withOpacity(0.7), size: 16),
+                color: AppColors.primary.withValues(alpha: 0.7), size: 16),
             const SizedBox(width: 6),
             Text(
               AppL10n.of(context).workoutFrequencyLabel,
               style: TextStyle(
                 fontSize: 13,
-                color: AppColors.textSecondary.withOpacity(0.8),
+                color: AppColors.textSecondary.withValues(alpha: 0.8),
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -672,7 +672,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   : AppL10n.of(context).noData,
               style: TextStyle(
                 fontSize: 12,
-                color: AppColors.primary.withOpacity(0.8),
+                color: AppColors.primary.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -692,7 +692,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       drawVerticalLine: false,
                       horizontalInterval: 1,
                       getDrawingHorizontalLine: (value) => FlLine(
-                        color: AppColors.textSecondary.withOpacity(0.08),
+                        color: AppColors.textSecondary.withValues(alpha: 0.08),
                         strokeWidth: 1,
                       ),
                     ),
@@ -736,14 +736,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
                             toY: count.toDouble(),
                             color: count > 0
                                 ? AppColors.primary
-                                : AppColors.primary.withOpacity(0.15),
+                                : AppColors.primary.withValues(alpha: 0.15),
                             width: groupByDay ? 20 : 14,
                             borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(4)),
                             backDrawRodData: BackgroundBarChartRodData(
                               show: true,
                               toY: maxY + 1,
-                              color: AppColors.textSecondary.withOpacity(0.05),
+                              color: AppColors.textSecondary.withValues(alpha: 0.05),
                             ),
                           ),
                         ],
@@ -757,13 +757,13 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     children: [
                       Icon(Icons.fitness_center,
                           size: 48,
-                          color: AppColors.textSecondary.withOpacity(0.25)),
+                          color: AppColors.textSecondary.withValues(alpha: 0.25)),
                       const SizedBox(height: 10),
                       Text(
                         AppL10n.of(context).completeWorkoutForStats,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: AppColors.textSecondary.withOpacity(0.5),
+                          color: AppColors.textSecondary.withValues(alpha: 0.5),
                           fontSize: 13,
                         ),
                       ),

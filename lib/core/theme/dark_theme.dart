@@ -53,7 +53,7 @@ final darkTheme = ThemeData(
       fontWeight: FontWeight.bold,
     ),
   ),
-  cardTheme: const CardTheme(
+  cardTheme: const CardThemeData(
     color: AppColors.cardBackground,
     elevation: 0,
     shape: RoundedRectangleBorder(
@@ -70,11 +70,13 @@ final darkTheme = ThemeData(
     fillColor: const Color(0xFF252525),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: Colors.white.withOpacity(0.25), width: 1.5),
+      borderSide:
+          BorderSide(color: Colors.white.withValues(alpha: 0.25), width: 1.5),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: Colors.white.withOpacity(0.25), width: 1.5),
+      borderSide:
+          BorderSide(color: Colors.white.withValues(alpha: 0.25), width: 1.5),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
@@ -86,10 +88,11 @@ final darkTheme = ThemeData(
     ),
     disabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+      borderSide:
+          BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1),
     ),
-    hintStyle: TextStyle(color: Colors.white.withOpacity(0.25)),
-    labelStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+    hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.25)),
+    labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
     floatingLabelStyle: const TextStyle(
       color: AppColors.primary,
       fontWeight: FontWeight.w600,

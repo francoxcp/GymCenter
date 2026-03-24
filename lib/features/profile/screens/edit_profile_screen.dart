@@ -258,10 +258,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.08),
+                    color: AppColors.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                        color: AppColors.primary.withOpacity(0.25), width: 1),
+                        color: AppColors.primary.withValues(alpha: 0.25), width: 1),
                   ),
                   child: Row(
                     children: [
@@ -343,7 +343,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? (level['color'] as Color).withOpacity(0.2)
+                    ? (level['color'] as Color).withValues(alpha: 0.2)
                     : AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(

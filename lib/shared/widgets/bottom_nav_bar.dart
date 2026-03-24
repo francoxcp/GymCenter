@@ -33,7 +33,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),
@@ -113,7 +113,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: AppColors.primary.withOpacity(0.5),
+                              color: AppColors.primary.withValues(alpha: 0.5),
                               blurRadius: 6,
                             )
                           ]

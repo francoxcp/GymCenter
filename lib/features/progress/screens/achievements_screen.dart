@@ -64,7 +64,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.amber.withOpacity(0.3),
+            Colors.amber.withValues(alpha: 0.3),
             AppColors.cardBackground,
           ],
           begin: Alignment.topLeft,
@@ -173,7 +173,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
         border: unlocked
-            ? Border.all(color: Colors.amber.withOpacity(0.5), width: 1)
+            ? Border.all(color: Colors.amber.withValues(alpha: 0.5), width: 1)
             : null,
       ),
       child: Row(
@@ -184,7 +184,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
             height: 56,
             decoration: BoxDecoration(
               color: unlocked
-                  ? Colors.amber.withOpacity(0.2)
+                  ? Colors.amber.withValues(alpha: 0.2)
                   : AppColors.background,
               borderRadius: BorderRadius.circular(16),
             ),
@@ -226,7 +226,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                     _formatDate(userAchievement.unlockedAt, l10n),
                     style: TextStyle(
                       fontSize: 11,
-                      color: Colors.amber.withOpacity(0.8),
+                      color: Colors.amber.withValues(alpha: 0.8),
                     ),
                   ),
                 ],

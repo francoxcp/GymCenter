@@ -197,7 +197,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        value: _selectedLevel,
+                        initialValue: _selectedLevel,
                         decoration: InputDecoration(
                           labelText: l10n.levelLabel,
                           border: const OutlineInputBorder(),
@@ -449,7 +449,7 @@ class _ExerciseCard extends StatelessWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.2),
+            color: AppColors.primary.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Icon(Icons.fitness_center, color: AppColors.primary),
@@ -733,7 +733,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _muscleGroup,
+                initialValue: _muscleGroup,
                 decoration: InputDecoration(labelText: l10n.muscleGroupLabel),
                 items: [
                   'Pecho',
@@ -797,7 +797,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: AppColors.primary),
                       ),
@@ -849,7 +849,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.success.withOpacity(0.1),
+                    color: AppColors.success.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: AppColors.success),
                   ),

@@ -373,7 +373,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
 
               // Nivel
               DropdownButtonFormField<String>(
-                value: _selectedLevel,
+                initialValue: _selectedLevel,
                 decoration: InputDecoration(
                   labelText: AppL10n.of(context).levelLabel,
                   border: const OutlineInputBorder(),
@@ -403,7 +403,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: _selectedCategory,
+                      initialValue: _selectedCategory,
                       decoration: InputDecoration(
                         labelText: AppL10n.of(context).categoryLabel,
                         border: const OutlineInputBorder(),
@@ -531,7 +531,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                     color: AppColors.cardBackground,
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: AppColors.primary.withOpacity(0.2),
+                        backgroundColor: AppColors.primary.withValues(alpha: 0.2),
                         child: Text(
                           '${index + 1}',
                           style: const TextStyle(
@@ -884,7 +884,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
+                            color: AppColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: AppColors.primary),
                           ),
@@ -937,7 +937,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.1),
+                        color: AppColors.success.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: AppColors.success),
                       ),

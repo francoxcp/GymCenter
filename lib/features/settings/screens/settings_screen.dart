@@ -318,7 +318,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               HapticFeedback.selectionClick();
               onChanged(v);
             },
-            activeColor: AppColors.primary,
+            activeThumbColor: AppColors.primary,
           ),
         ],
       ),

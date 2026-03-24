@@ -112,7 +112,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.primary.withOpacity(0.2),
+            AppColors.primary.withValues(alpha: 0.2),
             AppColors.cardBackground,
           ],
         ),
@@ -164,7 +164,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
+            color: color.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: color, size: 28),
@@ -260,7 +260,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
         border: session.isCompleted
-            ? Border.all(color: AppColors.primary.withOpacity(0.5))
+            ? Border.all(color: AppColors.primary.withValues(alpha: 0.5))
             : null,
       ),
       child: Column(
@@ -271,7 +271,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.2),
+                  color: AppColors.primary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -310,7 +310,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.2),
+                    color: Colors.green.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -404,7 +404,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
             Icon(
               Icons.history,
               size: 100,
-              color: AppColors.textSecondary.withOpacity(0.7),
+              color: AppColors.textSecondary.withValues(alpha: 0.7),
             ),
             const SizedBox(height: 20),
             Text(

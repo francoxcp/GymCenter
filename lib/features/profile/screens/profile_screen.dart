@@ -205,7 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 3),
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? col.withOpacity(0.2) : AppColors.background,
+                color: isSelected ? col.withValues(alpha: 0.2) : AppColors.background,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: isSelected ? col : Colors.transparent,
@@ -239,9 +239,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       decoration: BoxDecoration(
-        color: col.withOpacity(0.15),
+        color: col.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: col.withOpacity(0.5)),
+        border: Border.all(color: col.withValues(alpha: 0.5)),
       ),
       child: Text(
         AppL10n.of(context).levelDisplay(_selectedLevel),
@@ -404,7 +404,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             AppL10n.of(context).trainingLevel,
                             style: TextStyle(
                               fontSize: 10,
-                              color: AppColors.textSecondary.withOpacity(0.8),
+                              color: AppColors.textSecondary.withValues(alpha: 0.8),
                               letterSpacing: 1,
                               fontWeight: FontWeight.w600,
                             ),

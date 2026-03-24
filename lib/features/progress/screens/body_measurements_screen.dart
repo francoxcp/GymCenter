@@ -104,7 +104,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.primary.withOpacity(0.2),
+            AppColors.primary.withValues(alpha: 0.2),
             AppColors.cardBackground,
           ],
         ),
@@ -400,7 +400,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
             Icon(
               Icons.straighten,
               size: 100,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 20),
             Text(

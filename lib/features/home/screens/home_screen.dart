@@ -196,10 +196,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.15),
+                        color: Colors.orange.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                         border:
-                            Border.all(color: Colors.orange.withOpacity(0.5)),
+                            Border.all(color: Colors.orange.withValues(alpha: 0.5)),
                       ),
                       child: Row(
                         children: [
@@ -514,7 +514,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                 color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: AppColors.primary.withOpacity(0.3),
+                  color: AppColors.primary.withValues(alpha: 0.3),
                   width: 1.5,
                 ),
               ),
@@ -525,7 +525,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                     width: 64,
                     height: 64,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.15),
+                      color: AppColors.primary.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -679,7 +679,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                 decoration: BoxDecoration(
                   color: AppColors.cardBackground,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                 ),
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -881,8 +881,8 @@ class _PendingWorkoutBanner extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AppColors.primary.withOpacity(0.9),
-              AppColors.primary.withOpacity(0.7),
+              AppColors.primary.withValues(alpha: 0.9),
+              AppColors.primary.withValues(alpha: 0.7),
             ],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
@@ -890,7 +890,7 @@ class _PendingWorkoutBanner extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primary.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -902,7 +902,7 @@ class _PendingWorkoutBanner extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
@@ -929,7 +929,7 @@ class _PendingWorkoutBanner extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black.withOpacity(0.8),
+                          color: Colors.black.withValues(alpha: 0.8),
                           letterSpacing: 1,
                         ),
                       ),
@@ -960,7 +960,7 @@ class _PendingWorkoutBanner extends StatelessWidget {
                         ' � $timeAgo',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.black.withOpacity(0.7),
+                          color: Colors.black.withValues(alpha: 0.7),
                         ),
                       ),
                     ],

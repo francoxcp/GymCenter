@@ -469,7 +469,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   Future<String?> _showExitWorkoutDialog() async {
     return showDialog<String>(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.75),
+      barrierColor: Colors.black.withValues(alpha: 0.75),
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: EdgeInsets.zero,
@@ -539,7 +539,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               ),
               const SizedBox(height: 12),
               Divider(
-                color: Colors.white.withOpacity(0.12),
+                color: Colors.white.withValues(alpha: 0.12),
                 indent: 48,
                 endIndent: 48,
                 height: 1,
@@ -1101,7 +1101,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.textSecondary.withOpacity(0.4),
+                  color: AppColors.textSecondary.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1126,10 +1126,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: Colors.amber.withOpacity(0.15),
+                          color: Colors.amber.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                           border:
-                              Border.all(color: Colors.amber.withOpacity(0.5)),
+                              Border.all(color: Colors.amber.withValues(alpha: 0.5)),
                         ),
                         child: Row(
                           children: [
@@ -1399,7 +1399,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.2),
+                        color: AppColors.primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: AppColors.primary),
                       ),
@@ -1464,7 +1464,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                               icon: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surface.withOpacity(0.9),
+                                  color: AppColors.surface.withValues(alpha: 0.9),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(Icons.chevron_left,
@@ -1484,7 +1484,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                               icon: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surface.withOpacity(0.9),
+                                  color: AppColors.surface.withValues(alpha: 0.9),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(Icons.chevron_right,
@@ -1538,7 +1538,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.2),
+                    color: AppColors.primary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: AppColors.primary),
                   ),
@@ -1584,7 +1584,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.2),
+              color: AppColors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppColors.primary),
             ),
@@ -1716,7 +1716,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.primary, width: 2),
               ),
@@ -1820,7 +1820,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: isCompleted
-                          ? AppColors.primary.withOpacity(0.2)
+                          ? AppColors.primary.withValues(alpha: 0.2)
                           : AppColors.surface,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
@@ -1831,7 +1831,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                       boxShadow: isCompleted
                           ? [
                               BoxShadow(
-                                color: AppColors.primary.withOpacity(0.3),
+                                color: AppColors.primary.withValues(alpha: 0.3),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
@@ -2049,9 +2049,9 @@ class _WeightChip extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: isNewPR
-                  ? Colors.amber.withOpacity(0.18)
+                  ? Colors.amber.withValues(alpha: 0.18)
                   : hasWeight
-                      ? AppColors.primary.withOpacity(0.15)
+                      ? AppColors.primary.withValues(alpha: 0.15)
                       : AppColors.surface,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
@@ -2059,7 +2059,7 @@ class _WeightChip extends StatelessWidget {
                     ? Colors.amber
                     : hasWeight
                         ? AppColors.primary
-                        : AppColors.textSecondary.withOpacity(0.4),
+                        : AppColors.textSecondary.withValues(alpha: 0.4),
               ),
             ),
             child: Row(

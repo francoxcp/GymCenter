@@ -15,23 +15,20 @@
 
     <!--
       Certificate pinning para el dominio de Supabase.
-      Los pins corresponden a los CA intermedios de Let's Encrypt (ISRG Root X1)
-      y Amazon Root CA (usados por Supabase).
-      Expiration: se establece a 1 año; renovar antes de la fecha.
+      Pins calculados: Sun, 25 Mar 2026
+      - supabase.co leaf certificate (CN=supabase.co, WE1 intermediate)
+      - WE1 intermediate (Google Trust Services)
       Si los pins fallan, la conexión será rechazada (MITM protection).
-
-      IMPORTANTE: Reemplazar "your-project.supabase.co" con tu dominio real
-      y verificar los hashes SHA-256 de los certificados de tu proyecto.
-      Para obtener los pins ejecutar:
-        openssl s_client -connect your-project.supabase.co:443 -servername your-project.supabase.co < /dev/null 2>/dev/null | openssl x509 -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64
+      Expiration: 25 de Marzo de 2028 (2 años).
+      Para renovar, ejecutar: scripts/get_cert_pins.ps1
     -->
-    <!--
     <domain-config>
         <domain includeSubdomains="true">supabase.co</domain>
-        <pin-set expiration="2026-01-01">
-            <pin digest="SHA-256">REPLACE_WITH_YOUR_PIN_HASH_1</pin>
-            <pin digest="SHA-256">REPLACE_WITH_YOUR_PIN_HASH_2</pin>
+        <pin-set expiration="2028-03-25">
+            <!-- Leaf certificate (supabase.co) -->
+            <pin digest="SHA-256">M4FlSvpxk5vEw3n70qj3t4y7QuYUHuzwkh9Earv1FNQ=</pin>
+            <!-- Intermediate (WE1, Google Trust Services) -->
+            <pin digest="SHA-256">H7AMYAvicN2+UcFPBz3kJXCDmGrTItZh4ujUBK8hoWg=</pin>
         </pin-set>
     </domain-config>
-    -->
 </network-security-config>

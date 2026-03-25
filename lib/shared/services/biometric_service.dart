@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 /// Servicio de autenticación biométrica (huella/Face ID).
 ///
-/// Guarda la preferencia del usuario en SharedPreferences y envuelve
-/// las llamadas a `local_auth` con manejo seguro de errores.
+/// Guarda la preferencia del usuario en almacenamiento cifrado
+/// (flutter_secure_storage) y envuelve las llamadas a `local_auth`
+/// con manejo seguro de errores.
 class BiometricService {
   BiometricService._();
   static final BiometricService _instance = BiometricService._();
@@ -14,6 +15,7 @@ class BiometricService {
 
   static const _kBiometricEnabled = 'biometric_lock_enabled';
   final LocalAuthentication _auth = LocalAuthentication();
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   /// Comprueba si el dispositivo soporta autenticación biométrica.
   Future<bool> isAvailable() async {
@@ -38,14 +40,20 @@ class BiometricService {
 
   /// Indica si el usuario habilitó el bloqueo biométrico.
   Future<bool> isEnabled() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_kBiometricEnabled) ?? false;
+    try {
+      final value = await _secureStorage.read(key: _kBiometricEnabled);
+      return value == 'true';
+    } catch (_) {
+      return false;
+    }
   }
 
   /// Habilita o deshabilita el bloqueo biométrico.
   Future<void> setEnabled(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kBiometricEnabled, value);
+    await _secureStorage.write(
+      key: _kBiometricEnabled,
+      value: value.toString(),
+    );
   }
 
   /// Solicita autenticación biométrica al usuario.

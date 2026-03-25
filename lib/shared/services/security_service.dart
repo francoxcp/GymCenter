@@ -266,6 +266,13 @@ class SecurityService {
       };
     }
 
+    if (!password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>\-_+=\[\]\\\/~`]'))) {
+      return {
+        'isValid': false,
+        'message': 'password_needs_special',
+      };
+    }
+
     return {
       'isValid': true,
       'message': 'password_valid',

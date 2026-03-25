@@ -202,7 +202,8 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
     final sortedDates = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
 
     for (var dateKey in sortedDates) {
-      final date = DateTime.parse(dateKey);
+      final date = DateTime.tryParse(dateKey);
+      if (date == null) continue;
       final sessions = grouped[dateKey]!;
 
       widgets.add(_buildDateHeader(date));

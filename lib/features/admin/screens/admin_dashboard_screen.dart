@@ -58,7 +58,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       // Calcular sesiones por d�a
       final dailyCounts = List<int>.filled(7, 0);
       for (var session in sessions) {
-        final completedAt = DateTime.parse(session['completed_at']);
+        final completedAt = DateTime.tryParse(session['completed_at'] ?? '');
+        if (completedAt == null) continue;
         final daysDiff = now.difference(completedAt).inDays;
         if (daysDiff >= 0 && daysDiff < 7) {
           dailyCounts[6 -
@@ -172,7 +173,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     decoration: BoxDecoration(
                       color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                      border:
+                          Border.all(color: Colors.red.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [

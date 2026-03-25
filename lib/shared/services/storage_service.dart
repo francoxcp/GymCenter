@@ -173,6 +173,12 @@ class StorageService {
       if (!_allowedVideoExtensions.contains(extension.toLowerCase())) {
         throw Exception('Video format not allowed: $extension');
       }
+
+      // Validar contenido real del archivo (magic bytes)
+      if (!_isValidVideoContent(videoData)) {
+        throw Exception('File content does not match a valid video format');
+      }
+
       final fileName = 'exercise_$exerciseId${'_'}$timestamp$extension';
 
       // Subir video a Supabase Storage
@@ -221,6 +227,44 @@ class StorageService {
   }
 
   /// Guarda metadata del video en la base de datos
+
+  /// Valida que los bytes del archivo correspondan a un formato de video real.
+  /// Comprueba magic bytes de MP4/MOV, WebM y AVI.
+  bool _isValidVideoContent(Uint8List data) {
+    if (data.length < 12) return false;
+
+    // MP4/MOV: byte 4-7 = "ftyp"
+    if (data[4] == 0x66 &&
+        data[5] == 0x74 &&
+        data[6] == 0x79 &&
+        data[7] == 0x70) {
+      return true;
+    }
+
+    // WebM/MKV: starts with 0x1A 0x45 0xDF 0xA3
+    if (data[0] == 0x1A &&
+        data[1] == 0x45 &&
+        data[2] == 0xDF &&
+        data[3] == 0xA3) {
+      return true;
+    }
+
+    // AVI: starts with "RIFF" and contains "AVI "
+    if (data[0] == 0x52 &&
+        data[1] == 0x49 &&
+        data[2] == 0x46 &&
+        data[3] == 0x46 &&
+        data.length > 11 &&
+        data[8] == 0x41 &&
+        data[9] == 0x56 &&
+        data[10] == 0x49 &&
+        data[11] == 0x20) {
+      return true;
+    }
+
+    return false;
+  }
+
   Future<void> _saveVideoMetadata({
     required String exerciseId,
     required String trainerId,

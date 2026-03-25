@@ -15,11 +15,13 @@ class AuthProvider extends ChangeNotifier {
   bool _isInitializing = true;
   StreamSubscription<AuthState>? _authSubscription;
 
-  // Rate limiting local para login
+  // Rate limiting local para login (backoff exponencial)
   int _loginAttempts = 0;
   DateTime? _lockoutUntil;
   static const int _maxAttempts = 5;
-  static const Duration _lockoutDuration = Duration(seconds: 30);
+  // Lockout base: cada bloqueo duplica la duración (30s, 60s, 120s…)
+  int _loginLockoutMultiplier = 1;
+  static const Duration _lockoutBase = Duration(seconds: 30);
 
   // Rate limiting para register y forgot password
   int _registerAttempts = 0;
@@ -117,6 +119,7 @@ class AuthProvider extends ChangeNotifier {
       if (response.user != null) {
         _loginAttempts = 0;
         _lockoutUntil = null;
+        _loginLockoutMultiplier = 1;
         await _loadCurrentUser(response.user!.id);
         _isLoading = false;
         notifyListeners();
@@ -125,7 +128,10 @@ class AuthProvider extends ChangeNotifier {
 
       _loginAttempts++;
       if (_loginAttempts >= _maxAttempts) {
-        _lockoutUntil = DateTime.now().add(_lockoutDuration);
+        _lockoutUntil =
+            DateTime.now().add(_lockoutBase * _loginLockoutMultiplier);
+        _loginLockoutMultiplier =
+            (_loginLockoutMultiplier * 2).clamp(1, 32); // max ~16 min
         _loginAttempts = 0;
       }
       _isLoading = false;
@@ -134,7 +140,10 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       _loginAttempts++;
       if (_loginAttempts >= _maxAttempts) {
-        _lockoutUntil = DateTime.now().add(_lockoutDuration);
+        _lockoutUntil =
+            DateTime.now().add(_lockoutBase * _loginLockoutMultiplier);
+        _loginLockoutMultiplier =
+            (_loginLockoutMultiplier * 2).clamp(1, 32); // max ~16 min
         _loginAttempts = 0;
       }
       _isLoading = false;
@@ -179,7 +188,7 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       _registerAttempts++;
       if (_registerAttempts >= _maxAttempts) {
-        _registerLockoutUntil = DateTime.now().add(_lockoutDuration);
+        _registerLockoutUntil = DateTime.now().add(_lockoutBase);
         _registerAttempts = 0;
       }
       _isLoading = false;
@@ -208,7 +217,7 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       _forgotPwdAttempts++;
       if (_forgotPwdAttempts >= _maxAttempts) {
-        _forgotPwdLockoutUntil = DateTime.now().add(_lockoutDuration);
+        _forgotPwdLockoutUntil = DateTime.now().add(_lockoutBase);
         _forgotPwdAttempts = 0;
       }
       _isLoading = false;

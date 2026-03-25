@@ -1321,6 +1321,10 @@ class AppL10n {
         return isEn
             ? 'Password must contain at least one number'
             : 'La contraseña debe contener al menos un número';
+      case 'password_needs_special':
+        return isEn
+            ? 'Password must contain at least one special character (!@#\$%...)'
+            : 'La contraseña debe contener al menos un carácter especial (!@#\$%...)';
       case 'password_valid':
         return isEn ? 'Valid password' : 'Contraseña válida';
       case 'password_verified':

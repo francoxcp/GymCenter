@@ -373,12 +373,15 @@ class NotificationService {
 
         if (lastSession != null) {
           final lastDate =
-              DateTime.parse(lastSession['completed_at'] as String).toLocal();
-          final daysSince = DateTime.now().difference(lastDate).inDays;
-          if (daysSince >= 2) {
-            title = '¿Todo bien? 💪';
-            body =
-                'Llevas $daysSince días sin entrenar. ¡Hoy es un buen día para retomar!';
+              DateTime.tryParse(lastSession['completed_at'] as String? ?? '')
+                  ?.toLocal();
+          if (lastDate != null) {
+            final daysSince = DateTime.now().difference(lastDate).inDays;
+            if (daysSince >= 2) {
+              title = '¿Todo bien? 💪';
+              body =
+                  'Llevas $daysSince días sin entrenar. ¡Hoy es un buen día para retomar!';
+            }
           }
         } else {
           title = '¡Empieza hoy! 💪';

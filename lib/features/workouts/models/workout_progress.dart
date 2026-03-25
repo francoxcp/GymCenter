@@ -22,10 +22,13 @@ class WorkoutProgress {
   factory WorkoutProgress.fromJson(Map<String, dynamic> json) {
     // Parsear completed_sets de JSONB a List<List<bool>>
     List<List<bool>> sets = [];
-    if (json['completed_sets'] != null) {
+    if (json['completed_sets'] is List) {
       final setsJson = json['completed_sets'] as List;
       sets = setsJson.map((exerciseSets) {
-        return (exerciseSets as List).map((set) => set as bool).toList();
+        if (exerciseSets is List) {
+          return exerciseSets.map((set) => set == true).toList();
+        }
+        return <bool>[];
       }).toList();
     }
 

@@ -57,8 +57,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   double _summaryTotalVolume = 0;
 
   // -- Historial de peso por ejercicio ---------------------------------------
-  // [exerciseIndex][setIndex] ? peso en kg (null = no ingresado)
+  // [exerciseIndex][setIndex] → peso en kg (null = no ingresado)
   Map<int, Map<int, double?>> _setWeights = {};
+  // Pesos de la última sesión cargados desde DB (no se modifican durante la sesión)
+  Map<int, Map<int, double?>> _lastSessionWeights = {};
   bool _hasLoadedWeights = false;
 
   // PR hist�rico por ejercicio (max weight ever logged)
@@ -837,8 +839,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         }
       }
       if (mounted) {
+        // Copia profunda para conservar los valores de la última sesión sin mutarlos
+        final lastSession = <int, Map<int, double?>>{};
+        for (final e in weights.entries) {
+          lastSession[e.key] = Map<int, double?>.from(e.value);
+        }
         setState(() {
           _setWeights = weights;
+          _lastSessionWeights = lastSession;
           _exercisePRs = prs;
         });
       }
@@ -901,13 +909,13 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   }
 
   void _showWeightDialog(int exerciseIndex, int setIndex, Exercise exercise) {
+    final lastSessionWeight = _lastSessionWeights[exerciseIndex]?[setIndex];
     final currentWeight = _setWeights[exerciseIndex]?[setIndex];
     final pr = _exercisePRs[exerciseIndex];
     final adminWeight = exercise.weight > 0 ? exercise.weight : null;
 
-    // Sugerencia: peso actual de sesi�n > PR hist�rico > sugerencia admin
-    // La sugerencia est� en kg ? convertir a lbs para mostrar en el campo
-    final suggestion = currentWeight ?? pr ?? adminWeight;
+    // Pre-rellenar con peso de esta sesión > última sesión > vacío
+    final suggestion = currentWeight ?? lastSessionWeight;
     final suggestionLbs = suggestion != null ? _toLbs(suggestion) : null;
     final controller = TextEditingController(
       text: suggestionLbs != null
@@ -931,7 +939,34 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Info: última sesión
+            if (lastSessionWeight != null)
+              _WeightInfoRow(
+                label: AppL10n.of(context).lastSessionWeight,
+                value: _fmtWeight(lastSessionWeight),
+                color: AppColors.primary,
+                icon: Icons.history,
+              ),
+            // Info: récord personal (solo si difiere del último peso)
+            if (pr != null && pr != lastSessionWeight)
+              _WeightInfoRow(
+                label: AppL10n.of(context).personalRecord,
+                value: _fmtWeight(pr),
+                color: Colors.amber,
+                icon: Icons.emoji_events,
+              ),
+            // Info: sugerencia del coach (solo si no hay historial)
+            if (adminWeight != null && lastSessionWeight == null && pr == null)
+              _WeightInfoRow(
+                label: AppL10n.of(context).coachSuggestion,
+                value: _fmtWeight(adminWeight),
+                color: AppColors.textSecondary,
+                icon: Icons.fitness_center,
+              ),
+            if (lastSessionWeight != null || pr != null || adminWeight != null)
+              const SizedBox(height: 12),
             TextField(
               controller: controller,
               keyboardType:
@@ -943,19 +978,24 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: '0',
-                hintStyle: TextStyle(color: AppColors.textSecondary),
+                hintStyle: const TextStyle(color: AppColors.textSecondary),
                 suffixText: 'lbs',
-                suffixStyle: TextStyle(
+                suffixStyle: const TextStyle(
                   color: AppColors.primary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
-                enabledBorder: UnderlineInputBorder(
+                helperText: AppL10n.of(context).enterWeightHint,
+                helperStyle: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 11,
+                ),
+                enabledBorder: const UnderlineInputBorder(
                   borderSide: BorderSide(color: AppColors.primary),
                 ),
-                focusedBorder: UnderlineInputBorder(
+                focusedBorder: const UnderlineInputBorder(
                   borderSide: BorderSide(color: AppColors.primary, width: 2),
                 ),
               ),
@@ -2007,6 +2047,51 @@ class _HistoryButton extends StatelessWidget {
   }
 }
 
+/// Fila de información de peso (última sesión, PR, sugerencia)
+class _WeightInfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  final IconData icon;
+
+  const _WeightInfoRow({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            '$label:',
+            style: TextStyle(
+              fontSize: 12,
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 12,
+              color: color,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _WeightChip extends StatelessWidget {
   final double? weight;
   final int reps;
@@ -2029,7 +2114,7 @@ class _WeightChip extends StatelessWidget {
         ? (lbs == lbs.roundToDouble()
             ? '${lbs.toInt()} lbs'
             : '${lbs.toStringAsFixed(1)} lbs')
-        : '+ lbs';
+        : '+ peso';
 
     return Row(
       mainAxisSize: MainAxisSize.min,

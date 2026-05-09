@@ -1453,4 +1453,12 @@ class AppL10n {
 
   // ── Misc ──────────────────────────────────────────────────────────────
   String get watchVideo => isEn ? 'Watch video' : 'Ver video';
+
+  // ── Weight log dialog ─────────────────────────────────────────────────
+  String get lastSessionWeight =>
+      isEn ? 'Last session' : 'Última sesión';
+  String get personalRecord => isEn ? 'Personal record' : 'Récord personal';
+  String get coachSuggestion => isEn ? 'Coach suggestion' : 'Sugerencia del coach';
+  String get addWeight => isEn ? 'Add weight' : 'Agregar peso';
+  String get enterWeightHint => isEn ? 'Enter weight in lbs' : 'Escribe el peso en lbs';
 }

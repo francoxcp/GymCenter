@@ -87,11 +87,11 @@ void main() {
     });
 
     test('AppColors should use correct color values', () {
-      expect(AppColors.primary.value, 0xFFFFEB00); // Yellow Chamos
-      expect(AppColors.background.value, 0xFF0A0A0A); // Black
-      expect(AppColors.surface.value, 0xFF1A1A1A); // Dark gray
-      expect(AppColors.cardBackground.value, 0xFF1E1E1E); // Lighter dark gray
-      expect(AppColors.textPrimary.value, 0xFFFFFFFF); // White
+      expect(AppColors.primary.toARGB32(), 0xFFFFEB00); // Yellow Chamos
+      expect(AppColors.background.toARGB32(), 0xFF0A0A0A); // Black
+      expect(AppColors.surface.toARGB32(), 0xFF1A1A1A); // Dark gray
+      expect(AppColors.cardBackground.toARGB32(), 0xFF1E1E1E); // Lighter dark gray
+      expect(AppColors.textPrimary.toARGB32(), 0xFFFFFFFF); // White
     });
   });
 }

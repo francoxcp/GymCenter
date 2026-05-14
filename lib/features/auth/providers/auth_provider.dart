@@ -37,11 +37,15 @@ class AuthProvider extends ChangeNotifier {
   int _forgotPwdAttempts = 0;
   DateTime? _forgotPwdLockoutUntil;
 
+  // true cuando el usuario llegó desde un enlace de recuperación de contraseña
+  bool _isPasswordRecovery = false;
+
   bool get isAuthenticated => _isAuthenticated;
   User? get currentUser => _currentUser;
   bool get isAdmin => _currentUser?.role == 'admin';
   bool get isLoading => _isLoading;
   bool get isInitializing => _isInitializing;
+  bool get isPasswordRecovery => _isPasswordRecovery;
   String get initialRoute =>
       isAdmin ? AppConstants.adminRoute : AppConstants.homeRoute;
 
@@ -95,9 +99,16 @@ class AuthProvider extends ChangeNotifier {
     // Escuchar cambios de autenticación
     _authSubscription = SupabaseConfig.auth.onAuthStateChange.listen((data) {
       final session = data.session;
-      if (session != null) {
+      if (data.event == AuthChangeEvent.passwordRecovery && session != null) {
+        // El usuario llegó desde el enlace de reset password en su correo.
+        // Supabase establece una sesión temporal de recuperación — marcar el
+        // flag para que el router redirija a /change-password en lugar de home.
+        _isPasswordRecovery = true;
+        _loadCurrentUser(session.user.id);
+      } else if (session != null) {
         _loadCurrentUser(session.user.id);
       } else if (data.event == AuthChangeEvent.signedOut) {
+        _isPasswordRecovery = false;
         _clearSessionData();
       }
     });
@@ -117,6 +128,13 @@ class AuthProvider extends ChangeNotifier {
   void dispose() {
     _authSubscription?.cancel();
     super.dispose();
+  }
+
+  /// Limpia el flag de recuperación de contraseña una vez que el usuario
+  /// completó el cambio de contraseña desde el enlace de email.
+  void clearPasswordRecovery() {
+    _isPasswordRecovery = false;
+    notifyListeners();
   }
 
   Future<void> _loadCurrentUser(String userId) async {

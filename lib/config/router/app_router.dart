@@ -75,6 +75,11 @@ GoRouter createAppRouter(AuthProvider authProvider) {
 
       if (!isAuth && !publicRoutes.contains(path)) return '/login';
       if (isAuth && path == '/login') return authProvider.initialRoute;
+      // Password recovery: redirigir a change-password hasta que el usuario
+      // complete el cambio de contraseña o cierre sesión
+      if (isAuth && authProvider.isPasswordRecovery && path != '/change-password') {
+        return '/change-password';
+      }
       // Admin siempre va al panel de administración
       if (isAuth && authProvider.isAdmin && path == '/home') return '/admin';
       // Bloquear acceso a rutas admin para usuarios no-admin
@@ -102,6 +107,13 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
+      ),
+      // Fuera del ShellRoute: sin bottom nav, pantalla completa.
+      // Se usa tanto desde Configuración como desde el flujo de
+      // recuperación de contraseña vía deep link de email.
+      GoRoute(
+        path: '/change-password',
+        builder: (context, state) => const ChangePasswordScreen(),
       ),
 
       ShellRoute(
@@ -216,10 +228,6 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           GoRoute(
             path: '/settings',
             builder: (context, state) => const SettingsScreen(),
-          ),
-          GoRoute(
-            path: '/change-password',
-            builder: (context, state) => const ChangePasswordScreen(),
           ),
           GoRoute(
             path: '/privacy-settings',

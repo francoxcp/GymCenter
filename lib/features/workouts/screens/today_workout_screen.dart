@@ -574,6 +574,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     if (!mounted) return;
     if (choice == 'save_later') {
       await _saveProgressToDatabase();
+      await _savePartialWeights(); // guardar pesos ingresados hasta ahora
       if (mounted) context.go('/workouts');
     } else if (choice == 'terminate') {
       final confirmed = await showDialog<bool>(
@@ -608,11 +609,28 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         ),
       );
       if (confirmed == true && mounted) {
+        await _savePartialWeights(); // guardar pesos ingresados antes de abandonar
         await context.read<WorkoutProgressProvider>().deleteProgress();
         if (mounted) context.go('/workouts');
       }
     }
-    // 'stay' o null ? no hace nada
+    // 'stay' o null → no hace nada
+  }
+
+  /// Guarda los pesos ingresados en esta sesión en exercise_set_logs,
+  /// independientemente de si la rutina se completó o se abandonó.
+  Future<void> _savePartialWeights() async {
+    if (_setWeights.isEmpty) return;
+    if (!mounted) return;
+    final authProvider = context.read<AuthProvider>();
+    final userId = authProvider.currentUser?.id;
+    final effectiveId =
+        widget.extraWorkoutId ?? authProvider.currentUser?.assignedWorkoutId;
+    if (userId == null || effectiveId == null) return;
+    final workout = context.read<WorkoutProvider>().getWorkoutById(effectiveId);
+    if (workout == null) return;
+    await _saveSetWeights(
+        workoutId: effectiveId, userId: userId, workout: workout);
   }
 
   Future<void> _saveProgressToDatabase() async {
@@ -909,173 +927,228 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   }
 
   void _showWeightDialog(int exerciseIndex, int setIndex, Exercise exercise) {
+    // Peso de la sesión anterior para ESTA serie específica (puede diferir
+    // de otras series del mismo ejercicio)
     final lastSessionWeight = _lastSessionWeights[exerciseIndex]?[setIndex];
     final currentWeight = _setWeights[exerciseIndex]?[setIndex];
     final pr = _exercisePRs[exerciseIndex];
     final adminWeight = exercise.weight > 0 ? exercise.weight : null;
 
-    // Pre-rellenar con peso de esta sesión > última sesión > vacío
+    // Pre-rellenar: peso ya ingresado en esta sesión > último de esta serie > vacío
     final suggestion = currentWeight ?? lastSessionWeight;
     final suggestionLbs = suggestion != null ? _toLbs(suggestion) : null;
-    final controller = TextEditingController(
-      text: suggestionLbs != null
-          ? (suggestionLbs == suggestionLbs.roundToDouble()
-              ? suggestionLbs.toInt().toString()
-              : suggestionLbs.toStringAsFixed(1))
-          : '',
-    );
+    final suggestionText = suggestionLbs != null
+        ? (suggestionLbs == suggestionLbs.roundToDouble()
+            ? suggestionLbs.toInt().toString()
+            : suggestionLbs.toStringAsFixed(1))
+        : '';
 
-    showDialog(
+    final controller = TextEditingController(text: suggestionText);
+
+    void saveWeight(String rawText, void Function() closeSheet) {
+      final inputLbs = double.tryParse(rawText.replaceAll(',', '.'));
+      if (rawText.trim().isNotEmpty && inputLbs == null) {
+        AppSnackbar.error(context, AppL10n.of(context).enterValidNumber);
+        return;
+      }
+      if (inputLbs != null && inputLbs <= 0) {
+        AppSnackbar.error(context, AppL10n.of(context).weightMustBePositive);
+        return;
+      }
+      final weight = inputLbs != null ? _toKg(inputLbs) : null;
+      final isNewPR = weight != null && (pr == null || weight > pr);
+      setState(() {
+        _setWeights[exerciseIndex] ??= {};
+        _setWeights[exerciseIndex]![setIndex] = weight;
+        if (isNewPR) {
+          _exercisePRs[exerciseIndex] = weight;
+          _newPRsThisSession.add(exerciseIndex);
+        }
+      });
+      closeSheet();
+      if (isNewPR) {
+        HapticFeedback.heavyImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Text('🏆', style: TextStyle(fontSize: 18)),
+                const SizedBox(width: 10),
+                Text(
+                  AppL10n.of(context).newPersonalRecord(_fmtWeight(weight)),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.amber,
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    }
+
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          AppL10n.of(context).weightSetTitle(setIndex + 1),
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+      isScrollControlled: true, // se redimensiona al subir el teclado
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Padding(
+          // sube el sheet cuando el teclado aparece
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
           ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Info: última sesión
-            if (lastSessionWeight != null)
-              _WeightInfoRow(
-                label: AppL10n.of(context).lastSessionWeight,
-                value: _fmtWeight(lastSessionWeight),
-                color: AppColors.primary,
-                icon: Icons.history,
-              ),
-            // Info: récord personal (solo si difiere del último peso)
-            if (pr != null && pr != lastSessionWeight)
-              _WeightInfoRow(
-                label: AppL10n.of(context).personalRecord,
-                value: _fmtWeight(pr),
-                color: Colors.amber,
-                icon: Icons.emoji_events,
-              ),
-            // Info: sugerencia del coach (solo si no hay historial)
-            if (adminWeight != null && lastSessionWeight == null && pr == null)
-              _WeightInfoRow(
-                label: AppL10n.of(context).coachSuggestion,
-                value: _fmtWeight(adminWeight),
-                color: AppColors.textSecondary,
-                icon: Icons.fitness_center,
-              ),
-            if (lastSessionWeight != null || pr != null || adminWeight != null)
-              const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              autofocus: true,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
-              decoration: InputDecoration(
-                hintText: '0',
-                hintStyle: const TextStyle(color: AppColors.textSecondary),
-                suffixText: 'lbs',
-                suffixStyle: const TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-                helperText: AppL10n.of(context).enterWeightHint,
-                helperStyle: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 11,
-                ),
-                enabledBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.primary),
-                ),
-                focusedBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.primary, width: 2),
-                ),
-              ),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              AppL10n.of(context).cancel,
-              style: const TextStyle(color: AppColors.textSecondary),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final inputLbs =
-                  double.tryParse(controller.text.replaceAll(',', '.'));
-              if (controller.text.trim().isNotEmpty && inputLbs == null) {
-                AppSnackbar.error(
-                    context, AppL10n.of(context).enterValidNumber);
-                return;
-              }
-              if (inputLbs != null && inputLbs <= 0) {
-                AppSnackbar.error(
-                    context, AppL10n.of(context).weightMustBePositive);
-                return;
-              }
-              // Convertir libras ? kg para almacenar internamente
-              final weight = inputLbs != null ? _toKg(inputLbs) : null;
-              final isNewPR = weight != null && (pr == null || weight > pr);
-              setState(() {
-                _setWeights[exerciseIndex] ??= {};
-                _setWeights[exerciseIndex]![setIndex] = weight;
-                if (isNewPR) {
-                  _exercisePRs[exerciseIndex] = weight;
-                  _newPRsThisSession.add(exerciseIndex);
-                }
-              });
-              Navigator.pop(ctx);
-              if (isNewPR) {
-                HapticFeedback.heavyImpact();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Row(
-                      children: [
-                        const Text('??', style: TextStyle(fontSize: 18)),
-                        const SizedBox(width: 10),
-                        Text(
-                          AppL10n.of(context)
-                              .newPersonalRecord(_fmtWeight(weight)),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle
+                const SizedBox(height: 10),
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.textSecondary.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Título: "Serie 2 — Peso usado"
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Row(
+                    children: [
+                      Text(
+                        AppL10n.of(context).weightSetTitle(setIndex + 1),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Spacer(),
+                      // Referencias compactas (última sesión de ESTA serie, PR)
+                      if (lastSessionWeight != null)
+                        _CompactRef(
+                          icon: Icons.history,
+                          value: _fmtWeight(lastSessionWeight),
+                          color: AppColors.primary,
+                        ),
+                      if (pr != null && pr != lastSessionWeight) ...[
+                        const SizedBox(width: 8),
+                        _CompactRef(
+                          icon: Icons.emoji_events,
+                          value: _fmtWeight(pr),
+                          color: Colors.amber,
                         ),
                       ],
-                    ),
-                    backgroundColor: Colors.amber,
-                    duration: const Duration(seconds: 3),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      if (adminWeight != null &&
+                          lastSessionWeight == null &&
+                          pr == null) ...[
+                        const SizedBox(width: 8),
+                        _CompactRef(
+                          icon: Icons.fitness_center,
+                          value: _fmtWeight(adminWeight),
+                          color: AppColors.textSecondary,
+                        ),
+                      ],
+                    ],
                   ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-            ),
-            child: Text(
-              AppL10n.of(context).save,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
+
+                // Campo principal — grande, centrado, texto pre-seleccionado
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: TextField(
+                    controller: controller,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    autofocus: true,
+                    textAlign: TextAlign.center,
+                    onTap: () {
+                      // Seleccionar todo el texto al abrir para facilitar reemplazo
+                      controller.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: controller.text.length,
+                      );
+                    },
+                    onSubmitted: (val) =>
+                        saveWeight(val, () => Navigator.pop(ctx)),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -1,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: '0',
+                      hintStyle: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      suffixText: 'lbs',
+                      suffixStyle: const TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      border: InputBorder.none,
+                      enabledBorder: const UnderlineInputBorder(
+                        borderSide:
+                            BorderSide(color: AppColors.primary, width: 2),
+                      ),
+                      focusedBorder: const UnderlineInputBorder(
+                        borderSide:
+                            BorderSide(color: AppColors.primary, width: 2),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Botón Listo
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          saveWeight(controller.text, () => Navigator.pop(ctx)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        AppL10n.of(context).save,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -1168,8 +1241,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         decoration: BoxDecoration(
                           color: Colors.amber.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
-                          border:
-                              Border.all(color: Colors.amber.withValues(alpha: 0.5)),
+                          border: Border.all(
+                              color: Colors.amber.withValues(alpha: 0.5)),
                         ),
                         child: Row(
                           children: [
@@ -1504,7 +1577,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                               icon: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surface.withValues(alpha: 0.9),
+                                  color:
+                                      AppColors.surface.withValues(alpha: 0.9),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(Icons.chevron_left,
@@ -1524,7 +1598,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                               icon: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surface.withValues(alpha: 0.9),
+                                  color:
+                                      AppColors.surface.withValues(alpha: 0.9),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(Icons.chevron_right,
@@ -2043,6 +2118,38 @@ class _HistoryButton extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Referencia compacta (ícono + valor) para la barra superior del weight sheet.
+class _CompactRef extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final Color color;
+
+  const _CompactRef({
+    required this.icon,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 13, color: color),
+        const SizedBox(width: 3),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 12,
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }

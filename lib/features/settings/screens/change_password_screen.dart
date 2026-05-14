@@ -45,13 +45,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+    final isRecovery =
+        context.watch<AuthProvider>().isPasswordRecovery;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
+        leading: isRecovery
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => context.pop(),
+              ),
         title: Text(AppL10n.of(context).changePasswordTitle),
       ),
       body: SafeArea(
@@ -107,37 +111,38 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
               const SizedBox(height: 32),
 
-              // Contrase�a actual
-              Text(
-                l10n.currentPassword,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              CustomTextField(
-                controller: _currentPasswordController,
-                hintText: l10n.enterCurrentPassword,
-                prefixIcon: Icons.lock_outline,
-                obscureText: _obscureCurrentPassword,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureCurrentPassword
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                    color: AppColors.textSecondary,
+              // Contraseña actual — solo se muestra cuando NO es flujo de recuperación
+              if (!isRecovery) ...[
+                Text(
+                  l10n.currentPassword,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
                   ),
-                  onPressed: () {
-                    setState(() {
-                      _obscureCurrentPassword = !_obscureCurrentPassword;
-                    });
-                  },
                 ),
-              ),
-
-              const SizedBox(height: 24),
+                const SizedBox(height: 8),
+                CustomTextField(
+                  controller: _currentPasswordController,
+                  hintText: l10n.enterCurrentPassword,
+                  prefixIcon: Icons.lock_outline,
+                  obscureText: _obscureCurrentPassword,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureCurrentPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: AppColors.textSecondary,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureCurrentPassword = !_obscureCurrentPassword;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
 
               // Nueva contrase�a
               Text(
@@ -313,15 +318,18 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   }
 
   Future<void> _handleChangePassword() async {
-    // Validar campos vac�os
-    if (_currentPasswordController.text.isEmpty ||
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final isRecovery = authProvider.isPasswordRecovery;
+
+    // Validar campos vacíos (en modo recuperación no se requiere contraseña actual)
+    if (!isRecovery && _currentPasswordController.text.isEmpty ||
         _newPasswordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
       _showError(AppL10n.of(context).fillAllFields);
       return;
     }
 
-    // Validar largo m�nimo
+    // Validar largo mínimo
     if (_newPasswordController.text.length < 8) {
       _showError(AppL10n.of(context).newPasswordMin8);
       return;
@@ -339,8 +347,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       return;
     }
 
-    // Validar que la nueva contrase�a sea diferente
-    if (_currentPasswordController.text == _newPasswordController.text) {
+    // Validar que la nueva contraseña sea diferente (solo en modo normal)
+    if (!isRecovery &&
+        _currentPasswordController.text == _newPasswordController.text) {
       _showError(AppL10n.of(context).newPasswordMustDiffer);
       return;
     }
@@ -348,7 +357,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final currentUser = authProvider.currentUser;
 
       if (currentUser == null || currentUser.email.isEmpty) {
@@ -357,21 +365,26 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         return;
       }
 
-      // Primero verificar la contrase�a actual intentando iniciar sesi�n
       final securityService = SecurityService();
-      final loginResult = await securityService.verifyCurrentPassword(
-        currentUser.email,
-        _currentPasswordController.text,
-      );
 
-      if (!loginResult['success']) {
-        if (!mounted) return;
-        _showError(AppL10n.of(context).currentPasswordIncorrect);
-        setState(() => _isLoading = false);
-        return;
+      // En modo recuperación: Supabase ya creó una sesión temporal con el token
+      // del correo — basta con actualizar la contraseña directamente.
+      // En modo normal: verificar primero la contraseña actual.
+      if (!isRecovery) {
+        final loginResult = await securityService.verifyCurrentPassword(
+          currentUser.email,
+          _currentPasswordController.text,
+        );
+
+        if (!loginResult['success']) {
+          if (!mounted) return;
+          _showError(AppL10n.of(context).currentPasswordIncorrect);
+          setState(() => _isLoading = false);
+          return;
+        }
       }
 
-      // Cambiar la contrase�a
+      // Cambiar la contraseña
       final result = await securityService.updatePassword(
         _newPasswordController.text,
       );
@@ -380,15 +393,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
       if (mounted) {
         if (result['success']) {
-          // Mostrar �xito
           AppSnackbar.success(context, AppL10n.of(context).passwordChanged);
 
-          // Volver a la pantalla anterior despu�s de un breve delay
-          Future.delayed(const Duration(seconds: 1), () {
-            if (mounted) {
-              context.pop();
-            }
-          });
+          if (isRecovery) {
+            // Limpiar el flag — el router redirigirá al home automáticamente
+            authProvider.clearPasswordRecovery();
+          } else {
+            // Volver a la pantalla anterior después de un breve delay
+            Future.delayed(const Duration(seconds: 1), () {
+              if (mounted) context.pop();
+            });
+          }
         } else {
           _showError(AppL10n.of(context).serviceMessage(result['message']));
         }

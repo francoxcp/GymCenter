@@ -534,9 +534,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           TextButton(
             onPressed: () async {
-              authProvider.logout();
               Navigator.pop(context);
-              context.go('/login');
+              await authProvider.logout();
+              if (context.mounted) context.go('/login');
             },
             child: Text(
               l10n.logout,

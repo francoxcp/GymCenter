@@ -88,7 +88,9 @@ class WorkoutProgressProvider with ChangeNotifier {
     required List<List<bool>> completedSets,
     int accumulatedSeconds = 0,
   }) async {
-    // Intento 1: con accumulated_seconds
+    // Una sola llamada — la columna accumulated_seconds debe existir en BD.
+    // Si aún no se ejecutó la migración SQL, correr en Supabase SQL Editor:
+    //   ALTER TABLE workout_progress ADD COLUMN IF NOT EXISTS accumulated_seconds INT DEFAULT 0;
     try {
       final response = await _supabase
           .from('workout_progress')
@@ -99,28 +101,6 @@ class WorkoutProgressProvider with ChangeNotifier {
               'exercise_index': exerciseIndex,
               'completed_sets': completedSets,
               'accumulated_seconds': accumulatedSeconds,
-            },
-            onConflict: 'user_id',
-          )
-          .select()
-          .single();
-      _currentProgress = WorkoutProgress.fromJson(response);
-      notifyListeners();
-      return;
-    } catch (e) {
-      debugPrint('saveProgress (con timer) falló: $e — reintentando sin timer');
-    }
-
-    // Intento 2: sin accumulated_seconds (columna puede no existir aún)
-    try {
-      final response = await _supabase
-          .from('workout_progress')
-          .upsert(
-            {
-              'user_id': userId,
-              'workout_id': workoutId,
-              'exercise_index': exerciseIndex,
-              'completed_sets': completedSets,
             },
             onConflict: 'user_id',
           )

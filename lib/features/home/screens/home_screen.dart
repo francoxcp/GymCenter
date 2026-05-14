@@ -63,25 +63,32 @@ class _HomeScreenState extends State<HomeScreen> {
     final sessionProvider =
         Provider.of<WorkoutSessionProvider>(context, listen: false);
 
+    const _timeout = Duration(seconds: 12);
+
     await Future.wait<void>([
-      authProvider.refreshUser().catchError((e) {
+      authProvider
+          .refreshUser()
+          .timeout(_timeout)
+          .catchError((e) {
         debugPrint('Error refreshing user: $e');
       }),
       workoutProvider
           .loadWorkouts(
-        forceRefresh: true,
-        userId: authProvider.currentUser?.id,
-        isAdmin: authProvider.isAdmin,
-      )
+            forceRefresh: true,
+            userId: authProvider.currentUser?.id,
+            isAdmin: authProvider.isAdmin,
+          )
+          .timeout(_timeout)
           .catchError((e) {
         debugPrint('Error refreshing workouts: $e');
       }),
       if (authProvider.currentUser?.id != null)
         sessionProvider
             .loadSessions(
-          authProvider.currentUser!.id,
-          forceRefresh: true,
-        )
+              authProvider.currentUser!.id,
+              forceRefresh: true,
+            )
+            .timeout(_timeout)
             .catchError((e) {
           debugPrint('Error refreshing sessions: $e');
         }),
@@ -89,7 +96,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Cargar progreso si hay usuario autenticado
     if (authProvider.currentUser != null) {
-      await progressProvider.loadProgress(authProvider.currentUser!.id);
+      await progressProvider
+          .loadProgress(authProvider.currentUser!.id)
+          .timeout(_timeout)
+          .catchError((e) {
+        debugPrint('Error refreshing progress: $e');
+      });
     }
   }
 

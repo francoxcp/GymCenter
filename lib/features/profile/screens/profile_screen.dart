@@ -84,11 +84,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }).eq('id', userId);
 
       await authProvider.refreshUser();
+      if (!mounted) return;
       setState(() => _hasChanges = false);
-
-      if (mounted) {
-        AppSnackbar.success(context, AppL10n.of(context).profileUpdated);
-      }
+      AppSnackbar.success(context, AppL10n.of(context).profileUpdated);
     } catch (e) {
       if (mounted) {
         AppSnackbar.error(
@@ -129,13 +127,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
 
-    if (source == null) return;
+    if (source == null || !mounted) return;
 
-    setState(() => _isUploadingPhoto = true);
-    // ignore: use_build_context_synchronously
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    // ignore: use_build_context_synchronously
     final l10n = AppL10n.of(context);
+    setState(() => _isUploadingPhoto = true);
 
     try {
       final picker = ImagePicker();

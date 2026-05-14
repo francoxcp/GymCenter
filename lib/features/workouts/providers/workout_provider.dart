@@ -34,6 +34,17 @@ class WorkoutProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Limpia todos los datos en memoria. Llamar al cerrar sesión para
+  /// evitar que otro usuario vea datos del usuario anterior.
+  void clearData() {
+    _workouts = [];
+    _lastFetch = null;
+    _currentUserId = null;
+    _isAdmin = false;
+    _errorMessage = null;
+    notifyListeners();
+  }
+
   // No cargar automáticamente en el constructor
   // El componente que use este provider debe llamar loadWorkouts() con los parámetros correctos
 

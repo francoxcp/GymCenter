@@ -75,5 +75,10 @@ class DataExportService {
         subject: 'Mis datos - Chamos Fitness',
       );
     }
+
+    // Eliminar el archivo temporal — contiene todos los datos del usuario
+    try {
+      await file.delete();
+    } catch (_) {}
   }
 }

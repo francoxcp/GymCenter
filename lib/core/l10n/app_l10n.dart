@@ -12,7 +12,7 @@ class AppL10n {
 
   static AppL10n of(BuildContext context) {
     final lang =
-        Provider.of<PreferencesProvider>(context).preferences?.language ?? 'es';
+        Provider.of<PreferencesProvider>(context, listen: false).preferences?.language ?? 'es';
     return AppL10n(isEn: lang == 'en');
   }
 

@@ -143,7 +143,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       _isPaused = true;
       _isResting = false;
     });
-    _saveTimerLocally();
+    unawaited(_saveTimerLocally());
     _saveProgressDebounced();
     if (!auto) HapticFeedback.mediumImpact();
   }
@@ -2150,51 +2150,6 @@ class _CompactRef extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Fila de información de peso (última sesión, PR, sugerencia)
-class _WeightInfoRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color color;
-  final IconData icon;
-
-  const _WeightInfoRow({
-    required this.label,
-    required this.value,
-    required this.color,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 6),
-          Text(
-            '$label:',
-            style: TextStyle(
-              fontSize: 12,
-              color: color,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 12,
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

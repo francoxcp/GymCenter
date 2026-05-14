@@ -31,14 +31,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Future<void> _loadDashboardData() async {
+    const _kTimeout = Duration(seconds: 15);
     try {
       // Cargar usuarios
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-      await userProvider.loadUsers();
+      await userProvider.loadUsers().timeout(_kTimeout);
 
       // Obtener total de usuarios
-      final usersResponse =
-          await SupabaseConfig.client.from('users').select('id');
+      final usersResponse = await SupabaseConfig.client
+          .from('users')
+          .select('id')
+          .timeout(_kTimeout);
 
       final totalUsers = (usersResponse as List).length;
 
@@ -51,7 +54,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       final sessionsResponse = await SupabaseConfig.client
           .from('workout_sessions')
           .select('completed_at')
-          .gte('completed_at', startOfDay.toIso8601String());
+          .gte('completed_at', startOfDay.toIso8601String())
+          .timeout(_kTimeout);
 
       final sessions = sessionsResponse as List;
 

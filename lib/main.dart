@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'core/theme/dark_theme.dart';
 import 'config/router/app_router.dart';
 import 'config/supabase_config.dart';
@@ -37,10 +38,29 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  runApp(const MyApp());
+  const sentryDsn = String.fromEnvironment('SENTRY_DSN');
 
-  // Inicializar notificaciones DESPUÉS de runApp — no bloquea el arranque
-  NotificationService().initialize();
+  Future<void> bootstrap() async {
+    runApp(const MyApp());
+    // Inicializar notificaciones DESPUÉS de runApp — no bloquea el arranque
+    NotificationService().initialize();
+  }
+
+  if (sentryDsn.isNotEmpty) {
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = sentryDsn;
+        // Solo capturar errores en producción
+        options.tracesSampleRate = kReleaseMode ? 0.2 : 0.0;
+        options.environment = kReleaseMode ? 'production' : 'development';
+        // No enviar PII del usuario por defecto
+        options.sendDefaultPii = false;
+      },
+      appRunner: bootstrap,
+    );
+  } else {
+    await bootstrap();
+  }
 }
 
 class MyApp extends StatefulWidget {
@@ -54,10 +74,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late final AuthProvider _authProvider;
   late final UserProvider _userProvider;
   late final PreferencesProvider _preferencesProvider;
+  late final WorkoutProvider _workoutProvider;
+  late final MealPlanProvider _mealPlanProvider;
   late final GoRouter _router;
   late final _DoubleBackButtonDispatcher _backButtonDispatcher;
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   bool _isLocked = false;
+  bool _wasAuthenticated = false;
 
   @override
   void initState() {
@@ -67,6 +90,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _authProvider = AuthProvider();
     _userProvider = UserProvider()..setAuthProvider(_authProvider);
     _preferencesProvider = PreferencesProvider();
+    _workoutProvider = WorkoutProvider();
+    _mealPlanProvider = MealPlanProvider();
     _router = createAppRouter(_authProvider);
     _backButtonDispatcher = _DoubleBackButtonDispatcher(
       scaffoldMessengerKey: _scaffoldMessengerKey,
@@ -99,6 +124,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   void _onAuthChanged() {
     _preferencesProvider.onAuthChanged(_authProvider);
+    // Al cerrar sesión, limpiar datos en memoria para evitar filtración
+    // de datos de un usuario a otro en el mismo dispositivo.
+    if (_wasAuthenticated && !_authProvider.isAuthenticated) {
+      _workoutProvider.clearData();
+      _mealPlanProvider.clearData();
+    }
+    _wasAuthenticated = _authProvider.isAuthenticated;
   }
 
   @override
@@ -106,6 +138,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _authProvider.removeListener(_onAuthChanged);
     _authProvider.dispose();
+    _workoutProvider.dispose();
+    _mealPlanProvider.dispose();
     super.dispose();
   }
 
@@ -114,8 +148,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: _authProvider),
-        ChangeNotifierProvider(create: (_) => WorkoutProvider()),
-        ChangeNotifierProvider(create: (_) => MealPlanProvider()),
+        ChangeNotifierProvider.value(value: _workoutProvider),
+        ChangeNotifierProvider.value(value: _mealPlanProvider),
         ChangeNotifierProvider.value(value: _userProvider),
         ChangeNotifierProvider(create: (_) => BodyMeasurementProvider()),
         ChangeNotifierProvider.value(value: _preferencesProvider),

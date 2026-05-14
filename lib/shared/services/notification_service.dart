@@ -5,7 +5,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/data/latest_10y.dart' as tz;
 
 /// Servicio centralizado para gestionar notificaciones locales
 class NotificationService {
@@ -78,62 +78,70 @@ class NotificationService {
     }
   }
 
-  /// Inicializa el servicio de notificaciones
+  /// Inicializa el servicio de notificaciones.
+  /// Seguro de llamar múltiples veces — idempotente.
+  /// Si falla, deja _isInitialized = false para poder reintentar.
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    // Inicializar zonas horarias (solo las necesarias — mucho más rápido)
-    tz.initializeTimeZones();
-    // Usar la zona local del dispositivo si está disponible
     try {
-      final localName = DateTime.now().timeZoneName;
-      tz.setLocalLocation(tz.getLocation(localName));
-    } catch (_) {
-      // timeZoneName devuelve abreviaturas (VET, EST...) que tz no reconoce.
-      // Elegir zona IANA por offset UTC del dispositivo como fallback.
-      final offset = DateTime.now().timeZoneOffset;
-      final fallback = _ianaFromOffset(offset);
-      debugPrint(
-          '⚠️ Timezone lookup failed, using offset-based fallback: $fallback');
-      tz.setLocalLocation(tz.getLocation(fallback));
-    }
+      // Inicializar zonas horarias — latest_10y carga solo ±10 años (mucho más rápido)
+      tz.initializeTimeZones();
+      try {
+        final localName = DateTime.now().timeZoneName;
+        tz.setLocalLocation(tz.getLocation(localName));
+      } catch (_) {
+        // timeZoneName devuelve abreviaturas (VET, EST...) que tz no reconoce.
+        // Elegir zona IANA por offset UTC del dispositivo como fallback.
+        final offset = DateTime.now().timeZoneOffset;
+        final fallback = _ianaFromOffset(offset);
+        debugPrint(
+            '⚠️ Timezone lookup failed, using offset-based fallback: $fallback');
+        tz.setLocalLocation(tz.getLocation(fallback));
+      }
 
-    // Configuración para Android
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+      // Configuración para Android
+      const androidSettings =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    // Configuración para iOS
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+      // Configuración para iOS
+      const iosSettings = DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
 
-    const initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
+      const initSettings = InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+      );
 
-    await _notifications.initialize(
-      initSettings,
-      onDidReceiveNotificationResponse: _onNotificationTapped,
-    );
+      await _notifications.initialize(
+        initSettings,
+        onDidReceiveNotificationResponse: _onNotificationTapped,
+      );
 
-    // Manejar lanzamiento desde notificación cuando la app estaba completamente cerrada
-    final launchDetails =
-        await _notifications.getNotificationAppLaunchDetails();
-    if (launchDetails?.didNotificationLaunchApp == true) {
-      final payload = launchDetails!.notificationResponse?.payload;
-      if (payload != null) {
-        if (_router != null) {
-          _handlePayload(payload);
-        } else {
-          _pendingPayload = payload;
+      // Manejar lanzamiento desde notificación cuando la app estaba completamente cerrada
+      final launchDetails =
+          await _notifications.getNotificationAppLaunchDetails();
+      if (launchDetails?.didNotificationLaunchApp == true) {
+        final payload = launchDetails!.notificationResponse?.payload;
+        if (payload != null) {
+          if (_router != null) {
+            _handlePayload(payload);
+          } else {
+            _pendingPayload = payload;
+          }
         }
       }
-    }
 
-    _isInitialized = true;
+      _isInitialized = true;
+    } catch (e, st) {
+      // No marcar como inicializado — se puede reintentar en el próximo ciclo.
+      // Las funciones que dependen de this lo manejan con try/catch propio.
+      debugPrint('❌ NotificationService.initialize() falló: $e');
+      debugPrint('$st');
+    }
   }
 
   /// Maneja el tap en una notificación (app en primer o segundo plano)

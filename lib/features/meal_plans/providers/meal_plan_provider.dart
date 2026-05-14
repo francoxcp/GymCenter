@@ -12,6 +12,13 @@ class MealPlanProvider extends ChangeNotifier {
   String get selectedFilter => _selectedFilter;
   bool get isLoading => _isLoading;
 
+  /// Limpia todos los datos en memoria. Llamar al cerrar sesión.
+  void clearData() {
+    _mealPlans = [];
+    _lastFetch = null;
+    notifyListeners();
+  }
+
   // No cargar en el constructor — la pantalla de planes solicita los datos al abrirse
   // Cache por 10 minutos (los meal plans cambian menos frecuentemente)
   bool get _shouldRefresh {

@@ -1,5 +1,6 @@
 ﻿import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import '../models/user.dart';
@@ -22,6 +23,13 @@ class AuthProvider extends ChangeNotifier {
   // Lockout base: cada bloqueo duplica la duración (30s, 60s, 120s…)
   int _loginLockoutMultiplier = 1;
   static const Duration _lockoutBase = Duration(seconds: 30);
+
+  // Claves para persistir el rate limiting en almacenamiento cifrado
+  static const _kLockoutUntil = 'login_lockout_until';
+  static const _kLockoutMultiplier = 'login_lockout_multiplier';
+  static const _storage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
 
   // Rate limiting para register y forgot password
   int _registerAttempts = 0;
@@ -48,7 +56,39 @@ class AuthProvider extends ChangeNotifier {
           _currentUser!.sex == null);
 
   AuthProvider() {
+    _loadPersistedRateLimit();
     _initAuthListener();
+  }
+
+  /// Carga el bloqueo de login guardado en sesiones anteriores.
+  Future<void> _loadPersistedRateLimit() async {
+    try {
+      final until = await _storage.read(key: _kLockoutUntil);
+      final multiplier = await _storage.read(key: _kLockoutMultiplier);
+      if (until != null) {
+        final dt = DateTime.tryParse(until);
+        if (dt != null && dt.isAfter(DateTime.now())) {
+          _lockoutUntil = dt;
+        }
+      }
+      if (multiplier != null) {
+        _loginLockoutMultiplier = int.tryParse(multiplier) ?? 1;
+      }
+    } catch (_) {}
+  }
+
+  /// Persiste el estado de bloqueo en almacenamiento cifrado.
+  Future<void> _persistRateLimit() async {
+    try {
+      if (_lockoutUntil != null) {
+        await _storage.write(
+            key: _kLockoutUntil, value: _lockoutUntil!.toIso8601String());
+      } else {
+        await _storage.delete(key: _kLockoutUntil);
+      }
+      await _storage.write(
+          key: _kLockoutMultiplier, value: _loginLockoutMultiplier.toString());
+    } catch (_) {}
   }
 
   void _initAuthListener() {
@@ -120,6 +160,7 @@ class AuthProvider extends ChangeNotifier {
         _loginAttempts = 0;
         _lockoutUntil = null;
         _loginLockoutMultiplier = 1;
+        await _persistRateLimit();
         await _loadCurrentUser(response.user!.id);
         _isLoading = false;
         notifyListeners();
@@ -133,6 +174,7 @@ class AuthProvider extends ChangeNotifier {
         _loginLockoutMultiplier =
             (_loginLockoutMultiplier * 2).clamp(1, 32); // max ~16 min
         _loginAttempts = 0;
+        await _persistRateLimit();
       }
       _isLoading = false;
       notifyListeners();
@@ -145,6 +187,7 @@ class AuthProvider extends ChangeNotifier {
         _loginLockoutMultiplier =
             (_loginLockoutMultiplier * 2).clamp(1, 32); // max ~16 min
         _loginAttempts = 0;
+        await _persistRateLimit();
       }
       _isLoading = false;
       notifyListeners();

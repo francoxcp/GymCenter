@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import '../../../shared/services/secure_screen_service.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
@@ -23,10 +24,17 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
   @override
   void initState() {
     super.initState();
+    SecureScreenService.enable();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<BodyMeasurementProvider>(context, listen: false)
           .loadMeasurements();
     });
+  }
+
+  @override
+  void dispose() {
+    SecureScreenService.disable();
+    super.dispose();
   }
 
   @override

@@ -13,6 +13,7 @@ import '../../../config/supabase_config.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/services/storage_service.dart';
+import '../../../shared/services/secure_screen_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -32,6 +33,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
+    SecureScreenService.enable();
     _loadUserData();
   }
 
@@ -47,6 +49,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   void dispose() {
+    SecureScreenService.disable();
     _nameController.dispose();
     super.dispose();
   }

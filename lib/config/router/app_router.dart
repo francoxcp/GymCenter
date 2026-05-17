@@ -120,32 +120,11 @@ GoRouter createAppRouter(AuthProvider authProvider) {
         builder: (context, state, child) {
           final authProvider =
               Provider.of<AuthProvider>(context, listen: false);
-          final isAdmin = authProvider.isAdmin;
           final location = state.uri.path;
-
-          return Scaffold(
-            body: child,
-            bottomNavigationBar: BottomNavBar(
-              currentIndex: _locationToIndex(location),
-              onTap: (index) async {
-                if (!await UnsavedChangesGuard.canNavigate()) return;
-                if (!context.mounted) return;
-                switch (index) {
-                  case 0:
-                    context.go(isAdmin ? '/admin' : '/home');
-                    break;
-                  case 1:
-                    context.go('/workouts');
-                    break;
-                  case 2:
-                    context.go('/meal-plans');
-                    break;
-                  case 3:
-                    context.go('/profile');
-                    break;
-                }
-              },
-            ),
+          return _AppShell(
+            child: child,
+            currentIndex: _locationToIndex(location),
+            isAdmin: authProvider.isAdmin,
           );
         },
         routes: [
@@ -265,4 +244,91 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       ),
     ],
   );
+}
+
+class _AppShell extends StatefulWidget {
+  final Widget child;
+  final int currentIndex;
+  final bool isAdmin;
+
+  const _AppShell({
+    required this.child,
+    required this.currentIndex,
+    required this.isAdmin,
+  });
+
+  @override
+  State<_AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<_AppShell> {
+  late int _previousIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _previousIndex = widget.currentIndex;
+  }
+
+  @override
+  void didUpdateWidget(_AppShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentIndex != widget.currentIndex) {
+      _previousIndex = oldWidget.currentIndex;
+    }
+  }
+
+  Widget _buildTransition(Widget child, Animation<double> animation) {
+    final isForward = widget.currentIndex >= _previousIndex;
+    final isIncoming = child.key == ValueKey(widget.currentIndex);
+    final Offset beginOffset;
+    if (isIncoming) {
+      beginOffset =
+          isForward ? const Offset(1.0, 0.0) : const Offset(-1.0, 0.0);
+    } else {
+      beginOffset =
+          isForward ? const Offset(-1.0, 0.0) : const Offset(1.0, 0.0);
+    }
+    return SlideTransition(
+      position: Tween<Offset>(begin: beginOffset, end: Offset.zero).animate(
+        CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+      ),
+      child: child,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 280),
+        transitionBuilder: _buildTransition,
+        child: KeyedSubtree(
+          key: ValueKey(widget.currentIndex),
+          child: widget.child,
+        ),
+      ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: widget.currentIndex,
+        onTap: (index) async {
+          if (!await UnsavedChangesGuard.canNavigate()) return;
+          if (!context.mounted) return;
+          switch (index) {
+            case 0:
+              context.go(widget.isAdmin ? '/admin' : '/home');
+              break;
+            case 1:
+              context.go('/workouts');
+              break;
+            case 2:
+              context.go('/meal-plans');
+              break;
+            case 3:
+              context.go('/profile');
+              break;
+          }
+        },
+      ),
+    );
+  }
 }

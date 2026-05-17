@@ -1091,25 +1091,25 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                       fontWeight: FontWeight.bold,
                       letterSpacing: -1,
                     ),
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: '0',
-                      hintStyle: const TextStyle(
+                      hintStyle: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 40,
                         fontWeight: FontWeight.bold,
                       ),
                       suffixText: 'lbs',
-                      suffixStyle: const TextStyle(
+                      suffixStyle: TextStyle(
                         color: AppColors.primary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                       border: InputBorder.none,
-                      enabledBorder: const UnderlineInputBorder(
+                      enabledBorder: UnderlineInputBorder(
                         borderSide:
                             BorderSide(color: AppColors.primary, width: 2),
                       ),
-                      focusedBorder: const UnderlineInputBorder(
+                      focusedBorder: UnderlineInputBorder(
                         borderSide:
                             BorderSide(color: AppColors.primary, width: 2),
                       ),

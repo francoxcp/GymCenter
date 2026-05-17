@@ -63,12 +63,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final sessionProvider =
         Provider.of<WorkoutSessionProvider>(context, listen: false);
 
-    const _timeout = Duration(seconds: 12);
+    const timeout = Duration(seconds: 12);
 
     await Future.wait<void>([
       authProvider
           .refreshUser()
-          .timeout(_timeout)
+          .timeout(timeout)
           .catchError((e) {
         debugPrint('Error refreshing user: $e');
       }),
@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
             userId: authProvider.currentUser?.id,
             isAdmin: authProvider.isAdmin,
           )
-          .timeout(_timeout)
+          .timeout(timeout)
           .catchError((e) {
         debugPrint('Error refreshing workouts: $e');
       }),
@@ -88,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
               authProvider.currentUser!.id,
               forceRefresh: true,
             )
-            .timeout(_timeout)
+            .timeout(timeout)
             .catchError((e) {
           debugPrint('Error refreshing sessions: $e');
         }),
@@ -98,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (authProvider.currentUser != null) {
       await progressProvider
           .loadProgress(authProvider.currentUser!.id)
-          .timeout(_timeout)
+          .timeout(timeout)
           .catchError((e) {
         debugPrint('Error refreshing progress: $e');
       });

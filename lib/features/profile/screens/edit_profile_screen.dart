@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
+import '../../../core/utils/app_validators.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../config/supabase_config.dart';
@@ -65,8 +66,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       if (userId == null) throw Exception('Usuario no autenticado');
 
+      final name = AppValidators.sanitize(_nameController.text, maxLength: 100);
+      if (AppValidators.hasInjectionRisk(name)) {
+        AppSnackbar.error(context, 'Nombre no válido');
+        return;
+      }
+
       await SupabaseConfig.client.from('users').update({
-        'name': _nameController.text.trim(),
+        'name': name,
         'level': _selectedLevel,
       }).eq('id', userId);
 
@@ -264,7 +271,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     color: AppColors.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.25), width: 1),
+                        color: AppColors.primary.withValues(alpha: 0.25),
+                        width: 1),
                   ),
                   child: Row(
                     children: [

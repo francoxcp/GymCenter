@@ -8,6 +8,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class OfflineCacheService {
   static const _workoutsKey = 'cached_workouts_v1';
   static const _cachedAtKey = 'workouts_cached_at_v1';
+  static const _cacheTtlDays = 7;
 
   static const _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
@@ -24,9 +25,16 @@ class OfflineCacheService {
     }
   }
 
-  /// Carga los workouts cacheados. Devuelve null si no hay caché.
+  /// Carga los workouts cacheados. Devuelve null si no hay caché o si expiró.
   Future<List<dynamic>?> loadWorkouts() async {
     try {
+      // Verificar TTL: si el caché tiene más de 7 días, descartarlo
+      final cachedTime = await cachedAt();
+      if (cachedTime != null &&
+          DateTime.now().difference(cachedTime).inDays >= _cacheTtlDays) {
+        await clearCache();
+        return null;
+      }
       final json = await _storage.read(key: _workoutsKey);
       if (json == null) return null;
       return jsonDecode(json) as List<dynamic>;

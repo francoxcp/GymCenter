@@ -56,6 +56,9 @@ dependencies:
   local_auth: ^2.3.0
   flutter_secure_storage: ^9.2.4
 
+  # Cifrado AES para exportación de datos
+  encrypt: ^5.0.3
+
   # Crash Reporting
   sentry_flutter: ^8.11.0
 

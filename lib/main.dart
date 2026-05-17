@@ -55,6 +55,17 @@ void main() async {
         options.environment = kReleaseMode ? 'production' : 'development';
         // No enviar PII del usuario por defecto
         options.sendDefaultPii = false;
+        // Filtrar datos personales antes de enviar cualquier evento
+        options.beforeSend = (event, hint) {
+          return event.copyWith(
+            user: null,
+            request: event.request?.copyWith(
+              data: null,
+              queryString: null,
+              cookies: null,
+            ),
+          );
+        };
       },
       appRunner: bootstrap,
     );

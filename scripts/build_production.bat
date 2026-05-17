@@ -8,6 +8,23 @@ echo  Chamos Fitness Center
 echo ====================================
 echo.
 
+REM ── Workaround: SDK path tiene espacios → montar en X: ─────────────────────
+REM    Flutter regenera local.properties en cada build usando ANDROID_HOME.
+REM    Si ANDROID_HOME tiene espacios el strip de NDK falla. Solución: subst.
+set ANDROID_SDK_REAL=D:\Android Studio SDK 2
+subst X: "%ANDROID_SDK_REAL%" >nul 2>&1
+set ANDROID_HOME=X:
+set ANDROID_NDK_HOME=X:\ndk\27.2.12479018
+set GRADLE_USER_HOME=D:\.gradle
+
+REM Actualizar local.properties con la ruta sin espacios
+echo flutter.sdk=D:\flutter> "%~dp0..\android\local.properties"
+echo sdk.dir=X\:>> "%~dp0..\android\local.properties"
+echo ndk.dir=X\:\ndk\27.2.12479018>> "%~dp0..\android\local.properties"
+echo Entorno Android configurado: SDK en X: (alias de %ANDROID_SDK_REAL%)
+echo.
+REM ────────────────────────────────────────────────────────────────────────────
+
 REM 1. Limpiar build anterior
 echo [1/7] Limpiando builds anteriores...
 call flutter clean
@@ -88,7 +105,7 @@ set /p BUILD_TYPE="Ingresa opción (1-5): "
 if "%BUILD_TYPE%"=="1" (
     echo.
     echo Compilando APK para Android...
-    call flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/debug-info --dart-define=SUPABASE_URL=%SUPABASE_URL% --dart-define=SUPABASE_ANON_KEY=%SUPABASE_ANON_KEY%
+    call flutter build apk --release --split-per-abi --dart-define=SUPABASE_URL=%SUPABASE_URL% --dart-define=SUPABASE_ANON_KEY=%SUPABASE_ANON_KEY%
     if %errorlevel% neq 0 (
         echo ERROR: Build falló
         pause
@@ -106,7 +123,7 @@ if "%BUILD_TYPE%"=="1" (
 if "%BUILD_TYPE%"=="2" (
     echo.
     echo Compilando App Bundle para Google Play...
-    call flutter build appbundle --release --obfuscate --split-debug-info=build/debug-info --dart-define=SUPABASE_URL=%SUPABASE_URL% --dart-define=SUPABASE_ANON_KEY=%SUPABASE_ANON_KEY%
+    call flutter build appbundle --release --dart-define=SUPABASE_URL=%SUPABASE_URL% --dart-define=SUPABASE_ANON_KEY=%SUPABASE_ANON_KEY%
     if %errorlevel% neq 0 (
         echo ERROR: Build falló
         pause

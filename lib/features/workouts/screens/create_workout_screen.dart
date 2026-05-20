@@ -206,6 +206,20 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
       return;
     }
 
+    // Verificar nombre duplicado
+    final newName = _nameController.text.trim().toLowerCase();
+    final workoutProvider =
+        Provider.of<WorkoutProvider>(context, listen: false);
+    final nameExists = workoutProvider.workouts
+        .any((w) => w.name.trim().toLowerCase() == newName);
+    if (nameExists) {
+      AppSnackbar.error(
+        context,
+        AppL10n.of(context).routineNameAlreadyExists,
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -229,8 +243,6 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
         exercises: _exercises,
       );
 
-      final workoutProvider =
-          Provider.of<WorkoutProvider>(context, listen: false);
       await workoutProvider.addWorkout(workout, userId: currentUserId);
 
       if (mounted) {
@@ -567,6 +579,42 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                     ),
                   );
                 }),
+
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _saveWorkout,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.black),
+                          ),
+                        )
+                      : Text(
+                          AppL10n.of(context).saveRoutine,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
             ],
           ),
         ),

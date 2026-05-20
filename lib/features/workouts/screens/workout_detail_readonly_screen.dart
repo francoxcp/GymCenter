@@ -146,7 +146,7 @@ class _WorkoutDetailReadonlyScreenState
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // ? Iniciar Rutina � siempre visible
+                  // Iniciar Rutina — siempre visible
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -170,7 +170,7 @@ class _WorkoutDetailReadonlyScreenState
                       ),
                     ),
                   ),
-                  // Editar / Eliminar � solo si admin o due�o
+                  // Editar / Eliminar — solo si admin o dueño
                   if (canManage) ...[
                     const SizedBox(height: 10),
                     Row(
@@ -178,7 +178,6 @@ class _WorkoutDetailReadonlyScreenState
                         Expanded(
                           child: OutlinedButton.icon(
                             onPressed: () async {
-                              final wp = context.read<WorkoutProvider>();
                               final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -187,9 +186,6 @@ class _WorkoutDetailReadonlyScreenState
                                 ),
                               );
                               if (result == true && context.mounted) {
-                                // updateWorkout ya llama loadWorkouts internamente.
-                                // No lanzamos otro loadWorkouts aquí para evitar
-                                // condición de carrera con ensureExercisesLoaded.
                                 context.pop();
                               }
                             },

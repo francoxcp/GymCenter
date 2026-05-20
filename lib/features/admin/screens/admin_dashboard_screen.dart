@@ -258,42 +258,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           color: AppColors.cardBackground,
                           borderRadius: BorderRadius.circular(AppSpacing.lg),
                         ),
-                        child: _totalSessions == 0
-                            ? Stack(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: _buildChartBars(l10n),
-                                  ),
-                                  Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Icon(Icons.bar_chart,
-                                            color: AppColors.textSecondary,
-                                            size: 36),
-                                        const SizedBox(height: AppSpacing.xs),
-                                        Text(
-                                          l10n.noSessionsThisWeek,
-                                          style: const TextStyle(
-                                            color: AppColors.textSecondary,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: _buildChartBars(l10n),
-                              ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: _buildChartBars(l10n),
+                        ),
                       ),
                 const SizedBox(height: AppSpacing.xxl),
                 Text(

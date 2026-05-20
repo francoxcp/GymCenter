@@ -11,8 +11,10 @@ class AppL10n {
   const AppL10n({required this.isEn});
 
   static AppL10n of(BuildContext context) {
-    final lang =
-        Provider.of<PreferencesProvider>(context, listen: false).preferences?.language ?? 'es';
+    final lang = Provider.of<PreferencesProvider>(context, listen: false)
+            .preferences
+            ?.language ??
+        'es';
     return AppL10n(isEn: lang == 'en');
   }
 
@@ -523,6 +525,9 @@ class AppL10n {
       isEn ? 'Add at least one exercise' : 'Agrega al menos un ejercicio';
   String get routineCreated =>
       isEn ? 'Routine created successfully' : 'Rutina creada exitosamente';
+  String get routineNameAlreadyExists => isEn
+      ? 'A routine with that name already exists.'
+      : 'Ya existe una rutina con ese nombre.';
   String get couldNotCreateRoutine => isEn
       ? 'Could not create routine. Try again.'
       : 'No se pudo crear la rutina. Intenta de nuevo.';
@@ -1455,10 +1460,11 @@ class AppL10n {
   String get watchVideo => isEn ? 'Watch video' : 'Ver video';
 
   // ── Weight log dialog ─────────────────────────────────────────────────
-  String get lastSessionWeight =>
-      isEn ? 'Last session' : 'Última sesión';
+  String get lastSessionWeight => isEn ? 'Last session' : 'Última sesión';
   String get personalRecord => isEn ? 'Personal record' : 'Récord personal';
-  String get coachSuggestion => isEn ? 'Coach suggestion' : 'Sugerencia del coach';
+  String get coachSuggestion =>
+      isEn ? 'Coach suggestion' : 'Sugerencia del coach';
   String get addWeight => isEn ? 'Add weight' : 'Agregar peso';
-  String get enterWeightHint => isEn ? 'Enter weight in lbs' : 'Escribe el peso en lbs';
+  String get enterWeightHint =>
+      isEn ? 'Enter weight in lbs' : 'Escribe el peso en lbs';
 }

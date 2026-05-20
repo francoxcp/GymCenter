@@ -183,12 +183,11 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
-  /// Loads exercises for [workoutId] on-demand if they are not yet in memory.
-  /// Called before entering workout detail or starting a workout session.
+  /// Loads (or refreshes) exercises for [workoutId] from Supabase.
+  /// Called when entering workout detail or starting a workout session.
   Future<void> ensureExercisesLoaded(String workoutId) async {
     final idx = _workouts.indexWhere((w) => w.id == workoutId);
     if (idx == -1) return;
-    if (_workouts[idx].exercises.isNotEmpty) return; // already loaded
 
     try {
       final response = await SupabaseConfig.client
@@ -345,23 +344,12 @@ class WorkoutProvider extends ChangeNotifier {
         await SupabaseConfig.client.from('exercises').insert(exercisesData);
       }
 
-      // Cargar los ejercicios recién insertados desde Supabase y actualizar
-      // la memoria antes de llamar a loadWorkouts, de modo que el mecanismo
-      // "preserve existing exercises" retenga la lista NUEVA y no la vieja.
-      final freshEx = await SupabaseConfig.client
-          .from('exercises')
-          .select('*')
-          .eq('workout_id', workoutId)
-          .order('order_index', ascending: true);
-
-      final updatedExercises = (freshEx as List)
-          .map((e) => Exercise.fromJson(e as Map<String, dynamic>))
-          .toList();
-
-      final idxToUpdate = _workouts.indexWhere((w) => w.id == workoutId);
-      if (idxToUpdate != -1) {
-        final w = _workouts[idxToUpdate];
-        _workouts[idxToUpdate] = Workout(
+      // Limpiar ejercicios en memoria para este workout: al abrir el detalle,
+      // ensureExercisesLoaded los traerá frescos desde Supabase.
+      final idxToInvalidate = _workouts.indexWhere((w) => w.id == workoutId);
+      if (idxToInvalidate != -1) {
+        final w = _workouts[idxToInvalidate];
+        _workouts[idxToInvalidate] = Workout(
           id: w.id,
           name: w.name,
           duration: w.duration,
@@ -371,7 +359,7 @@ class WorkoutProvider extends ChangeNotifier {
           description: w.description,
           createdBy: w.createdBy,
           category: w.category,
-          exercises: updatedExercises,
+          exercises: [],
         );
       }
 

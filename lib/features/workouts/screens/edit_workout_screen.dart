@@ -502,6 +502,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
   late TextEditingController _setsController;
   late TextEditingController _repsController;
   late TextEditingController _restController;
+  late TextEditingController _weightController;
   late TextEditingController _descController;
 
   String _muscleGroup = 'Pecho';
@@ -522,6 +523,8 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
         TextEditingController(text: widget.exercise?.reps.toString() ?? '12');
     _restController = TextEditingController(
         text: widget.exercise?.restSeconds.toString() ?? '60');
+    final w = widget.exercise?.weight ?? 0;
+    _weightController = TextEditingController(text: w > 0 ? w.toString() : '');
     _descController =
         TextEditingController(text: widget.exercise?.description ?? '');
     // Normalize muscle group to capitalized form to handle legacy lowercase DB values
@@ -548,6 +551,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
     _setsController.dispose();
     _repsController.dispose();
     _restController.dispose();
+    _weightController.dispose();
     _descController.dispose();
     super.dispose();
   }
@@ -643,6 +647,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
       muscleGroup: _muscleGroup,
       description: _descController.text.trim(),
       videoUrl: _videoUrl ?? '',
+      weight: double.tryParse(_weightController.text.trim()) ?? 0,
     );
 
     widget.onSave(newExercise);
@@ -730,6 +735,17 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                 controller: _restController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(labelText: l10n.restSecsLabel),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _weightController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  labelText: l10n.weightLbs,
+                  hintText: l10n.weightLbsHint,
+                  suffixText: 'kg',
+                ),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(

@@ -240,9 +240,18 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
     } catch (e) {
       debugPrint('Error creating workout: $e');
       if (mounted) {
-        final msg = e.toString().contains('offline')
-            ? AppL10n.of(context).offlineCannotCreate
-            : AppL10n.of(context).couldNotCreateRoutine;
+        String msg;
+        final errStr = e.toString();
+        if (errStr.contains('offline')) {
+          msg = AppL10n.of(context).offlineCannotCreate;
+        } else if (errStr.contains('check') ||
+            errStr.contains('violates') ||
+            errStr.contains('constraint')) {
+          msg = 'Categoría no válida en la base de datos. '
+              'Usa: Pecho, Espalda, Pierna, Cardio o Funcional.';
+        } else {
+          msg = AppL10n.of(context).couldNotCreateRoutine;
+        }
         AppSnackbar.error(context, msg);
       }
     } finally {
@@ -531,7 +540,8 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                     color: AppColors.cardBackground,
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+                        backgroundColor:
+                            AppColors.primary.withValues(alpha: 0.2),
                         child: Text(
                           '${index + 1}',
                           style: const TextStyle(

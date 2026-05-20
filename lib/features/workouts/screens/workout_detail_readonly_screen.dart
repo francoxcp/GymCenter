@@ -187,11 +187,9 @@ class _WorkoutDetailReadonlyScreenState
                                 ),
                               );
                               if (result == true && context.mounted) {
-                                wp.loadWorkouts(
-                                  forceRefresh: true,
-                                  userId: currentUserId,
-                                  isAdmin: authProvider.isAdmin,
-                                );
+                                // updateWorkout ya llama loadWorkouts internamente.
+                                // No lanzamos otro loadWorkouts aquí para evitar
+                                // condición de carrera con ensureExercisesLoaded.
                                 context.pop();
                               }
                             },

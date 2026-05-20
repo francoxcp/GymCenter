@@ -444,6 +444,44 @@ CREATE POLICY "user_goals_delete_policy"
 -- VERIFICACIÓN (opcional - solo para revisar)
 -- ============================================
 
+-- ============================================
+-- TABLA: workout_sessions (RLS faltante)
+-- ============================================
+-- IMPORTANTE: Sin estas políticas, la tabla devuelve 0 filas a todos
+-- (incluido el admin), por eso el dashboard no muestra sesiones.
+
+ALTER TABLE workout_sessions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "workout_sessions_select_policy" ON workout_sessions;
+DROP POLICY IF EXISTS "workout_sessions_insert_policy" ON workout_sessions;
+DROP POLICY IF EXISTS "workout_sessions_update_policy" ON workout_sessions;
+DROP POLICY IF EXISTS "workout_sessions_delete_policy" ON workout_sessions;
+
+-- SELECT: Usuarios ven sus sesiones, admins ven todas
+CREATE POLICY "workout_sessions_select_policy"
+  ON workout_sessions
+  FOR SELECT
+  USING (auth.uid() = user_id OR is_admin());
+
+-- INSERT: Usuarios solo sus sesiones
+CREATE POLICY "workout_sessions_insert_policy"
+  ON workout_sessions
+  FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+-- UPDATE: Usuarios solo sus sesiones, admins pueden actualizar cualquiera
+CREATE POLICY "workout_sessions_update_policy"
+  ON workout_sessions
+  FOR UPDATE
+  USING (auth.uid() = user_id OR is_admin())
+  WITH CHECK (auth.uid() = user_id OR is_admin());
+
+-- DELETE: Usuarios solo sus sesiones, admins pueden borrar cualquiera
+CREATE POLICY "workout_sessions_delete_policy"
+  ON workout_sessions
+  FOR DELETE
+  USING (auth.uid() = user_id OR is_admin());
+
 -- Ver todas las políticas actuales
 SELECT 
   schemaname,

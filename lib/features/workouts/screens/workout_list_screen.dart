@@ -167,19 +167,21 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
           isOfficial: isOfficial,
           onEdit: canManage
               ? () async {
-                  final result = await Navigator.push(
+                  // Cargar ejercicios primero: el workout de la lista tiene
+                  // exercises:[] porque se cargan de forma perezosa.
+                  // Sin esto, updateWorkout borraría todos los ejercicios.
+                  await workoutProvider.ensureExercisesLoaded(workout.id);
+                  if (!context.mounted) return;
+                  final freshWorkout =
+                      workoutProvider.getWorkoutById(workout.id) ?? workout;
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => EditWorkoutScreen(workout: workout),
+                      builder: (_) => EditWorkoutScreen(workout: freshWorkout),
                     ),
                   );
-                  if (result == true && context.mounted) {
-                    workoutProvider.loadWorkouts(
-                      forceRefresh: true,
-                      userId: currentUserId,
-                      isAdmin: isAdmin,
-                    );
-                  }
+                  // updateWorkout actualiza memoria directamente, no es necesario
+                  // llamar loadWorkouts aquí.
                 }
               : null,
           onDelete: canManage
@@ -612,22 +614,14 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final navigator = Navigator.of(context);
-          final workoutProvider =
-              Provider.of<WorkoutProvider>(context, listen: false);
 
-          final result = await navigator.push(
+          await navigator.push(
             MaterialPageRoute(
               builder: (context) => const CreateWorkoutScreen(),
             ),
           );
-
-          if (result == true) {
-            await workoutProvider.loadWorkouts(
-              forceRefresh: true,
-              userId: currentUser?.id,
-              isAdmin: isAdmin,
-            );
-          }
+          // addWorkout ya actualiza _workouts en memoria y llama notifyListeners.
+          // No es necesario un loadWorkouts adicional aquí.
         },
         backgroundColor: AppColors.primary,
         child: const Icon(

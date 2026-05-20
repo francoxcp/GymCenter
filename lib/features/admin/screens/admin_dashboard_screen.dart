@@ -259,23 +259,34 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           borderRadius: BorderRadius.circular(AppSpacing.lg),
                         ),
                         child: _totalSessions == 0
-                            ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.bar_chart,
-                                        color: AppColors.textSecondary,
-                                        size: 40),
-                                    const SizedBox(height: AppSpacing.sm),
-                                    Text(
-                                      l10n.noSessionsThisWeek,
-                                      style: const TextStyle(
-                                        color: AppColors.textSecondary,
-                                        fontSize: 14,
-                                      ),
+                            ? Stack(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: _buildChartBars(l10n),
+                                  ),
+                                  Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(Icons.bar_chart,
+                                            color: AppColors.textSecondary,
+                                            size: 36),
+                                        const SizedBox(height: AppSpacing.xs),
+                                        Text(
+                                          l10n.noSessionsThisWeek,
+                                          style: const TextStyle(
+                                            color: AppColors.textSecondary,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               )
                             : Row(
                                 mainAxisAlignment:

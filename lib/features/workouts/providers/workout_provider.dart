@@ -136,7 +136,18 @@ class WorkoutProvider extends ChangeNotifier {
       };
 
       _workouts = _parseWorkoutList(response as List).map((w) {
-        final kept = existingExercises[w.id];
+        // Preferir snapshot; si está vacío, revisar el estado ACTUAL de _workouts
+        // porque ensureExercisesLoaded pudo haberlo actualizado mientras este
+        // fetch de Supabase estaba en vuelo (condición de carrera).
+        final snapshotEx = existingExercises[w.id];
+        final currentEx = _workouts
+            .firstWhere((cw) => cw.id == w.id, orElse: () => w)
+            .exercises;
+        final kept = (snapshotEx != null && snapshotEx.isNotEmpty)
+            ? snapshotEx
+            : currentEx.isNotEmpty
+                ? currentEx
+                : null;
         if (kept != null && kept.isNotEmpty) {
           return Workout(
             id: w.id,
@@ -261,9 +272,10 @@ class WorkoutProvider extends ChangeNotifier {
           .select()
           .single();
 
-      final workoutId = workoutData['id'];
+      final workoutId = workoutData['id'] as String;
 
-      // Insertar ejercicios si existen
+      // Insertar ejercicios y recuperarlos con sus IDs generados por la BD
+      List<Exercise> freshExercises = [];
       if (workout.exercises.isNotEmpty) {
         final exercisesData = workout.exercises
             .asMap()
@@ -282,13 +294,34 @@ class WorkoutProvider extends ChangeNotifier {
             .toList();
 
         await SupabaseConfig.client.from('exercises').insert(exercisesData);
+
+        // Leer ejercicios recién insertados (con IDs de la BD)
+        final freshEx = await SupabaseConfig.client
+            .from('exercises')
+            .select('*')
+            .eq('workout_id', workoutId)
+            .order('order_index', ascending: true);
+        freshExercises = (freshEx as List)
+            .map((e) => Exercise.fromJson(e as Map<String, dynamic>))
+            .toList();
       }
 
-      // Recargar rutinas con los parámetros del usuario actual
-      await loadWorkouts(
-        userId: _currentUserId,
-        isAdmin: _isAdmin,
+      // Agregar la rutina nueva directamente a memoria (sin loadWorkouts)
+      final newWorkout = Workout(
+        id: workoutId,
+        name: workout.name,
+        duration: workout.duration,
+        exerciseCount: freshExercises.length,
+        level: workout.level,
+        imageUrl: workout.imageUrl,
+        description: workout.description,
+        createdBy: userId,
+        category: workout.category,
+        exercises: freshExercises,
       );
+      _workouts.insert(0, newWorkout);
+      _lastFetch = DateTime.now(); // Reiniciar TTL
+      notifyListeners();
     } catch (e) {
       debugPrint('Error adding workout: $e');
       rethrow;
@@ -308,7 +341,7 @@ class WorkoutProvider extends ChangeNotifier {
       throw Exception('offline_edit');
     }
     try {
-      // Actualizar rutina
+      // Actualizar metadatos de la rutina
       await SupabaseConfig.client.from('workouts').update({
         'name': workout.name,
         'duration': workout.duration,
@@ -344,30 +377,35 @@ class WorkoutProvider extends ChangeNotifier {
         await SupabaseConfig.client.from('exercises').insert(exercisesData);
       }
 
-      // Limpiar ejercicios en memoria para este workout: al abrir el detalle,
-      // ensureExercisesLoaded los traerá frescos desde Supabase.
-      final idxToInvalidate = _workouts.indexWhere((w) => w.id == workoutId);
-      if (idxToInvalidate != -1) {
-        final w = _workouts[idxToInvalidate];
-        _workouts[idxToInvalidate] = Workout(
+      // Leer ejercicios recién insertados desde Supabase (con IDs de la BD)
+      final freshEx = await SupabaseConfig.client
+          .from('exercises')
+          .select('*')
+          .eq('workout_id', workoutId)
+          .order('order_index', ascending: true);
+      final freshExercises = (freshEx as List)
+          .map((e) => Exercise.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      // Actualizar memoria directamente: sin loadWorkouts, sin condiciones de carrera
+      final idx = _workouts.indexWhere((w) => w.id == workoutId);
+      if (idx != -1) {
+        final w = _workouts[idx];
+        _workouts[idx] = Workout(
           id: w.id,
-          name: w.name,
-          duration: w.duration,
-          exerciseCount: w.exerciseCount,
-          level: w.level,
-          imageUrl: w.imageUrl,
-          description: w.description,
+          name: workout.name,
+          duration: workout.duration,
+          exerciseCount: freshExercises.length,
+          level: workout.level,
+          imageUrl: workout.imageUrl,
+          description: workout.description,
           createdBy: w.createdBy,
           category: w.category,
-          exercises: [],
+          exercises: freshExercises,
         );
       }
-
-      await loadWorkouts(
-        forceRefresh: true,
-        userId: _currentUserId,
-        isAdmin: _isAdmin,
-      );
+      _lastFetch = DateTime.now(); // Reiniciar TTL
+      notifyListeners();
     } catch (e) {
       debugPrint('Error updating workout: $e');
       rethrow;

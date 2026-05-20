@@ -122,9 +122,9 @@ GoRouter createAppRouter(AuthProvider authProvider) {
               Provider.of<AuthProvider>(context, listen: false);
           final location = state.uri.path;
           return _AppShell(
-            child: child,
             currentIndex: _locationToIndex(location),
             isAdmin: authProvider.isAdmin,
+            child: child,
           );
         },
         routes: [

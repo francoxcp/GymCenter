@@ -345,6 +345,36 @@ class WorkoutProvider extends ChangeNotifier {
         await SupabaseConfig.client.from('exercises').insert(exercisesData);
       }
 
+      // Cargar los ejercicios recién insertados desde Supabase y actualizar
+      // la memoria antes de llamar a loadWorkouts, de modo que el mecanismo
+      // "preserve existing exercises" retenga la lista NUEVA y no la vieja.
+      final freshEx = await SupabaseConfig.client
+          .from('exercises')
+          .select('*')
+          .eq('workout_id', workoutId)
+          .order('order_index', ascending: true);
+
+      final updatedExercises = (freshEx as List)
+          .map((e) => Exercise.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      final idxToUpdate = _workouts.indexWhere((w) => w.id == workoutId);
+      if (idxToUpdate != -1) {
+        final w = _workouts[idxToUpdate];
+        _workouts[idxToUpdate] = Workout(
+          id: w.id,
+          name: w.name,
+          duration: w.duration,
+          exerciseCount: w.exerciseCount,
+          level: w.level,
+          imageUrl: w.imageUrl,
+          description: w.description,
+          createdBy: w.createdBy,
+          category: w.category,
+          exercises: updatedExercises,
+        );
+      }
+
       await loadWorkouts(
         forceRefresh: true,
         userId: _currentUserId,

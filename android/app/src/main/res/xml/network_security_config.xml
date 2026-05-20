@@ -15,20 +15,23 @@
 
     <!--
       Certificate pinning para el dominio de Supabase.
-      Pins calculados: Sun, 25 Mar 2026
-      - supabase.co leaf certificate (CN=supabase.co, WE1 intermediate)
-      - WE1 intermediate (Google Trust Services)
+      Pins calculados: 17 May 2026
+      - [0] supabase.co leaf (CN=supabase.co, vence 29 Jul 2026)
+      - [1] WE1 intermediate (Google Trust Services, vence 20 Feb 2029)
+      - [2] GTS Root R4 (backup raiz, vence 27 Jan 2028)
       Si los pins fallan, la conexión será rechazada (MITM protection).
-      Expiration: 25 de Marzo de 2028 (2 años).
-      Para renovar, ejecutar: scripts/get_cert_pins.ps1
+      Expiration: 2026-07-01 (antes del vencimiento del leaf, fuerza renovacion).
+      Para renovar: compilar y ejecutar C:\Temp\GetPin.java con JDK.
     -->
     <domain-config>
         <domain includeSubdomains="true">supabase.co</domain>
-        <pin-set expiration="2028-03-25">
-            <!-- Leaf certificate (supabase.co) -->
-            <pin digest="SHA-256">M4FlSvpxk5vEw3n70qj3t4y7QuYUHuzwkh9Earv1FNQ=</pin>
-            <!-- Intermediate (WE1, Google Trust Services) -->
-            <pin digest="SHA-256">H7AMYAvicN2+UcFPBz3kJXCDmGrTItZh4ujUBK8hoWg=</pin>
+        <pin-set expiration="2026-07-01">
+            <!-- Leaf certificate (CN=supabase.co, vence 29 Jul 2026) -->
+            <pin digest="SHA-256">p51goejPCgGH+Oog/MU2k6PObcEfTrrr73jUcuWJ7w0=</pin>
+            <!-- Intermediate WE1 (Google Trust Services, vence 20 Feb 2029) -->
+            <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
+            <!-- Root GTS Root R4 (backup, vence 27 Jan 2028) -->
+            <pin digest="SHA-256">mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=</pin>
         </pin-set>
     </domain-config>
 </network-security-config>

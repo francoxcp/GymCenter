@@ -9,7 +9,7 @@ import '../providers/workout_progress_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'edit_workout_screen.dart';
 
-class WorkoutDetailReadonlyScreen extends StatelessWidget {
+class WorkoutDetailReadonlyScreen extends StatefulWidget {
   final String workoutId;
 
   const WorkoutDetailReadonlyScreen({
@@ -17,13 +17,29 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
     required this.workoutId,
   });
 
+  @override
+  State<WorkoutDetailReadonlyScreen> createState() =>
+      _WorkoutDetailReadonlyScreenState();
+}
+
+class _WorkoutDetailReadonlyScreenState
+    extends State<WorkoutDetailReadonlyScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Cargar ejercicios al abrir la pantalla (si no están en memoria)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<WorkoutProvider>().ensureExercisesLoaded(widget.workoutId);
+    });
+  }
+
   Future<void> _handlePlay(
     BuildContext context,
     WorkoutProgressProvider progressProvider,
   ) async {
     final assignedId =
         context.read<AuthProvider>().currentUser?.assignedWorkoutId;
-    if (workoutId == assignedId) {
+    if (widget.workoutId == assignedId) {
       context.push('/today-workout');
       return;
     }
@@ -62,10 +78,10 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
       if (choice == 'continue_assigned') {
         context.push('/today-workout');
       } else if (choice == 'start_extra') {
-        context.push('/today-workout?workoutId=$workoutId');
+        context.push('/today-workout?workoutId=${widget.workoutId}');
       }
     } else {
-      context.push('/today-workout?workoutId=$workoutId');
+      context.push('/today-workout?workoutId=${widget.workoutId}');
     }
   }
 
@@ -85,7 +101,7 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final workoutProvider = Provider.of<WorkoutProvider>(context);
-    final workout = workoutProvider.getWorkoutById(workoutId);
+    final workout = workoutProvider.getWorkoutById(widget.workoutId);
 
     if (workout == null) {
       final l10n = AppL10n.of(context);
@@ -229,7 +245,7 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                               );
                               if (shouldDelete == true && context.mounted) {
                                 try {
-                                  await wp.deleteWorkout(workoutId);
+                                  await wp.deleteWorkout(widget.workoutId);
                                   if (context.mounted) {
                                     AppSnackbar.success(context,
                                         AppL10n.of(context).routineDeletedOk);
@@ -248,7 +264,8 @@ class WorkoutDetailReadonlyScreen extends StatelessWidget {
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.redAccent,
                               side: BorderSide(
-                                  color: Colors.redAccent.withValues(alpha: 0.6)),
+                                  color:
+                                      Colors.redAccent.withValues(alpha: 0.6)),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12)),
                               padding: const EdgeInsets.symmetric(vertical: 12),

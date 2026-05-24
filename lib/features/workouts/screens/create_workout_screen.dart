@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
@@ -27,7 +27,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   final _descriptionController = TextEditingController();
   final _newCategoryController = TextEditingController();
 
-  static const _kAddCategory = '+ Nueva categor�a';
+  static const _kAddCategory = '+ Nueva categoría';
   static const _kNoCategory = '__no_category__';
   static const _kPrefsKey = 'custom_workout_categories';
 
@@ -227,7 +227,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final currentUserId = authProvider.currentUser?.id;
 
-      // Calcular duraci�n estimada (5 minutos por ejercicio)
+      // Calcular duración estimada (5 minutos por ejercicio)
       final estimatedDuration = _exercises.length * 5;
 
       final workout = Workout(
@@ -372,7 +372,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
 
               const SizedBox(height: 16),
 
-              // Descripci�n
+              // Descripción
               TextFormField(
                 controller: _descriptionController,
                 maxLength: 200,
@@ -418,7 +418,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
 
               const SizedBox(height: 16),
 
-              // Categor�a
+              // Categoría
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -568,7 +568,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       subtitle: Text(
-                        '${exercise.sets} series � ${exercise.reps} reps',
+                        '${exercise.sets} series × ${exercise.reps} reps',
                         style: const TextStyle(color: AppColors.textSecondary),
                       ),
                       trailing: IconButton(
@@ -666,7 +666,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
     try {
       final XFile? video = await _picker.pickVideo(
         source: ImageSource.gallery,
-        maxDuration: const Duration(minutes: 1), // M�ximo 1 minuto
+        maxDuration: const Duration(minutes: 1), // MÁximo 1 minuto
       );
 
       if (video != null) {

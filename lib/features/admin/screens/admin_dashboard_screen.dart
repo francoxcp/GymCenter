@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -45,7 +45,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
       final totalUsers = (usersResponse as List).length;
 
-      // Obtener sesiones de los �ltimos 7 d�as
+      // Obtener sesiones de los Últimos 7 dÍas
       final now = DateTime.now();
       final sevenDaysAgo = now.subtract(const Duration(days: 6));
       final startOfDay =
@@ -59,7 +59,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
       final sessions = sessionsResponse as List;
 
-      // Calcular sesiones por d�a
+      // Calcular sesiones por dÍa
       final dailyCounts = List<int>.filled(7, 0);
       for (var session in sessions) {
         final completedAt = DateTime.tryParse(session['completed_at'] ?? '');
@@ -67,7 +67,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         final daysDiff = now.difference(completedAt).inDays;
         if (daysDiff >= 0 && daysDiff < 7) {
           dailyCounts[6 -
-              daysDiff]++; // Invertido para que el m�s reciente est� a la derecha
+              daysDiff]++; // Invertido para que el más reciente está a la derecha
         }
       }
 
@@ -317,7 +317,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         : _dailySessions.reduce((a, b) => a > b ? a : b);
     // Espacio disponible: 200 container - 16*2 padding - 14px label - 8px spacer - 18px count = ~128px para barra
     const maxBarHeight = 110.0;
-    // El array siempre tiene hoy en el �ndice 6 (el m�s reciente a la derecha)
+    // El array siempre tiene hoy en el índice 6 (el más reciente a la derecha)
     const todayIndex = 6;
 
     return List.generate(7, (index) {

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'create_workout_screen.dart';
 import 'edit_workout_screen.dart';
@@ -45,7 +45,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
   @override
   void initState() {
     super.initState();
-    // Escuchar cambios en el campo de b�squeda
+    // Escuchar cambios en el campo de bÚsqueda
     _searchController.addListener(() {
       final hasText = _searchController.text.isNotEmpty;
       if (hasText != _searchHasText) setState(() => _searchHasText = hasText);
@@ -142,7 +142,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
     if (mounted) setState(() => _nextSchedule = next);
   }
 
-  /// Construye un tile de rutina con permisos correctos seg�n el rol y due�o.
+  /// Construye un tile de rutina con permisos correctos según el rol y dueño.
   Widget _buildWorkoutTile(
     BuildContext context, {
     required Workout workout,
@@ -451,7 +451,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                 ),
               ],
 
-              // Assigned Workout Hero Card (ocultar si ya se complet� hoy)
+              // Assigned Workout Hero Card (ocultar si ya se completó hoy)
               if (hasAssignedWorkout &&
                   assignedWorkout != null &&
                   !todayCompleted) ...[
@@ -466,7 +466,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
               ] else if (hasAssignedWorkout &&
                   assignedWorkout != null &&
                   todayCompleted) ...[
-                // Rutina de hoy completada ? mostrar pr�xima en estilo "pr�ximamente"
+                // Rutina de hoy completada ? mostrar próxima en estilo "próximamente"
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -515,7 +515,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
               ] else
                 const SizedBox(height: 16),
 
-              // Workout List � dividido en secciones por origen
+              // Workout List — dividido en secciones por origen
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () => workoutProvider.loadWorkouts(
@@ -836,7 +836,7 @@ class _WorkoutCard extends StatelessWidget {
               Icons.chevron_right,
               color: AppColors.textSecondary,
             ),
-          // Bot�n play para iniciar como rutina extra
+          // Botón play para iniciar como rutina extra
           if (onPlay != null)
             GestureDetector(
               onTap: onPlay,
@@ -999,7 +999,7 @@ class _PausedWorkoutBanner extends StatelessWidget {
   }
 }
 
-/// Header de secci�n para separar rutinas oficiales de las del usuario.
+/// Header de secciÓn para separar rutinas oficiales de las del usuario.
 class _SectionHeader extends StatelessWidget {
   final String label;
   final IconData icon;

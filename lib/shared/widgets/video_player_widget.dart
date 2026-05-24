@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:video_player/video_player.dart';
 import '../../core/l10n/app_l10n.dart';
@@ -56,7 +56,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
         return;
       }
 
-      // Non-blocking cache lookup � returns instantly if not cached.
+      // Non-blocking cache lookup — returns instantly if not cached.
       FileInfo? cacheInfo;
       try {
         cacheInfo =
@@ -250,7 +250,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
               ),
             ),
 
-            // Bot�n de pantalla completa
+            // Botón de pantalla completa
             if (widget.showFullscreenButton)
               Positioned(
                 top: 8,

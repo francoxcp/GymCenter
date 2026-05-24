@@ -64,12 +64,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    if (password.length > 15) {
-      _showError(AppL10n.of(context).passwordMax15);
-      return;
-    }
-
-    // Validar complejidad: mayúscula, minúscula y número
+    // Validar complejidad: mayúscula, minúscula, número y carácter especial
     if (!password.contains(RegExp(r'[A-Z]'))) {
       _showError(AppL10n.of(context).passwordNeedsUppercase);
       return;
@@ -80,6 +75,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
     if (!password.contains(RegExp(r'[0-9]'))) {
       _showError(AppL10n.of(context).passwordNeedsNumber);
+      return;
+    }
+    if (!password.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>\-_+=\[\]\\/~`]'))) {
+      _showError(AppL10n.of(context).passwordNeedsSpecial);
       return;
     }
 
@@ -95,8 +94,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final success =
-          await authProvider.register(email, password, email.split('@').first);
+      final success = await authProvider.register(email, password, 'Usuario');
 
       if (success && mounted) {
         context.go(authProvider.initialRoute);
@@ -113,7 +111,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             errorMsg.contains('connection')) {
           _showError(AppL10n.of(context).connectionError);
         } else {
-          _showError(AppL10n.of(context).registerError(e.toString()));
+          _showError(AppL10n.of(context).registerFailed);
         }
       }
     } finally {
@@ -244,7 +242,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 validator: (value) {
                   if (value == null || value.isEmpty) return null;
                   if (value.length < 8) return AppL10n.of(context).min8Chars;
-                  if (value.length > 15) return AppL10n.of(context).max15Chars;
+                  if (value.length > 72)
+                    return AppL10n.of(context).passwordMax72;
                   return null;
                 },
                 suffixIcon: IconButton(

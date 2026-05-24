@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -217,7 +217,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Informaci�n personal
+                // Información personal
                 Text(
                   AppL10n.of(context).personalInfo,
                   style: const TextStyle(
@@ -264,7 +264,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 _buildLevelSelector(),
                 const SizedBox(height: 16),
 
-                // Tip: medidas corporales disponibles en secci�n aparte
+                // Tip: medidas corporales disponibles en secciÓn aparte
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -293,7 +293,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Bot�n cambiar contrase�a
+                // Botón cambiar contraseña
                 OutlinedButton(
                   onPressed: () => context.push('/change-password'),
                   style: OutlinedButton.styleFrom(
@@ -321,7 +321,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Bot�n guardar
+                // Botón guardar
                 PrimaryButton(
                   text: AppL10n.of(context).saveChanges,
                   onPressed: _isLoading ? null : _saveProfile,
@@ -383,6 +383,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   // Manejar cambio de foto de perfil
   Future<void> _handleProfilePhotoChange() async {
     final ImagePicker picker = ImagePicker();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     // Mostrar opciones
     final source = await showModalBottomSheet<ImageSource>(
@@ -414,10 +416,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (source == null) return;
 
     setState(() => _isUploadingPhoto = true);
-    // ignore: use_build_context_synchronously
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    // ignore: use_build_context_synchronously
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     try {
       // Seleccionar imagen
@@ -442,7 +440,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return;
       }
 
-      // Validar tama�o (m�x 5 MB)
+      // Validar tamaño (máx 5 MB)
       final fileSize = await image.length();
       if (fileSize > 5 * 1024 * 1024) {
         setState(() => _isUploadingPhoto = false);
@@ -459,7 +457,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       final storageService = StorageService();
 
-      // Subir seg�n plataforma
+      // Subir según plataforma
       String? photoUrl;
       if (kIsWeb) {
         final bytes = await image.readAsBytes();

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -50,13 +50,13 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
     final sessions = sessionProvider.sessions;
     final workouts = workoutProvider.workouts;
 
-    // Construir mapa de eventos por d�a normalizado (sin hora)
+    // Construir mapa de eventos por dÍa normalizado (sin hora)
     final Map<DateTime, List<WorkoutEvent>> events = {};
     final l10n = AppL10n.of(context);
     for (final session in sessions) {
       final key =
           DateTime(session.date.year, session.date.month, session.date.day);
-      // Buscar el nombre del workout; si no est� cargado, usar ID corto
+      // Buscar el nombre del workout; si no estÁ cargado, usar ID corto
       final workout =
           workouts.where((w) => w.id == session.workoutId).firstOrNull;
       final name = workout?.name ?? l10n.workoutFallback;
@@ -195,10 +195,10 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
             ),
           ),
 
-          // Estad�sticas del mes
+          // Estadísticas del mes
           _buildMonthStats(),
 
-          // Eventos del d�a seleccionado
+          // Eventos del dÍa seleccionado
           Expanded(
             child: _buildSelectedDayEvents(),
           ),

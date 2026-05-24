@@ -4,12 +4,22 @@
 -- ============================================
 -- Ejecutar DESPUÉS de todas las otras configuraciones
 
-CREATE OR REPLACE FUNCTION delete_user_account(user_id UUID)
+DROP FUNCTION IF EXISTS delete_user_account(UUID);
+
+CREATE FUNCTION delete_user_account(user_id UUID)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 BEGIN
+    -- SEGURIDAD: Solo permitir que un usuario elimine su propia cuenta.
+    -- auth.uid() retorna el UUID del usuario autenticado que hizo la llamada.
+    -- Si alguien pasa un UUID ajeno, la función lo rechaza con error.
+    IF auth.uid() IS DISTINCT FROM user_id THEN
+        RAISE EXCEPTION 'Unauthorized: you can only delete your own account';
+    END IF;
+
     -- Eliminar datos en orden correcto (respetando foreign keys)
     DELETE FROM user_achievements WHERE user_achievements.user_id = delete_user_account.user_id;
     DELETE FROM body_measurements WHERE body_measurements.user_id = delete_user_account.user_id;

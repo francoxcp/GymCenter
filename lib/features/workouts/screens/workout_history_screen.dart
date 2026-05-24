@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -366,7 +366,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
           const SizedBox(height: 8),
           Text(
             totalSets > 0
-                ? '$doneSets/$totalSets series � ${(completionRate * 100).toInt()}% completado'
+                ? '$doneSets/$totalSets series × ${(completionRate * 100).toInt()}% completado'
                 : AppL10n.of(context)
                     .percentCompleted((completionRate * 100).toInt()),
             style: const TextStyle(

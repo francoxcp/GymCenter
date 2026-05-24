@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -45,8 +45,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final isRecovery =
-        context.watch<AuthProvider>().isPasswordRecovery;
+    final isRecovery = context.watch<AuthProvider>().isPasswordRecovery;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -64,7 +63,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header con informaci�n
+              // Header con información
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -144,7 +143,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 const SizedBox(height: 24),
               ],
 
-              // Nueva contrase�a
+              // Nueva contraseña
               Text(
                 l10n.newPassword,
                 style: const TextStyle(
@@ -176,7 +175,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
               const SizedBox(height: 24),
 
-              // Confirmar contrase�a
+              // Confirmar contraseña
               Text(
                 l10n.confirmNewPassword,
                 style: const TextStyle(
@@ -208,7 +207,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
               const SizedBox(height: 12),
 
-              // Requisitos de contrase�a
+              // Requisitos de contraseña
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -231,15 +230,15 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
                     const SizedBox(height: 8),
                     _buildRequirement(l10n.min8Chars),
-                    _buildRequirement(l10n.max15Chars),
                     _buildRequirement(l10n.passwordRecommendation),
+                    _buildRequirement(l10n.passwordNeedsSpecial),
                   ],
                 ),
               ),
 
               const SizedBox(height: 32),
 
-              // Bot�n de cambiar contrase�a
+              // BotÓn de cambiar contraseña
               PrimaryButton(
                 text: l10n.changePasswordButton,
                 isLoading: _isLoading,
@@ -335,13 +334,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       return;
     }
 
-    // Validar largo m�ximo
-    if (_newPasswordController.text.length > 15) {
-      _showError(AppL10n.of(context).passwordMax15);
-      return;
-    }
-
-    // Validar que las contrase�as nuevas coincidan
+    // Validar que las contraseñas nuevas coincidan
     if (_newPasswordController.text != _confirmPasswordController.text) {
       _showError(AppL10n.of(context).newPasswordsDoNotMatch);
       return;

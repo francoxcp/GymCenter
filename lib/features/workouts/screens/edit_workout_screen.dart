@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
@@ -462,7 +462,7 @@ class _ExerciseCard extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          '${exercise.sets} series � ${exercise.reps} reps � ${exercise.restSeconds}s',
+          '${exercise.sets} series × ${exercise.reps} reps × ${exercise.restSeconds}s',
           style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
         ),
         trailing: Row(
@@ -483,7 +483,7 @@ class _ExerciseCard extends StatelessWidget {
   }
 }
 
-// Di�logo para agregar/editar ejercicios con video
+// DiÁlogo para agregar/editar ejercicios con video
 class _ExerciseDialog extends StatefulWidget {
   final Exercise? exercise;
   final Function(Exercise) onSave;

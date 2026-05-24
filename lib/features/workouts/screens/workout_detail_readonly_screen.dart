@@ -24,6 +24,14 @@ class WorkoutDetailReadonlyScreen extends StatefulWidget {
 
 class _WorkoutDetailReadonlyScreenState
     extends State<WorkoutDetailReadonlyScreen> {
+  bool _isPopping = false;
+
+  void _navigateBack() {
+    if (_isPopping) return;
+    _isPopping = true;
+    context.pop();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -125,284 +133,297 @@ class _WorkoutDetailReadonlyScreenState
         final canManage =
             authProvider.isAdmin || workout.createdBy == currentUserId;
 
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              tooltip: l10n.goBackTooltip,
-              onPressed: () => context.pop(),
-            ),
-            title: Text(
-              workout.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          // Barra de acciones fija al fondo
-          bottomNavigationBar: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Iniciar Rutina — siempre visible
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _handlePlay(context, progressProvider),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      icon: const Icon(Icons.play_arrow_rounded, size: 26),
-                      label: Text(
-                        l10n.startRoutine,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Editar / Eliminar — solo si admin o dueño
-                  if (canManage) ...[
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () async {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      EditWorkoutScreen(workout: workout),
-                                ),
-                              );
-                              if (result == true && context.mounted) {
-                                context.pop();
-                              }
-                            },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.primary,
-                              side: const BorderSide(color: AppColors.primary),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            icon: const Icon(Icons.edit_outlined, size: 18),
-                            label: Text(l10n.edit),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () async {
-                              final wp = context.read<WorkoutProvider>();
-                              final shouldDelete = await showDialog<bool>(
-                                context: context,
-                                builder: (ctx) => AlertDialog(
-                                  backgroundColor: AppColors.surface,
-                                  title: Text(
-                                    l10n.deleteRoutineTitle,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                  content: Text(
-                                    l10n.deleteWorkoutConfirm(workout.name),
-                                    style: const TextStyle(
-                                        color: AppColors.textSecondary),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(ctx, false),
-                                      child: Text(
-                                          AppL10n.of(context).cancelLabel,
-                                          style: const TextStyle(
-                                              color: AppColors.textSecondary)),
-                                    ),
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(ctx, true),
-                                      child: Text(
-                                          AppL10n.of(context).deleteConfirm,
-                                          style: const TextStyle(
-                                              color: Colors.redAccent)),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              if (shouldDelete == true && context.mounted) {
-                                try {
-                                  await wp.deleteWorkout(widget.workoutId);
-                                  if (context.mounted) {
-                                    AppSnackbar.success(context,
-                                        AppL10n.of(context).routineDeletedOk);
-                                    context.pop();
-                                  }
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    AppSnackbar.error(
-                                        context,
-                                        AppL10n.of(context)
-                                            .errorDeleting(e.toString()));
-                                  }
-                                }
-                              }
-                            },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.redAccent,
-                              side: BorderSide(
-                                  color:
-                                      Colors.redAccent.withValues(alpha: 0.6)),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            icon: const Icon(Icons.delete_outline, size: 18),
-                            label: Text(l10n.delete),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) _navigateBack();
+          },
+          child: Scaffold(
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                tooltip: l10n.goBackTooltip,
+                onPressed: _navigateBack,
+              ),
+              title: Text(
+                workout.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ),
-          body: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.primary.withValues(alpha: 0.3),
-                        AppColors.background,
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.fitness_center,
-                        size: 80,
-                        color: AppColors.primary,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        workout.name,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+            // Barra de acciones fija al fondo
+            bottomNavigationBar: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Iniciar Rutina — siempre visible
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _handlePlay(context, progressProvider),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _getLevelColor(workout.level),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          l10n.levelDisplay(workout.level).toUpperCase(),
+                        icon: const Icon(Icons.play_arrow_rounded, size: 26),
+                        label: Text(
+                          l10n.startRoutine,
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,
                             letterSpacing: 1,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                    ),
+                    // Editar / Eliminar — solo si admin o dueño
+                    if (canManage) ...[
+                      const SizedBox(height: 10),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildInfoCard(
-                            l10n.durationLabel,
-                            '${workout.duration} min',
-                            Icons.access_time,
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        EditWorkoutScreen(workout: workout),
+                                  ),
+                                );
+                                if (result == true && context.mounted) {
+                                  context.pop();
+                                }
+                              },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.primary,
+                                side:
+                                    const BorderSide(color: AppColors.primary),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                              icon: const Icon(Icons.edit_outlined, size: 18),
+                              label: Text(l10n.edit),
+                            ),
                           ),
-                          _buildInfoCard(
-                            l10n.exercisesLabel,
-                            '${workout.exerciseCount}',
-                            Icons.fitness_center,
-                          ),
-                          _buildInfoCard(
-                            l10n.levelLabel,
-                            l10n.levelDisplay(workout.level),
-                            Icons.trending_up,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () async {
+                                if (_isPopping) return;
+                                final wp = context.read<WorkoutProvider>();
+                                final shouldDelete = await showDialog<bool>(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    backgroundColor: AppColors.surface,
+                                    title: Text(
+                                      l10n.deleteRoutineTitle,
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    ),
+                                    content: Text(
+                                      l10n.deleteWorkoutConfirm(workout.name),
+                                      style: const TextStyle(
+                                          color: AppColors.textSecondary),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(ctx, false),
+                                        child: Text(
+                                            AppL10n.of(context).cancelLabel,
+                                            style: const TextStyle(
+                                                color:
+                                                    AppColors.textSecondary)),
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(ctx, true),
+                                        child: Text(
+                                            AppL10n.of(context).deleteConfirm,
+                                            style: const TextStyle(
+                                                color: Colors.redAccent)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (shouldDelete == true && context.mounted) {
+                                  try {
+                                    await wp.deleteWorkout(widget.workoutId);
+                                    if (context.mounted) {
+                                      AppSnackbar.success(context,
+                                          AppL10n.of(context).routineDeletedOk);
+                                      context.pop();
+                                    }
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      AppSnackbar.error(
+                                          context,
+                                          AppL10n.of(context)
+                                              .errorDeleting(e.toString()));
+                                    }
+                                  }
+                                }
+                              },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.redAccent,
+                                side: BorderSide(
+                                    color: Colors.redAccent
+                                        .withValues(alpha: 0.6)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                              icon: const Icon(Icons.delete_outline, size: 18),
+                              label: Text(l10n.delete),
+                            ),
                           ),
                         ],
                       ),
                     ],
-                  ),
+                  ],
                 ),
-
-                // Ejercicios
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.routineExercises,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+              ),
+            ),
+            body: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primary.withValues(alpha: 0.3),
+                          AppColors.background,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
                       ),
-                      const SizedBox(height: 16),
-                      if (workout.exercises.isEmpty)
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(32.0),
-                            child: Text(
-                              l10n.noExercises,
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
-                              ),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.fitness_center,
+                          size: 80,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          workout.name,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getLevelColor(workout.level),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            l10n.levelDisplay(workout.level).toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                              letterSpacing: 1,
                             ),
                           ),
-                        )
-                      else
-                        ...workout.exercises.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final exercise = entry.value;
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _ExerciseCard(
-                              number: index + 1,
-                              name: exercise.name,
-                              sets: exercise.sets,
-                              reps: exercise.reps,
-                              restTime: exercise.restSeconds,
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildInfoCard(
+                              l10n.durationLabel,
+                              '${workout.duration} min',
+                              Icons.access_time,
                             ),
-                          );
-                        }),
-                      // Espacio para que el contenido no quede tapado por la barra
-                      const SizedBox(height: 16),
-                    ],
+                            _buildInfoCard(
+                              l10n.exercisesLabel,
+                              '${workout.exerciseCount}',
+                              Icons.fitness_center,
+                            ),
+                            _buildInfoCard(
+                              l10n.levelLabel,
+                              l10n.levelDisplay(workout.level),
+                              Icons.trending_up,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+
+                  // Ejercicios
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.routineExercises,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        if (workout.exercises.isEmpty)
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(32.0),
+                              child: Text(
+                                l10n.noExercises,
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          ...workout.exercises.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final exercise = entry.value;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _ExerciseCard(
+                                number: index + 1,
+                                name: exercise.name,
+                                sets: exercise.sets,
+                                reps: exercise.reps,
+                                restTime: exercise.restSeconds,
+                              ),
+                            );
+                          }),
+                        // Espacio para que el contenido no quede tapado por la barra
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );

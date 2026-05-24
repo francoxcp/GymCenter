@@ -112,17 +112,14 @@ class _LoginScreenState extends State<LoginScreen> {
       if (errorMessage.contains('invalid') ||
           errorMessage.contains('credentials') ||
           errorMessage.contains('email') ||
-          errorMessage.contains('password')) {
+          errorMessage.contains('password') ||
+          errorMessage.contains('not found')) {
         title = l10n.wrongCredentialsTitle;
         message = l10n.wrongCredentialsMsg;
       } else if (errorMessage.contains('network') ||
           errorMessage.contains('connection')) {
         title = l10n.connectionErrorTitle;
         message = l10n.connectionErrorMsg;
-      } else if (errorMessage.contains('user') &&
-          errorMessage.contains('not found')) {
-        title = l10n.userNotFoundTitle;
-        message = l10n.userNotFoundMsg;
       }
 
       _showLoginError(title, message);
@@ -130,23 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showLoginError(String title, String message) {
-    // For "user not found" errors, show a SnackBar with a register action
-    if (message.contains('register') || message.contains('registrarte')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$title: $message'),
-          backgroundColor: Colors.red,
-          action: SnackBarAction(
-            label: AppL10n.of(context).signMeUp,
-            textColor: Colors.white,
-            onPressed: () => context.push('/register'),
-          ),
-          duration: const Duration(seconds: 5),
-        ),
-      );
-    } else {
-      AppSnackbar.error(context, '$title: $message');
-    }
+    AppSnackbar.error(context, '$title: $message');
   }
 
   @override

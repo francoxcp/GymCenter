@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -38,17 +38,17 @@ class WorkoutSummaryScreen extends StatefulWidget {
 class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
   Map<String, dynamic>? _nextWorkout;
   bool _isLoadingNextWorkout = true;
-  bool _isSaving = true; // bloquea el bot�n hasta que la sesi�n quede guardada
+  bool _isSaving = true; // bloquea el botón hasta que la sesión quede guardada
   late final int _motivationalIndex = math.Random().nextInt(8);
 
   @override
   void initState() {
     super.initState();
 
-    // Guardar sesi�n y actualizar estad�sticas
+    // Guardar sesión y actualizar estadÍsticas
     _saveWorkoutSession();
 
-    // Cargar pr�xima sesi�n programada
+    // Cargar próxima sesión programada
     _loadNextWorkout();
   }
 
@@ -65,8 +65,8 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
       debugPrint(
           '?? _saveWorkoutSession: userId=$userId workoutId=${widget.workout.id}');
 
-      // Guardar sesi�n en workout_sessions y actualizar estad�sticas
-      // Construir datos de ejercicios con series reales si est�n disponibles
+      // Guardar sesión en workout_sessions y actualizar estadÍsticas
+      // Construir datos de ejercicios con series reales si están disponibles
       List<Map<String, dynamic>>? exercisesData;
       if (widget.completedSets != null &&
           widget.completedSets!.length == widget.workout.exercises.length) {
@@ -115,7 +115,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         }
       }
 
-      // Refrescar usuario para obtener estad�sticas actualizadas
+      // Refrescar usuario para obtener estadÍsticas actualizadas
       if (mounted) await authProvider.refreshUser();
 
       // Verificar y desbloquear logros
@@ -147,14 +147,14 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
           weightLoss: weightLoss,
         );
 
-        // Mostrar celebraci�n si se desbloquearon logros
+        // Mostrar celebración si se desbloquearon logros
         if (mounted && newlyUnlocked.isNotEmpty) {
           HapticFeedback.heavyImpact();
           _showAchievementCelebration(newlyUnlocked.length);
         }
       }
     } catch (e) {
-      debugPrint('? Error al guardar sesi�n: $e');
+      debugPrint('? Error al guardar sesión: $e');
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -195,12 +195,12 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         });
       }
     } catch (e) {
-      debugPrint('? Error al cargar pr�xima sesi�n: $e');
+      debugPrint('? Error al cargar próxima sesión: $e');
       if (mounted) setState(() => _isLoadingNextWorkout = false);
     }
   }
 
-  // M�todos auxiliares
+  // Métodos auxiliares
   void _showAchievementCelebration(int count) {
     final l10n = AppL10n.of(context);
     showDialog(
@@ -307,7 +307,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Header con imagen de celebraci�n
+              // Header con imagen de celebración
               Container(
                 height: 200,
                 decoration: BoxDecoration(
@@ -322,7 +322,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                 ),
                 child: Stack(
                   children: [
-                    // Bot�n cerrar
+                    // Botón cerrar
                     Positioned(
                       top: 16,
                       right: 16,
@@ -331,7 +331,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                         icon: const Icon(Icons.close, color: Colors.white),
                       ),
                     ),
-                    // Imagen de celebraci�n (placeholder)
+                    // Imagen de celebración (placeholder)
                     Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -389,7 +389,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    // Estad�sticas en tarjetas amarillas
+                    // Estadísticas en tarjetas amarillas
                     Row(
                       children: [
                         Expanded(
@@ -494,7 +494,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      '${l10n.setsCount(exercise.sets)} � ${l10n.repsCount(exercise.reps)}',
+                                      '${l10n.setsCount(exercise.sets)} × ${l10n.repsCount(exercise.reps)}',
                                       style: const TextStyle(
                                         fontSize: 13,
                                         color: AppColors.textSecondary,
@@ -520,7 +520,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
 
                     const SizedBox(height: 32),
 
-                    // Pr�xima Sesi�n Programada
+                    // Próxima Sesión Programada
                     if (!_isLoadingNextWorkout && _nextWorkout != null) ...[
                       Container(
                         width: double.infinity,
@@ -578,7 +578,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                       const SizedBox(height: 32),
                     ],
 
-                    // Bot�n Volver al Inicio
+                    // Botón Volver al Inicio
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(

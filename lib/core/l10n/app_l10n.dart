@@ -121,8 +121,8 @@ class AppL10n {
   String get confirmPassword =>
       isEn ? 'Confirm password' : 'Confirmar contraseña';
   String get passwordHint => isEn
-      ? 'Must have at least 8 characters, one uppercase, one lowercase and one number'
-      : 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número';
+      ? 'Must have at least 8 characters, one uppercase, one lowercase, one number and one special character'
+      : 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial';
   String get passwordsDontMatch =>
       isEn ? 'Passwords do not match' : 'Las contraseñas no coinciden';
   String get enterPassword =>
@@ -897,6 +897,12 @@ class AppL10n {
   String get passwordNeedsNumber => isEn
       ? 'Password must have at least one number'
       : 'La contraseña debe tener al menos un número';
+  String get passwordNeedsSpecial => isEn
+      ? 'Password must have at least one special character (!@#\$%^&*...)'
+      : 'La contraseña debe tener al menos un carácter especial (!@#\$%^&*...)';
+  String get passwordMax72 => isEn
+      ? 'Password cannot be longer than 72 characters'
+      : 'La contraseña no puede tener más de 72 caracteres';
   String get registerFailed => isEn
       ? 'Could not complete registration. Try again.'
       : 'No se pudo completar el registro. Intenta nuevamente.';
@@ -1197,8 +1203,8 @@ class AppL10n {
   String get passwordRequirements =>
       isEn ? 'Password requirements:' : 'Requisitos de contraseña:';
   String get passwordRecommendation => isEn
-      ? 'We recommend using letters, numbers and symbols'
-      : 'Se recomienda usar letras, números y símbolos';
+      ? 'Must use uppercase, lowercase, numbers and special characters'
+      : 'Debe usar mayúsculas, minúsculas, números y caracteres especiales';
   String get changePasswordButton =>
       isEn ? 'Change Password' : 'Cambiar Contraseña';
   String get forgotPasswordInstructions => isEn

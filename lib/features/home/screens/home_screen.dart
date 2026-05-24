@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Provider.of<WorkoutProgressProvider>(context, listen: false);
       final userId = authProvider.currentUser?.id;
 
-      // Cargar rutinas para que est�n disponibles
+      // Cargar rutinas para que están disponibles
       workoutProvider.loadWorkouts(
         userId: userId,
         isAdmin: authProvider.isAdmin,
@@ -44,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (userId != null) {
         progressProvider.loadProgress(userId);
 
-        // Cargar sesiones usando cach� (5 min) al cambiar de tab.
+        // Cargar sesiones usando cachÉ (5 min) al cambiar de tab.
         // Solo el pull-to-refresh obliga a re-descargar desde red.
         final sessionProvider =
             Provider.of<WorkoutSessionProvider>(context, listen: false);
@@ -241,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     // No mostrar si no hay progreso, si es admin,
                     // o si ese workout ya fue completado hoy (evita race condition
                     // entre el delete en BD y la recarga de loadProgress),
-                    // ni mientras loadProgress est� cargando (evita flash residual)
+                    // ni mientras loadProgress está cargando (evita flash residual)
                     if (!progressProvider.isLoading &&
                         progressProvider.hasProgress &&
                         progress != null &&
@@ -305,7 +305,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         Provider.of<AuthProvider>(context, listen: false).currentUser?.id;
     if (userId == null) return;
 
-    // Cargar pr�xima sesi�n y verificar si hoy es d�a de descanso en paralelo
+    // Cargar próxima sesión y verificar si hoy es dÍa de descanso en paralelo
     final results = await Future.wait([
       progressProvider.getNextScheduledWorkout(userId),
       progressProvider.isTodayScheduled(userId),
@@ -323,7 +323,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
     if (widget.currentUser.assignedWorkoutId == null) return false;
     final assignedId = widget.currentUser.assignedWorkoutId!;
 
-    // 1?? Primero revisar el flag en memoria (instant�neo, sin red)
+    // 1?? Primero revisar el flag en memoria (instantáneo, sin red)
     final progressProvider =
         Provider.of<WorkoutProgressProvider>(context, listen: false);
     if (progressProvider.completedWorkoutIdToday == assignedId) return true;
@@ -358,7 +358,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
   Widget build(BuildContext context) {
     final workoutProvider = Provider.of<WorkoutProvider>(context);
     final sessionProvider = Provider.of<WorkoutSessionProvider>(context);
-    // Escuchar tambi�n WorkoutProgressProvider para capturar el flag en memoria
+    // Escuchar también WorkoutProgressProvider para capturar el flag en memoria
     Provider.of<WorkoutProgressProvider>(context); // listen:true para rebuild
     final hasAssignedWorkout = widget.currentUser.assignedWorkoutId != null;
     final assignedWorkout = hasAssignedWorkout
@@ -366,7 +366,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         : null;
     final todayCompleted = _isTodayCompleted(sessionProvider);
 
-    // Calcular stats reales desde sesiones cargadas (m�s precisos que los campos BD)
+    // Calcular stats reales desde sesiones cargadas (más precisos que los campos BD)
     final realSessions = sessionProvider.sessions;
     final realCompletedCount = realSessions.isNotEmpty
         ? realSessions.length
@@ -479,7 +479,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
 
         const SizedBox(height: 16),
 
-        // Mostrar loading si est� cargando
+        // Mostrar loading si está cargando
         if (workoutProvider.isLoading) ...[
           FadeInCard(
             delay: 200,
@@ -518,7 +518,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
             assignedWorkout != null &&
             !todayCompleted &&
             _isRestDay) ...[
-          // D�a de descanso
+          // Día de descanso
           FadeInCard(
             delay: 200,
             child: Container(
@@ -576,7 +576,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         ] else if (hasAssignedWorkout &&
             assignedWorkout != null &&
             todayCompleted) ...[
-          // Workout de hoy completado ? mostrar pr�xima rutina en estilo "pr�ximamente"
+          // Workout de hoy completado ? mostrar próxima rutina en estilo "próximamente"
           ComingSoonWorkoutCard(
             workout: assignedWorkout,
             availableLabel: _availableLabel,
@@ -680,7 +680,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
             ),
           ),
         ] else if (hasAssignedWorkout && assignedWorkout == null) ...[
-          // Tiene rutina asignada pero no se encontr�
+          // Tiene rutina asignada pero no se encontró
           FadeInCard(
             delay: 200,
             child: AnimatedCard(
@@ -969,7 +969,7 @@ class _PendingWorkoutBanner extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        ' � $timeAgo',
+                        ' · $timeAgo',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.black.withValues(alpha: 0.7),

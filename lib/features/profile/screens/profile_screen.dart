@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -419,7 +419,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       const SizedBox(height: 20),
 
-                      // Bot�n guardar � aparece solo cuando hay cambios
+                      // Botón guardar — aparece solo cuando hay cambios
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 250),
                         child: _hasChanges
@@ -437,7 +437,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: 16),
 
-                // -- Men� -------------------------------------------------
+                // -- Menú -------------------------------------------------
                 _MenuItem(
                   icon: Icons.emoji_events_outlined,
                   title: l10n.personalRecords,
@@ -476,7 +476,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: 32),
 
-                // -- Cerrar sesi�n -----------------------------------------
+                // -- Cerrar sesiÓn -----------------------------------------
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(

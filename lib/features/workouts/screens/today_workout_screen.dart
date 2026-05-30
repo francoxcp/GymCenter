@@ -174,7 +174,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   Future<void> _loadTimerLocally() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getInt(_timerKey()) ?? 0;
-    if (saved > 0) {
+    // Solo aplicar si supera el acumulado actual (evita retroceder el timer
+    // cuando se restaura progreso desde BD con un valor mayor).
+    if (saved > _accumulatedSeconds) {
       setState(() => _accumulatedSeconds = saved);
     }
   }
@@ -577,6 +579,13 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       await _savePartialWeights(); // guardar pesos ingresados hasta ahora
       if (mounted) context.go('/workouts');
     } else if (choice == 'terminate') {
+      // Leer el workout antes del await para no cruzar un async gap con context
+      final effectiveId = widget.extraWorkoutId ??
+          context.read<AuthProvider>().currentUser?.assignedWorkoutId;
+      final partialWorkout = effectiveId != null
+          ? context.read<WorkoutProvider>().getWorkoutById(effectiveId)
+          : null;
+
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -609,10 +618,17 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         ),
       );
       if (confirmed == true && mounted) {
-        await _savePartialWeights(); // guardar pesos ingresados antes de abandonar
-        if (!mounted) return;
-        await context.read<WorkoutProgressProvider>().deleteProgress();
-        if (mounted) context.go('/workouts');
+        // Mostrar resumen con los datos parciales ya completados.
+        // _showWorkoutSummary guarda los pesos y la sesión en BD.
+        if (partialWorkout != null) {
+          _showWorkoutSummary(partialWorkout);
+        } else {
+          // Fallback: sin workout cargado, salir directamente
+          final progressProvider = context.read<WorkoutProgressProvider>();
+          await _savePartialWeights();
+          await progressProvider.deleteProgress();
+          if (mounted) context.go('/workouts');
+        }
       }
     }
     // 'stay' o null → no hace nada
@@ -724,12 +740,22 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       userWeightKg,
     );
 
+    // Volumen real: solo series que el usuario completó × peso que realmente usó.
+    // Si no ingresó peso en una serie, se usa el peso programado como fallback.
     double totalVolume = 0;
-    for (var exercise in workout.exercises) {
-      final weight = exercise.weight > 0
-          ? exercise.weight
-          : _estimateWeight(exercise.name).toDouble();
-      totalVolume += (exercise.sets * exercise.reps * weight);
+    for (int i = 0; i < workout.exercises.length; i++) {
+      final exercise = workout.exercises[i];
+      final completedSetsList =
+          i < _completedSets.length ? _completedSets[i] : <bool>[];
+      for (int j = 0; j < completedSetsList.length; j++) {
+        if (completedSetsList[j]) {
+          final actualWeight = _setWeights[i]?[j] ??
+              (exercise.weight > 0
+                  ? exercise.weight
+                  : _estimateWeight(exercise.name).toDouble());
+          totalVolume += actualWeight * exercise.reps;
+        }
+      }
     }
 
     setState(() {
@@ -1715,7 +1741,52 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
+
+          // Notas del ejercicio (visible antes del video)
+          if (exercise.description != null)
+            Builder(builder: (context) {
+              final filtered = exercise.description!
+                  .split('\n')
+                  .where((line) => !RegExp(
+                        r'^\s*(equipo|equipment)\s*:',
+                        caseSensitive: false,
+                      ).hasMatch(line))
+                  .join('\n')
+                  .trim();
+              if (filtered.isEmpty) return const SizedBox.shrink();
+              return Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.info_outline,
+                        size: 16, color: AppColors.primary),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        filtered,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.white,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
 
           // Video del ejercicio
           if (exercise.videoUrl != null && exercise.videoUrl!.isNotEmpty)
@@ -1762,44 +1833,6 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             ),
 
           const SizedBox(height: 24),
-
-          // Description
-          if (exercise.description != null) ...[
-            Builder(builder: (context) {
-              // Filtrar lÍneas de metadata importada (Ej: "Equipo: Otro")
-              final filtered = exercise.description!
-                  .split('\n')
-                  .where((line) => !RegExp(r'^\s*(equipo|equipment)\s*:',
-                          caseSensitive: false)
-                      .hasMatch(line))
-                  .join('\n')
-                  .trim();
-              if (filtered.isEmpty) return const SizedBox.shrink();
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppL10n.of(context).instructionsLabel,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    filtered,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-              );
-            }),
-          ],
 
           // Sets Info
           Row(

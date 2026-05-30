@@ -281,9 +281,8 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
         if (didPop) return;
 
         // Si hay ejercicios o texto escrito, confirmar antes de salir
-        final hasContent = _exercises.isNotEmpty ||
-            _nameController.text.trim().isNotEmpty ||
-            _descriptionController.text.trim().isNotEmpty;
+        final hasContent =
+            _exercises.isNotEmpty || _nameController.text.trim().isNotEmpty;
 
         if (!hasContent) {
           // No hay cambios, permitir salir
@@ -365,26 +364,6 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return AppL10n.of(context).enterAName;
-                  }
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              // Descripción
-              TextFormField(
-                controller: _descriptionController,
-                maxLength: 200,
-                decoration: InputDecoration(
-                  labelText: AppL10n.of(context).descriptionLabel,
-                  hintText: AppL10n.of(context).descriptionHint,
-                  border: const OutlineInputBorder(),
-                ),
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return AppL10n.of(context).enterADescription;
                   }
                   return null;
                 },

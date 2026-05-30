@@ -51,9 +51,6 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
 
   bool _hasChanges() {
     if (_nameController.text != widget.workout.name) return true;
-    if (_descriptionController.text != (widget.workout.description ?? '')) {
-      return true;
-    }
     if (_durationController.text != widget.workout.duration.toString()) {
       return true;
     }
@@ -166,16 +163,6 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                           }
                           return null;
                         },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _descriptionController,
-                        maxLines: 3,
-                        maxLength: 200,
-                        decoration: InputDecoration(
-                          labelText: l10n.descriptionLabel,
-                          border: const OutlineInputBorder(),
-                        ),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -504,6 +491,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
   late TextEditingController _restController;
   late TextEditingController _weightController;
   late TextEditingController _descController;
+  bool _showDescription = false;
 
   String _muscleGroup = 'Pecho';
 
@@ -527,6 +515,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
     _weightController = TextEditingController(text: w > 0 ? w.toString() : '');
     _descController =
         TextEditingController(text: widget.exercise?.description ?? '');
+    _showDescription = _descController.text.isNotEmpty;
     // Normalize muscle group to capitalized form to handle legacy lowercase DB values
     final rawGroup = widget.exercise?.muscleGroup ?? 'Pecho';
     const validGroups = [
@@ -769,12 +758,30 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                   }
                 },
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _descController,
-                maxLines: 2,
-                decoration: InputDecoration(labelText: l10n.descriptionLabel),
-              ),
+              const SizedBox(height: 4),
+              if (_showDescription)
+                TextField(
+                  controller: _descController,
+                  maxLines: 4,
+                  decoration: InputDecoration(
+                    labelText: l10n.descriptionLabel,
+                    alignLabelWithHint: true,
+                  ),
+                )
+              else
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => setState(() => _showDescription = true),
+                    icon: const Icon(Icons.add, size: 16),
+                    label: Text(l10n.addDescription),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      padding: EdgeInsets.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ),
 
               const SizedBox(height: 16),
               const Divider(),

@@ -98,6 +98,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (success && mounted) {
         context.go(authProvider.initialRoute);
+      } else if (authProvider.pendingEmailConfirmation && mounted) {
+        final l10n = AppL10n.of(context);
+        await showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => AlertDialog(
+            title: Row(
+              children: [
+                const Icon(Icons.mark_email_unread_outlined,
+                    color: AppColors.primary),
+                const SizedBox(width: 12),
+                Text(l10n.confirmEmailTitle),
+              ],
+            ),
+            content: Text(l10n.confirmEmailBody(email)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.goToLogin),
+              ),
+            ],
+          ),
+        );
+        if (mounted) context.go('/login');
       } else if (mounted) {
         _showError(AppL10n.of(context).registerFailed);
       }
@@ -242,8 +266,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 validator: (value) {
                   if (value == null || value.isEmpty) return null;
                   if (value.length < 8) return AppL10n.of(context).min8Chars;
-                  if (value.length > 72)
+                  if (value.length > 72) {
                     return AppL10n.of(context).passwordMax72;
+                  }
                   return null;
                 },
                 suffixIcon: IconButton(

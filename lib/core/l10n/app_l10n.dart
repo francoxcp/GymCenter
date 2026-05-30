@@ -753,6 +753,8 @@ class AppL10n {
   String get routineNameHint => isEn ? 'E.g.: Strength' : 'Ej: Fuerza';
   String get enterAName => isEn ? 'Enter a name' : 'Ingresa un nombre';
   String get descriptionLabel => isEn ? 'Description' : 'Descripción';
+  String get addDescription =>
+      isEn ? '+ Add description' : '+ Agregar descripción';
   String get descriptionHint => isEn
       ? 'Describe the goals of this routine...'
       : 'Describe los objetivos de esta rutina...';
@@ -906,6 +908,12 @@ class AppL10n {
   String get registerFailed => isEn
       ? 'Could not complete registration. Try again.'
       : 'No se pudo completar el registro. Intenta nuevamente.';
+  String get confirmEmailTitle =>
+      isEn ? 'Check your email' : 'Revisá tu correo';
+  String confirmEmailBody(String email) => isEn
+      ? 'We sent a confirmation link to $email. Open it to activate your account, then sign in.'
+      : 'Te enviamos un enlace de confirmación a $email. Ábrelo para activar tu cuenta y luego iniciá sesión.';
+  String get goToLogin => isEn ? 'Go to login' : 'Ir a iniciar sesión';
   String get emailAlreadyExists => isEn
       ? 'An account with this email already exists.'
       : 'Ya existe una cuenta con este correo electrónico.';

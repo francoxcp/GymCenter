@@ -40,12 +40,16 @@ class AuthProvider extends ChangeNotifier {
   // true cuando el usuario llegó desde un enlace de recuperación de contraseña
   bool _isPasswordRecovery = false;
 
+  // true cuando el registro fue exitoso pero requiere confirmación de email
+  bool _pendingEmailConfirmation = false;
+
   bool get isAuthenticated => _isAuthenticated;
   User? get currentUser => _currentUser;
   bool get isAdmin => _currentUser?.role == 'admin';
   bool get isLoading => _isLoading;
   bool get isInitializing => _isInitializing;
   bool get isPasswordRecovery => _isPasswordRecovery;
+  bool get pendingEmailConfirmation => _pendingEmailConfirmation;
   String get initialRoute =>
       isAdmin ? AppConstants.adminRoute : AppConstants.homeRoute;
 
@@ -234,15 +238,23 @@ class AuthProvider extends ChangeNotifier {
         },
       );
 
-      if (response.user != null) {
-        // El trigger handle_new_user() en Supabase creará el registro en users
+      if (response.user != null && response.session != null) {
+        // Email confirmation desactivado en Supabase: sesión activa inmediata
+        _pendingEmailConfirmation = false;
         await Future.delayed(AppConstants.userCreationDelay);
         await _loadCurrentUser(response.user!.id);
         _isLoading = false;
         notifyListeners();
         return true;
+      } else if (response.user != null && response.session == null) {
+        // Email confirmation activado: el usuario debe confirmar su correo
+        _pendingEmailConfirmation = true;
+        _isLoading = false;
+        notifyListeners();
+        return false;
       }
 
+      _pendingEmailConfirmation = false;
       _isLoading = false;
       notifyListeners();
       return false;

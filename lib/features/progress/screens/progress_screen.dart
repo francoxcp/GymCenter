@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
+import '../../../core/utils/unit_converter.dart';
+import '../../../features/settings/providers/preferences_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../workouts/providers/workout_session_provider.dart';
 import '../providers/body_measurement_provider.dart';
@@ -264,6 +266,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
             : null;
 
     final l10n = AppL10n.of(context);
+    final units = Provider.of<PreferencesProvider>(context, listen: false)
+                .preferences
+                ?.language ==
+            'en'
+        ? 'imperial'
+        : 'metric';
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -302,12 +310,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
         _buildStatCard(
           l10n.weightStatLabel,
           currentWeight != null
-              ? '${currentWeight.toStringAsFixed(1)} kg'
+              ? UnitConverter.formatWeight(currentWeight, units)
               : '--',
           Icons.monitor_weight,
           Colors.green,
           periodWeightChange != null
-              ? '${periodWeightChange > 0 ? '+' : ''}${periodWeightChange.toStringAsFixed(1)} kg ${l10n.inPeriod(_selectedPeriod)}'
+              ? '${periodWeightChange > 0 ? '+' : ''}${UnitConverter.formatWeightChange(periodWeightChange, units)} ${l10n.inPeriod(_selectedPeriod)}'
               : l10n.addMeasurementsHint,
         ),
       ],
@@ -426,6 +434,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   Widget _buildWeightChart() {
     final measurementProvider = Provider.of<BodyMeasurementProvider>(context);
+    final units = Provider.of<PreferencesProvider>(context, listen: false)
+                .preferences
+                ?.language ==
+            'en'
+        ? 'imperial'
+        : 'metric';
     final days = _selectedPeriod == 'Semana'
         ? 7
         : _selectedPeriod == 'Mes'
@@ -496,7 +510,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         reservedSize: 40,
                         getTitlesWidget: (value, meta) {
                           return Text(
-                            '${value.toInt()}kg',
+                            '${UnitConverter.weightValue(value, units, decimals: 0)}${UnitConverter.weightUnit(units)}',
                             style: const TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 12,
@@ -751,7 +765,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                             backDrawRodData: BackgroundBarChartRodData(
                               show: true,
                               toY: maxY + 1,
-                              color: AppColors.textSecondary.withValues(alpha: 0.05),
+                              color: AppColors.textSecondary
+                                  .withValues(alpha: 0.05),
                             ),
                           ),
                         ],
@@ -765,7 +780,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     children: [
                       Icon(Icons.fitness_center,
                           size: 48,
-                          color: AppColors.textSecondary.withValues(alpha: 0.25)),
+                          color:
+                              AppColors.textSecondary.withValues(alpha: 0.25)),
                       const SizedBox(height: 10),
                       Text(
                         AppL10n.of(context).completeWorkoutForStats,

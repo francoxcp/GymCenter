@@ -751,7 +751,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         if (completedSetsList[j]) {
           final actualWeight = _setWeights[i]?[j] ??
               (exercise.weight > 0
-                  ? exercise.weight
+                  ? exercise.weight /
+                      _kgToLbs // exercise.weight está en lbs, convertir a kg
                   : _estimateWeight(exercise.name).toDouble());
           totalVolume += actualWeight * exercise.reps;
         }
@@ -1085,7 +1086,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         const SizedBox(width: 8),
                         _CompactRef(
                           icon: Icons.fitness_center,
-                          value: _fmtWeight(adminWeight),
+                          // adminWeight ya está en lbs (ingresado por el admin)
+                          value: adminWeight == adminWeight.roundToDouble()
+                              ? '${adminWeight.toInt()} lbs'
+                              : '${adminWeight.toStringAsFixed(1)} lbs',
                           color: AppColors.textSecondary,
                         ),
                       ],
@@ -1273,7 +1277,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         ),
                         child: Row(
                           children: [
-                            const Text('??', style: TextStyle(fontSize: 13)),
+                            const Text('🏆', style: TextStyle(fontSize: 13)),
                             const SizedBox(width: 4),
                             Text(
                               _fmtWeight(_exercisePRs[exerciseIndex]!),
@@ -1684,14 +1688,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: AppColors.primary),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.check_circle,
+                      const Icon(Icons.check_circle,
                           size: 16, color: AppColors.primary),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
-                        'COMPLETO',
-                        style: TextStyle(
+                        AppL10n.of(context).completedLabel.toUpperCase(),
+                        style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
@@ -2247,7 +2251,7 @@ class _WeightChip extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (isNewPR) ...[
-                  const Text('??', style: TextStyle(fontSize: 11)),
+                  const Text('🏆', style: TextStyle(fontSize: 11)),
                   const SizedBox(width: 4),
                 ],
                 Text(

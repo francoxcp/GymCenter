@@ -220,6 +220,9 @@ class NotificationService {
     required DateTime scheduledTime,
     String? payload,
   }) async {
+    // Garantizar inicialización antes de programar
+    await initialize();
+
     const androidDetails = AndroidNotificationDetails(
       'chamos_fitness_channel',
       'Chamos Fitness',
@@ -275,6 +278,9 @@ class NotificationService {
     required TimeOfDay time,
     String? payload,
   }) async {
+    // Garantizar inicialización antes de programar
+    await initialize();
+
     const androidDetails = AndroidNotificationDetails(
       'chamos_fitness_channel',
       'Chamos Fitness',
@@ -429,6 +435,9 @@ class NotificationService {
 
   /// Programa reporte de progreso semanal (cada domingo a las 9 AM)
   Future<void> scheduleWeeklyProgressReport() async {
+    // Garantizar inicialización antes de programar
+    await initialize();
+
     // Calcular el próximo domingo
     final now = DateTime.now();
     final daysUntilSunday = (DateTime.sunday - now.weekday) % 7;

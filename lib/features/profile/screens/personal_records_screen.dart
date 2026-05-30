@@ -112,8 +112,15 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
     }
   }
 
-  String _fmtWeight(double w) =>
-      w == w.roundToDouble() ? '${w.toInt()} kg' : '${w.toStringAsFixed(1)} kg';
+  // Los pesos de ejercicios se almacenan en kg pero se muestran en lbs
+  // (consistente con today_workout_screen.dart)
+  static const double _kgToLbs = 2.20462;
+  String _fmtWeight(double kg) {
+    final lbs = kg * _kgToLbs;
+    return lbs == lbs.roundToDouble()
+        ? '${lbs.toInt()} lbs'
+        : '${lbs.toStringAsFixed(1)} lbs';
+  }
 
   List<Exercise> get _filtered {
     return _exercises.where((e) {
@@ -222,8 +229,8 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
                         decoration: BoxDecoration(
                           color: Colors.amber.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(10),
-                          border:
-                              Border.all(color: Colors.amber.withValues(alpha: 0.6)),
+                          border: Border.all(
+                              color: Colors.amber.withValues(alpha: 0.6)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -246,7 +253,8 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
               ),
               const SizedBox(height: 4),
               Divider(
-                  color: AppColors.textSecondary.withValues(alpha: 0.15), height: 20),
+                  color: AppColors.textSecondary.withValues(alpha: 0.15),
+                  height: 20),
               Expanded(
                 child: sessions.isEmpty
                     ? Center(
@@ -254,7 +262,8 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.fitness_center,
-                                color: AppColors.textSecondary.withValues(alpha: 0.4),
+                                color: AppColors.textSecondary
+                                    .withValues(alpha: 0.4),
                                 size: 40),
                             const SizedBox(height: 12),
                             const Text(
@@ -465,7 +474,8 @@ class _PRCard extends StatelessWidget {
                     children: [
                       Icon(Icons.history,
                           size: 13,
-                          color: AppColors.textSecondary.withValues(alpha: 0.8)),
+                          color:
+                              AppColors.textSecondary.withValues(alpha: 0.8)),
                       const SizedBox(width: 4),
                       Text(
                         'Ver Historial',
@@ -581,8 +591,8 @@ class _HistorySessionCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.background,
                 borderRadius: BorderRadius.circular(8),
-                border:
-                    Border.all(color: AppColors.textSecondary.withValues(alpha: 0.2)),
+                border: Border.all(
+                    color: AppColors.textSecondary.withValues(alpha: 0.2)),
               ),
               child: Text(
                 r != null

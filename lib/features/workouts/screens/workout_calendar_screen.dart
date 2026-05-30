@@ -126,7 +126,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
             ),
             child: TableCalendar<WorkoutEvent>(
               firstDay: DateTime.utc(2024, 1, 1),
-              lastDay: DateTime.utc(2026, 12, 31),
+              lastDay: DateTime.utc(DateTime.now().year + 5, 12, 31),
               focusedDay: _focusedDay,
               selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
               calendarFormat: _calendarFormat,

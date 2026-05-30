@@ -139,7 +139,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
                       child: Text(
-                        '$greeting, $name ??',
+                        '$greeting, $name 👋',
                         style: const TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,

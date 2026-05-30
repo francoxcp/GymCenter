@@ -14,6 +14,7 @@ import '../providers/workout_progress_provider.dart';
 import '../providers/workout_session_provider.dart';
 import '../../progress/providers/achievements_provider.dart';
 import '../../progress/providers/body_measurement_provider.dart';
+import '../../settings/providers/preferences_provider.dart';
 
 class WorkoutSummaryScreen extends StatefulWidget {
   final Workout workout;
@@ -209,7 +210,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         backgroundColor: AppColors.cardBackground,
         title: Row(
           children: [
-            const Text('??', style: TextStyle(fontSize: 32)),
+            const Text('🏆', style: TextStyle(fontSize: 32)),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -293,7 +294,10 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const units = 'metric';
+    final prefsProvider =
+        Provider.of<PreferencesProvider>(context, listen: false);
+    final units =
+        prefsProvider.preferences?.language == 'en' ? 'imperial' : 'metric';
     final l10n = AppL10n.of(context);
     final motivationalMessages = l10n.motivationalMessages;
     final motivationalMessage =
@@ -541,7 +545,8 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: AppColors.primary.withValues(alpha: 0.2),
+                                    color: AppColors.primary
+                                        .withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Icon(

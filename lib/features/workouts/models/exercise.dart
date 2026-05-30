@@ -9,7 +9,7 @@ class Exercise {
   final String? thumbnailUrl;
   final String muscleGroup; // grupo muscular
   final String difficulty;
-  final double weight; // peso sugerido en kg (0 = sin peso / peso corporal)
+  final double weight; // peso sugerido en lbs (0 = sin peso / peso corporal)
 
   Exercise({
     required this.id,

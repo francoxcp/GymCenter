@@ -1180,7 +1180,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           ),
         );
       },
-    );
+    ).whenComplete(() => controller.dispose());
   }
 
   /// Bottom sheet con historial de las Últimas sesiones del ejercicio.

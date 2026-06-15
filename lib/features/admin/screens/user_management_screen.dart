@@ -316,42 +316,44 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: Text(AppL10n.of(context).editUser),
+        title: Text(AppL10n.of(dialogContext).editUser),
         content: TextField(
           controller: nameController,
           decoration: InputDecoration(
-            labelText: AppL10n.of(context).nameLabel,
+            labelText: AppL10n.of(dialogContext).nameLabel,
             border: const OutlineInputBorder(),
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppL10n.of(context).cancel),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(AppL10n.of(dialogContext).cancel),
           ),
           ElevatedButton(
             onPressed: () async {
               final userProvider =
-                  Provider.of<UserProvider>(context, listen: false);
+                  Provider.of<UserProvider>(dialogContext, listen: false);
               try {
                 await userProvider.updateUser(
                   user.id,
                   name: nameController.text,
                 );
-                if (context.mounted) {
-                  Navigator.pop(context);
+                if (dialogContext.mounted) {
+                  Navigator.pop(dialogContext);
+                }
+                if (mounted) {
                   AppSnackbar.success(context, AppL10n.of(context).userUpdated);
                 }
               } catch (e) {
-                if (context.mounted) {
-                  AppSnackbar.error(
-                      context, AppL10n.of(context).genericError(e.toString()));
+                if (dialogContext.mounted) {
+                  AppSnackbar.error(dialogContext,
+                      AppL10n.of(dialogContext).genericError(e.toString()));
                 }
               }
             },
-            child: Text(AppL10n.of(context).save),
+            child: Text(AppL10n.of(dialogContext).save),
           ),
         ],
       ),

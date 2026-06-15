@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/l10n/app_l10n.dart';
+import '../../../core/utils/app_validators.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 import '../models/workout.dart';
 import '../models/exercise.dart';
@@ -349,188 +350,243 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
         ),
         body: Form(
           key: _formKey,
-          child: ListView(
+          child: ReorderableListView.builder(
             padding: const EdgeInsets.all(16),
-            children: [
-              // Nombre
-              TextFormField(
-                controller: _nameController,
-                maxLength: 50,
-                decoration: InputDecoration(
-                  labelText: AppL10n.of(context).routineNameLabel,
-                  hintText: AppL10n.of(context).routineNameHint,
-                  border: const OutlineInputBorder(),
+            buildDefaultDragHandles: false,
+            header: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Nombre
+                TextFormField(
+                  controller: _nameController,
+                  maxLength: 50,
+                  inputFormatters: [const NameInputFormatter()],
+                  decoration: InputDecoration(
+                    labelText: AppL10n.of(context).routineNameLabel,
+                    hintText: AppL10n.of(context).routineNameHint,
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return AppL10n.of(context).enterAName;
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return AppL10n.of(context).enterAName;
-                  }
-                  return null;
-                },
-              ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // Nivel
-              DropdownButtonFormField<String>(
-                initialValue: _selectedLevel,
-                decoration: InputDecoration(
-                  labelText: AppL10n.of(context).levelLabel,
-                  border: const OutlineInputBorder(),
+                // Nivel
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedLevel,
+                  decoration: InputDecoration(
+                    labelText: AppL10n.of(context).levelLabel,
+                    border: const OutlineInputBorder(),
+                  ),
+                  items: const [
+                    AppConstants.beginnerLevel,
+                    AppConstants.intermediateLevel,
+                    AppConstants.advancedLevel,
+                  ]
+                      .map((level) => DropdownMenuItem(
+                            value: level,
+                            child: Text(level),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _selectedLevel = value);
+                    }
+                  },
                 ),
-                items: const [
-                  AppConstants.beginnerLevel,
-                  AppConstants.intermediateLevel,
-                  AppConstants.advancedLevel,
-                ]
-                    .map((level) => DropdownMenuItem(
-                          value: level,
-                          child: Text(level),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _selectedLevel = value);
-                  }
-                },
-              ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // Categoría
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      initialValue: _selectedCategory,
-                      decoration: InputDecoration(
-                        labelText: AppL10n.of(context).categoryLabel,
-                        border: const OutlineInputBorder(),
-                      ),
-                      hint: Text(AppL10n.of(context).selectACategory),
-                      items: [
-                        ..._categories.map((cat) => DropdownMenuItem(
-                              value: cat,
-                              child: Text(cat),
-                            )),
-                        DropdownMenuItem(
-                          value: _kNoCategory,
-                          child: Text(AppL10n.of(context).noCategory),
+                // Categoría
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        initialValue: _selectedCategory,
+                        decoration: InputDecoration(
+                          labelText: AppL10n.of(context).categoryLabel,
+                          border: const OutlineInputBorder(),
                         ),
-                        DropdownMenuItem(
-                          value: _kAddCategory,
-                          child: Row(
-                            children: [
-                              const Icon(Icons.add_circle_outline,
-                                  size: 16, color: AppColors.primary),
-                              const SizedBox(width: 8),
-                              Text(
-                                AppL10n.of(context).newCategory,
-                                style:
-                                    const TextStyle(color: AppColors.primary),
-                              ),
-                            ],
+                        hint: Text(AppL10n.of(context).selectACategory),
+                        items: [
+                          ..._categories.map((cat) => DropdownMenuItem(
+                                value: cat,
+                                child: Text(cat),
+                              )),
+                          DropdownMenuItem(
+                            value: _kNoCategory,
+                            child: Text(AppL10n.of(context).noCategory),
+                          ),
+                          DropdownMenuItem(
+                            value: _kAddCategory,
+                            child: Row(
+                              children: [
+                                const Icon(Icons.add_circle_outline,
+                                    size: 16, color: AppColors.primary),
+                                const SizedBox(width: 8),
+                                Text(
+                                  AppL10n.of(context).newCategory,
+                                  style:
+                                      const TextStyle(color: AppColors.primary),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value == _kAddCategory) {
+                            _showAddCategoryDialog();
+                          } else if (value != null) {
+                            setState(() => _selectedCategory = value);
+                          }
+                        },
+                        validator: (value) {
+                          if (value == null || value == _kAddCategory) {
+                            return AppL10n.of(context).selectACategory;
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: IconButton(
+                        onPressed: _showManageCategoriesDialog,
+                        icon: const Icon(Icons.tune),
+                        tooltip: AppL10n.of(context).manageCategories,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // Ejercicios
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      AppL10n.of(context).exercisesSection,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: _addExercise,
+                      icon: const Icon(Icons.add),
+                      label: Text(AppL10n.of(context).addLabel),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+              ],
+            ),
+            footer: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (_exercises.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: AppColors.cardBackground,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.fitness_center,
+                          size: 48,
+                          color: Colors.white24,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          AppL10n.of(context).noExercises,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          AppL10n.of(context).addExercisesHint,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
                           ),
                         ),
                       ],
-                      onChanged: (value) {
-                        if (value == _kAddCategory) {
-                          _showAddCategoryDialog();
-                        } else if (value != null) {
-                          setState(() => _selectedCategory = value);
-                        }
-                      },
-                      validator: (value) {
-                        if (value == null || value == _kAddCategory) {
-                          return AppL10n.of(context).selectACategory;
-                        }
-                        return null;
-                      },
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: IconButton(
-                      onPressed: _showManageCategoriesDialog,
-                      icon: const Icon(Icons.tune),
-                      tooltip: AppL10n.of(context).manageCategories,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              // Ejercicios
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppL10n.of(context).exercisesSection,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: _addExercise,
-                    icon: const Icon(Icons.add),
-                    label: Text(AppL10n.of(context).addLabel),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _saveWorkout,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.black),
+                            ),
+                          )
+                        : Text(
+                            AppL10n.of(context).saveRoutine,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              if (_exercises.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(32),
-                  decoration: BoxDecoration(
-                    color: AppColors.cardBackground,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: Column(
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+            itemCount: _exercises.length,
+            onReorder: (oldIndex, newIndex) {
+              setState(() {
+                if (newIndex > oldIndex) newIndex--;
+                final item = _exercises.removeAt(oldIndex);
+                _exercises.insert(newIndex, item);
+              });
+            },
+            itemBuilder: (context, index) {
+              final exercise = _exercises[index];
+              return Card(
+                key: ValueKey(index),
+                margin: const EdgeInsets.only(bottom: 8),
+                color: AppColors.cardBackground,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: Row(
                     children: [
-                      const Icon(
-                        Icons.fitness_center,
-                        size: 48,
-                        color: Colors.white24,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        AppL10n.of(context).noExercises,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        AppL10n.of(context).addExercisesHint,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                ...List.generate(_exercises.length, (index) {
-                  final exercise = _exercises[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    color: AppColors.cardBackground,
-                    child: ListTile(
-                      leading: CircleAvatar(
+                      CircleAvatar(
                         backgroundColor:
                             AppColors.primary.withValues(alpha: 0.2),
                         child: Text(
@@ -541,60 +597,45 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                           ),
                         ),
                       ),
-                      title: Text(
-                        exercise.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              exercise.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '${exercise.sets} series × ${exercise.reps} reps',
+                              style: const TextStyle(
+                                  color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
                       ),
-                      subtitle: Text(
-                        '${exercise.sets} series × ${exercise.reps} reps',
-                        style: const TextStyle(color: AppColors.textSecondary),
+                      ReorderableDelayedDragStartListener(
+                        index: index,
+                        child: const Padding(
+                          padding: EdgeInsets.all(8),
+                          child: Icon(Icons.drag_handle, color: Colors.white54),
+                        ),
                       ),
-                      trailing: IconButton(
+                      IconButton(
                         icon:
                             const Icon(Icons.delete_outline, color: Colors.red),
                         onPressed: () => _removeExercise(index),
+                        padding: EdgeInsets.zero,
+                        constraints:
+                            const BoxConstraints(minWidth: 36, minHeight: 36),
                       ),
-                    ),
-                  );
-                }),
-
-              const SizedBox(height: 24),
-
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _saveWorkout,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    ],
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.black),
-                          ),
-                        )
-                      : Text(
-                          AppL10n.of(context).saveRoutine,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                 ),
-              ),
-
-              const SizedBox(height: 16),
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -804,6 +845,8 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                     labelText: AppL10n.of(context).exerciseNameLabel,
                     hintText: AppL10n.of(context).exerciseNameHint,
                   ),
+                  inputFormatters: [const NameInputFormatter()],
+                  maxLength: 50,
                   validator: (value) => value?.trim().isEmpty ?? true
                       ? AppL10n.of(context).requiredField
                       : null,

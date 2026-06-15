@@ -59,6 +59,9 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
           Provider.of<WorkoutSessionProvider>(context, listen: false);
       final progressProvider =
           Provider.of<WorkoutProgressProvider>(context, listen: false);
+      // Resetear búsqueda: el texto del campo se pierde al navegar;
+      // sin esto, el provider filtraría invisiblemente con la query anterior.
+      workoutProvider.setSearchQuery('');
       workoutProvider.loadWorkouts(
         userId: authProvider.currentUser?.id,
         isAdmin: authProvider.isAdmin,

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
+import '../../../core/utils/app_validators.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 import '../models/workout.dart';
 import '../models/exercise.dart';
@@ -143,16 +144,18 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
         ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
+            : Form(
+                key: _formKey,
+                child: ReorderableListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  buildDefaultDragHandles: false,
+                  header: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextFormField(
                         controller: _nameController,
                         maxLength: 50,
+                        inputFormatters: [const NameInputFormatter()],
                         decoration: InputDecoration(
                           labelText: l10n.routineNameLabel,
                           border: const OutlineInputBorder(),
@@ -226,6 +229,11 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                         ],
                       ),
                       const SizedBox(height: 12),
+                    ],
+                  ),
+                  footer: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                       if (_exercises.isEmpty)
                         Container(
                           padding: const EdgeInsets.all(32),
@@ -241,17 +249,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                                   color: AppColors.textSecondary),
                             ),
                           ),
-                        )
-                      else
-                        ..._exercises.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final exercise = entry.value;
-                          return _ExerciseCard(
-                            exercise: exercise,
-                            onEdit: () => _editExercise(index),
-                            onDelete: () => _removeExercise(index),
-                          );
-                        }),
+                        ),
                       const SizedBox(height: 32),
                       SizedBox(
                         width: double.infinity,
@@ -276,6 +274,24 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                       ),
                     ],
                   ),
+                  itemCount: _exercises.length,
+                  onReorder: (oldIndex, newIndex) {
+                    setState(() {
+                      if (newIndex > oldIndex) newIndex--;
+                      final item = _exercises.removeAt(oldIndex);
+                      _exercises.insert(newIndex, item);
+                    });
+                  },
+                  itemBuilder: (context, index) {
+                    final exercise = _exercises[index];
+                    return _ExerciseCard(
+                      key: ValueKey(index),
+                      exercise: exercise,
+                      dragIndex: index,
+                      onEdit: () => _editExercise(index),
+                      onDelete: () => _removeExercise(index),
+                    );
+                  },
                 ),
               ),
       ),
@@ -340,8 +356,8 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
       await workoutProvider.updateWorkout(widget.workout.id, updatedWorkout);
 
       if (mounted) {
-        Navigator.pop(context, true);
         AppSnackbar.success(context, AppL10n.of(context).routineUpdated);
+        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
@@ -394,8 +410,8 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
       await workoutProvider.deleteWorkout(widget.workout.id);
 
       if (mounted) {
-        Navigator.pop(context, true);
         AppSnackbar.success(context, AppL10n.of(context).routineDeletedOk);
+        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
@@ -414,11 +430,14 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
 
 class _ExerciseCard extends StatelessWidget {
   final Exercise exercise;
+  final int dragIndex;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const _ExerciseCard({
+    super.key,
     required this.exercise,
+    required this.dragIndex,
     required this.onEdit,
     required this.onDelete,
   });
@@ -431,37 +450,59 @@ class _ExerciseCard extends StatelessWidget {
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: ListTile(
-        leading: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Icon(Icons.fitness_center, color: AppColors.primary),
-        ),
-        title: Text(
-          exercise.name,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        subtitle: Text(
-          '${exercise.sets} series × ${exercise.reps} reps × ${exercise.restSeconds}s',
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
           children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.fitness_center, color: AppColors.primary),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    exercise.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${exercise.sets} series × ${exercise.reps} reps × ${exercise.restSeconds}s',
+                    style: const TextStyle(
+                        color: AppColors.textSecondary, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            ReorderableDelayedDragStartListener(
+              index: dragIndex,
+              child: const Padding(
+                padding: EdgeInsets.all(8),
+                child: Icon(Icons.drag_handle, color: Colors.white54),
+              ),
+            ),
             IconButton(
               icon: const Icon(Icons.edit, color: Colors.blue, size: 20),
               onPressed: onEdit,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
             ),
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.red, size: 20),
               onPressed: onDelete,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
             ),
           ],
         ),
@@ -705,6 +746,8 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
             children: [
               TextField(
                 controller: _nameController,
+                inputFormatters: [const NameInputFormatter()],
+                maxLength: 50,
                 decoration: InputDecoration(labelText: l10n.nameLabel),
               ),
               const SizedBox(height: 12),

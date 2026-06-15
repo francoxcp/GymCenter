@@ -324,8 +324,8 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
       await userProvider.syncAssignedWorkout(widget.user.id, firstWorkout);
 
       if (!mounted) return;
-      Navigator.pop(context);
       AppSnackbar.success(context, AppL10n.of(context).routineSaved);
+      Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
       AppSnackbar.error(context, AppL10n.of(context).errorSaving(e.toString()));
@@ -543,7 +543,8 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                     border: Border.all(
                                       color: hasChange
                                           ? AppColors.primary
-                                          : Colors.amber.withValues(alpha: 0.45),
+                                          : Colors.amber
+                                              .withValues(alpha: 0.45),
                                       width: hasChange ? 2 : 1.5,
                                     ),
                                   ),
@@ -553,7 +554,8 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                         width: 46,
                                         height: 46,
                                         decoration: BoxDecoration(
-                                          color: Colors.amber.withValues(alpha: 0.12),
+                                          color: Colors.amber
+                                              .withValues(alpha: 0.12),
                                           borderRadius:
                                               BorderRadius.circular(10),
                                         ),
@@ -591,7 +593,8 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                                         vertical: 2),
                                                     decoration: BoxDecoration(
                                                       color: AppColors.primary
-                                                          .withValues(alpha: 0.2),
+                                                          .withValues(
+                                                              alpha: 0.2),
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               6),
@@ -638,7 +641,8 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                       ),
                                       Icon(
                                         Icons.add_circle_outline,
-                                        color: Colors.amber.withValues(alpha: 0.7),
+                                        color:
+                                            Colors.amber.withValues(alpha: 0.7),
                                         size: 22,
                                       ),
                                     ],
@@ -657,7 +661,8 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                 border: Border.all(
                                   color: hasChange
                                       ? AppColors.primary
-                                      : AppColors.primary.withValues(alpha: 0.4),
+                                      : AppColors.primary
+                                          .withValues(alpha: 0.4),
                                   width: hasChange ? 2 : 1.5,
                                 ),
                               ),
@@ -754,7 +759,8 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                       _isSaving || _isLoadingSchedule ? null : _saveSchedule,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
+                    disabledBackgroundColor:
+                        AppColors.primary.withValues(alpha: 0.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

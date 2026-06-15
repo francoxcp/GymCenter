@@ -1,3 +1,26 @@
+import 'package:flutter/services.dart';
+
+/// Formatter that limits name fields to max 40 non-digit characters
+/// and max 10 digits (0-9) simultaneously.
+class NameInputFormatter extends TextInputFormatter {
+  final int maxLetters;
+  final int maxDigits;
+
+  const NameInputFormatter({this.maxLetters = 40, this.maxDigits = 10});
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text;
+    final digits = text.replaceAll(RegExp(r'[^0-9]'), '').length;
+    final letters = text.replaceAll(RegExp(r'[0-9]'), '').length;
+    if (digits > maxDigits || letters > maxLetters) return oldValue;
+    return newValue;
+  }
+}
+
 /// Centralized validation helpers to avoid duplicating regex patterns.
 class AppValidators {
   AppValidators._();

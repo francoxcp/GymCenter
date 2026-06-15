@@ -194,11 +194,16 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
-  /// Loads (or refreshes) exercises for [workoutId] from Supabase.
+  /// Loads exercises for [workoutId] from Supabase.
+  /// Skips the fetch if exercises are already in memory to avoid
+  /// overwriting valid cached data with an empty network response.
   /// Called when entering workout detail or starting a workout session.
   Future<void> ensureExercisesLoaded(String workoutId) async {
     final idx = _workouts.indexWhere((w) => w.id == workoutId);
     if (idx == -1) return;
+
+    // Si ya hay ejercicios en memoria, no es necesario volver a buscarlos
+    if (_workouts[idx].exercises.isNotEmpty) return;
 
     try {
       final response = await SupabaseConfig.client
@@ -263,6 +268,7 @@ class WorkoutProvider extends ChangeNotifier {
           .insert({
             'name': workout.name,
             'duration': workout.duration,
+            'exercise_count': workout.exercises.length,
             'level': workout.level,
             'image_url': workout.imageUrl,
             'description': workout.description,
@@ -341,22 +347,29 @@ class WorkoutProvider extends ChangeNotifier {
       throw Exception('offline_edit');
     }
     try {
+      // Guardar IDs de ejercicios anteriores ANTES de cualquier modificación.
+      // Así, si el insert posterior falla, los ejercicios siguen existiendo en la BD.
+      final currentIdx = _workouts.indexWhere((w) => w.id == workoutId);
+      final oldExerciseIds = currentIdx != -1
+          ? _workouts[currentIdx]
+              .exercises
+              .map((e) => e.id)
+              .where((id) => id.isNotEmpty)
+              .toList()
+          : <String>[];
+
       // Actualizar metadatos de la rutina
       await SupabaseConfig.client.from('workouts').update({
         'name': workout.name,
         'duration': workout.duration,
+        'exercise_count': workout.exercises.length,
         'level': workout.level,
         'image_url': workout.imageUrl,
         'description': workout.description,
       }).eq('id', workoutId);
 
-      // Eliminar ejercicios anteriores
-      await SupabaseConfig.client
-          .from('exercises')
-          .delete()
-          .eq('workout_id', workoutId);
-
-      // Insertar ejercicios actualizados
+      // Insertar nuevos ejercicios PRIMERO.
+      // Si este paso falla, los ejercicios anteriores siguen en la BD (no se pierden).
       if (workout.exercises.isNotEmpty) {
         final exercisesData = workout.exercises
             .asMap()
@@ -375,6 +388,15 @@ class WorkoutProvider extends ChangeNotifier {
             .toList();
 
         await SupabaseConfig.client.from('exercises').insert(exercisesData);
+      }
+
+      // Eliminar ejercicios anteriores por sus IDs específicos,
+      // SOLO después de que los nuevos se insertaron correctamente.
+      if (oldExerciseIds.isNotEmpty) {
+        await SupabaseConfig.client
+            .from('exercises')
+            .delete()
+            .filter('id', 'in', '("${oldExerciseIds.join('","')}")');
       }
 
       // Leer ejercicios recién insertados desde Supabase (con IDs de la BD)

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../shared/services/share_helper.dart';
+import '../../organization/services/organization_service.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../core/theme/app_theme.dart';
@@ -103,11 +104,17 @@ class _TrainerLinkCardState extends State<TrainerLinkCard> {
             icon: Icon(Icons.copy, color: AppColors.primaryText),
             onPressed: code == null
                 ? null
-                : () {
-                    Clipboard.setData(ClipboardData(text: code));
-                    AppSnackbar.success(
-                        context, isEn ? 'Code copied' : 'Código copiado');
-                  },
+                : () => ShareHelper.copy(context, code,
+                    okMessage: isEn ? 'Code copied' : 'Código copiado'),
+          ),
+          IconButton(
+            tooltip: isEn ? 'Send by WhatsApp' : 'Enviar por WhatsApp',
+            icon: Icon(Icons.chat, color: AppColors.primaryText),
+            onPressed: code == null
+                ? null
+                : () => ShareHelper.whatsapp(isEn
+                    ? 'Join me on the training app with my code $code: ${OrganizationService.appOrigin}/register'
+                    : 'Únete a mis rutinas con mi código $code. Crea tu cuenta aquí: ${OrganizationService.appOrigin}/register'),
           ),
           IconButton(
             tooltip: isEn ? 'New code' : 'Código nuevo',

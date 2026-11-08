@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../config/supabase_config.dart';
 
 /// Servicio para gestionar funciones de seguridad de la cuenta
 class SecurityService {
@@ -85,7 +86,7 @@ class SecurityService {
 
       await _supabase.auth.resetPasswordForEmail(
         email,
-        redirectTo: 'chamosfitnessapp://reset-password',
+        redirectTo: SupabaseConfig.passwordResetRedirect,
       );
 
       return {

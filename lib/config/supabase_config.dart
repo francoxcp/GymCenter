@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Configuración centralizada de Supabase
@@ -57,4 +58,15 @@ class SupabaseConfig {
 
   /// Obtiene el ID del usuario actual (si existe)
   static String? get currentUserId => auth.currentUser?.id;
+
+  /// URL a la que Supabase redirige desde el correo de recuperación de
+  /// contraseña. En web es el propio sitio; en móvil, el deep link de la app.
+  /// (Debe estar en Authentication → URL Configuration → Redirect URLs.)
+  static String get passwordResetRedirect =>
+      kIsWeb ? '${Uri.base.origin}/' : 'chamosfitnessapp://reset-password';
+
+  /// URL de retorno del correo de confirmación de cuenta.
+  /// En móvil se usa la configuración por defecto del proyecto (null).
+  static String? get emailConfirmRedirect =>
+      kIsWeb ? '${Uri.base.origin}/' : null;
 }

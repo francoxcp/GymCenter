@@ -60,6 +60,10 @@ class StorageService {
     int maxWidth = 1080,
     int maxHeight = 1080,
   }) async {
+    // En web, flutter_image_compress necesita librerías JS extra. El
+    // selector de imágenes (image_picker) ya redimensiona a 1080 px y
+    // aplica calidad 85 en el navegador, así que se usan los bytes tal cual.
+    if (kIsWeb) return imageBytes;
     try {
       final result = await FlutterImageCompress.compressWithList(
         imageBytes,
@@ -108,15 +112,15 @@ class StorageService {
 
       // Generar nombre único para el archivo
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      const extension = 'jpg';
+      final extension = _imageExtension(compressedData);
       final fileName = '$userId/$timestamp.$extension';
 
       // Subir a Supabase Storage
       await _supabase.storage
           .from(profilePhotosBucket)
           .uploadBinary(fileName, compressedData,
-              fileOptions: const FileOptions(
-                contentType: 'image/jpeg',
+              fileOptions: FileOptions(
+                contentType: _imageMimeType(compressedData),
                 upsert: true,
               ));
 
@@ -352,5 +356,40 @@ class StorageService {
     final validExtensions = ['.mp4', '.mov', '.avi', '.webm'];
     final extension = path.extension(fileName).toLowerCase();
     return validExtensions.contains(extension);
+  }
+
+  /// Detecta el tipo real de imagen por sus primeros bytes (en web la
+  /// imagen no se recomprime a JPEG y puede ser PNG o WebP).
+  static String _imageMimeType(Uint8List bytes) {
+    if (bytes.length >= 8 &&
+        bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47) {
+      return 'image/png';
+    }
+    if (bytes.length >= 12 &&
+        bytes[0] == 0x52 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x46 &&
+        bytes[8] == 0x57 &&
+        bytes[9] == 0x45 &&
+        bytes[10] == 0x42 &&
+        bytes[11] == 0x50) {
+      return 'image/webp';
+    }
+    return 'image/jpeg';
+  }
+
+  static String _imageExtension(Uint8List bytes) {
+    switch (_imageMimeType(bytes)) {
+      case 'image/png':
+        return 'png';
+      case 'image/webp':
+        return 'webp';
+      default:
+        return 'jpg';
+    }
   }
 }

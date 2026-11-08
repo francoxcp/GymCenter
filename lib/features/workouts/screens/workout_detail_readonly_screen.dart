@@ -8,6 +8,7 @@ import '../providers/workout_provider.dart';
 import '../providers/workout_progress_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'edit_workout_screen.dart';
+import '../../../shared/navigation/safe_pop.dart';
 
 class WorkoutDetailReadonlyScreen extends StatefulWidget {
   final String workoutId;
@@ -29,7 +30,7 @@ class _WorkoutDetailReadonlyScreenState
   void _navigateBack() {
     if (_isPopping) return;
     _isPopping = true;
-    context.pop();
+    context.popOrGo('/workouts');
   }
 
   @override
@@ -199,7 +200,7 @@ class _WorkoutDetailReadonlyScreenState
                                   ),
                                 );
                                 if (result == true && context.mounted) {
-                                  context.pop();
+                                  context.popOrGo('/workouts');
                                 }
                               },
                               style: OutlinedButton.styleFrom(
@@ -262,7 +263,7 @@ class _WorkoutDetailReadonlyScreenState
                                     if (context.mounted) {
                                       AppSnackbar.success(context,
                                           AppL10n.of(context).routineDeletedOk);
-                                      context.pop();
+                                      context.popOrGo('/workouts');
                                     }
                                   } catch (e) {
                                     if (context.mounted) {

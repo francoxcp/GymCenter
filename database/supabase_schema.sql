@@ -268,7 +268,7 @@ BEGIN
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'name', 'Usuario Nuevo'),
-    COALESCE(NEW.raw_user_meta_data->>'role', 'user'),
+    'user', -- Nunca confiar en el rol enviado por el cliente
     'Principiante'
   );
   

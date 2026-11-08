@@ -101,59 +101,6 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> assignMealPlan(String userId, String? mealPlanId) async {
-    try {
-      await SupabaseConfig.client
-          .from(AppConstants.usersTable)
-          .update({'assigned_meal_plan_id': mealPlanId}).eq('id', userId);
-
-      // Actualizar localmente
-      final userIndex = _users.indexWhere((u) => u.id == userId);
-      if (userIndex != -1) {
-        _users[userIndex] = _users[userIndex].copyWith(
-          assignedMealPlanId: mealPlanId,
-        );
-        notifyListeners();
-      }
-
-      // Actualizar AuthProvider si es el usuario actual
-      if (_authProvider?.currentUser?.id == userId) {
-        await _authProvider!.refreshUser();
-      }
-    } catch (e) {
-      debugPrint('Error assigning meal plan: $e');
-      rethrow;
-    }
-  }
-
-  Future<void> assignBoth(
-      String userId, String workoutId, String mealPlanId) async {
-    try {
-      await SupabaseConfig.client.from('users').update({
-        'assigned_workout_id': workoutId,
-        'assigned_meal_plan_id': mealPlanId,
-      }).eq('id', userId);
-
-      // Actualizar localmente
-      final userIndex = _users.indexWhere((u) => u.id == userId);
-      if (userIndex != -1) {
-        _users[userIndex] = _users[userIndex].copyWith(
-          assignedWorkoutId: workoutId,
-          assignedMealPlanId: mealPlanId,
-        );
-        notifyListeners();
-      }
-
-      // Actualizar AuthProvider si es el usuario actual
-      if (_authProvider?.currentUser?.id == userId) {
-        await _authProvider!.refreshUser();
-      }
-    } catch (e) {
-      debugPrint('Error assigning workout and meal plan: $e');
-      rethrow;
-    }
-  }
-
   /// Asigna una rutina a un día específico (delete + insert)
   Future<void> assignWorkoutToDay(
       String userId, int dayOfWeek, String workoutId) async {

@@ -46,7 +46,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
   void initState() {
     super.initState();
 
-    // Guardar sesión y actualizar estadÍsticas
+    // Guardar sesión y actualizar estadísticas
     _saveWorkoutSession();
 
     // Cargar próxima sesión programada
@@ -66,7 +66,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
       debugPrint(
           '?? _saveWorkoutSession: userId=$userId workoutId=${widget.workout.id}');
 
-      // Guardar sesión en workout_sessions y actualizar estadÍsticas
+      // Guardar sesión en workout_sessions y actualizar estadísticas
       // Construir datos de ejercicios con series reales si están disponibles
       List<Map<String, dynamic>>? exercisesData;
       if (widget.completedSets != null &&
@@ -116,7 +116,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         }
       }
 
-      // Refrescar usuario para obtener estadÍsticas actualizadas
+      // Refrescar usuario para obtener estadísticas actualizadas
       if (mounted) await authProvider.refreshUser();
 
       // Verificar y desbloquear logros

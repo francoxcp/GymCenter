@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -66,12 +67,15 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
       }
 
       // Non-blocking cache lookup — returns instantly if not cached.
+      // En web no hay caché en disco: el navegador ya cachea el video.
       FileInfo? cacheInfo;
-      try {
-        cacheInfo =
-            await DefaultCacheManager().getFileFromCache(widget.videoUrl);
-      } catch (e) {
-        debugPrint('Error checking video cache: $e');
+      if (!kIsWeb) {
+        try {
+          cacheInfo =
+              await DefaultCacheManager().getFileFromCache(widget.videoUrl);
+        } catch (e) {
+          debugPrint('Error checking video cache: $e');
+        }
       }
 
       if (cacheInfo != null) {
@@ -80,7 +84,9 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
         _controller =
             VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
         // Download in background so next open is instant
-        DefaultCacheManager().downloadFile(widget.videoUrl).ignore();
+        if (!kIsWeb) {
+          DefaultCacheManager().downloadFile(widget.videoUrl).ignore();
+        }
       }
 
       _controller.setLooping(true);

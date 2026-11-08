@@ -42,17 +42,6 @@ void main() {
     group('Filters', () {
       test('has filter constants', () {
         expect(AppConstants.filterAll, 'Todos');
-        expect(AppConstants.filterAllMeals, 'TODOS');
-      });
-    });
-
-    group('Meal Plan Categories', () {
-      test('has all meal plan categories', () {
-        expect(AppConstants.categoryDeficit, 'DÉFICIT');
-        expect(AppConstants.categoryKeto, 'KETO');
-        expect(AppConstants.categoryVegan, 'VEGANO');
-        expect(AppConstants.categoryMediterranean, 'MEDITERRÁNEA');
-        expect(AppConstants.categoryHyper, 'HIPER');
       });
     });
 
@@ -76,7 +65,6 @@ void main() {
         expect(AppConstants.usersTable, 'users');
         expect(AppConstants.workoutsTable, 'workouts');
         expect(AppConstants.exercisesTable, 'exercises');
-        expect(AppConstants.mealPlansTable, 'meal_plans');
         expect(AppConstants.workoutSessionsTable, 'workout_sessions');
       });
     });

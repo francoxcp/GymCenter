@@ -511,7 +511,7 @@ class _ExerciseCard extends StatelessWidget {
   }
 }
 
-// DiÁlogo para agregar/editar ejercicios con video
+// Diálogo para agregar/editar ejercicios con video
 class _ExerciseDialog extends StatefulWidget {
   final Exercise? exercise;
   final Function(Exercise) onSave;

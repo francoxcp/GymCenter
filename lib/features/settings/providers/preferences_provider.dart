@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -217,6 +218,18 @@ class PreferencesProvider with ChangeNotifier {
 
       if (response != null) {
         _preferences = UserPreferences.fromJson(response);
+        // En web la hora del recordatorio vive en el servidor (Web Push):
+        // así se conserva al cambiar de navegador o reinstalar la PWA.
+        if (kIsWeb) {
+          final parts = (response['reminder_time'] as String?)?.split(':');
+          if (parts != null && parts.length >= 2) {
+            final h = int.tryParse(parts[0]);
+            final m = int.tryParse(parts[1]);
+            if (h != null && m != null) {
+              _workoutReminderTime = TimeOfDay(hour: h, minute: m);
+            }
+          }
+        }
       }
     } catch (e) {
       _error = 'Error al cargar preferencias: $e';
@@ -311,7 +324,16 @@ class PreferencesProvider with ChangeNotifier {
       notificationsEnabled: enabled,
     );
 
-    return await updatePreferences(updated);
+    final ok = await updatePreferences(updated);
+    // Al reactivar notificaciones, volver a programar el recordatorio diario
+    // si ya estaba activado (antes quedaba cancelado hasta reiniciar la app).
+    if (ok && enabled && updated.workoutReminders) {
+      await notificationService.scheduleWorkoutReminder(
+        time: _workoutReminderTime,
+        userId: _supabase.auth.currentUser?.id,
+      );
+    }
+    return ok;
   }
 
   /// Alternar recordatorios de entrenamiento

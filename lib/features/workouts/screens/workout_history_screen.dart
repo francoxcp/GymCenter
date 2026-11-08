@@ -8,6 +8,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../providers/workout_session_provider.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import 'package:intl/intl.dart';
+import '../../../shared/navigation/safe_pop.dart';
 
 class WorkoutHistoryScreen extends StatefulWidget {
   const WorkoutHistoryScreen({super.key});
@@ -59,7 +60,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrGo('/workouts'),
         ),
         title: Text(AppL10n.of(context).workoutHistory),
       ),

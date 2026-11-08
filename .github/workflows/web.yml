@@ -1,0 +1,141 @@
+name: Web (PWA) – build y despliegue
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: web-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  build:
+    name: Analizar, probar y compilar
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Versión fijada a la del pubspec.lock del proyecto (Flutter 3.35).
+      # Subirla requiere actualizar dependencias (p. ej. intl) a la vez.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.35.x
+          cache: true
+
+      - name: Versión de Flutter
+        run: flutter --version
+
+      - name: Dependencias
+        run: flutter pub get
+
+      - name: Análisis estático
+        run: flutter analyze --no-fatal-infos
+
+      - name: Tests
+        run: flutter test
+
+      - name: Compilar web
+        run: |
+          # Sin secrets (p. ej. antes de configurarlos) se compila con valores
+          # de prueba para validar la build; el despliegue se omite.
+          SUPABASE_URL="${SUPABASE_URL:-https://placeholder.supabase.co}"
+          SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY:-placeholder-anon-key}"
+          flutter build web --release \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
+            --dart-define=VAPID_PUBLIC_KEY="$VAPID_PUBLIC_KEY" \
+            --dart-define=SENTRY_DSN="$SENTRY_DSN"
+
+      - name: Prueba de humo en Chrome (headless)
+        run: |
+          # Servidor estático con fallback SPA (rutas sin extensión → index.html)
+          cat > /tmp/serve.py <<'PY'
+          import http.server, os, sys
+          root = sys.argv[1]
+          class H(http.server.SimpleHTTPRequestHandler):
+              def __init__(self, *a, **k): super().__init__(*a, directory=root, **k)
+              def send_head(self):
+                  p = self.path.split('?')[0]
+                  if '.' not in os.path.basename(p): self.path = '/index.html'
+                  return super().send_head()
+              def log_message(self, *a): pass
+          http.server.ThreadingHTTPServer(('127.0.0.1', 8080), H).serve_forever()
+          PY
+          python3 /tmp/serve.py build/web &
+          npm install --no-save --silent puppeteer-core@23
+          node tool/web_smoke_test.mjs http://127.0.0.1:8080
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/web
+          retention-days: 7
+
+  deploy:
+    name: Desplegar en Vercel
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    steps:
+      - name: Comprobar configuración de Vercel
+        id: check
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ] || [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "Faltan secrets (VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID, SUPABASE_URL, SUPABASE_ANON_KEY). Se omite el despliegue."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/download-artifact@v4
+        if: steps.check.outputs.enabled == 'true'
+        with:
+          name: web-build
+          path: build/web
+
+      - uses: actions/setup-node@v4
+        if: steps.check.outputs.enabled == 'true'
+        with:
+          node-version: 20
+
+      - name: Desplegar
+        id: deploy
+        if: steps.check.outputs.enabled == 'true'
+        run: |
+          npm install --global vercel@latest
+          PROD_FLAG=""
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            PROD_FLAG="--prod"
+          fi
+          URL=$(vercel deploy build/web --yes $PROD_FLAG --token="$VERCEL_TOKEN")
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "### 🚀 Desplegado: $URL" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comentar URL de vista previa en el PR
+        if: steps.check.outputs.enabled == 'true' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `🚀 Vista previa de la web: ${{ steps.deploy.outputs.url }}\n\n(Las notificaciones y el bloqueo con Face ID/huella se prueban mejor en el dominio de producción.)`,
+            });

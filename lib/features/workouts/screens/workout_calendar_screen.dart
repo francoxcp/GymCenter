@@ -1,5 +1,4 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../../core/theme/app_theme.dart';
@@ -7,6 +6,7 @@ import '../../../core/l10n/app_l10n.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/workout_session_provider.dart';
 import '../providers/workout_provider.dart';
+import '../../../shared/navigation/safe_pop.dart';
 
 class WorkoutCalendarScreen extends StatefulWidget {
   const WorkoutCalendarScreen({super.key});
@@ -50,13 +50,13 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
     final sessions = sessionProvider.sessions;
     final workouts = workoutProvider.workouts;
 
-    // Construir mapa de eventos por dÍa normalizado (sin hora)
+    // Construir mapa de eventos por día normalizado (sin hora)
     final Map<DateTime, List<WorkoutEvent>> events = {};
     final l10n = AppL10n.of(context);
     for (final session in sessions) {
       final key =
           DateTime(session.date.year, session.date.month, session.date.day);
-      // Buscar el nombre del workout; si no estÁ cargado, usar ID corto
+      // Buscar el nombre del workout; si no está cargado, usar ID corto
       final workout =
           workouts.where((w) => w.id == session.workoutId).firstOrNull;
       final name = workout?.name ?? l10n.workoutFallback;
@@ -82,7 +82,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrGo('/workouts'),
         ),
         title: Text(AppL10n.of(context).workoutCalendar),
         actions: [
@@ -198,7 +198,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
           // Estadísticas del mes
           _buildMonthStats(),
 
-          // Eventos del dÍa seleccionado
+          // Eventos del día seleccionado
           Expanded(
             child: _buildSelectedDayEvents(),
           ),

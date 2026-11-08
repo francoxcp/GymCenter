@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:encrypt/encrypt.dart' as enc;
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../web/web_bridge.dart';
 
 /// Service to export all user data as an AES-256 encrypted file for GDPR compliance.
 /// The exported file is not human-readable without the password set at export time.
@@ -73,9 +74,19 @@ class DataExportService {
     final jsonStr = const JsonEncoder.withIndent('  ').convert(exportData);
     final encryptedBytes = _encryptJson(jsonStr, password);
 
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+
+    // Web: descargar el archivo directamente desde el navegador
+    if (kIsWeb) {
+      WebBridge.download(
+        fileName: 'chamos_fitness_$timestamp.enc',
+        bytes: encryptedBytes,
+      );
+      return;
+    }
+
     // Guardar el archivo cifrado en el directorio temporal
     final dir = await getTemporaryDirectory();
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
     final file = File('${dir.path}/chamos_fitness_$timestamp.enc');
     await file.writeAsBytes(encryptedBytes);
 

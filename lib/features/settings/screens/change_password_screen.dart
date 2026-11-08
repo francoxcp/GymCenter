@@ -9,6 +9,7 @@ import '../../../shared/widgets/app_snackbar.dart';
 import '../../../shared/services/security_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../shared/services/secure_screen_service.dart';
+import '../../../shared/navigation/safe_pop.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -53,7 +54,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             ? null
             : IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () => context.pop(),
+                onPressed: () => context.popOrGo('/settings'),
               ),
         title: Text(AppL10n.of(context).changePasswordTitle),
       ),
@@ -238,7 +239,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
               const SizedBox(height: 32),
 
-              // BotÓn de cambiar contraseña
+              // Botón de cambiar contraseña
               PrimaryButton(
                 text: l10n.changePasswordButton,
                 isLoading: _isLoading,
@@ -389,12 +390,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           AppSnackbar.success(context, AppL10n.of(context).passwordChanged);
 
           if (isRecovery) {
-            // Limpiar el flag — el router redirigirá al home automáticamente
+            // Limpiar el flag y entrar a la app
             authProvider.clearPasswordRecovery();
+            context.go(authProvider.initialRoute);
           } else {
             // Volver a la pantalla anterior después de un breve delay
             Future.delayed(const Duration(seconds: 1), () {
-              if (mounted) context.pop();
+              if (mounted) context.popOrGo('/settings');
             });
           }
         } else {

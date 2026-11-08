@@ -1,6 +1,5 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import '../../../shared/services/secure_screen_service.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -12,6 +11,7 @@ import '../models/body_measurement.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/app_snackbar.dart';
+import '../../../shared/navigation/safe_pop.dart';
 
 class BodyMeasurementsScreen extends StatefulWidget {
   const BodyMeasurementsScreen({super.key});
@@ -51,7 +51,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrGo('/progress'),
         ),
         title: Text(AppL10n.of(context).bodyMeasurementsTitle),
         actions: [
@@ -639,7 +639,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                             }
                           }
 
-                          // Validar rangos mÁximos razonables
+                          // Validar rangos máximos razonables
                           final maxRanges = <TextEditingController, double>{
                             weightController: 300,
                             heightController: 250,

@@ -141,8 +141,8 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                     child: Semantics(
                       header: true,
                       child: Text(widget.title,
-                          style: const TextStyle(
-                              color: Colors.white,
+                          style: TextStyle(
+                              color: AppColors.textPrimary,
                               fontSize: 17,
                               fontWeight: FontWeight.bold)),
                     ),
@@ -161,7 +161,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                         child: Center(child: CircularProgressIndicator()),
                       )
                     : _comments.isEmpty
-                        ? const Padding(
+                        ? Padding(
                             padding: EdgeInsets.all(32),
                             child: Text(
                               'Aún no hay comentarios.\nEscribe el primero 👇',
@@ -203,14 +203,14 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                                       children: [
                                         Text(
                                           '${mine ? 'Tú' : c.authorName} · ${timeAgo(c.createdAt)}',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                               color: AppColors.textSecondary,
                                               fontSize: 12),
                                         ),
                                         const SizedBox(height: 2),
                                         Text(c.body,
-                                            style: const TextStyle(
-                                                color: Colors.white,
+                                            style: TextStyle(
+                                                color: AppColors.textPrimary,
                                                 fontSize: 15)),
                                       ],
                                     ),

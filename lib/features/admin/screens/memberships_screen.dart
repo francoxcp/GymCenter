@@ -74,7 +74,7 @@ class _MembershipsScreenState extends State<MembershipsScreen> {
                     selected: _tab == e.key,
                     selectedColor: membershipColor(e.key),
                     labelStyle: TextStyle(
-                        color: _tab == e.key ? Colors.black : Colors.white,
+                        color: _tab == e.key ? Colors.black : AppColors.textPrimary,
                         fontWeight: FontWeight.w600),
                     onSelected: (_) => setState(() => _tab = e.key),
                   ),
@@ -99,7 +99,7 @@ class _MembershipsScreenState extends State<MembershipsScreen> {
                     MembershipStatus.active => 'Aún no hay socios al día.',
                   },
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
               )
             else
@@ -119,8 +119,8 @@ class _MembershipsScreenState extends State<MembershipsScreen> {
                           color: membershipColor(u.membershipStatus)),
                     ),
                     title: Text(u.name,
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.w600)),
+                        style: TextStyle(
+                            color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
                     subtitle: Text(
                       u.membershipEnd == null
                           ? 'Sin membresía'
@@ -129,7 +129,7 @@ class _MembershipsScreenState extends State<MembershipsScreen> {
                           color: membershipColor(u.membershipStatus)),
                     ),
                     trailing: isOwner
-                        ? const Icon(Icons.payments_outlined,
+                        ? Icon(Icons.payments_outlined,
                             color: AppColors.primary)
                         : null,
                     onTap: isOwner

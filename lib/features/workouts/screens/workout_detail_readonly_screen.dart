@@ -59,26 +59,26 @@ class _WorkoutDetailReadonlyScreenState
         builder: (ctx) => AlertDialog(
           backgroundColor: AppColors.surface,
           title: Text(l10n.routineInProgressTitle,
-              style: const TextStyle(color: Colors.white)),
+              style: TextStyle(color: AppColors.textPrimary)),
           content: Text(
             l10n.routineInProgressMsg,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, 'cancel'),
               child: Text(l10n.cancel,
-                  style: const TextStyle(color: AppColors.textSecondary)),
+                  style: TextStyle(color: AppColors.textSecondary)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, 'continue_assigned'),
               child: Text(l10n.continueInProgress,
-                  style: const TextStyle(color: AppColors.primary)),
+                  style: TextStyle(color: AppColors.primary)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, 'start_extra'),
               child: Text(l10n.startThisLabel,
-                  style: const TextStyle(color: Colors.white)),
+                  style: TextStyle(color: AppColors.textPrimary)),
             ),
           ],
         ),
@@ -121,7 +121,7 @@ class _WorkoutDetailReadonlyScreenState
         body: Center(
           child: Text(
             l10n.routineNotFound,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
         ),
       );
@@ -206,7 +206,7 @@ class _WorkoutDetailReadonlyScreenState
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppColors.primary,
                                 side:
-                                    const BorderSide(color: AppColors.primary),
+                                    BorderSide(color: AppColors.primary),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12)),
                                 padding:
@@ -229,11 +229,11 @@ class _WorkoutDetailReadonlyScreenState
                                     title: Text(
                                       l10n.deleteRoutineTitle,
                                       style:
-                                          const TextStyle(color: Colors.white),
+                                          TextStyle(color: AppColors.textPrimary),
                                     ),
                                     content: Text(
                                       l10n.deleteWorkoutConfirm(workout.name),
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           color: AppColors.textSecondary),
                                     ),
                                     actions: [
@@ -242,7 +242,7 @@ class _WorkoutDetailReadonlyScreenState
                                             Navigator.pop(ctx, false),
                                         child: Text(
                                             AppL10n.of(context).cancelLabel,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                                 color:
                                                     AppColors.textSecondary)),
                                       ),
@@ -251,7 +251,7 @@ class _WorkoutDetailReadonlyScreenState
                                             Navigator.pop(ctx, true),
                                         child: Text(
                                             AppL10n.of(context).deleteConfirm,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                                 color: Colors.redAccent)),
                                       ),
                                     ],
@@ -316,7 +316,7 @@ class _WorkoutDetailReadonlyScreenState
                     ),
                     child: Column(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.fitness_center,
                           size: 80,
                           color: AppColors.primary,
@@ -324,10 +324,10 @@ class _WorkoutDetailReadonlyScreenState
                         const SizedBox(height: 16),
                         Text(
                           workout.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -343,7 +343,7 @@ class _WorkoutDetailReadonlyScreenState
                           ),
                           child: Text(
                             l10n.levelDisplay(workout.level).toUpperCase(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: Colors.black,
@@ -384,10 +384,10 @@ class _WorkoutDetailReadonlyScreenState
                       children: [
                         Text(
                           l10n.routineExercises,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -397,7 +397,7 @@ class _WorkoutDetailReadonlyScreenState
                               padding: const EdgeInsets.all(32.0),
                               child: Text(
                                 l10n.noExercises,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppColors.textSecondary,
                                 ),
                               ),
@@ -452,15 +452,15 @@ class _WorkoutDetailReadonlyScreenState
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             color: AppColors.textSecondary,
           ),
@@ -508,7 +508,7 @@ class _ExerciseCard extends StatelessWidget {
             child: Center(
               child: Text(
                 '$number',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
@@ -523,10 +523,10 @@ class _ExerciseCard extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -560,7 +560,7 @@ class _ExerciseCard extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             color: AppColors.textSecondary,
           ),

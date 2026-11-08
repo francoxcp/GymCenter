@@ -166,9 +166,9 @@ class _LibrarySheetState extends State<_LibrarySheet> {
               Expanded(
                 child: Semantics(
                   header: true,
-                  child: const Text('Biblioteca de ejercicios',
+                  child: Text('Biblioteca de ejercicios',
                       style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontSize: 18,
                           fontWeight: FontWeight.bold)),
                 ),
@@ -207,11 +207,11 @@ class _LibrarySheetState extends State<_LibrarySheet> {
               itemBuilder: (_, i) {
                 if (i == items.length) {
                   return ListTile(
-                    leading: const Icon(Icons.add_circle_outline,
+                    leading: Icon(Icons.add_circle_outline,
                         color: AppColors.primary),
-                    title: const Text('Crear ejercicio personalizado',
+                    title: Text('Crear ejercicio personalizado',
                         style: TextStyle(color: AppColors.primary)),
-                    subtitle: const Text('Con nombre propio y video',
+                    subtitle: Text('Con nombre propio y video',
                         style: TextStyle(color: AppColors.textSecondary)),
                     onTap: () => Navigator.pop(
                         context, const LibraryResult([], createCustom: true)),
@@ -227,10 +227,10 @@ class _LibrarySheetState extends State<_LibrarySheet> {
                     selected ? _selected.remove(e) : _selected.add(e);
                   }),
                   title: Text(e.name,
-                      style: const TextStyle(color: Colors.white)),
+                      style: TextStyle(color: AppColors.textPrimary)),
                   subtitle: Text(
                       '${e.muscle} · ${e.sets}×${e.reps}${e.rest > 0 ? ' · ${e.rest}s' : ''}',
-                      style: const TextStyle(color: AppColors.textSecondary)),
+                      style: TextStyle(color: AppColors.textSecondary)),
                 );
               },
             ),
@@ -281,7 +281,7 @@ class _LibrarySheetState extends State<_LibrarySheet> {
           onSelected: (_) => setState(() => _muscle = value),
           selectedColor: AppColors.primary,
           labelStyle: TextStyle(
-              color: _muscle == value ? Colors.black : Colors.white),
+              color: _muscle == value ? Colors.black : AppColors.textPrimary),
         ),
       );
 }
@@ -319,7 +319,7 @@ class _QuickEditorState extends State<_QuickEditor> {
         child: Row(children: [
           Expanded(
               child: Text(label,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textSecondary, fontSize: 15))),
           IconButton(
               tooltip: 'Menos $label',
@@ -329,15 +329,15 @@ class _QuickEditorState extends State<_QuickEditor> {
             width: 72,
             child: Text(value,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: Colors.white,
+                style: TextStyle(
+                    color: AppColors.textPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.bold)),
           ),
           IconButton(
               tooltip: 'Más $label',
               onPressed: onPlus,
-              icon: const Icon(Icons.add_circle_outline,
+              icon: Icon(Icons.add_circle_outline,
                   color: AppColors.primary)),
         ]),
       );
@@ -353,8 +353,8 @@ class _QuickEditorState extends State<_QuickEditor> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(e.name,
-                style: const TextStyle(
-                    color: Colors.white,
+                style: TextStyle(
+                    color: AppColors.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),

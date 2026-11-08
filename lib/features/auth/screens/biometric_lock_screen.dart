@@ -64,22 +64,22 @@ class _BiometricLockScreenState extends State<BiometricLockScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   Icons.lock_outline,
                   color: AppColors.primary,
                   size: 64,
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   'Chamos Fitness',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'App bloqueada',
                   style: TextStyle(
                     fontSize: 16,
@@ -90,7 +90,7 @@ class _BiometricLockScreenState extends State<BiometricLockScreen> {
                 if (_error != null) ...[
                   Text(
                     _error!,
-                    style: const TextStyle(color: Colors.redAccent),
+                    style: TextStyle(color: Colors.redAccent),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
@@ -117,7 +117,7 @@ class _BiometricLockScreenState extends State<BiometricLockScreen> {
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: _isAuthenticating ? null : _logout,
-                  child: const Text(
+                  child: Text(
                     'Cerrar sesión e ingresar con contraseña',
                     style: TextStyle(color: AppColors.textSecondary),
                   ),

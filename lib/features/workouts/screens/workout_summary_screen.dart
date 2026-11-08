@@ -218,21 +218,21 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
             Expanded(
               child: Text(
                 l10n.achievementUnlockedTitle,
-                style: const TextStyle(color: Colors.white, fontSize: 20),
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 20),
               ),
             ),
           ],
         ),
         content: Text(
           l10n.achievementUnlockedMsgCount(count),
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               l10n.awesomeButton,
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppColors.primary, fontWeight: FontWeight.bold),
             ),
           ),
@@ -277,14 +277,14 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(name,
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.white)),
+                color: AppColors.textPrimary)),
         const SizedBox(height: 4),
         Text(daysLabel,
             style:
-                const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                TextStyle(fontSize: 14, color: AppColors.textSecondary)),
       ],
     );
   }
@@ -334,8 +334,9 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                       top: 16,
                       right: 16,
                       child: IconButton(
+ tooltip: 'Cerrar',
                         onPressed: () => context.go('/home'),
-                        icon: const Icon(Icons.close, color: Colors.white),
+                        icon: Icon(Icons.close, color: AppColors.textPrimary),
                       ),
                     ),
                     // Imagen de celebración (placeholder)
@@ -345,11 +346,11 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(20),
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               color: AppColors.cardBackground,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.celebration,
                               size: 60,
                               color: AppColors.primary,
@@ -368,7 +369,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                   children: [
                     Text(
                       motivationalMessage,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
@@ -378,19 +379,19 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                     const SizedBox(height: 8),
                     Text(
                       l10n.workoutCompletedLine1,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         height: 1.2,
                       ),
                     ),
                     Text(
                       l10n.workoutCompletedLine2,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         height: 1.2,
                       ),
                     ),
@@ -436,10 +437,10 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                       children: [
                         Text(
                           l10n.exerciseSummaryLabel,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         Container(
@@ -454,7 +455,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                           ),
                           child: Text(
                             '${widget.workout.exercises.length} ${l10n.totalStatLabel}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                               color: AppColors.primary,
@@ -481,7 +482,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.check_circle,
                                 color: AppColors.primary,
                                 size: 24,
@@ -493,16 +494,16 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                                   children: [
                                     Text(
                                       exercise.name,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
-                                        color: Colors.white,
+                                        color: AppColors.textPrimary,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       '${l10n.setsCount(exercise.sets)} × ${l10n.repsCount(exercise.reps)}',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 13,
                                         color: AppColors.textSecondary,
                                       ),
@@ -513,10 +514,10 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                               Text(
                                 UnitConverter.formatWeight(
                                     estimatedWeight.toDouble(), units),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: AppColors.textPrimary,
                                 ),
                               ),
                             ],
@@ -552,7 +553,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                                         .withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.calendar_today,
                                     color: AppColors.primary,
                                     size: 20,
@@ -561,10 +562,10 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                                 const SizedBox(width: 12),
                                 Text(
                                   l10n.nextSessionLabel,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: AppColors.textPrimary,
                                   ),
                                 ),
                               ],
@@ -574,7 +575,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                             const SizedBox(height: 12),
                             Text(
                               _getNextWorkoutMessage(),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 color: AppColors.textSecondary,
                                 fontStyle: FontStyle.italic,
@@ -620,7 +621,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                             : 'Compartir mi entreno'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.primary,
-                          side: const BorderSide(color: AppColors.primary),
+                          side: BorderSide(color: AppColors.primary),
                           minimumSize: const Size.fromHeight(52),
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -664,7 +665,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                           ),
                         ),
                         child: _isSaving
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
@@ -675,7 +676,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                             : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.home,
+                                  Icon(Icons.home,
                                       color: Colors.black, size: 20),
                                   const SizedBox(width: 8),
                                   Text(
@@ -730,18 +731,18 @@ class StatCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                  color: AppColors.textPrimary),
             ),
             if (unit != null)
               Text(unit!,
                   style:
-                      const TextStyle(fontSize: 12, color: AppColors.primary)),
+                      TextStyle(fontSize: 12, color: AppColors.primary)),
             const SizedBox(height: 4),
             Text(label,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 12, color: AppColors.textSecondary)),
           ],
         ),

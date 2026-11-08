@@ -177,7 +177,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
         maxChildSize: 0.88,
         expand: false,
         builder: (_, scroll) => Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppColors.cardBackground,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
@@ -203,7 +203,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
                         children: [
                           Text(
                             exercise.muscleGroup.toUpperCase(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 1.2,
@@ -213,10 +213,10 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
                           const SizedBox(height: 2),
                           Text(
                             exercise.name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         ],
@@ -239,7 +239,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
                             const SizedBox(width: 5),
                             Text(
                               _fmtWeight(pr),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.amber,
@@ -266,7 +266,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
                                     .withValues(alpha: 0.4),
                                 size: 40),
                             const SizedBox(height: 12),
-                            const Text(
+                            Text(
                               'Aún no hay registros\npara este ejercicio',
                               textAlign: TextAlign.center,
                               style: TextStyle(
@@ -305,7 +305,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
       ),
       body: SafeArea(
         child: _loading
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(color: AppColors.primary))
             : _buildContent(),
       ),
@@ -328,11 +328,11 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
             ),
             child: TextField(
               controller: _searchController,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
+              style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
               decoration: InputDecoration(
                 hintText: AppL10n.of(context).searchExercisesHint,
-                hintStyle: const TextStyle(color: AppColors.textSecondary),
-                prefixIcon: const Icon(Icons.search,
+                hintStyle: TextStyle(color: AppColors.textSecondary),
+                prefixIcon: Icon(Icons.search,
                     color: AppColors.textSecondary, size: 20),
                 border: InputBorder.none,
                 contentPadding:
@@ -389,7 +389,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
               ? Center(
                   child: Text(
                     AppL10n.of(context).noExercisesFound,
-                    style: const TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: AppColors.textSecondary),
                   ),
                 )
               : RefreshIndicator(
@@ -460,10 +460,10 @@ class _PRCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   exercise.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -526,7 +526,7 @@ class _PRWeight extends StatelessWidget {
         children: [
           TextSpan(
             text: value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.w900,
               fontStyle: FontStyle.italic,
@@ -536,7 +536,7 @@ class _PRWeight extends StatelessWidget {
           ),
           TextSpan(
             text: unit,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
               fontStyle: FontStyle.italic,
@@ -571,7 +571,7 @@ class _HistorySessionCard extends StatelessWidget {
         const SizedBox(height: 12),
         Text(
           date,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,
             color: AppColors.textSecondary,
@@ -598,7 +598,7 @@ class _HistorySessionCard extends StatelessWidget {
                 r != null
                     ? 'S$setNum: ${fmtWeight(w)} × $r'
                     : 'S$setNum: ${fmtWeight(w)}',
-                style: const TextStyle(fontSize: 12, color: Colors.white),
+                style: TextStyle(fontSize: 12, color: AppColors.textPrimary),
               ),
             );
           }).toList(),

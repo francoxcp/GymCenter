@@ -106,21 +106,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_camera, color: Colors.white),
+              leading: Icon(Icons.photo_camera, color: AppColors.textPrimary),
               title: Text(AppL10n.of(context).takePhoto,
-                  style: const TextStyle(color: Colors.white)),
+                  style: TextStyle(color: AppColors.textPrimary)),
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Colors.white),
+              leading: Icon(Icons.photo_library, color: AppColors.textPrimary),
               title: Text(AppL10n.of(context).galleryLabel,
-                  style: const TextStyle(color: Colors.white)),
+                  style: TextStyle(color: AppColors.textPrimary)),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
             ListTile(
-              leading: const Icon(Icons.cancel, color: AppColors.textSecondary),
+              leading: Icon(Icons.cancel, color: AppColors.textSecondary),
               title: Text(AppL10n.of(context).cancel,
-                  style: const TextStyle(color: AppColors.textSecondary)),
+                  style: TextStyle(color: AppColors.textSecondary)),
               onTap: () => Navigator.pop(context),
             ),
           ],
@@ -214,7 +214,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? Colors.white : AppColors.textSecondary,
+                  color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -261,7 +261,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         appBar: AppBar(title: Text(AppL10n.of(context).myProfile)),
         body: Center(
           child: Text(AppL10n.of(context).noAuthUser,
-              style: const TextStyle(color: Colors.white)),
+              style: TextStyle(color: AppColors.textPrimary)),
         ),
       );
     }
@@ -316,7 +316,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       errorBuilder: (_, __, ___) => Center(
                                         child: Text(
                                           _getInitials(currentUser.name),
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 38,
                                             fontWeight: FontWeight.bold,
                                             color: AppColors.primary,
@@ -328,7 +328,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 : Center(
                                     child: Text(
                                       _getInitials(currentUser.name),
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 38,
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.primary,
@@ -346,19 +346,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               child: Container(
                                 width: 34,
                                 height: 34,
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                   color: AppColors.primary,
                                   shape: BoxShape.circle,
                                 ),
                                 child: _isUploadingPhoto
-                                    ? const Padding(
+                                    ? Padding(
                                         padding: EdgeInsets.all(8),
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2,
                                           color: Colors.black,
                                         ),
                                       )
-                                    : const Icon(Icons.camera_alt,
+                                    : Icon(Icons.camera_alt,
                                         color: Colors.black, size: 18),
                               ),
                             ),
@@ -370,7 +370,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       Text(
                         currentUser.email,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           color: AppColors.textSecondary,
                         ),
@@ -489,10 +489,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       await auth.logout();
                       if (context.mounted) context.go('/login');
                     },
-                    icon: const Icon(Icons.logout, color: Colors.red),
+                    icon: Icon(Icons.logout, color: Colors.red),
                     label: Text(
                       AppL10n.of(context).logOutLabel,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.red,
@@ -500,7 +500,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      side: const BorderSide(color: Colors.red),
+                      side: BorderSide(color: Colors.red),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -551,14 +551,14 @@ class _MenuItem extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right,
               color: AppColors.textSecondary,
             ),

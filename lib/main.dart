@@ -6,7 +6,8 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'core/theme/dark_theme.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/appearance_provider.dart';
 import 'config/router/app_router.dart';
 import 'config/supabase_config.dart';
 import 'features/auth/providers/auth_provider.dart';
@@ -22,6 +23,9 @@ import 'shared/services/biometric_service.dart';
 import 'shared/services/notification_service.dart';
 import 'shared/services/offline_sync_queue.dart';
 import 'shared/web/web_bridge.dart';
+
+/// Tema y tamaño de texto del dispositivo (se carga antes del primer frame).
+final appearance = AppearanceProvider();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,6 +55,7 @@ void main() async {
   Future<void> bootstrap() async {
     // Cola de cambios hechos sin conexión (series, sesiones, progreso)
     await OfflineSyncQueue.instance.init();
+    await appearance.load();
     runApp(const MyApp());
     // Inicializar notificaciones DESPUÉS de runApp — no bloquea el arranque
     NotificationService().initialize();
@@ -150,6 +155,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
     // Propagar cambios de auth a los providers dependientes fuera del build
     _authProvider.addListener(_onAuthChanged);
+    appearance.addListener(_applyAppearance);
+    appearance.apply(signedIn: _authProvider.isAuthenticated);
     // Trigger inicial para que PreferencesProvider cargue si ya hay sesión
     _preferencesProvider.onAuthChanged(_authProvider);
   }
@@ -186,7 +193,20 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
+  /// Cambia la paleta (claro/oscuro) y redibuja toda la app sin perder el
+  /// estado de las pantallas.
+  void _applyAppearance() {
+    final changed = appearance.apply(signedIn: _authProvider.isAuthenticated);
+    if (!mounted) return;
+    setState(() {});
+    if (changed) {
+      WidgetsBinding.instance.addPostFrameCallback(
+          (_) => WidgetsBinding.instance.reassembleApplication());
+    }
+  }
+
   void _onAuthChanged() {
+    _applyAppearance();
     _preferencesProvider.onAuthChanged(_authProvider);
     // Al cerrar sesión, limpiar datos en memoria para evitar filtración
     // de datos de un usuario a otro en el mismo dispositivo.
@@ -208,6 +228,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _authProvider.removeListener(_onAuthChanged);
+    appearance.removeListener(_applyAppearance);
     _authProvider.dispose();
     _workoutProvider.dispose();
     super.dispose();
@@ -223,6 +244,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider.value(value: _userProvider),
         ChangeNotifierProvider(create: (_) => BodyMeasurementProvider()),
         ChangeNotifierProvider.value(value: _preferencesProvider),
+        ChangeNotifierProvider.value(value: appearance),
         ChangeNotifierProvider(create: (_) => AchievementsProvider()),
         ChangeNotifierProvider(create: (_) => WorkoutSessionProvider()),
         ChangeNotifierProvider(create: (_) => WorkoutProgressProvider()),
@@ -233,7 +255,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             scaffoldMessengerKey: _scaffoldMessengerKey,
             title: 'Chamos Fitness Center',
             debugShowCheckedModeBanner: false,
-            theme: darkTheme,
+            theme: buildAppTheme(),
             locale: prefsProvider.appLocale,
             supportedLocales: const [Locale('es'), Locale('en')],
             localizationsDelegates: const [
@@ -247,7 +269,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             backButtonDispatcher: _backButtonDispatcher,
             // Web en pantallas anchas (tablet/PC): la app está diseñada para
             // el móvil, así que se centra en una columna de ancho de teléfono.
-            builder: kIsWeb ? (context, child) => _PhoneFrame(child: child) : null,
+            // Tamaño de texto elegido en Ajustes (accesibilidad).
+            builder: (context, child) {
+              final scaled = MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: appearance.scalerFor(context)),
+                child: child ?? const SizedBox.shrink(),
+              );
+              return kIsWeb ? _PhoneFrame(child: scaled) : scaled;
+            },
             // Siempre indicarle al sistema que nosotros manejamos el botón atrás.
             // Sin esto, Flutter envía canHandlePop=false en pantallas raíz y
             // Android cierra la app directamente sin pasar por nuestro dispatcher.
@@ -262,7 +292,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           if (_isLocked) {
             return MaterialApp(
               debugShowCheckedModeBanner: false,
-              theme: darkTheme,
+              theme: buildAppTheme(),
               home: BiometricLockScreen(
                 onUnlocked: () => setState(() => _isLocked = false),
               ),
@@ -336,7 +366,7 @@ class _PhoneFrame extends StatelessWidget {
       return child ?? const SizedBox.shrink();
     }
     return ColoredBox(
-      color: const Color(0xFF050505),
+      color: AppColors.background,
       child: Center(
         child: SizedBox(
           width: _maxWidth,

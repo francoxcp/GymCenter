@@ -105,7 +105,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           children: [
             Text(
               l10n.adminPortal,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: AppColors.primary,
@@ -114,10 +114,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ),
             Text(
               l10n.appTitleUpper,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
           ],
@@ -146,7 +146,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
                       child: Text(
                         '$greeting, $name 👋',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
                         ),
@@ -168,15 +168,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   children: [
                     Text(
                       l10n.weeklyActivity,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     Text(
                       l10n.last7Days,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,
                       ),
@@ -197,12 +197,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.wifi_off, color: Colors.red, size: 20),
+                        Icon(Icons.wifi_off, color: Colors.red, size: 20),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: Text(
                             l10n.errorLoadingData,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: Colors.red, fontSize: 13),
                           ),
                         ),
@@ -282,7 +282,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const SizedBox(height: AppSpacing.xxl),
                 Text(
                   AppL10n.of(context).quickManagement,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textSecondary,
@@ -399,13 +399,13 @@ class _StatCard extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: iconColor ?? Colors.white,
+            color: iconColor ?? AppColors.textPrimary,
             size: 24,
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               color: AppColors.textSecondary,
               letterSpacing: 1,
@@ -414,10 +414,10 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
           Text(
@@ -469,7 +469,7 @@ class _ChartBar extends StatelessWidget {
           width: 30,
           height: height,
           decoration: BoxDecoration(
-            color: isActive ? AppColors.primary : Colors.white24,
+            color: isActive ? AppColors.primary : AppColors.textPrimary.withValues(alpha: 0.24),
             borderRadius: BorderRadius.circular(AppSpacing.sm),
           ),
         ),
@@ -477,7 +477,7 @@ class _ChartBar extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 10,
             color: AppColors.textSecondary,
             height: 1.3,
@@ -518,12 +518,12 @@ class _QuickActionButton extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: (iconColor ?? Colors.white).withValues(alpha: 0.1),
+                color: (iconColor ?? AppColors.textPrimary).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppSpacing.md),
               ),
               child: Icon(
                 icon,
-                color: iconColor ?? Colors.white,
+                color: iconColor ?? AppColors.textPrimary,
                 size: 22,
               ),
             ),
@@ -531,10 +531,10 @@ class _QuickActionButton extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ),
@@ -545,9 +545,9 @@ class _QuickActionButton extends StatelessWidget {
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(AppSpacing.sm),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.arrow_forward_ios,
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 size: 16,
               ),
             ),

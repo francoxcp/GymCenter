@@ -174,7 +174,7 @@ class _FeedCard extends StatelessWidget {
                           : null,
                       child: item.photoUrl == null
                           ? Text(initial,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.bold))
                           : null,
@@ -194,15 +194,15 @@ class _FeedCard extends StatelessWidget {
                             const TextSpan(text: ' terminó '),
                             TextSpan(
                                 text: item.workoutName,
-                                style: const TextStyle(
+                                style: TextStyle(
                                     color: AppColors.primary,
                                     fontWeight: FontWeight.w600)),
                           ]),
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 15),
+                          style: TextStyle(
+                              color: AppColors.textPrimary, fontSize: 15),
                         ),
                         Text(timeAgo(item.completedAt),
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 12)),
                       ],
@@ -229,7 +229,7 @@ class _FeedCard extends StatelessWidget {
                     item.commentCount > 0
                         ? '${item.commentCount}'
                         : 'Comentar',
-                    style: const TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: AppColors.textSecondary),
                   ),
                 ]),
               ],
@@ -258,7 +258,7 @@ class _Chip extends StatelessWidget {
           const SizedBox(width: 4),
           Text(text,
               style:
-                  const TextStyle(color: Colors.white, fontSize: 13)),
+                  TextStyle(color: AppColors.textPrimary, fontSize: 13)),
         ]),
       );
 }
@@ -282,7 +282,7 @@ class _Message extends StatelessWidget {
           const SizedBox(height: 16),
           Text(text,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppColors.textSecondary, fontSize: 15, height: 1.4)),
           if (action != null) ...[
             const SizedBox(height: 16),

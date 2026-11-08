@@ -43,11 +43,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           backgroundColor: AppColors.cardBackground,
           title: Text(
             l10n.useDefaultValues,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: AppColors.textPrimary),
           ),
           content: Text(
             l10n.defaultValuesBody,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
             TextButton(
@@ -64,7 +64,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 );
               },
               child: Text(l10n.confirm,
-                  style: const TextStyle(color: AppColors.primary)),
+                  style: TextStyle(color: AppColors.primary)),
             ),
           ],
         ),
@@ -100,7 +100,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
+      builder: (context) => Center(
         child: CircularProgressIndicator(color: AppColors.primary),
       ),
     );
@@ -205,7 +205,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           child: Text(
                             l10n.back,
                             style:
-                                const TextStyle(color: AppColors.textSecondary),
+                                TextStyle(color: AppColors.textSecondary),
                           ),
                         ),
                       const Spacer(),
@@ -236,7 +236,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   Icons.fitness_center,
                   size: 80,
                   color: AppColors.primary,
@@ -244,17 +244,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 const SizedBox(height: 28),
                 Text(
                   l10n.onboardingWelcome,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   l10n.onboardingWelcomeBody,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     color: AppColors.textSecondary,
                     height: 1.5,
@@ -282,10 +282,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               children: [
                 Text(
                   l10n.onboardingLevelTitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -358,15 +358,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: [
                   Text(
                     displayLabel,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   Text(
                     description,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
                     ),
@@ -391,10 +391,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: 20),
           Text(
             l10n.onboardingStatsTitle,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
             textAlign: TextAlign.center,
           ),
@@ -402,7 +402,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Text(
             l10n.onboardingStatsSubtitle,
             style:
-                const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                TextStyle(fontSize: 14, color: AppColors.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -446,7 +446,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       children: [
         Text(
           l10n.ageLabel,
-          style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 8),
         Row(
@@ -474,10 +474,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               child: Text(
                 l10n.ageValue(_age),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 1,
@@ -503,18 +503,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       children: [
         Text(
           l10n.biologicalSex,
-          style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 4),
         Text(
           l10n.biologicalSexHint,
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 12),
         Row(
           children: options.map((opt) {
             final isSelected = _sex == opt['value'];
-            const color = AppColors.primary;
+            final color = AppColors.primary;
             return Expanded(
               child: GestureDetector(
                 onTap: () => setState(() {
@@ -577,7 +577,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             color: AppColors.textSecondary,
           ),
@@ -605,10 +605,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               child: Text(
                 '${value.toStringAsFixed(1)} $unit',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 1,
@@ -661,10 +661,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               children: [
                 Text(
                   l10n.onboardingGoalTitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -720,10 +720,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ),

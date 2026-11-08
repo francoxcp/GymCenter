@@ -8,7 +8,7 @@ class AppSnackbar {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle, color: Colors.white, size: 20),
+            Icon(Icons.check_circle, color: AppColors.textPrimary, size: 20),
             const SizedBox(width: 10),
             Expanded(child: Text(message)),
           ],
@@ -26,7 +26,7 @@ class AppSnackbar {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.error_outline, color: Colors.white, size: 20),
+            Icon(Icons.error_outline, color: AppColors.textPrimary, size: 20),
             const SizedBox(width: 10),
             Expanded(child: Text(message)),
           ],
@@ -44,7 +44,7 @@ class AppSnackbar {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.info_outline, color: Colors.white, size: 20),
+            Icon(Icons.info_outline, color: AppColors.textPrimary, size: 20),
             const SizedBox(width: 10),
             Expanded(child: Text(message)),
           ],

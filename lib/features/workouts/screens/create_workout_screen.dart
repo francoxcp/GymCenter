@@ -126,7 +126,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
               children: [
                 Text(
                   AppL10n.of(ctx).defaultCategoriesInfo,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
                   ),
@@ -139,10 +139,11 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                     dense: true,
                     title: Text(cat),
                     trailing: isDefault
-                        ? const Icon(Icons.lock_outline,
+                        ? Icon(Icons.lock_outline,
                             size: 16, color: AppColors.textSecondary)
                         : IconButton(
-                            icon: const Icon(Icons.delete_outline,
+ tooltip: 'Eliminar',
+                            icon: Icon(Icons.delete_outline,
                                 size: 20, color: Colors.redAccent),
                             onPressed: () {
                               setState(() {
@@ -346,7 +347,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
           title: Text(AppL10n.of(context).newRoutine),
           actions: [
             if (_isLoading)
-              const Center(
+              Center(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   child: SizedBox(
@@ -362,6 +363,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
               )
             else
               IconButton(
+ tooltip: 'Confirmar',
                 icon: const Icon(Icons.check),
                 onPressed: _saveWorkout,
               ),
@@ -446,13 +448,13 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                             value: _kAddCategory,
                             child: Row(
                               children: [
-                                const Icon(Icons.add_circle_outline,
+                                Icon(Icons.add_circle_outline,
                                     size: 16, color: AppColors.primary),
                                 const SizedBox(width: 8),
                                 Text(
                                   AppL10n.of(context).newCategory,
                                   style:
-                                      const TextStyle(color: AppColors.primary),
+                                      TextStyle(color: AppColors.primary),
                                 ),
                               ],
                             ),
@@ -523,19 +525,19 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.cardBackground,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white24),
+                      border: Border.all(color: AppColors.textPrimary.withValues(alpha: 0.24)),
                     ),
                     child: Column(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.fitness_center,
                           size: 48,
-                          color: Colors.white24,
+                          color: AppColors.textPrimary.withValues(alpha: 0.24),
                         ),
                         const SizedBox(height: 12),
                         Text(
                           AppL10n.of(context).noExercises,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 16,
                           ),
@@ -543,7 +545,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                         const SizedBox(height: 4),
                         Text(
                           AppL10n.of(context).addExercisesHint,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 12,
                           ),
@@ -610,7 +612,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                             AppColors.primary.withValues(alpha: 0.2),
                         child: Text(
                           '${index + 1}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.primary,
                             fontWeight: FontWeight.bold,
                           ),
@@ -633,7 +635,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                               '${exercise.sets} series · ${exercise.reps} reps'
                               '${exercise.weight > 0 ? ' · ${exercise.weight.toStringAsFixed(0)} lbs' : ''}'
                               ' · toca para ajustar',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: AppColors.textSecondary),
                             ),
                           ],
@@ -642,8 +644,8 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                       ),
                       IconButton(
                         tooltip: 'Duplicar',
-                        icon: const Icon(Icons.copy_all_outlined,
-                            color: Colors.white54),
+                        icon: Icon(Icons.copy_all_outlined,
+                            color: AppColors.textPrimary.withValues(alpha: 0.54)),
                         onPressed: () => setState(() => _exercises.insert(
                             index + 1, duplicateExercise(exercise))),
                       ),
@@ -651,16 +653,16 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                         index: index,
                         child: Semantics(
                           label: 'Arrastrar para reordenar',
-                          child: const Padding(
+                          child: Padding(
                             padding: EdgeInsets.all(12),
                             child:
-                                Icon(Icons.drag_indicator, color: Colors.white70),
+                                Icon(Icons.drag_indicator, color: AppColors.textPrimary.withValues(alpha: 0.7)),
                           ),
                         ),
                       ),
                       IconButton(
                         icon:
-                            const Icon(Icons.delete_outline, color: Colors.red),
+                            Icon(Icons.delete_outline, color: Colors.red),
                         tooltip: 'Quitar',
                         onPressed: () => _removeExercise(index),
                       ),
@@ -968,7 +970,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.videocam, color: AppColors.primary),
+                      Icon(Icons.videocam, color: AppColors.primary),
                       const SizedBox(width: 8),
                       Flexible(
                         child: Text(
@@ -1003,7 +1005,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.video_file,
+                              Icon(Icons.video_file,
                                   color: AppColors.primary),
                               const SizedBox(width: 8),
                               Expanded(
@@ -1014,6 +1016,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                                 ),
                               ),
                               IconButton(
+ tooltip: 'Cerrar',
                                 icon: const Icon(Icons.close, size: 20),
                                 onPressed: () {
                                   setState(() {
@@ -1056,19 +1059,20 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.check_circle,
+                          Icon(Icons.check_circle,
                               color: AppColors.success),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               AppL10n.of(context).videoUploadedOk,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.success,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                           IconButton(
+ tooltip: 'Cerrar',
                             icon: const Icon(Icons.close, size: 20),
                             onPressed: () {
                               setState(() {

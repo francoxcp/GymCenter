@@ -119,7 +119,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
             children: [
               Text(
                 l10n.adminPortal,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
@@ -128,17 +128,18 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
               ),
               Text(
                 l10n.editRoutineTitle,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
+ tooltip: 'Eliminar',
+              icon: Icon(Icons.delete, color: Colors.red),
               onPressed: _confirmDelete,
             ),
           ],
@@ -215,7 +216,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                         children: [
                           Text(
                             l10n.exercisesSectionUpper,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textSecondary,
@@ -246,7 +247,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                             child: Text(
                               l10n.noExercisesEditHint,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: AppColors.textSecondary),
                             ),
                           ),
@@ -265,7 +266,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                           ),
                           child: Text(
                             l10n.saveChanges,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.black,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -482,7 +483,7 @@ class _ExerciseCard extends StatelessWidget {
                 color: AppColors.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.fitness_center, color: AppColors.primary),
+              child: Icon(Icons.fitness_center, color: AppColors.primary),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -494,15 +495,15 @@ class _ExerciseCard extends StatelessWidget {
                 children: [
                   Text(
                     exercise.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     '${exercise.sets} series · ${exercise.reps} reps · ${exercise.restSeconds}s',
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppColors.textSecondary, fontSize: 12),
                   ),
                 ],
@@ -511,31 +512,33 @@ class _ExerciseCard extends StatelessWidget {
             ),
             IconButton(
               tooltip: 'Duplicar',
-              icon: const Icon(Icons.copy_all_outlined,
-                  color: Colors.white54, size: 20),
+              icon: Icon(Icons.copy_all_outlined,
+                  color: AppColors.textPrimary.withValues(alpha: 0.54), size: 20),
               onPressed: onDuplicate,
             ),
             ReorderableDragStartListener(
               index: dragIndex,
               child: Semantics(
                 label: 'Arrastrar para reordenar',
-                child: const Padding(
+                child: Padding(
                   padding: EdgeInsets.all(12),
-                  child: Icon(Icons.drag_indicator, color: Colors.white70),
+                  child: Icon(Icons.drag_indicator, color: AppColors.textPrimary.withValues(alpha: 0.7)),
                 ),
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.edit, color: Colors.blue, size: 20),
+ tooltip: 'Editar',
+              icon: Icon(Icons.edit, color: Colors.blue, size: 20),
               onPressed: onEdit,
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
             ),
             IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+ tooltip: 'Eliminar',
+              icon: Icon(Icons.delete, color: Colors.red, size: 20),
               onPressed: onDelete,
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
             ),
           ],
         ),
@@ -866,7 +869,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
               // Video section
               Row(
                 children: [
-                  const Icon(Icons.videocam,
+                  Icon(Icons.videocam,
                       color: AppColors.primary, size: 20),
                   const SizedBox(width: 8),
                   Text(
@@ -902,7 +905,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.video_file,
+                          Icon(Icons.video_file,
                               color: AppColors.primary, size: 18),
                           const SizedBox(width: 8),
                           Expanded(
@@ -913,6 +916,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                             ),
                           ),
                           IconButton(
+ tooltip: 'Cerrar',
                             icon: const Icon(Icons.close, size: 18),
                             onPressed: () {
                               setState(() {
@@ -954,13 +958,13 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.check_circle,
+                      Icon(Icons.check_circle,
                           color: AppColors.success, size: 18),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           l10n.videoAvailable,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.success,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -968,7 +972,8 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.edit,
+ tooltip: 'Editar',
+                        icon: Icon(Icons.edit,
                             size: 18, color: Colors.blue),
                         onPressed: _pickVideo,
                       ),

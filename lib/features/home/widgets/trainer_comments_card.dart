@@ -49,12 +49,12 @@ class _TrainerCommentsCardState extends State<TrainerCommentsCard> {
           children: [
             Semantics(
               header: true,
-              child: const Row(children: [
+              child: Row(children: [
                 Icon(Icons.chat_bubble, color: AppColors.primary, size: 18),
                 SizedBox(width: 8),
                 Text('Tu entrenador te escribió',
                     style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.bold,
                         fontSize: 15)),
               ]),
@@ -80,16 +80,16 @@ class _TrainerCommentsCardState extends State<TrainerCommentsCard> {
                           Text(c.body,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 14)),
+                              style: TextStyle(
+                                  color: AppColors.textPrimary, fontSize: 14)),
                           Text('${c.authorName} · ${timeAgo(c.createdAt)}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: AppColors.textSecondary,
                                   fontSize: 12)),
                         ],
                       ),
                     ),
-                    const Icon(Icons.reply,
+                    Icon(Icons.reply,
                         color: AppColors.textSecondary, size: 20),
                   ]),
                 ),

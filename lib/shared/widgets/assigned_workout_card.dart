@@ -32,7 +32,7 @@ class AssignedWorkoutCard extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             colors: [
               AppColors.primary,
               Color(0xFFE6C200),
@@ -71,7 +71,7 @@ class AssignedWorkoutCard extends StatelessWidget {
                           color: Colors.black.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.local_fire_department,
                           color: Colors.black,
                           size: 24,
@@ -81,7 +81,7 @@ class AssignedWorkoutCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           l10n.myAssignedRoutine,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
@@ -98,7 +98,7 @@ class AssignedWorkoutCard extends StatelessWidget {
                           color: Colors.black.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text(
+                        child: Text(
                           'HOY',
                           style: TextStyle(
                             fontSize: 10,
@@ -118,7 +118,7 @@ class AssignedWorkoutCard extends StatelessWidget {
                     workout.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
@@ -202,7 +202,7 @@ class AssignedWorkoutCard extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: Colors.black87,

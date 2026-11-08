@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../web/web_bridge.dart';
+import '../../core/theme/app_theme.dart';
 
 /// Service to export all user data as an AES-256 encrypted file for GDPR compliance.
 /// The exported file is not human-readable without the password set at export time.
@@ -116,40 +117,40 @@ class DataExportService {
           builder: (ctx, setState) {
             String? errorText;
             return AlertDialog(
-              backgroundColor: const Color(0xFF1E1E1E),
-              title: const Text(
+              backgroundColor: AppColors.cardBackground,
+              title: Text(
                 'Proteger exportación',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: AppColors.textPrimary),
               ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Crea una contraseña para cifrar tu archivo de datos. '
                     'La necesitarás para abrirlo después.',
-                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                    style: TextStyle(color: AppColors.textPrimary.withValues(alpha: 0.7), fontSize: 13),
                   ),
                   const SizedBox(height: 16),
                   StatefulBuilder(
                     builder: (ctx2, setFieldState) => TextField(
                       controller: controller,
                       obscureText: true,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
                         labelText: 'Contraseña de cifrado',
-                        labelStyle: const TextStyle(color: Colors.white54),
+                        labelStyle: TextStyle(color: AppColors.textPrimary.withValues(alpha: 0.54)),
                         errorText: errorText,
-                        enabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white24),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: AppColors.textPrimary.withValues(alpha: 0.24)),
                         ),
-                        focusedBorder: const OutlineInputBorder(
+                        focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.orange),
                         ),
-                        errorBorder: const OutlineInputBorder(
+                        errorBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.red),
                         ),
-                        focusedErrorBorder: const OutlineInputBorder(
+                        focusedErrorBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.red),
                         ),
                       ),
@@ -165,8 +166,8 @@ class DataExportService {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Cancelar',
-                      style: TextStyle(color: Colors.white54)),
+                  child: Text('Cancelar',
+                      style: TextStyle(color: AppColors.textPrimary.withValues(alpha: 0.54))),
                 ),
                 TextButton(
                   onPressed: () {
@@ -176,7 +177,7 @@ class DataExportService {
                     }
                     Navigator.pop(ctx, controller.text);
                   },
-                  child: const Text('Exportar',
+                  child: Text('Exportar',
                       style: TextStyle(color: Colors.orange)),
                 ),
               ],

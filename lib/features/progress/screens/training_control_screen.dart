@@ -207,6 +207,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
+ tooltip: 'Atrás',
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context
               .popOrGo(widget.userId != null ? '/admin/users' : '/progress'),
@@ -214,7 +215,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
         title: Text(title),
       ),
       body: _loading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: AppColors.primary))
           : _error != null
               ? _buildError(isEn)
@@ -230,7 +231,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
                       const SizedBox(height: 24),
                       Text(
                         isEn ? 'EXERCISES' : 'EJERCICIOS',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.primary,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -246,7 +247,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
                                 ? 'No weights logged yet. Log the weight of each set during your workout to see your progress here.'
                                 : 'Aún no hay pesos registrados. Anota el peso de cada serie durante tu rutina para ver aquí tu progreso.',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: AppColors.textSecondary, height: 1.4),
                           ),
                         )
@@ -265,7 +266,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.wifi_off_rounded,
+            Icon(Icons.wifi_off_rounded,
                 color: AppColors.textSecondary, size: 48),
             const SizedBox(height: 16),
             Text(
@@ -273,7 +274,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
                   ? 'Could not load your training data. Check your connection.'
                   : 'No se pudieron cargar tus datos. Revisa tu conexión.',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: AppColors.textPrimary),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -309,14 +310,14 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
           child: Column(
             children: [
               Text(value,
-                  style: const TextStyle(
-                      color: Colors.white,
+                  style: TextStyle(
+                      color: AppColors.textPrimary,
                       fontSize: 20,
                       fontWeight: FontWeight.bold)),
               const SizedBox(height: 2),
               Text(label,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textSecondary, fontSize: 11)),
             ],
           ),
@@ -328,8 +329,8 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
         children: [
           Text(
             isEn ? 'This week' : 'Esta semana',
-            style: const TextStyle(
-                color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 14),
           Row(
@@ -337,7 +338,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
             children: [
               Text(
                 planned > 0 ? '$done/$planned' : '$done',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.primary,
                   fontSize: 34,
                   fontWeight: FontWeight.bold,
@@ -351,7 +352,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
                   planned > 0
                       ? (isEn ? 'planned workouts done' : 'entrenamientos del plan')
                       : (isEn ? 'workouts' : 'entrenamientos'),
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
               ),
             ],
@@ -418,8 +419,8 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
               Expanded(
                 child: Text(
                   isEn ? 'Last 8 weeks' : 'Últimas 8 semanas',
-                  style: const TextStyle(
-                      color: Colors.white,
+                  style: TextStyle(
+                      color: AppColors.textPrimary,
                       fontSize: 17,
                       fontWeight: FontWeight.bold),
                 ),
@@ -443,8 +444,8 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
                   touchTooltipData: BarTouchTooltipData(
                     getTooltipItem: (group, _, rod, __) => BarTooltipItem(
                       _showVolume ? _fmtVolume(rod.toY) : '${rod.toY.toInt()}',
-                      const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
+                      TextStyle(
+                          color: AppColors.textPrimary, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -469,7 +470,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(
                             '${d.day}/${d.month}',
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: AppColors.textSecondary, fontSize: 10),
                           ),
                         );
@@ -500,7 +501,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
                   ? 'Plan: $_plannedDays workouts per week'
                   : 'Plan: $_plannedDays entrenamientos por semana',
               style:
-                  const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  TextStyle(color: AppColors.textSecondary, fontSize: 12),
             ),
           ],
         ],
@@ -555,14 +556,14 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
         onTap: () => _showExerciseDetail(e, isEn),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         title: Text(e.name,
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w600)),
+            style: TextStyle(
+                color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
         subtitle: Text(
           [
             '${isEn ? 'Top' : 'Máx'}: ${_fmtLbs(last)}',
             if (hint != null) hint,
           ].join(' · '),
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
         ),
         trailing: Icon(trendIcon, color: trendColor),
       ),
@@ -590,7 +591,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
         maxChildSize: 0.92,
         expand: false,
         builder: (_, scroll) => Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppColors.cardBackground,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
@@ -610,14 +611,14 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
               ),
               const SizedBox(height: 16),
               Text(e.name,
-                  style: const TextStyle(
-                      color: Colors.white,
+                  style: TextStyle(
+                      color: AppColors.textPrimary,
                       fontSize: 19,
                       fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
               Text(
                 '${isEn ? 'Best estimated 1RM' : 'Mejor 1RM estimado'}: ${_fmtLbs(e.best1RmLbs?.roundToDouble())}',
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 18),
               if (topSpots.length >= 2)
@@ -665,7 +666,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
                   isEn
                       ? 'Log at least two sessions to see the chart.'
                       : 'Registra al menos dos sesiones para ver la gráfica.',
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
               if (topSpots.length >= 2) ...[
                 const SizedBox(height: 8),
@@ -696,12 +697,12 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('${s.date.day}/${s.date.month}/${s.date.year}',
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: AppColors.textSecondary, fontSize: 12)),
                       const SizedBox(height: 4),
                       Text(sets,
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 13)),
+                          style: TextStyle(
+                              color: AppColors.textPrimary, fontSize: 13)),
                     ],
                   ),
                 );
@@ -724,7 +725,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
           const SizedBox(width: 6),
           Text(label,
               style:
-                  const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                  TextStyle(color: AppColors.textSecondary, fontSize: 12)),
         ],
       );
 }

@@ -65,7 +65,7 @@ class ComingSoonWorkoutCard extends StatelessWidget {
                 width: 1.5,
               ),
             ),
-            child: const Icon(Icons.check, size: 20, color: Colors.green),
+            child: Icon(Icons.check, size: 20, color: Colors.green),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -78,7 +78,7 @@ class ComingSoonWorkoutCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white.withValues(alpha: 0.65),
+                    color: AppColors.textPrimary.withValues(alpha: 0.65),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -172,7 +172,7 @@ class ComingSoonWorkoutCard extends StatelessWidget {
                     width: 1.5,
                   ),
                 ),
-                child: const Icon(Icons.check_circle_outline,
+                child: Icon(Icons.check_circle_outline,
                     size: 22, color: Colors.green),
               ),
               const SizedBox(width: 10),
@@ -209,7 +209,7 @@ class ComingSoonWorkoutCard extends StatelessWidget {
           ),
 
           const SizedBox(height: 12),
-          const Divider(color: Colors.white10, height: 1),
+          Divider(color: AppColors.textPrimary.withValues(alpha: 0.1), height: 1),
           const SizedBox(height: 12),
 
           // Nombre de la rutina
@@ -228,7 +228,7 @@ class ComingSoonWorkoutCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.bold,
-              color: Colors.white.withValues(alpha: 0.75),
+              color: AppColors.textPrimary.withValues(alpha: 0.75),
               letterSpacing: 0.2,
             ),
             maxLines: 1,
@@ -283,10 +283,10 @@ class _InfoChip extends StatelessWidget {
         : AppColors.textSecondary.withValues(alpha: 0.75);
     final bg = highlight
         ? AppColors.primary.withValues(alpha: 0.1)
-        : Colors.white.withValues(alpha: 0.05);
+        : AppColors.textPrimary.withValues(alpha: 0.05);
     final border = highlight
         ? AppColors.primary.withValues(alpha: 0.3)
-        : Colors.white.withValues(alpha: 0.08);
+        : AppColors.textPrimary.withValues(alpha: 0.08);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

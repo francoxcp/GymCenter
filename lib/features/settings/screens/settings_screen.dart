@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/appearance_provider.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/preferences_provider.dart';
@@ -200,6 +201,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
           const SizedBox(height: 24),
 
+          // Apariencia y accesibilidad
+          _buildSectionTitle(l10n.isEn ? 'Appearance' : 'Apariencia'),
+          Consumer<AppearanceProvider>(
+            builder: (context, look, _) => Column(children: [
+              _buildSwitchTile(
+                title: l10n.isEn ? 'Light mode' : 'Modo claro',
+                subtitle: l10n.isEn
+                    ? 'Easier to read outdoors or in bright light'
+                    : 'Más fácil de leer al aire libre o con mucha luz',
+                icon: Icons.light_mode_outlined,
+                value: look.light,
+                onChanged: (v) => look.setLight(v),
+              ),
+              _buildOptionTile(
+                title: l10n.isEn ? 'Text size' : 'Tamaño del texto',
+                subtitle:
+                    AppearanceProvider.scales[look.textScale] ?? 'Normal',
+                icon: Icons.text_fields,
+                onTap: () => _showTextScaleSelector(look),
+              ),
+            ]),
+          ),
+          const SizedBox(height: 24),
+
           // Idioma
           _buildSectionTitle(l10n.sectionLanguage),
           _buildOptionTile(
@@ -276,12 +301,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  void _showTextScaleSelector(AppearanceProvider look) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            for (final e in AppearanceProvider.scales.entries)
+              ListTile(
+                minVerticalPadding: 14,
+                leading: Icon(
+                  look.textScale == e.key
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
+                  color: AppColors.primary,
+                ),
+                title: Text(e.value,
+                    style: TextStyle(
+                        fontSize: 16 * e.key, color: AppColors.textPrimary)),
+                onTap: () {
+                  look.setTextScale(e.key);
+                  Navigator.pop(ctx);
+                },
+              ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.bold,
           color: AppColors.textSecondary,
@@ -315,16 +375,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
                   ),
@@ -370,16 +430,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
                     ),
@@ -387,7 +447,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.arrow_forward_ios,
               color: AppColors.textSecondary,
               size: 16,
@@ -448,10 +508,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Text(
               l10n.selectLanguage,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 20),
@@ -478,12 +538,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: Text(
         language,
         style: TextStyle(
-          color: isSelected ? AppColors.primary : Colors.white,
+          color: isSelected ? AppColors.primary : AppColors.textPrimary,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
       ),
       trailing:
-          isSelected ? const Icon(Icons.check, color: AppColors.primary) : null,
+          isSelected ? Icon(Icons.check, color: AppColors.primary) : null,
       onTap: () {
         provider.changeLanguage(languageCode);
         Navigator.pop(context);
@@ -498,23 +558,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AppColors.cardBackground,
         title: Row(
           children: [
-            const Icon(Icons.fitness_center,
+            Icon(Icons.fitness_center,
                 color: AppColors.primary, size: 32),
             const SizedBox(width: 12),
             Text(l10n.chamosFitness,
-                style: const TextStyle(color: Colors.white)),
+                style: TextStyle(color: AppColors.textPrimary)),
           ],
         ),
         content: Text(
           l10n.aboutContent,
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
               l10n.close,
-              style: const TextStyle(color: AppColors.primary),
+              style: TextStyle(color: AppColors.primary),
             ),
           ),
         ],
@@ -541,11 +601,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AppColors.cardBackground,
         title: Text(
           l10n.confirmLogoutTitle,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: AppColors.textPrimary),
         ),
         content: Text(
           l10n.confirmLogoutBody,
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
@@ -560,7 +620,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
             child: Text(
               l10n.logout,
-              style: const TextStyle(color: Colors.red),
+              style: TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -575,11 +635,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AppColors.cardBackground,
         title: Text(
           l10n.confirmDeleteTitle,
-          style: const TextStyle(color: Colors.red),
+          style: TextStyle(color: Colors.red),
         ),
         content: Text(
           l10n.confirmDeleteBody,
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
@@ -593,7 +653,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
             child: Text(
               l10n.delete,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.red,
                 fontWeight: FontWeight.bold,
               ),
@@ -662,13 +722,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   TextField(
                     controller: currentPasswordController,
                     obscureText: obscureCurrent,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: l10n.currentPassword,
                       labelStyle:
-                          const TextStyle(color: AppColors.textSecondary),
+                          TextStyle(color: AppColors.textSecondary),
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
+ tooltip: 'Ocultar contraseña',
                         icon: Icon(obscureCurrent
                             ? Icons.visibility_off
                             : Icons.visibility),
@@ -684,13 +745,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   TextField(
                     controller: newPasswordController,
                     obscureText: obscureNew,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: l10n.newPassword,
                       labelStyle:
-                          const TextStyle(color: AppColors.textSecondary),
+                          TextStyle(color: AppColors.textSecondary),
                       prefixIcon: const Icon(Icons.lock),
                       suffixIcon: IconButton(
+ tooltip: 'Ocultar contraseña',
                         icon: Icon(obscureNew
                             ? Icons.visibility_off
                             : Icons.visibility),
@@ -706,13 +768,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   TextField(
                     controller: confirmPasswordController,
                     obscureText: obscureConfirm,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: l10n.confirmPassword,
                       labelStyle:
-                          const TextStyle(color: AppColors.textSecondary),
+                          TextStyle(color: AppColors.textSecondary),
                       prefixIcon: const Icon(Icons.lock),
                       suffixIcon: IconButton(
+ tooltip: 'Ocultar contraseña',
                         icon: Icon(obscureConfirm
                             ? Icons.visibility_off
                             : Icons.visibility),
@@ -727,7 +790,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 8),
                   Text(
                     l10n.passwordHint,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 12,
                     ),
@@ -803,25 +866,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
           backgroundColor: AppColors.cardBackground,
           title: Text(
             l10n.confirmDeletePasswordTitle,
-            style: const TextStyle(color: Colors.red),
+            style: TextStyle(color: Colors.red),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 l10n.confirmDeletePasswordBody,
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: passwordController,
                 obscureText: obscurePassword,
-                style: const TextStyle(color: AppColors.textPrimary),
+                style: TextStyle(color: AppColors.textPrimary),
                 decoration: InputDecoration(
                   labelText: l10n.password,
-                  labelStyle: const TextStyle(color: AppColors.textSecondary),
+                  labelStyle: TextStyle(color: AppColors.textSecondary),
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
+ tooltip: 'Ocultar contraseña',
                     icon: Icon(obscurePassword
                         ? Icons.visibility_off
                         : Icons.visibility),
@@ -876,12 +940,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       }
                     },
               child: isLoading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     )
                   : Text(l10n.deleteAccount),

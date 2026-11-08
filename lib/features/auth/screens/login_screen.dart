@@ -144,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Text(
                 l10n.appTitleUpper,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: AppColors.primary,
@@ -152,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 28),
-              const CircularProgressIndicator(
+              CircularProgressIndicator(
                 color: AppColors.primary,
                 strokeWidth: 2.5,
               ),
@@ -182,14 +182,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: AppColors.primary,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.fitness_center,
                         size: 40,
                         color: Colors.black,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'CHAMOS',
                       style: TextStyle(
                         fontSize: 24,
@@ -197,12 +197,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: AppColors.primary,
                       ),
                     ),
-                    const Text(
+                    Text(
                       'FITNESS CENTER',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         letterSpacing: 2,
                       ),
                     ),
@@ -217,7 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Expanded(
                     child: Container(
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
                             color: AppColors.primary,
@@ -230,7 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text(
                           AppL10n.of(context).signInTab,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.primary,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -243,7 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: InkWell(
                       onTap: () => context.push('/register'),
                       child: Container(
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
                               color: AppColors.surface,
@@ -256,7 +256,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Text(
                             AppL10n.of(context).signUpTab,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textSecondary,
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
@@ -273,16 +273,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
               Text(
                 AppL10n.of(context).welcomeTitle,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 AppL10n.of(context).welcomeSubtitle,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                 ),
@@ -293,7 +293,7 @@ class _LoginScreenState extends State<LoginScreen> {
               // Email Field
               Text(
                 AppL10n.of(context).emailLabel,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
@@ -321,7 +321,7 @@ class _LoginScreenState extends State<LoginScreen> {
               // Password Field
               Text(
                 AppL10n.of(context).passwordFieldLabel,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
@@ -341,6 +341,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
                 suffixIcon: IconButton(
+ tooltip: 'Ocultar contraseña',
                   icon: Icon(
                     _obscurePassword ? Icons.visibility_off : Icons.visibility,
                     color: AppColors.textSecondary,
@@ -361,7 +362,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () => context.push('/forgot-password'),
                   child: Text(
                     AppL10n.of(context).forgotPassword,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.primary,
                       fontSize: 14,
                     ),
@@ -385,14 +386,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: RichText(
                   text: TextSpan(
                     text: AppL10n.of(context).acceptTermsText,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
                     ),
                     children: [
                       TextSpan(
                         text: AppL10n.of(context).termsOfServiceLabel,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.primary,
                           decoration: TextDecoration.underline,
                         ),
@@ -400,7 +401,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const TextSpan(text: ' • '),
                       TextSpan(
                         text: AppL10n.of(context).privacyLabel,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.primary,
                           decoration: TextDecoration.underline,
                         ),

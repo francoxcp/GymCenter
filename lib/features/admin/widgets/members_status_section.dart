@@ -140,7 +140,7 @@ class MembersStatusSectionState extends State<MembersStatusSection> {
           ),
           child: Text(label,
               style: TextStyle(
-                  color: selected ? color : Colors.white,
+                  color: selected ? color : AppColors.textPrimary,
                   fontSize: 12,
                   fontWeight: FontWeight.w600)),
         ),
@@ -157,8 +157,8 @@ class MembersStatusSectionState extends State<MembersStatusSection> {
                 isOwner
                     ? (isEn ? 'Members' : 'Socios')
                     : (isEn ? 'My members' : 'Mis socios'),
-                style: const TextStyle(
-                    color: Colors.white,
+                style: TextStyle(
+                    color: AppColors.textPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.bold),
               ),
@@ -166,7 +166,7 @@ class MembersStatusSectionState extends State<MembersStatusSection> {
             IconButton(
               tooltip: isEn ? 'Refresh' : 'Actualizar',
               onPressed: _loading ? null : reload,
-              icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
+              icon: Icon(Icons.refresh, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -188,7 +188,7 @@ class MembersStatusSectionState extends State<MembersStatusSection> {
         ),
         const SizedBox(height: 12),
         if (_loading)
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(24),
             child: Center(
                 child: CircularProgressIndicator(color: AppColors.primary)),
@@ -214,7 +214,7 @@ class MembersStatusSectionState extends State<MembersStatusSection> {
                   ? 'You have no members yet. Share your trainer code or use "New member" in User management.'
                   : 'Aún no tienes socios. Comparte tu código de entrenador o usa "Nuevo socio" en Gestión de usuarios.',
               style:
-                  const TextStyle(color: AppColors.textSecondary, height: 1.4),
+                  TextStyle(color: AppColors.textSecondary, height: 1.4),
             ),
           )
         else
@@ -248,12 +248,12 @@ class MembersStatusSectionState extends State<MembersStatusSection> {
               : null,
         ),
         title: Text(u.name,
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w600)),
+            style: TextStyle(
+                color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
         subtitle: Text(_subtitle(s, isEn),
             style:
-                const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-        trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+        trailing: Icon(Icons.chevron_right, color: AppColors.textSecondary),
       ),
     );
   }

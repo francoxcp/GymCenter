@@ -12,6 +12,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
+ tooltip: 'Atrás',
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.popOrGo('/profile'),
         ),
@@ -32,7 +33,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.privacy_tip,
+                  Icon(Icons.privacy_tip,
                       color: AppColors.primary, size: 32),
                   const SizedBox(width: 16),
                   Expanded(
@@ -41,14 +42,14 @@ class PrivacyPolicyScreen extends StatelessWidget {
                       children: [
                         Text(
                           AppL10n.of(context).privacyPolicyTitle,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
+                        Text(
                           'Última actualización: 11 de febrero de 2026',
                           style: TextStyle(
                             fontSize: 12,
@@ -208,7 +209,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Column(
+              child: Column(
                 children: [
                   Icon(Icons.verified_user, color: AppColors.primary, size: 40),
                   SizedBox(height: 12),
@@ -217,7 +218,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   SizedBox(height: 8),
@@ -248,7 +249,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: AppColors.primary,
@@ -257,7 +258,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             content,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               color: AppColors.textPrimary,
               height: 1.5,

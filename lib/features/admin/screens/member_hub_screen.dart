@@ -49,13 +49,13 @@ class MemberHubScreen extends StatelessWidget {
             onTap: onTap,
             leading: Icon(icon, color: AppColors.primary, size: 28),
             title: Text(title,
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w600)),
+                style: TextStyle(
+                    color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
             subtitle: Text(subtitle,
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppColors.textSecondary, fontSize: 12)),
             trailing:
-                const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                Icon(Icons.chevron_right, color: AppColors.textSecondary),
           ),
         );
 
@@ -108,7 +108,7 @@ class MemberHubScreen extends StatelessWidget {
                                   ? 'No weekly plan assigned'
                                   : 'Sin plan semanal asignado'),
                         ].join(' · '),
-                        style: const TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: AppColors.textSecondary),
                       ),
                     ],
                   ),
@@ -121,7 +121,7 @@ class MemberHubScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Text(member.email,
-                style: const TextStyle(color: AppColors.textSecondary)),
+                style: TextStyle(color: AppColors.textSecondary)),
           ),
           action(
             icon: Icons.calendar_month,
@@ -187,7 +187,7 @@ Future<void> showResetPasswordDialog(BuildContext context, User member) async {
               isEn
                   ? 'New temporary password for ${member.name}. Give it to them in person; they can change it in Settings.'
                   : 'Nueva contraseña temporal para ${member.name}. Dásela en persona; podrá cambiarla en Configuración.',
-              style: const TextStyle(color: AppColors.textSecondary, height: 1.4),
+              style: TextStyle(color: AppColors.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 14),
             TextField(

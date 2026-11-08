@@ -70,7 +70,7 @@ class _CustomTextFieldState extends State<CustomTextField>
           maxLines: widget.maxLines,
           validator: widget.validator,
           autovalidateMode: widget.autovalidateMode,
-          style: const TextStyle(color: Colors.white, fontSize: 15),
+          style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
           decoration: InputDecoration(
             hintText: widget.hintText,
             errorText: widget.errorText,
@@ -108,21 +108,21 @@ class _CustomTextFieldState extends State<CustomTextField>
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
+              borderSide: BorderSide(
                 color: AppColors.primary,
                 width: 2,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
+              borderSide: BorderSide(
                 color: AppColors.error,
                 width: 1.5,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
+              borderSide: BorderSide(
                 color: AppColors.error,
                 width: 2,
               ),

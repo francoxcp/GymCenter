@@ -136,6 +136,10 @@ class _ShareSheetState extends State<_ShareSheet> {
   }
 }
 
+// La tarjeta siempre usa los colores de marca (fondo negro y amarillo),
+// sin importar el tema elegido, porque es una imagen para redes sociales.
+const _kYellow = Color(0xFFFFEB00);
+
 /// Tarjeta vertical (formato historia) con los datos del entreno.
 class SummaryShareCard extends StatelessWidget {
   final ShareSummaryData data;
@@ -162,7 +166,7 @@ class SummaryShareCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [Color(0xFF1A1A1A), Color(0xFF000000)],
         ),
-        border: Border.all(color: AppColors.primary, width: 2),
+        border: Border.all(color: _kYellow, width: 2),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,7 +180,7 @@ class SummaryShareCard extends StatelessWidget {
             const SizedBox(width: 10),
             const Text('CHAMOS FITNESS',
                 style: TextStyle(
-                    color: AppColors.primary,
+                    color: _kYellow,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1.5)),
           ]),
@@ -232,7 +236,7 @@ class SummaryShareCard extends StatelessWidget {
           children: [
             Text(value,
                 style: const TextStyle(
-                    color: AppColors.primary,
+                    color: _kYellow,
                     fontSize: 26,
                     fontWeight: FontWeight.w900)),
             Text(label,

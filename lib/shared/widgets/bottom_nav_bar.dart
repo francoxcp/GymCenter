@@ -28,7 +28,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        border: const Border(
+        border: Border(
           top: BorderSide(color: AppColors.background, width: 1),
         ),
         boxShadow: [

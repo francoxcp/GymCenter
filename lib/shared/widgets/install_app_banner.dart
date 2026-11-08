@@ -129,8 +129,8 @@ class _InstallAppBannerState extends State<InstallAppBanner> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
@@ -138,7 +138,7 @@ class _InstallAppBannerState extends State<InstallAppBanner> {
                 const SizedBox(height: 4),
                 Text(
                   body,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12.5,
                     height: 1.4,
@@ -167,7 +167,7 @@ class _InstallAppBannerState extends State<InstallAppBanner> {
           if (!widget.forNotifications)
             IconButton(
               tooltip: isEn ? 'Dismiss' : 'Cerrar',
-              icon: const Icon(Icons.close, size: 18, color: AppColors.textSecondary),
+              icon: Icon(Icons.close, size: 18, color: AppColors.textSecondary),
               onPressed: _dismiss,
             ),
         ],

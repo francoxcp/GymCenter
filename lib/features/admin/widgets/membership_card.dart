@@ -60,8 +60,8 @@ class MembershipCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(member.membershipPlan ?? 'Membresía',
-                      style: const TextStyle(
-                          color: Colors.white,
+                      style: TextStyle(
+                          color: AppColors.textPrimary,
                           fontWeight: FontWeight.bold,
                           fontSize: 16)),
                   Text(
@@ -136,7 +136,7 @@ class MembershipCard extends StatelessWidget {
       backgroundColor: AppColors.surface,
       builder: (_) => SafeArea(
         child: rows.isEmpty
-            ? const Padding(
+            ? Padding(
                 padding: EdgeInsets.all(32),
                 child: Text('Aún no hay pagos registrados.',
                     textAlign: TextAlign.center,
@@ -146,9 +146,9 @@ class MembershipCard extends StatelessWidget {
                 shrinkWrap: true,
                 padding: const EdgeInsets.all(16),
                 children: [
-                  const Text('Historial de pagos',
+                  Text('Historial de pagos',
                       style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           fontSize: 17,
                           fontWeight: FontWeight.bold)),
                   for (final r in rows)
@@ -156,11 +156,11 @@ class MembershipCard extends StatelessWidget {
                       contentPadding: EdgeInsets.zero,
                       title: Text(
                           '${r['plan']}${r['amount'] != null ? ' · ₡${(r['amount'] as num).toStringAsFixed(0)}' : ''}',
-                          style: const TextStyle(color: Colors.white)),
+                          style: TextStyle(color: AppColors.textPrimary)),
                       subtitle: Text(
                           '${r['period_start']} → ${r['period_end']}',
                           style:
-                              const TextStyle(color: AppColors.textSecondary)),
+                              TextStyle(color: AppColors.textSecondary)),
                     ),
                 ],
               ),
@@ -193,7 +193,7 @@ Future<void> showRenewMembershipDialog(BuildContext context, User member) {
                     selected: plan == p,
                     selectedColor: AppColors.primary,
                     labelStyle: TextStyle(
-                        color: plan == p ? Colors.black : Colors.white),
+                        color: plan == p ? Colors.black : AppColors.textPrimary),
                     onSelected: (_) => setState(() => plan = p),
                   ),
               ],
@@ -215,7 +215,7 @@ Future<void> showRenewMembershipDialog(BuildContext context, User member) {
                   ? 'Se suma a partir del vencimiento actual.'
                   : 'Empieza a contar desde hoy.',
               style:
-                  const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                  TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
           ],
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
 import '../web/web_bridge.dart';
 
 /// Servicio de autenticación biométrica (huella/Face ID).
@@ -18,8 +19,13 @@ class BiometricService {
   static final BiometricService _instance = BiometricService._();
   factory BiometricService() => _instance;
 
-  static const _kBiometricEnabled = 'biometric_lock_enabled';
-  static const _kPasskeyCredentialId = 'biometric_passkey_credential_id';
+  // Las claves llevan el id del usuario: en un teléfono compartido, el
+  // bloqueo de una persona no afecta a otra.
+  static String get _uid =>
+      Supabase.instance.client.auth.currentUser?.id ?? 'anon';
+  static String get _kBiometricEnabled => 'biometric_lock_enabled_$_uid';
+  static String get _kPasskeyCredentialId =>
+      'biometric_passkey_credential_id_$_uid';
   // Perezoso: local_auth no tiene implementación web.
   late final LocalAuthentication _auth = LocalAuthentication();
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();

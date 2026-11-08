@@ -337,6 +337,8 @@ class WorkoutProvider extends ChangeNotifier {
                   'instructions': entry.value.description,
                   'order_index': entry.key,
                   'video_url': entry.value.videoUrl,
+                  // Peso sugerido por el entrenador (antes no se guardaba)
+                  'weight_kg': entry.value.weightKgForDb,
                 })
             .toList();
 
@@ -425,6 +427,8 @@ class WorkoutProvider extends ChangeNotifier {
                   'instructions': entry.value.description,
                   'order_index': entry.key,
                   'video_url': entry.value.videoUrl,
+                  // Peso sugerido por el entrenador (antes no se guardaba)
+                  'weight_kg': entry.value.weightKgForDb,
                 })
             .toList();
 

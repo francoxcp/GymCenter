@@ -37,7 +37,11 @@ class Exercise {
       thumbnailUrl: json['thumbnailUrl'],
       muscleGroup: json['muscle_group'] ?? json['muscleGroup'] ?? 'General',
       difficulty: json['difficulty'] ?? 'Intermedio',
-      weight: (json['weight'] ?? 0).toDouble(),
+      // En la BD el peso sugerido se guarda en kg (columna weight_kg); la app
+      // lo maneja en lbs. 'weight' (lbs) se usa en la caché local antigua.
+      weight: json['weight_kg'] != null
+          ? ((json['weight_kg'] as num).toDouble() * 2.20462 * 10).round() / 10
+          : ((json['weight'] ?? 0) as num).toDouble(),
     );
   }
 
@@ -56,4 +60,8 @@ class Exercise {
       'weight': weight,
     };
   }
+
+  /// Peso sugerido convertido a kg para la columna `weight_kg` (null = sin peso).
+  double? get weightKgForDb =>
+      weight > 0 ? double.parse((weight / 2.20462).toStringAsFixed(2)) : null;
 }

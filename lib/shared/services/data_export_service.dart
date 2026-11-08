@@ -72,7 +72,7 @@ class DataExportService {
 
     // Cifrar el JSON con AES-256 antes de escribir al disco
     final jsonStr = const JsonEncoder.withIndent('  ').convert(exportData);
-    final encryptedBytes = _encryptJson(jsonStr, password);
+    final encryptedBytes = encryptJson(jsonStr, password);
 
     final timestamp = DateTime.now().millisecondsSinceEpoch;
 
@@ -189,27 +189,93 @@ class DataExportService {
     }
   }
 
-  /// Cifra [jsonStr] con AES-256-CBC usando una clave derivada de [password].
-  ///
-  /// Formato del archivo resultante:
-  ///   [16 bytes: salt] + [16 bytes: IV] + [N bytes: ciphertext]
-  ///
-  /// La clave se deriva como SHA-256(UTF-8(password) + salt).
-  static Uint8List _encryptJson(String jsonStr, String password) {
-    final random = Random.secure();
-    final salt = Uint8List.fromList(
-      List.generate(16, (_) => random.nextInt(256)),
-    );
+  // Formato v2 del archivo exportado:
+  //   "GCX2" (4 bytes) + salt (16) + IV (16) + ciphertext AES-256-CBC + HMAC-SHA256 (32)
+  // Claves: PBKDF2-HMAC-SHA256(contraseña, salt, 60 000 iteraciones) → 64 bytes
+  //   (32 para cifrar + 32 para el HMAC). El HMAC cubre todo lo anterior
+  //   (encrypt-then-MAC), así se detecta cualquier modificación del archivo.
+  // Antes la clave era un único SHA-256 de la contraseña (fácil de atacar por
+  // fuerza bruta) y no había verificación de integridad.
+  static const _magic = [0x47, 0x43, 0x58, 0x32]; // "GCX2"
+  static const pbkdf2Iterations = 60000;
 
-    // Derivar clave de 256 bits: SHA-256(password bytes ++ salt)
-    final keyBytes = sha256.convert([...utf8.encode(password), ...salt]).bytes;
-    final key = enc.Key(Uint8List.fromList(keyBytes));
+  /// Cifra [jsonStr] protegido con [password] (formato v2, ver arriba).
+  static Uint8List encryptJson(String jsonStr, String password,
+      {int iterations = pbkdf2Iterations}) {
+    final random = Random.secure();
+    final salt = Uint8List.fromList(List.generate(16, (_) => random.nextInt(256)));
+    final keys = pbkdf2(utf8.encode(password), salt, iterations, 64);
+    final encKey = enc.Key(Uint8List.fromList(keys.sublist(0, 32)));
+    final macKey = keys.sublist(32, 64);
     final iv = enc.IV.fromSecureRandom(16);
 
-    final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
+    final encrypter = enc.Encrypter(enc.AES(encKey, mode: enc.AESMode.cbc));
     final encrypted = encrypter.encrypt(jsonStr, iv: iv);
 
-    // Concatenar: salt (16) + IV (16) + ciphertext
-    return Uint8List.fromList([...salt, ...iv.bytes, ...encrypted.bytes]);
+    final body = <int>[..._magic, ...salt, ...iv.bytes, ...encrypted.bytes];
+    final mac = Hmac(sha256, macKey).convert(body).bytes;
+    return Uint8List.fromList([...body, ...mac]);
+  }
+
+  /// Descifra un archivo v2. Lanza [FormatException] si la contraseña es
+  /// incorrecta o el archivo fue modificado.
+  static String decryptJson(Uint8List data, String password,
+      {int iterations = pbkdf2Iterations}) {
+    if (data.length < 4 + 16 + 16 + 16 + 32 ||
+        !_listEquals(data.sublist(0, 4), _magic)) {
+      throw const FormatException('Archivo no reconocido');
+    }
+    final salt = data.sublist(4, 20);
+    final ivBytes = data.sublist(20, 36);
+    final body = data.sublist(0, data.length - 32);
+    final mac = data.sublist(data.length - 32);
+    final keys = pbkdf2(utf8.encode(password), salt, iterations, 64);
+    final expected = Hmac(sha256, keys.sublist(32, 64)).convert(body).bytes;
+    if (!_listEquals(mac, expected)) {
+      throw const FormatException('Contraseña incorrecta o archivo dañado');
+    }
+    final encrypter = enc.Encrypter(
+        enc.AES(enc.Key(Uint8List.fromList(keys.sublist(0, 32))),
+            mode: enc.AESMode.cbc));
+    return encrypter.decrypt(
+        enc.Encrypted(Uint8List.fromList(data.sublist(36, data.length - 32))),
+        iv: enc.IV(Uint8List.fromList(ivBytes)));
+  }
+
+  /// PBKDF2 con HMAC-SHA256 (RFC 8018).
+  static List<int> pbkdf2(
+      List<int> password, List<int> salt, int iterations, int length) {
+    final hmac = Hmac(sha256, password);
+    final out = <int>[];
+    var block = 1;
+    while (out.length < length) {
+      final blockBytes = [
+        (block >> 24) & 0xff,
+        (block >> 16) & 0xff,
+        (block >> 8) & 0xff,
+        block & 0xff,
+      ];
+      var u = hmac.convert([...salt, ...blockBytes]).bytes;
+      final t = List<int>.from(u);
+      for (var i = 1; i < iterations; i++) {
+        u = hmac.convert(u).bytes;
+        for (var k = 0; k < t.length; k++) {
+          t[k] ^= u[k];
+        }
+      }
+      out.addAll(t);
+      block++;
+    }
+    return out.sublist(0, length);
+  }
+
+  // Comparación en tiempo constante
+  static bool _listEquals(List<int> a, List<int> b) {
+    if (a.length != b.length) return false;
+    var diff = 0;
+    for (var i = 0; i < a.length; i++) {
+      diff |= a[i] ^ b[i];
+    }
+    return diff == 0;
   }
 }

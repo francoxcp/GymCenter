@@ -64,10 +64,18 @@ jobs:
         run: |
           # Servidor estático con fallback SPA (rutas sin extensión → index.html)
           cat > /tmp/serve.py <<'PY'
-          import http.server, os, sys
+          import http.server, os, sys, json
           root = sys.argv[1]
+          # Aplica las cabeceras de vercel.json (incluida la CSP) para probarlas
+          cfg = json.load(open(os.path.join(root, 'vercel.json')))
+          global_headers = cfg['headers'][0]['headers']
           class H(http.server.SimpleHTTPRequestHandler):
               def __init__(self, *a, **k): super().__init__(*a, directory=root, **k)
+              def end_headers(self):
+                  for h in global_headers:
+                      if h['key'].lower() != 'cache-control':
+                          self.send_header(h['key'], h['value'])
+                  super().end_headers()
               def send_head(self):
                   p = self.path.split('?')[0]
                   if '.' not in os.path.basename(p): self.path = '/index.html'

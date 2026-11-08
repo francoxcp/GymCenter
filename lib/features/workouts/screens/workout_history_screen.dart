@@ -9,6 +9,7 @@ import '../providers/workout_session_provider.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import 'package:intl/intl.dart';
 import '../../../shared/navigation/safe_pop.dart';
+import '../../social/comments_sheet.dart';
 
 class WorkoutHistoryScreen extends StatefulWidget {
   const WorkoutHistoryScreen({super.key});
@@ -367,12 +368,27 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
           const SizedBox(height: 8),
           Text(
             totalSets > 0
-                ? '$doneSets/$totalSets series × ${(completionRate * 100).toInt()}% completado'
+                ? '$doneSets/$totalSets series · ${(completionRate * 100).toInt()}% completado'
                 : AppL10n.of(context)
                     .percentCompleted((completionRate * 100).toInt()),
             style: const TextStyle(
               fontSize: 12,
               color: AppColors.textSecondary,
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () => showCommentsSheet(
+                context,
+                sessionId: session.id,
+                title: 'Comentarios del entreno',
+              ),
+              icon: const Icon(Icons.chat_bubble_outline, size: 18),
+              label: const Text('Comentarios'),
+              style: TextButton.styleFrom(
+                  minimumSize: const Size(48, 44),
+                  foregroundColor: AppColors.primary),
             ),
           ),
         ],

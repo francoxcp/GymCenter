@@ -15,6 +15,7 @@ import '../../../shared/widgets/coming_soon_workout_card.dart';
 import '../../../shared/widgets/install_app_banner.dart';
 import '../../../shared/services/offline_sync_queue.dart';
 import '../widgets/weekly_goal_card.dart';
+import '../widgets/trainer_comments_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -485,6 +486,9 @@ class _UserHomeContentState extends State<_UserHomeContent> {
 
         // Meta semanal: entrenos hechos vs plan del entrenador
         const WeeklyGoalCard(),
+
+        // Comentarios recientes del entrenador
+        const TrainerCommentsCard(),
 
         const SizedBox(height: 28),
 

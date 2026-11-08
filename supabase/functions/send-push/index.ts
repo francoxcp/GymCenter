@@ -2,6 +2,8 @@
 // Envía las notificaciones Web Push de la versión web (PWA):
 //   • Recordatorio diario de entrenamiento a la hora elegida por el usuario.
 //   • Aviso del reporte semanal los domingos a partir de las 9:00.
+//   • Bandeja push_outbox: comentarios, entrenos terminados y vencimientos
+//     de membresía (ver database/ux_feed_membership_migration.sql).
 // La invoca pg_cron cada 15 minutos (ver database/web_pwa_migration.sql).
 //
 // No necesita secrets manuales: lee la configuración de la tabla
@@ -217,6 +219,29 @@ Deno.serve(async (req) => {
         .update({ last_report_sent_on: local.date })
         .eq('user_id', p.user_id);
     }
+  }
+
+  // ── Bandeja de avisos (comentarios, entrenos, membresías) ─────────────
+  const enabledUsers = new Set(((prefsRows ?? []) as Prefs[]).map((p) => p.user_id));
+  const { data: outbox } = await supabase
+    .from('push_outbox')
+    .select('id, user_id, title, body, url, tag')
+    .is('sent_at', null)
+    .gte('created_at', new Date(now.getTime() - 2 * 86400000).toISOString())
+    .order('created_at')
+    .limit(500);
+  const doneIds: number[] = [];
+  for (const m of (outbox ?? []) as {
+    id: number; user_id: string; title: string; body: string; url: string; tag: string;
+  }[]) {
+    const userSubs = byUser.get(m.user_id) ?? [];
+    if (userSubs.length > 0 && enabledUsers.has(m.user_id)) {
+      await pushTo(userSubs, { title: m.title, body: m.body, tag: `${m.tag}-${m.id}`, url: m.url });
+    }
+    doneIds.push(m.id);
+  }
+  if (doneIds.length > 0) {
+    await supabase.from('push_outbox').update({ sent_at: now.toISOString() }).in('id', doneIds);
   }
 
   if (deadSubs.length > 0) {

@@ -288,6 +288,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _QuickActionButton(
+                  icon: Icons.dynamic_feed,
+                  iconColor: AppColors.primary,
+                  title: AppL10n.of(context).isEn
+                      ? 'Member activity'
+                      : 'Actividad de socios',
+                  onTap: () => context.push('/admin/activity'),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                _QuickActionButton(
                   icon: Icons.people,
                   iconColor: Colors.blue,
                   title: AppL10n.of(context).userManagement,

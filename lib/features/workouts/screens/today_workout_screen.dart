@@ -1206,7 +1206,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           SnackBar(
             content: Row(
               children: [
-                const Text('🏆', style: TextStyle(fontSize: 18)),
+                const Icon(Icons.emoji_events, color: Color(0xFFFFB800), size: 21),
                 const SizedBox(width: 10),
                 Text(
                   AppL10n.of(context).newPersonalRecord(_fmtWeight(weight)),
@@ -1719,7 +1719,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         ),
                         child: Row(
                           children: [
-                            const Text('🏆', style: TextStyle(fontSize: 13)),
+                            const Icon(Icons.emoji_events, color: Color(0xFFFFB800), size: 16),
                             const SizedBox(width: 4),
                             Text(
                               _fmtWeight(_exercisePRs[exerciseIndex]!),
@@ -2722,7 +2722,7 @@ class _WeightChip extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (isNewPR) ...[
-                  const Text('🏆', style: TextStyle(fontSize: 11)),
+                  const Icon(Icons.emoji_events, color: Color(0xFFFFB800), size: 14),
                   const SizedBox(width: 4),
                 ],
                 Text(

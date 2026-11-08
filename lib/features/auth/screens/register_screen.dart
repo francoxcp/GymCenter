@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../organization/services/organization_service.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../core/theme/app_theme.dart';
@@ -27,11 +28,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscureConfirmPassword = true;
   bool _acceptedTerms = false;
   bool _isLoading = false;
+  /// Viene de un enlace de invitación: se muestra a qué gimnasio se une y
+  /// no se pide código de entrenador.
+  String? _inviteOrg;
 
   @override
   void initState() {
     super.initState();
     SecureScreenService.enable();
+    OrganizationService.pendingInviteOrgName().then((name) {
+      if (mounted && name != null) setState(() => _inviteOrg = name);
+    });
   }
 
   @override
@@ -369,14 +376,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               const SizedBox(height: 16),
 
-              // Código del entrenador (opcional): vincula al socio al registrarse
-              CustomTextField(
-                controller: _trainerCodeController,
-                hintText: AppL10n.of(context).isEn
-                    ? 'Trainer code (optional)'
-                    : 'Código de tu entrenador (opcional)',
-                prefixIcon: Icons.sports,
-              ),
+              // Código del entrenador (opcional): vincula al socio al registrarse.
+              // Con invitación no hace falta.
+              if (_inviteOrg == null)
+                CustomTextField(
+                  controller: _trainerCodeController,
+                  hintText: AppL10n.of(context).isEn
+                      ? 'Trainer code (optional)'
+                      : 'Código de tu entrenador (opcional)',
+                  prefixIcon: Icons.sports,
+                )
+              else
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border(left: BorderSide(color: AppColors.primaryText, width: 4)),
+                  ),
+                  child: Text('Al crear tu cuenta te unirás a $_inviteOrg.',
+                      style: TextStyle(
+                          color: AppColors.textPrimary, fontWeight: FontWeight.w700)),
+                ),
 
               const SizedBox(height: 24),
 

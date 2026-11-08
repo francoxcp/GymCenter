@@ -5,7 +5,6 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../web/web_bridge.dart';
-import '../widgets/app_snackbar.dart';
 
 /// Copiar y compartir que funcionan en la PWA (iPhone/Android) y en nativo.
 ///
@@ -32,7 +31,9 @@ class ShareHelper {
     if (!context.mounted) return;
     if (ok) {
       HapticFeedback.lightImpact();
-      AppSnackbar.success(context, okMessage);
+      // Aviso por encima de hojas y diálogos (un SnackBar quedaría oculto
+      // detrás de la hoja de invitación y parecería que no copió).
+      showToast(context, okMessage);
     } else {
       await _manualCopy(context, text);
     }
@@ -56,6 +57,51 @@ class ShareHelper {
     } else {
       await Share.share(text);
     }
+  }
+
+  /// Mensaje breve sobre todo lo demás (también sobre hojas modales).
+  static void showToast(BuildContext context, String message) {
+    final overlay = Overlay.maybeOf(context, rootOverlay: true);
+    if (overlay == null) return;
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (ctx) => Positioned(
+        left: 24,
+        right: 24,
+        top: MediaQuery.of(ctx).padding.top + 16,
+        child: IgnorePointer(
+          child: Semantics(
+            liveRegion: true,
+            child: Material(
+              color: Colors.transparent,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F7A3A),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black38, blurRadius: 12, offset: Offset(0, 4)),
+                    ],
+                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    Text(message,
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
+                  ]),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    overlay.insert(entry);
+    Future.delayed(const Duration(milliseconds: 1800), () {
+      if (entry.mounted) entry.remove();
+    });
   }
 
   static Future<void> _manualCopy(BuildContext context, String text) {

@@ -128,22 +128,39 @@ class MembersStatusSectionState extends State<MembersStatusSection> {
     Widget chip(MemberLight? l, String label) {
       final selected = _filter == l;
       final color = l == null ? AppColors.primary : colorOf(l);
-      return GestureDetector(
+      return Semantics(
+        button: true,
+        selected: selected,
+        child: GestureDetector(
         onTap: () => setState(() => _filter = selected ? null : l),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          constraints: const BoxConstraints(minHeight: 40),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
           decoration: BoxDecoration(
             color: selected ? color.withValues(alpha: 0.2) : AppColors.surface,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
                 color: selected ? color : Colors.transparent, width: 1.2),
           ),
-          child: Text(label,
-              style: TextStyle(
-                  color: selected ? color : AppColors.textPrimary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600)),
+          // Punto de color en vez de emoji (los emojis tardan en cargar en
+          // la web y se ven como cuadros)
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            if (l != null) ...[
+              Container(
+                width: 9,
+                height: 9,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 6),
+            ],
+            Text(label,
+                style: TextStyle(
+                    color: selected ? color : AppColors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600)),
+          ]),
         ),
+      ),
       );
     }
 
@@ -176,13 +193,13 @@ class MembersStatusSectionState extends State<MembersStatusSection> {
           child: Row(
             children: [
               chip(MemberLight.red,
-                  '🔴 ${isEn ? 'Absent' : 'Sin venir'} ${counts[MemberLight.red]}'),
+                  '${isEn ? 'Absent' : 'Sin venir'} ${counts[MemberLight.red]}'),
               const SizedBox(width: 8),
               chip(MemberLight.yellow,
-                  '🟡 ${isEn ? 'Behind' : 'Atrasados'} ${counts[MemberLight.yellow]}'),
+                  '${isEn ? 'Behind' : 'Atrasados'} ${counts[MemberLight.yellow]}'),
               const SizedBox(width: 8),
               chip(MemberLight.green,
-                  '🟢 ${isEn ? 'On track' : 'Al día'} ${counts[MemberLight.green]}'),
+                  '${isEn ? 'On track' : 'Al día'} ${counts[MemberLight.green]}'),
             ],
           ),
         ),

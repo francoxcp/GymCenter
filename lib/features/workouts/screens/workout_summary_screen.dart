@@ -213,7 +213,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
         backgroundColor: AppColors.cardBackground,
         title: Row(
           children: [
-            const Text('🏆', style: TextStyle(fontSize: 32)),
+            const Icon(Icons.emoji_events, color: Color(0xFFFFB800), size: 35),
             const SizedBox(width: 12),
             Expanded(
               child: Text(

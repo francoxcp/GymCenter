@@ -92,7 +92,7 @@ class _MembershipsScreenState extends State<MembershipsScreen> {
                 child: Text(
                   switch (_tab) {
                     MembershipStatus.expiring =>
-                      'Nadie vence en los próximos 7 días 🎉',
+                      'Nadie vence en los próximos 7 días.',
                     MembershipStatus.expired => 'No hay membresías vencidas.',
                     MembershipStatus.none =>
                       'Todos los socios tienen membresía registrada.',

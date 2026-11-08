@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../config/router/app_router.dart' show DeepLinkMemory;
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../core/theme/app_theme.dart';
@@ -92,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (success && mounted) {
         // Redirigir según el rol del usuario
-        final route = _authProvider.initialRoute;
+        final route = DeepLinkMemory.take() ?? _authProvider.initialRoute;
         context.go(route);
       } else if (!success && mounted) {
         AppSnackbar.error(

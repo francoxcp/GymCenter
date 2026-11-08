@@ -1,7 +1,7 @@
 -- ============================================================================
 -- MIGRACIÓN: versión web (PWA) + Web Push + parche de seguridad
--- Ejecutar UNA vez en Supabase → SQL Editor (es idempotente: se puede
--- volver a ejecutar sin romper nada).
+-- Ejecutar en Supabase → SQL Editor (es idempotente: se puede volver a
+-- ejecutar sin romper nada). No requiere copiar ninguna clave secreta.
 -- Ver docs/WEB_DEPLOY.md para el paso a paso completo.
 -- ============================================================================
 
@@ -107,14 +107,78 @@ REVOKE ALL ON FUNCTION public.claim_push_subscription(TEXT, TEXT, TEXT) FROM PUB
 GRANT EXECUTE ON FUNCTION public.claim_push_subscription(TEXT, TEXT, TEXT) TO authenticated;
 
 -- ----------------------------------------------------------------------------
--- 4. Programar el envío cada 15 minutos (pg_cron + pg_net)
---    Requiere haber guardado en Vault (Project Settings → Vault):
---      - project_url       → https://<tu-proyecto>.supabase.co
---      - push_cron_secret  → el mismo valor que el secret CRON_SECRET de la
---                            Edge Function send-push
+-- 4. Configuración interna de Web Push (sin secretos que copiar a mano)
+--    - cron_secret: se genera aquí automáticamente.
+--    - vapid_public / vapid_private: las genera la Edge Function send-push
+--      la primera vez que se ejecuta.
+--    - project_url: URL pública del proyecto (no es secreta).
+--    La tabla tiene RLS sin políticas: solo la base de datos y la Edge
+--    Function (service role) pueden leerla.
+-- ----------------------------------------------------------------------------
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+
+CREATE TABLE IF NOT EXISTS public.push_config (
+  id INT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  project_url TEXT,
+  cron_secret TEXT NOT NULL DEFAULT encode(extensions.gen_random_bytes(32), 'hex'),
+  vapid_public TEXT,
+  vapid_private TEXT,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE public.push_config ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.push_config FROM anon, authenticated;
+
+INSERT INTO public.push_config (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+
+-- La app obtiene la clave pública VAPID (no es secreta) con esta función.
+CREATE OR REPLACE FUNCTION public.get_vapid_public_key()
+RETURNS TEXT
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT vapid_public FROM public.push_config WHERE id = 1;
+$$;
+REVOKE ALL ON FUNCTION public.get_vapid_public_key() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_vapid_public_key() TO authenticated;
+
+-- ----------------------------------------------------------------------------
+-- 5. Programar el envío cada 15 minutos (pg_cron + pg_net)
 -- ----------------------------------------------------------------------------
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 CREATE EXTENSION IF NOT EXISTS pg_net;
+
+-- Función que llama a la Edge Function (también sirve para probar a mano:
+--   SELECT public.trigger_send_push();
+CREATE OR REPLACE FUNCTION public.trigger_send_push()
+RETURNS BIGINT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  cfg public.push_config;
+  req_id BIGINT;
+BEGIN
+  SELECT * INTO cfg FROM public.push_config WHERE id = 1;
+  IF cfg.project_url IS NULL OR cfg.project_url = '' THEN
+    RAISE NOTICE 'push_config.project_url no está configurado';
+    RETURN NULL;
+  END IF;
+  SELECT net.http_post(
+    url := rtrim(cfg.project_url, '/') || '/functions/v1/send-push',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer ' || cfg.cron_secret
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 30000
+  ) INTO req_id;
+  RETURN req_id;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.trigger_send_push() FROM PUBLIC, anon, authenticated;
 
 DO $$
 BEGIN
@@ -124,19 +188,10 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 
-SELECT cron.schedule(
-  'chamos-send-push',
-  '*/15 * * * *',
-  $$
-  SELECT net.http_post(
-    url := (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'project_url')
-           || '/functions/v1/send-push',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'push_cron_secret')
-    ),
-    body := '{}'::jsonb,
-    timeout_milliseconds := 30000
-  );
-  $$
-);
+SELECT cron.schedule('chamos-send-push', '*/15 * * * *', $$SELECT public.trigger_send_push();$$);
+
+-- ----------------------------------------------------------------------------
+-- 6. ÚLTIMO PASO: indica la URL de tu proyecto (no es secreta).
+--    Reemplaza el valor y ejecuta esta línea:
+-- UPDATE public.push_config SET project_url = 'https://xxxx.supabase.co' WHERE id = 1;
+-- ----------------------------------------------------------------------------

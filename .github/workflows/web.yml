@@ -122,7 +122,8 @@ jobs:
         if: steps.check.outputs.enabled == 'true'
         run: |
           npm install --global vercel@latest
-          PROD_FLAG=""
+          # Solo main va a producción; los PR crean una vista previa.
+          PROD_FLAG="--target=preview"
           if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
             PROD_FLAG="--prod"
           fi

@@ -1,6 +1,6 @@
 # Guía paso a paso: publicar GymCenter como app web en tu teléfono
 
-Al terminar tendrás la app en una dirección como `https://chamos-fitness.vercel.app`, instalada en la pantalla de inicio de tu iPhone o Android, con notificaciones y desbloqueo con Face ID o huella.
+Al terminar tendrás la app en una dirección como `https://gym-nine-sand.vercel.app`, instalada en la pantalla de inicio de tu iPhone o Android, con notificaciones y desbloqueo con Face ID o huella.
 
 - **Tiempo:** unos 45 minutos la primera vez.
 - **Dónde:** desde tu computadora, no desde el teléfono (salvo la PARTE 7).
@@ -110,9 +110,9 @@ SUPABASE_ANON_KEY=
 
 1. Entra a **https://vercel.com/dashboard** y abre el proyecto **chamos-fitness**.
 2. Ve a **Settings → Domains**. Verás un dominio como `chamos-fitness.vercel.app` (puede tener letras extra si el nombre estaba ocupado).
-3. Cópialo **con** `https://` delante en **DOMINIO_WEB**. Ejemplo: `https://chamos-fitness.vercel.app`.
+3. Cópialo **con** `https://` delante en **DOMINIO_WEB**. Ejemplo: `https://gym-nine-sand.vercel.app`.
 
-> Si todavía no aparece ningún dominio, usa `https://chamos-fitness.vercel.app` por ahora. Después del primer despliegue (PARTE 6) revisa que coincida y, si no, corrígelo en el paso 3.6.
+> Si todavía no aparece ningún dominio, usa `https://gym-nine-sand.vercel.app` por ahora. Después del primer despliegue (PARTE 6) revisa que coincida y, si no, corrígelo en el paso 3.6.
 
 ---
 
@@ -208,7 +208,7 @@ https://github.com/francoxcp/GymCenter/blob/feature/web-pwa/database/rate_limiti
 ### 3.6 Decirle a Supabase cuál es tu web
 
 1. Menú izquierdo: **Authentication → URL Configuration**.
-2. **Site URL**: borra lo que tenga y pega tu **DOMINIO_WEB** (ej. `https://chamos-fitness.vercel.app`). Pulsa **Save**.
+2. **Site URL**: borra lo que tenga y pega tu **DOMINIO_WEB** (ej. `https://gym-nine-sand.vercel.app`). Pulsa **Save**.
 3. **Redirect URLs** → **Add URL** → pega tu DOMINIO_WEB seguido de `/**`, ej. `https://chamos-fitness.vercel.app/**` → **Save**.
 
 ### 3.7 Cambiar el correo de "Olvidé mi contraseña"

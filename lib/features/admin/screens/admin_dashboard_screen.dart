@@ -461,7 +461,7 @@ class _ChartBar extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: isActive ? AppColors.primary : AppColors.textSecondary,
+                color: isActive ? AppColors.primaryText : AppColors.textSecondary,
               ),
             ),
           ),

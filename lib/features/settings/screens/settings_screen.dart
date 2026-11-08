@@ -538,7 +538,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: Text(
         language,
         style: TextStyle(
-          color: isSelected ? AppColors.primary : AppColors.textPrimary,
+          color: isSelected ? AppColors.primaryText : AppColors.textPrimary,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
       ),

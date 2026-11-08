@@ -132,7 +132,7 @@ class _WeeklyGoalCardState extends State<WeeklyGoalCard> {
                       color: trained ? AppColors.primary : AppColors.surface,
                       border: Border.all(
                         color: scheduled && !trained
-                            ? AppColors.primary.withValues(alpha: 0.7)
+                            ? AppColors.primaryText.withValues(alpha: 0.7)
                             : Colors.transparent,
                         width: 1.5,
                       ),

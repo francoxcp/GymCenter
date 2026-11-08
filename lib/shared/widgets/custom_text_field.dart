@@ -84,7 +84,7 @@ class _CustomTextFieldState extends State<CustomTextField>
                     child: Icon(
                       widget.prefixIcon,
                       color: _isFocused
-                          ? AppColors.primary
+                          ? AppColors.primaryText
                           : AppColors.textSecondary,
                       size: 20,
                     ),

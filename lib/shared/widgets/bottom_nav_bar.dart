@@ -124,7 +124,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
                       child: Icon(
                         isSelected ? activeIcon : icon,
                         color: isSelected
-                            ? AppColors.primary
+                            ? AppColors.primaryText
                             : AppColors.textSecondary,
                         size: 24,
                       ),
@@ -138,7 +138,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
                     fontSize: isSelected ? 11.5 : 11,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isSelected
-                        ? AppColors.primary
+                        ? AppColors.primaryText
                         : AppColors.textSecondary,
                   ),
                   child: Text(label),

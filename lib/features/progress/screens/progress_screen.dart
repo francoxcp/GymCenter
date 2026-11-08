@@ -809,7 +809,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                           BarChartRodData(
                             toY: count.toDouble(),
                             color: count > 0
-                                ? AppColors.primary
+                                ? AppColors.primaryText
                                 : AppColors.primaryText.withValues(alpha: 0.15),
                             width: groupByDay ? 20 : 14,
                             borderRadius: const BorderRadius.vertical(

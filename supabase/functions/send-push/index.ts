@@ -4,12 +4,14 @@
 //   • Aviso del reporte semanal los domingos a partir de las 9:00.
 // La invoca pg_cron cada 15 minutos (ver database/web_pwa_migration.sql).
 //
-// Secrets necesarios (supabase secrets set ...):
-//   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (mailto:...),
-//   CRON_SECRET
+// No necesita secrets manuales: lee la configuración de la tabla
+// public.push_config (cron_secret y claves VAPID). Si las claves VAPID no
+// existen, las genera en la primera ejecución y las guarda ahí.
 // SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY los inyecta Supabase.
+// Opcional: VAPID_SUBJECT (mailto:...) como secret.
 //
-// Desplegar con:  supabase functions deploy send-push --no-verify-jwt
+// Desplegar con verificación JWT DESACTIVADA (la protege cron_secret):
+//   supabase functions deploy send-push --no-verify-jwt
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import webpush from 'npm:web-push@3.6.7';
@@ -64,22 +66,44 @@ function timeToMinutes(t: string | null): number {
 }
 
 Deno.serve(async (req) => {
-  const secret = Deno.env.get('CRON_SECRET');
-  const authHeader = req.headers.get('Authorization') ?? '';
-  if (!secret || authHeader !== `Bearer ${secret}`) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
-  webpush.setVapidDetails(
-    Deno.env.get('VAPID_SUBJECT') ?? 'mailto:admin@example.com',
-    Deno.env.get('VAPID_PUBLIC_KEY')!,
-    Deno.env.get('VAPID_PRIVATE_KEY')!,
-  );
-
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     { auth: { persistSession: false } },
+  );
+
+  const { data: cfg, error: cfgErr } = await supabase
+    .from('push_config')
+    .select('cron_secret, vapid_public, vapid_private')
+    .eq('id', 1)
+    .maybeSingle();
+  if (cfgErr || !cfg) {
+    return new Response('push_config no encontrado: ejecuta web_pwa_migration.sql', { status: 500 });
+  }
+
+  const authHeader = req.headers.get('Authorization') ?? '';
+  if (!cfg.cron_secret || authHeader !== `Bearer ${cfg.cron_secret}`) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  // Primera ejecución: generar y guardar las claves VAPID.
+  let vapidPublic = cfg.vapid_public as string | null;
+  let vapidPrivate = cfg.vapid_private as string | null;
+  if (!vapidPublic || !vapidPrivate) {
+    const keys = webpush.generateVAPIDKeys();
+    vapidPublic = keys.publicKey;
+    vapidPrivate = keys.privateKey;
+    const { error: saveErr } = await supabase
+      .from('push_config')
+      .update({ vapid_public: vapidPublic, vapid_private: vapidPrivate, updated_at: new Date().toISOString() })
+      .eq('id', 1);
+    if (saveErr) return new Response(saveErr.message, { status: 500 });
+  }
+
+  webpush.setVapidDetails(
+    Deno.env.get('VAPID_SUBJECT') ?? 'mailto:franco10perez@live.com',
+    vapidPublic,
+    vapidPrivate,
   );
 
   const { data: subs, error: subsErr } = await supabase

@@ -20,15 +20,28 @@ class WebPushService {
   static final WebPushService _instance = WebPushService._();
   factory WebPushService() => _instance;
 
-  /// Clave pública VAPID (se pasa con --dart-define=VAPID_PUBLIC_KEY=...).
-  static const String vapidPublicKey = String.fromEnvironment('VAPID_PUBLIC_KEY');
+  /// Clave pública VAPID. Opcional como --dart-define=VAPID_PUBLIC_KEY=...;
+  /// si no se pasa, se obtiene de Supabase (RPC get_vapid_public_key), donde
+  /// la genera automáticamente la Edge Function send-push.
+  static const String _vapidFromBuild = String.fromEnvironment('VAPID_PUBLIC_KEY');
+  String? _vapidCache;
+
+  Future<String> _vapidPublicKey() async {
+    if (_vapidFromBuild.isNotEmpty) return _vapidFromBuild;
+    if (_vapidCache != null && _vapidCache!.isNotEmpty) return _vapidCache!;
+    try {
+      final key = await _supabase.rpc('get_vapid_public_key');
+      if (key is String && key.isNotEmpty) _vapidCache = key;
+    } catch (e) {
+      debugPrint('WebPushService: no se pudo obtener la clave VAPID: $e');
+    }
+    return _vapidCache ?? '';
+  }
 
   SupabaseClient get _supabase => Supabase.instance.client;
 
   /// 'supported' | 'unsupported' | 'ios-needs-install'
   String get support => kIsWeb ? WebBridge.notificationSupport : 'unsupported';
-
-  bool get isConfigured => vapidPublicKey.isNotEmpty;
 
   /// Pide permiso al usuario (si hace falta) y registra la suscripción.
   Future<bool> requestPermissionAndSubscribe() async {
@@ -44,12 +57,14 @@ class WebPushService {
 
   /// Registra (o refresca) la suscripción push si ya hay permiso.
   Future<void> ensureSubscribed() async {
-    if (!kIsWeb || !isConfigured) return;
+    if (!kIsWeb) return;
     if (WebBridge.notificationPermission != 'granted') return;
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
     try {
-      final raw = await WebBridge.pushSubscribe(vapidPublicKey);
+      final vapid = await _vapidPublicKey();
+      if (vapid.isEmpty) return;
+      final raw = await WebBridge.pushSubscribe(vapid);
       if (raw.isEmpty) return;
       final json = jsonDecode(raw) as Map<String, dynamic>;
       final keys = (json['keys'] as Map?)?.cast<String, dynamic>() ?? {};

@@ -109,27 +109,38 @@ Deno.serve(async (req) => {
   );
 
   const cleanNow = new Date();
-  // ── Limpieza: comprobantes revisados hace más de 6 meses ──────────────
-  // (libera espacio del plan gratuito; el registro del pago se conserva)
-  if (cleanNow.getUTCHours() === 9 && cleanNow.getUTCMinutes() < 5) {
-    const cutoff = new Date(cleanNow.getTime() - 180 * 86400000).toISOString();
-    const { data: old } = await supabase
-      .from('org_payments')
-      .select('id, receipt_path')
-      .neq('status', 'in_review')
-      .is('receipt_deleted_at', null)
-      .lt('reviewed_at', cutoff)
-      .limit(100);
-    if (old && old.length > 0) {
-      const { error: rmErr } = await supabase.storage
-        .from('payment-receipts')
-        .remove(old.map((o: { receipt_path: string }) => o.receipt_path));
-      if (!rmErr) {
-        await supabase
+  // ── Limpieza de comprobantes (libera espacio del plan gratuito) ───────
+  // Rechazados: a los 90 días. Aprobados: al año (son prueba de pago).
+  // El registro del pago se conserva; solo se borra el archivo.
+  if (cleanNow.getUTCHours() === 9 && cleanNow.getUTCMinutes() < 15) {
+    try {
+      const days = (n: number) => new Date(cleanNow.getTime() - n * 86400000).toISOString();
+      const pick = async (status: string, olderThan: string) => {
+        const { data } = await supabase
           .from('org_payments')
-          .update({ receipt_deleted_at: cleanNow.toISOString() })
-          .in('id', old.map((o: { id: string }) => o.id));
+          .select('id, receipt_path')
+          .eq('status', status)
+          .is('receipt_deleted_at', null)
+          .lt('reviewed_at', olderThan)
+          .limit(100);
+        return (data ?? []) as { id: string; receipt_path: string }[];
+      };
+      const old = [...(await pick('rejected', days(90))), ...(await pick('approved', days(365)))];
+      if (old.length > 0) {
+        const { error: rmErr } = await supabase.storage
+          .from('payment-receipts')
+          .remove(old.map((o) => o.receipt_path));
+        if (!rmErr) {
+          await supabase
+            .from('org_payments')
+            .update({ receipt_deleted_at: cleanNow.toISOString() })
+            .in('id', old.map((o) => o.id));
+        } else {
+          console.error('cleanup receipts', rmErr.message);
+        }
       }
+    } catch (e) {
+      console.error('cleanup receipts failed', e);
     }
   }
 

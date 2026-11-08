@@ -639,6 +639,13 @@ class _PlatformOrgScreenState extends State<PlatformOrgScreen> {
           ),
         const SizedBox(height: 10),
         Wrap(spacing: 8, runSpacing: 8, children: [
+          if (p.receiptDeleted)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text('Comprobante archivado (se borró por antigüedad)',
+                  style: TextStyle(color: AppColors.textSecondary)),
+            )
+          else
           OutlinedButton.icon(
             onPressed: () => _openReceipt(p),
             icon: const Icon(Icons.receipt_long),

@@ -41,8 +41,8 @@ RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS
            WHERE u.org_id = o.id AND u.role = 'user') < o.max_members
     FROM public.organizations o WHERE o.id = p_org;
 $$;
-REVOKE ALL ON FUNCTION public.org_has_room(UUID) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.org_has_room(UUID) TO authenticated;
+-- Solo la usan funciones internas (no se expone a la app)
+REVOKE ALL ON FUNCTION public.org_has_room(UUID) FROM PUBLIC, anon, authenticated;
 
 -- Registro con código: si el gimnasio está lleno, la cuenta queda sin
 -- organización (verá "¿Con quién entrenas?") en vez de fallar el registro.
@@ -101,6 +101,8 @@ BEGIN
   IF public.is_staff() AND v_my_org IS NOT NULL THEN
     RAISE EXCEPTION 'invalid_trainer_code';
   END IF;
+  -- Bloqueo de la organización: evita superar el límite con altas simultáneas
+  PERFORM 1 FROM public.organizations WHERE id = v_trainer.org_id FOR UPDATE;
   IF v_my_org IS NULL AND NOT COALESCE(public.org_has_room(v_trainer.org_id), true) THEN
     RAISE EXCEPTION 'member_limit';
   END IF;
@@ -132,7 +134,7 @@ BEGIN
     RAISE EXCEPTION 'invalid_invitation';
   END IF;
   SELECT name INTO v_org_name FROM public.organizations
-   WHERE id = v_inv.org_id AND status = 'active';
+   WHERE id = v_inv.org_id AND status = 'active' FOR UPDATE;
   IF NOT FOUND THEN RAISE EXCEPTION 'invalid_invitation'; END IF;
 
   SELECT id, role, org_id INTO v_me FROM public.users WHERE id = auth.uid() FOR UPDATE;

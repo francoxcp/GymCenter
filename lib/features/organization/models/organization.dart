@@ -82,8 +82,11 @@ class OrgPayment {
   final String? reviewComment;
   final DateTime submittedAt;
   final DateTime? periodEnd;
+  /// El archivo se borró por antigüedad (el registro del pago se conserva).
+  final bool receiptDeleted;
 
   const OrgPayment({
+    this.receiptDeleted = false,
     required this.id,
     required this.orgId,
     required this.months,
@@ -113,6 +116,7 @@ class OrgPayment {
             DateTime.tryParse(j['submitted_at'] as String? ?? '')?.toLocal() ??
                 DateTime.now(),
         periodEnd: Organization._date(j['period_end']),
+        receiptDeleted: j['receipt_deleted_at'] != null,
       );
 }
 

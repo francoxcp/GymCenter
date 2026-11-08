@@ -52,7 +52,9 @@ jobs:
           # de prueba para validar la build; el despliegue se omite.
           SUPABASE_URL="${SUPABASE_URL:-https://placeholder.supabase.co}"
           SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY:-placeholder-anon-key}"
-          flutter build web --release \
+          # --no-web-resources-cdn: el motor gráfico (CanvasKit) se sirve desde
+          # el propio sitio para que la app funcione sin conexión.
+          flutter build web --release --no-web-resources-cdn \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
             --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
             --dart-define=VAPID_PUBLIC_KEY="$VAPID_PUBLIC_KEY" \

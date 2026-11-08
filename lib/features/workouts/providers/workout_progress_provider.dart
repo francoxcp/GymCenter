@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/workout_progress.dart';
+import '../../../shared/services/offline_sync_queue.dart';
 
 class WorkoutProgressProvider with ChangeNotifier {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -91,27 +92,54 @@ class WorkoutProgressProvider with ChangeNotifier {
     // Una sola llamada — la columna accumulated_seconds debe existir en BD.
     // Si aún no se ejecutó la migración SQL, correr en Supabase SQL Editor:
     //   ALTER TABLE workout_progress ADD COLUMN IF NOT EXISTS accumulated_seconds INT DEFAULT 0;
+    final row = {
+      'user_id': userId,
+      'workout_id': workoutId,
+      'exercise_index': exerciseIndex,
+      'completed_sets': completedSets,
+      'accumulated_seconds': accumulatedSeconds,
+    };
     try {
+      final queue = OfflineSyncQueue.instance;
+      if (queue.hasPending) {
+        // Hay cambios sin enviar: mantener el orden encolando también este.
+        await queue.upsert('workout_progress', row, onConflict: 'user_id');
+        _setLocalProgress(row);
+        return;
+      }
       final response = await _supabase
           .from('workout_progress')
-          .upsert(
-            {
-              'user_id': userId,
-              'workout_id': workoutId,
-              'exercise_index': exerciseIndex,
-              'completed_sets': completedSets,
-              'accumulated_seconds': accumulatedSeconds,
-            },
-            onConflict: 'user_id',
-          )
+          .upsert(row, onConflict: 'user_id')
           .select()
           .single();
       _currentProgress = WorkoutProgress.fromJson(response);
       notifyListeners();
     } catch (e) {
+      if (OfflineSyncQueue.isNetworkError(e)) {
+        // Sin conexión: guardar localmente y sincronizar más tarde
+        await OfflineSyncQueue.instance
+            .upsert('workout_progress', row, onConflict: 'user_id');
+        _setLocalProgress(row);
+        return;
+      }
       debugPrint('Error saving workout progress: $e');
       rethrow;
     }
+  }
+
+  void _setLocalProgress(Map<String, dynamic> row) {
+    final now = DateTime.now();
+    _currentProgress = WorkoutProgress(
+      id: _currentProgress?.id ?? 'local',
+      userId: row['user_id'] as String,
+      workoutId: row['workout_id'] as String,
+      exerciseIndex: row['exercise_index'] as int,
+      completedSets: (row['completed_sets'] as List<List<bool>>),
+      accumulatedSeconds: row['accumulated_seconds'] as int,
+      startedAt: _currentProgress?.startedAt ?? now,
+      updatedAt: now,
+    );
+    notifyListeners();
   }
 
   // Eliminar progreso (al completar rutina o descartar)
@@ -119,10 +147,8 @@ class WorkoutProgressProvider with ChangeNotifier {
     if (_currentProgress == null) return;
 
     try {
-      await _supabase
-          .from('workout_progress')
-          .delete()
-          .eq('id', _currentProgress!.id);
+      await OfflineSyncQueue.instance
+          .delete('workout_progress', {'user_id': _currentProgress!.userId});
 
       _currentProgress = null;
       notifyListeners();
@@ -154,8 +180,8 @@ class WorkoutProgressProvider with ChangeNotifier {
     List<Map<String, dynamic>>? exercisesData,
   }) async {
     try {
-      // Guardar sesión en workout_sessions
-      await _supabase.from('workout_sessions').insert({
+      // Guardar sesión en workout_sessions (se encola si no hay conexión)
+      await OfflineSyncQueue.instance.insert('workout_sessions', {
         'user_id': userId,
         'workout_id': workoutId,
         'completed_at': DateTime.now().toIso8601String(),
@@ -167,19 +193,16 @@ class WorkoutProgressProvider with ChangeNotifier {
 
       debugPrint('✅ Workout session guardada en base de datos');
 
-      // Guardar el ID del progreso ANTES de borrarlo en memoria
-      final progressId = _currentProgress?.id;
 
       // Limpiar TODO en memoria de forma atómica — el banner desaparece en el mismo rebuild
       _completedWorkoutIdToday = workoutId;
       _currentProgress = null;
       notifyListeners();
 
-      // Eliminar progreso temporal de la BD (después del rebuild de UI)
-      if (progressId != null) {
-        await _supabase.from('workout_progress').delete().eq('id', progressId);
-        debugPrint('🗑️ Progreso temporal eliminado de BD (id=$progressId)');
-      }
+      // Eliminar progreso temporal de la BD (después del rebuild de UI).
+      // Hay un único progreso por usuario (índice unique_user_progress).
+      await OfflineSyncQueue.instance
+          .delete('workout_progress', {'user_id': userId});
 
       return;
     } catch (e) {

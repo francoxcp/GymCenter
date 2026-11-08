@@ -17,7 +17,7 @@ try {
   page.on('console', (m) => {
     const t = m.text();
     console.log(`[console.${m.type()}] ${t}`);
-    if (m.type() === 'error' && !/favicon|Failed to load resource/.test(t)) errors.push(t);
+    if (m.type() === 'error' && !/favicon|Failed to load resource|ERR_INTERNET_DISCONNECTED|net::/.test(t)) errors.push(t);
   });
 
   await page.goto(base + '/', { waitUntil: 'networkidle2', timeout: 60000 });
@@ -40,6 +40,21 @@ try {
   await page.goto(base + '/workouts', { waitUntil: 'networkidle2', timeout: 60000 });
   await page.waitForFunction(() => location.pathname === '/login', { timeout: 30000 });
   console.log('Deep link protegido redirige a /login ✓');
+
+  // Modo sin conexión: tras una visita con red, la app debe abrir sin red
+  await page.evaluate(async () => {
+    const reg = await navigator.serviceWorker.ready;
+    return !!reg.active;
+  });
+  await new Promise((r) => setTimeout(r, 3000)); // dejar terminar el precacheo
+  await page.setOfflineMode(true);
+  await page.goto(base + '/', { waitUntil: 'load', timeout: 60000 });
+  await page.waitForFunction(() => !document.getElementById('gc-splash'), { timeout: 60000 });
+  await page.waitForFunction(() => location.pathname === '/login', { timeout: 30000 });
+  const offlineOk = await page.evaluate(() => !!document.querySelector('flutter-view, flt-glass-pane'));
+  if (!offlineOk) errors.push('La app no abrió sin conexión');
+  else console.log('Abre sin conexión ✓');
+  await page.setOfflineMode(false);
 } catch (e) {
   errors.push(`fallo: ${e.message}`);
 } finally {

@@ -84,6 +84,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
             _buildPeriodSelector(),
             const SizedBox(height: 24),
 
+            // Control semanal y progresión por ejercicio
+            _buildTrainingControlCard(),
+            const SizedBox(height: 20),
+
             // Racha actual
             _buildStreakCard(),
             const SizedBox(height: 20),
@@ -145,6 +149,54 @@ class _ProgressScreenState extends State<ProgressScreen> {
           ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildTrainingControlCard() {
+    final isEn = AppL10n.of(context).isEn;
+    return InkWell(
+      onTap: () => context.push('/training-control'),
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.insights, color: AppColors.primary, size: 32),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isEn ? 'Weekly training control' : 'Control semanal',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    isEn
+                        ? 'Workouts vs plan, volume and progress per exercise'
+                        : 'Entrenos vs plan, volumen y progreso por ejercicio',
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: AppColors.primary),
+          ],
+        ),
+      ),
     );
   }
 

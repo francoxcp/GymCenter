@@ -177,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(
                             (context.watch<AuthProvider>().organization?.name ??
-                                    'Chamos Fitness Center')
+                                    'GymCenter')
                                 .toUpperCase(),
                             style: TextStyle(
                               fontSize: 11,

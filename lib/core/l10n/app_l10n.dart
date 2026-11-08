@@ -389,12 +389,12 @@ class AppL10n {
 
   // About dialog
   String get aboutContent => isEn
-      ? 'Version 1.0.0\n\nYour perfect companion to reach your fitness goals.\n\n© 2026 Chamos Fitness Center'
-      : 'Versión 1.0.0\n\nTu compañero perfecto para alcanzar tus metas de fitness.\n\n© 2026 Chamos Fitness Center';
+      ? 'Version 1.0.0\n\nYour perfect companion to reach your fitness goals.\n\n© 2026 GymCenter'
+      : 'Versión 1.0.0\n\nTu compañero perfecto para alcanzar tus metas de fitness.\n\n© 2026 GymCenter';
 
   // ── Onboarding ───────────────────────────────────────────────────────────
   String get onboardingWelcome =>
-      isEn ? 'Welcome to Chamos Fitness!' : '¡Bienvenido a Chamos Fitness!';
+      isEn ? 'Welcome to GymCenter!' : '¡Bienvenido a GymCenter!';
   String get onboardingWelcomeBody => isEn
       ? 'Your perfect companion to reach your fitness goals. Let\'s personalize your experience.'
       : 'Tu compañero perfecto para alcanzar tus metas de fitness. Vamos a personalizar tu experiencia.';
@@ -677,7 +677,7 @@ class AppL10n {
   String get exportMyDataSubtitle => isEn
       ? 'Download all your information in JSON format'
       : 'Descarga toda tu información en formato JSON';
-  String get chamosFitness => 'Chamos Fitness';
+  String get chamosFitness => 'GymCenter';
   String get preparingExport =>
       isEn ? 'Preparing export...' : 'Preparando exportación...';
   String errorExportingData(String e) =>
@@ -795,10 +795,10 @@ class AppL10n {
       : '¿Estás seguro de que quieres salir sin agregar este ejercicio?';
 
   // ── Notification service ─────────────────────────────────────────────
-  String get notifChannelName => 'Chamos Fitness';
+  String get notifChannelName => 'GymCenter';
   String get notifChannelDesc => isEn
-      ? 'Chamos Fitness Center notifications'
-      : 'Notificaciones de Chamos Fitness Center';
+      ? 'GymCenter notifications'
+      : 'Notificaciones de GymCenter';
   String get notifInactiveTitle =>
       isEn ? 'Everything ok? 💪' : '¿Todo bien? 💪';
   String notifInactiveBody(int daysSince) => isEn
@@ -814,8 +814,8 @@ class AppL10n {
   String get progressReportsChannel =>
       isEn ? 'Progress Reports' : 'Reportes de Progreso';
   String get progressReportsChannelDesc => isEn
-      ? 'Chamos Fitness Center weekly progress reports'
-      : 'Reportes semanales de progreso de Chamos Fitness Center';
+      ? 'GymCenter weekly progress reports'
+      : 'Reportes semanales de progreso de GymCenter';
   String get weeklyReportTitle =>
       isEn ? '📊 Weekly report' : '📊 Reporte semanal';
   String get weeklyReportBody => isEn
@@ -932,7 +932,7 @@ class AppL10n {
   String get privacyPolicyLinkText =>
       isEn ? 'Privacy Policy' : 'Política de Privacidad';
   String get ofChamosFitness =>
-      isEn ? ' of Chamos Fitness Center.' : ' de Chamos Fitness Center.';
+      isEn ? ' of GymCenter.' : ' de GymCenter.';
   String get signUpButton => isEn ? 'SIGN UP' : 'REGISTRARSE';
   String get alreadyMember =>
       isEn ? 'Already a member? ' : '¿Ya eres miembro? ';
@@ -1388,7 +1388,7 @@ class AppL10n {
       : 'No hay conexión a internet. Conéctate para eliminar la rutina.';
 
   // ── Workout list extra (batch 2) ──────────────────────────────────────
-  String get appTitleUpper => 'CHAMOS FITNESS CENTER';
+  String get appTitleUpper => 'GYMCENTER';
   String get officialBadge => isEn ? 'OFFICIAL' : 'OFICIAL';
   String get routinePausedTitle => isEn ? 'ROUTINE PAUSED' : 'RUTINA EN PAUSA';
   String exerciseNumber(int n) => isEn ? 'Exercise $n' : 'Ejercicio $n';

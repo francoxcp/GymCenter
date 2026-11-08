@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/social/activity_feed_screen.dart';
 import '../../features/organization/screens/invitation_screen.dart';
+import '../../shared/widgets/splash_screen.dart';
 import '../../features/organization/screens/join_organization_screen.dart';
 import '../../features/organization/screens/my_organization_screen.dart';
 import '../../features/organization/screens/platform_screen.dart';
@@ -101,6 +102,17 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       // Enlaces de invitación: públicos (con o sin sesión)
       if (path.startsWith('/invitacion/')) return null;
 
+      // Mientras se restaura la sesión guardada: pantalla de carga con la
+      // marca (antes se veía el formulario de inicio de sesión unos segundos)
+      if (path == '/cargando') {
+        if (isAuth) return DeepLinkMemory.take() ?? authProvider.initialRoute;
+        return authProvider.isInitializing ? null : '/login';
+      }
+      if (!isAuth && authProvider.isInitializing && !publicRoutes.contains(path)) {
+        DeepLinkMemory.remember(state.uri.toString());
+        return '/cargando';
+      }
+
       if (!isAuth && !publicRoutes.contains(path)) {
         // Se recuerda siempre (no solo al restaurar): la sesión guardada en
         // web puede llegar después de la primera redirección.
@@ -154,6 +166,10 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/cargando',
+        builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
         path: '/invitacion/:token',

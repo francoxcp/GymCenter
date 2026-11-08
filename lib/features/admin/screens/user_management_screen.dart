@@ -608,6 +608,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           return isEn ? 'Password must have at least 8 characters.' : 'La contraseña debe tener al menos 8 caracteres.';
         case 'invalid_name':
           return isEn ? 'Enter the member name.' : 'Escribe el nombre del socio.';
+        case 'member_limit':
+          return isEn
+              ? 'Your plan reached its member limit. Contact the platform to upgrade.'
+              : 'Tu plan llegó al máximo de socios. Escríbenos para ampliarlo.';
+        case 'organization_suspended':
+          return isEn ? 'Your account is paused.' : 'Tu cuenta está en pausa por un pago pendiente.';
         default:
           return isEn ? 'Could not create the member.' : 'No se pudo crear el socio.';
       }

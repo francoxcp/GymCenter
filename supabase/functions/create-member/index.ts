@@ -53,10 +53,19 @@ Deno.serve(async (req) => {
   // Cliente suspendido por la plataforma: sin gestión de socios
   const { data: orgRow } = await admin
     .from('organizations')
-    .select('status')
+    .select('status, max_members')
     .eq('id', orgId)
     .maybeSingle();
   if (orgRow?.status !== 'active') return json({ error: 'organization_suspended' }, 403);
+  // Límite de socios del plan
+  if (orgRow.max_members) {
+    const { count } = await admin
+      .from('users')
+      .select('id', { count: 'exact', head: true })
+      .eq('org_id', orgId)
+      .eq('role', 'user');
+    if ((count ?? 0) >= orgRow.max_members) return json({ error: 'member_limit' }, 403);
+  }
 
 
   let body: { name?: string; email?: string; password?: string; trainer_id?: string | null };

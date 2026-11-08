@@ -41,6 +41,20 @@ try {
   await page.waitForFunction(() => location.pathname === '/login', { timeout: 30000 });
   console.log('Deep link protegido redirige a /login ✓');
 
+  // Enlace de invitación: es público, no debe mandar a /login ni romperse
+  await page.goto(base + '/invitacion/NOEXISTE00', { waitUntil: 'networkidle2', timeout: 60000 });
+  await new Promise((r) => setTimeout(r, 4000));
+  const invPath = await page.evaluate(() => location.pathname);
+  if (invPath !== '/invitacion/NOEXISTE00') errors.push(`invitación redirigió a ${invPath}`);
+  else console.log('Enlace de invitación público ✓');
+
+  // Rutas de plataforma y Mi gimnasio protegidas
+  for (const r of ['/platform', '/admin/organization']) {
+    await page.goto(base + r, { waitUntil: 'networkidle2', timeout: 60000 });
+    await page.waitForFunction(() => location.pathname === '/login', { timeout: 30000 });
+  }
+  console.log('Rutas de plataforma protegidas ✓');
+
   // Modo sin conexión: tras una visita con red, la app debe abrir sin red
   await page.evaluate(async () => {
     const reg = await navigator.serviceWorker.ready;

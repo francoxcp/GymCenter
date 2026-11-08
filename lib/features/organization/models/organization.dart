@@ -10,6 +10,8 @@ class Organization {
   final DateTime? paidUntil;
   final String billingStatus; // 'pending' | 'in_review' | 'approved'
   final String? billingNote;
+  /// Máximo de socios del plan (null = sin límite).
+  final int? maxMembers;
 
   const Organization({
     required this.id,
@@ -22,6 +24,7 @@ class Organization {
     this.paidUntil,
     this.billingStatus = 'pending',
     this.billingNote,
+    this.maxMembers,
   });
 
   bool get isIndependent => kind == 'independent';
@@ -42,6 +45,7 @@ class Organization {
         paidUntil: _date(j['paid_until']),
         billingStatus: j['billing_status'] as String? ?? 'pending',
         billingNote: j['billing_note'] as String?,
+        maxMembers: (j['max_members'] as num?)?.toInt(),
       );
 
   static DateTime? _date(dynamic v) =>
@@ -78,8 +82,11 @@ class OrgPayment {
   final String? reviewComment;
   final DateTime submittedAt;
   final DateTime? periodEnd;
+  /// El archivo se borró por antigüedad (el registro del pago se conserva).
+  final bool receiptDeleted;
 
   const OrgPayment({
+    this.receiptDeleted = false,
     required this.id,
     required this.orgId,
     required this.months,
@@ -109,6 +116,7 @@ class OrgPayment {
             DateTime.tryParse(j['submitted_at'] as String? ?? '')?.toLocal() ??
                 DateTime.now(),
         periodEnd: Organization._date(j['period_end']),
+        receiptDeleted: j['receipt_deleted_at'] != null,
       );
 }
 
@@ -120,8 +128,10 @@ class OrgSummary {
   final int trainers;
   final int members;
   final int pendingReviews;
+  final bool inTrial;
 
   const OrgSummary({
+    this.inTrial = false,
     required this.org,
     required this.ownerName,
     required this.ownerEmail,
@@ -137,6 +147,7 @@ class OrgSummary {
         trainers: (j['trainers'] as num?)?.toInt() ?? 0,
         members: (j['members'] as num?)?.toInt() ?? 0,
         pendingReviews: (j['pending_reviews'] as num?)?.toInt() ?? 0,
+        inTrial: j['in_trial'] as bool? ?? false,
       );
 }
 
@@ -169,4 +180,84 @@ class InvitationInfo {
         role: j['role'] as String? ?? 'user',
         valid: j['valid'] as bool? ?? false,
       );
+}
+
+/// Invitación generada por el dueño o un entrenador.
+class InvitationRow {
+  final String token;
+  final String role;
+  final int uses;
+  final int maxUses;
+  final int views;
+  final DateTime expiresAt;
+
+  const InvitationRow({
+    required this.token,
+    required this.role,
+    required this.uses,
+    required this.maxUses,
+    required this.views,
+    required this.expiresAt,
+  });
+
+  String get roleLabel => switch (role) {
+        'trainer' => 'Entrenador',
+        'admin' => 'Dueño',
+        _ => 'Socios',
+      };
+
+  /// Personas que abrieron el enlace y todavía no crearon su cuenta
+  /// (aproximado: aperturas menos registros).
+  int get pendingSignups => (views - uses).clamp(0, 9999);
+
+  factory InvitationRow.fromJson(Map<String, dynamic> j) => InvitationRow(
+        token: j['token'] as String,
+        role: j['role'] as String? ?? 'user',
+        uses: (j['uses'] as num?)?.toInt() ?? 0,
+        maxUses: (j['max_uses'] as num?)?.toInt() ?? 1,
+        views: (j['views'] as num?)?.toInt() ?? 0,
+        expiresAt: DateTime.tryParse(j['expires_at'] as String? ?? '')?.toLocal() ??
+            DateTime.now(),
+      );
+}
+
+/// Resumen de ingresos de la plataforma.
+class PlatformStats {
+  final double collectedThisMonth;
+  final double collectedLastMonth;
+  final double expectedMonthly;
+  final int activeOrgs;
+  final int inTrial;
+  final int expiring7d;
+  final int pending;
+  final int suspended;
+  final int totalMembers;
+
+  const PlatformStats({
+    required this.collectedThisMonth,
+    required this.collectedLastMonth,
+    required this.expectedMonthly,
+    required this.activeOrgs,
+    required this.inTrial,
+    required this.expiring7d,
+    required this.pending,
+    required this.suspended,
+    required this.totalMembers,
+  });
+
+  factory PlatformStats.fromJson(Map<String, dynamic> j) {
+    double d(String k) => (j[k] as num?)?.toDouble() ?? 0;
+    int i(String k) => (j[k] as num?)?.toInt() ?? 0;
+    return PlatformStats(
+      collectedThisMonth: d('collected_this_month'),
+      collectedLastMonth: d('collected_last_month'),
+      expectedMonthly: d('expected_monthly'),
+      activeOrgs: i('active_orgs'),
+      inTrial: i('in_trial'),
+      expiring7d: i('expiring_7d'),
+      pending: i('pending'),
+      suspended: i('suspended'),
+      totalMembers: i('total_members'),
+    );
+  }
 }

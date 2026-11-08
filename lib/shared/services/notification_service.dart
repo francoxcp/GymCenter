@@ -228,8 +228,8 @@ class NotificationService {
 
     const androidDetails = AndroidNotificationDetails(
       'chamos_fitness_channel',
-      'Chamos Fitness',
-      channelDescription: 'Notificaciones de Chamos Fitness Center',
+      'GymCenter',
+      channelDescription: 'Notificaciones de GymCenter',
       importance: Importance.high,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
@@ -265,8 +265,8 @@ class NotificationService {
 
     const androidDetails = AndroidNotificationDetails(
       'chamos_fitness_channel',
-      'Chamos Fitness',
-      channelDescription: 'Notificaciones de Chamos Fitness Center',
+      'GymCenter',
+      channelDescription: 'Notificaciones de GymCenter',
       importance: Importance.high,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
@@ -326,8 +326,8 @@ class NotificationService {
 
     const androidDetails = AndroidNotificationDetails(
       'chamos_fitness_channel',
-      'Chamos Fitness',
-      channelDescription: 'Notificaciones de Chamos Fitness Center',
+      'GymCenter',
+      channelDescription: 'Notificaciones de GymCenter',
       importance: Importance.high,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
@@ -508,7 +508,7 @@ class NotificationService {
       'chamos_progress_channel',
       'Reportes de Progreso',
       channelDescription:
-          'Reportes semanales de progreso de Chamos Fitness Center',
+          'Reportes semanales de progreso de GymCenter',
       importance: Importance.defaultImportance,
       priority: Priority.defaultPriority,
       icon: '@mipmap/ic_launcher',

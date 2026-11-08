@@ -19,6 +19,7 @@ class PlatformScreen extends StatefulWidget {
 
 class _PlatformScreenState extends State<PlatformScreen> {
   List<OrgSummary> _orgs = const [];
+  PlatformStats? _stats;
   bool _loading = true;
   String? _error;
 
@@ -34,8 +35,16 @@ class _PlatformScreenState extends State<PlatformScreen> {
       _error = null;
     });
     try {
-      final list = await OrganizationService.platformList();
-      if (mounted) setState(() => _orgs = list);
+      final r = await Future.wait([
+        OrganizationService.platformList(),
+        OrganizationService.platformStats(),
+      ]);
+      if (mounted) {
+        setState(() {
+          _orgs = r[0] as List<OrgSummary>;
+          _stats = r[1] as PlatformStats?;
+        });
+      }
     } catch (e) {
       if (mounted) setState(() => _error = OrganizationService.friendlyError(e));
     } finally {
@@ -46,6 +55,7 @@ class _PlatformScreenState extends State<PlatformScreen> {
   Future<void> _newClient() async {
     final nameCtrl = TextEditingController();
     final feeCtrl = TextEditingController();
+    final limitCtrl = TextEditingController();
     var kind = 'gym';
     var trial = 14;
     final ok = await showModalBottomSheet<bool>(
@@ -94,6 +104,12 @@ class _PlatformScreenState extends State<PlatformScreen> {
                     decoration: const InputDecoration(
                         labelText: 'Cuota mensual (opcional)', prefixText: '₡ '),
                   ),
+                  TextField(
+                    controller: limitCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                        labelText: 'Máximo de socios (vacío = sin límite)'),
+                  ),
                   const SizedBox(height: 16),
                   Text('Días de prueba gratis',
                       style: TextStyle(color: AppColors.textSecondary)),
@@ -128,12 +144,14 @@ class _PlatformScreenState extends State<PlatformScreen> {
     );
     final name = nameCtrl.text.trim();
     final fee = double.tryParse(feeCtrl.text.replaceAll(',', '.').trim());
+    final limit = int.tryParse(limitCtrl.text.trim());
     nameCtrl.dispose();
     feeCtrl.dispose();
+    limitCtrl.dispose();
     if (ok != true) return;
     try {
       final token = await OrganizationService.platformCreateOrg(
-          name: name, kind: kind, monthlyFee: fee, trialDays: trial);
+          name: name, kind: kind, monthlyFee: fee, trialDays: trial, maxMembers: limit);
       await _load();
       if (!mounted) return;
       await showInviteLinkSheet(
@@ -176,6 +194,8 @@ class _PlatformScreenState extends State<PlatformScreen> {
                 children: [
                   if (_error != null)
                     Text(_error!, style: TextStyle(color: AppColors.error)),
+                  if (_stats != null) _revenue(_stats!),
+                  const SizedBox(height: 20),
                   Row(children: [
                     _bigStat('${_orgs.length}', 'clientes'),
                     _bigStat('$pending', 'por revisar',
@@ -192,6 +212,68 @@ class _PlatformScreenState extends State<PlatformScreen> {
       ),
     );
   }
+
+  static String money(double v) {
+    final s = v.toStringAsFixed(0);
+    final b = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) b.write('.');
+      b.write(s[i]);
+    }
+    return '₡$b';
+  }
+
+  Widget _revenue(PlatformStats st) {
+    final diff = st.collectedThisMonth - st.collectedLastMonth;
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('COBRADO ESTE MES',
+            style: TextStyle(
+                color: AppColors.textSecondary,
+                letterSpacing: 1.5,
+                fontSize: 12,
+                fontWeight: FontWeight.w800)),
+        const SizedBox(height: 4),
+        Text(money(st.collectedThisMonth),
+            style: TextStyle(
+                color: AppColors.textPrimary, fontSize: 40, fontWeight: FontWeight.w900)),
+        Text(
+            '${diff >= 0 ? '+' : '−'}${money(diff.abs())} vs. mes pasado · '
+            'esperado ${money(st.expectedMonthly)}/mes',
+            style: TextStyle(
+                color: diff >= 0
+                    ? billingColor(BillingState.upToDate)
+                    : billingColor(BillingState.pending),
+                fontWeight: FontWeight.w600)),
+        const SizedBox(height: 14),
+        Wrap(spacing: 18, runSpacing: 8, children: [
+          _mini('${st.activeOrgs}', 'activos'),
+          _mini('${st.inTrial}', 'en prueba'),
+          _mini('${st.expiring7d}', 'vencen en 7 días',
+              color: st.expiring7d > 0 ? billingColor(BillingState.inReview) : null),
+          _mini('${st.suspended}', 'suspendidos'),
+          _mini('${st.totalMembers}', 'socios en total'),
+        ]),
+      ]),
+    );
+  }
+
+  Widget _mini(String v, String l, {Color? color}) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(v,
+              style: TextStyle(
+                  color: color ?? AppColors.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800)),
+          Text(l, style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+        ],
+      );
 
   Widget _bigStat(String value, String label, {Color? color}) => Expanded(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -234,12 +316,14 @@ class _PlatformScreenState extends State<PlatformScreen> {
                         fontWeight: FontWeight.w800,
                         fontSize: 16)),
                 Text(
-                    '${s.org.kindLabel} · ${s.members} socios'
+                    '${s.org.kindLabel} · ${s.members}${s.org.maxMembers != null ? '/${s.org.maxMembers}' : ''} socios'
                     '${s.org.isGym ? ' · ${s.trainers} entrenadores' : ''}',
                     style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                 Text(
                     s.org.isSuspended
                         ? 'Suspendido'
+                        : s.inTrial
+                        ? 'En prueba${s.org.paidUntil != null ? ' hasta ${fmtDay(s.org.paidUntil!)}' : ''}'
                         : '${Billing.label(st)}'
                             '${s.org.paidUntil != null ? ' · hasta ${fmtDay(s.org.paidUntil!)}' : ''}',
                     style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 13)),
@@ -263,6 +347,12 @@ class _PlatformScreenState extends State<PlatformScreen> {
       ),
     );
   }
+}
+
+/// Acceso para pruebas al formato de dinero.
+class PlatformScreenTestable {
+  PlatformScreenTestable._();
+  static String money(double v) => _PlatformScreenState.money(v);
 }
 
 /// Detalle de un cliente: comprobantes, aprobar/rechazar, suspender.
@@ -398,6 +488,50 @@ class _PlatformOrgScreenState extends State<PlatformOrgScreen> {
     }
   }
 
+  Future<void> _editPlan() async {
+    final planCtrl = TextEditingController(text: org.plan);
+    final feeCtrl = TextEditingController(
+        text: org.monthlyFee == null ? '' : org.monthlyFee!.toStringAsFixed(0));
+    final limitCtrl = TextEditingController(text: org.maxMembers?.toString() ?? '');
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Plan y límite'),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          TextField(controller: planCtrl, decoration: const InputDecoration(labelText: 'Plan')),
+          TextField(
+            controller: feeCtrl,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(labelText: 'Cuota mensual', prefixText: '₡ '),
+          ),
+          TextField(
+            controller: limitCtrl,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(labelText: 'Máximo de socios (vacío = sin límite)'),
+          ),
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Guardar')),
+        ],
+      ),
+    );
+    final plan = planCtrl.text.trim();
+    final fee = double.tryParse(feeCtrl.text.replaceAll(',', '.').trim());
+    final limit = int.tryParse(limitCtrl.text.trim());
+    planCtrl.dispose();
+    feeCtrl.dispose();
+    limitCtrl.dispose();
+    if (ok != true) return;
+    try {
+      await OrganizationService.platformUpdateOrg(org.id,
+          plan: plan.isEmpty ? 'Mensual' : plan, monthlyFee: fee, maxMembers: limit);
+      if (mounted) AppSnackbar.success(context, 'Plan actualizado');
+    } catch (e) {
+      if (mounted) AppSnackbar.error(context, OrganizationService.friendlyError(e));
+    }
+  }
+
   Future<void> _ownerInvite() async {
     try {
       final token = await OrganizationService.platformOwnerInvite(org.id);
@@ -435,6 +569,11 @@ class _PlatformOrgScreenState extends State<PlatformOrgScreen> {
             Text(s.ownerEmail!, style: TextStyle(color: AppColors.textSecondary)),
           const SizedBox(height: 12),
           Wrap(spacing: 8, runSpacing: 8, children: [
+            OutlinedButton.icon(
+              onPressed: _editPlan,
+              icon: const Icon(Icons.tune),
+              label: const Text('Plan y límite'),
+            ),
             OutlinedButton.icon(
               onPressed: _ownerInvite,
               icon: const Icon(Icons.link),

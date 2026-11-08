@@ -95,7 +95,7 @@ class DataExportService {
     if (context.mounted) {
       await Share.shareXFiles(
         [XFile(file.path, mimeType: 'application/octet-stream')],
-        subject: 'Mis datos - Chamos Fitness (cifrados)',
+        subject: 'Mis datos - GymCenter (cifrados)',
       );
     }
 

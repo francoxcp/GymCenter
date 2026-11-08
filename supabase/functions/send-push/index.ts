@@ -108,6 +108,31 @@ Deno.serve(async (req) => {
     vapidPrivate,
   );
 
+  const cleanNow = new Date();
+  // ── Limpieza: comprobantes revisados hace más de 6 meses ──────────────
+  // (libera espacio del plan gratuito; el registro del pago se conserva)
+  if (cleanNow.getUTCHours() === 9 && cleanNow.getUTCMinutes() < 5) {
+    const cutoff = new Date(cleanNow.getTime() - 180 * 86400000).toISOString();
+    const { data: old } = await supabase
+      .from('org_payments')
+      .select('id, receipt_path')
+      .neq('status', 'in_review')
+      .is('receipt_deleted_at', null)
+      .lt('reviewed_at', cutoff)
+      .limit(100);
+    if (old && old.length > 0) {
+      const { error: rmErr } = await supabase.storage
+        .from('payment-receipts')
+        .remove(old.map((o: { receipt_path: string }) => o.receipt_path));
+      if (!rmErr) {
+        await supabase
+          .from('org_payments')
+          .update({ receipt_deleted_at: cleanNow.toISOString() })
+          .in('id', old.map((o: { id: string }) => o.id));
+      }
+    }
+  }
+
   const { data: subs, error: subsErr } = await supabase
     .from('push_subscriptions')
     .select('id, user_id, endpoint, p256dh, auth');

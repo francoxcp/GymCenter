@@ -30,7 +30,7 @@ class OrganizationService {
   static Future<Organization?> loadMine(String orgId, {bool withBilling = false}) async {
     final row = await _db
         .from('organizations')
-        .select('id, name, kind, logo_url, status')
+        .select('id, name, kind, logo_url, status, max_members')
         .eq('id', orgId)
         .maybeSingle();
     if (row == null) return null;
@@ -64,6 +64,12 @@ class OrganizationService {
   }) async {
     final ext = _cleanExt(extension, const ['png', 'jpg', 'jpeg', 'webp'], 'png');
     final path = '$orgId/logo-${DateTime.now().millisecondsSinceEpoch}.$ext';
+    // Borrar logos anteriores (ahorra espacio del plan gratuito)
+    try {
+      final old = await _db.storage.from('org-logos').list(path: orgId);
+      final paths = old.map((f) => '$orgId/${f.name}').toList();
+      if (paths.isNotEmpty) await _db.storage.from('org-logos').remove(paths);
+    } catch (_) {}
     await _db.storage.from('org-logos').uploadBinary(
           path,
           bytes,
@@ -115,6 +121,43 @@ class OrganizationService {
   static Future<String> createInvitation(String role) async {
     final token = await _db.rpc('create_invitation', params: {'p_role': role});
     return token as String;
+  }
+
+  /// Invitaciones vigentes de mi organización (RLS: dueño ve todas, el
+  /// entrenador las suyas).
+  static Future<List<InvitationRow>> activeInvitations() async {
+    final rows = await _db
+        .from('invitations')
+        .select('token, role, uses, max_uses, views, expires_at')
+        .eq('revoked', false)
+        .gt('expires_at', DateTime.now().toUtc().toIso8601String())
+        .order('created_at', ascending: false)
+        .limit(30);
+    return (rows as List)
+        .map((r) => InvitationRow.fromJson(r as Map<String, dynamic>))
+        .where((i) => i.uses < i.maxUses)
+        .toList();
+  }
+
+  static Future<void> revokeInvitation(String token) =>
+      _db.rpc('revoke_invitation', params: {'p_token': token});
+
+  /// Cuenta una apertura del enlace (no falla si no hay conexión).
+  static Future<void> trackInvitationView(String token) async {
+    try {
+      await _db.rpc('track_invitation_view', params: {'p_token': token});
+    } catch (_) {}
+  }
+
+  /// Cuántos socios tiene la organización (para "18 de 30").
+  static Future<int> memberCount(String orgId) async {
+    final r = await _db
+        .from('users')
+        .select('id')
+        .eq('org_id', orgId)
+        .eq('role', 'user')
+        .count(CountOption.exact);
+    return r.count;
   }
 
   static Future<InvitationInfo?> invitationInfo(String token) async {
@@ -170,15 +213,36 @@ class OrganizationService {
     required String kind,
     double? monthlyFee,
     int trialDays = 14,
+    String plan = 'Mensual',
+    int? maxMembers,
   }) async {
     final rows = await _db.rpc('platform_create_org', params: {
       'p_name': name,
       'p_kind': kind,
       'p_monthly_fee': monthlyFee,
       'p_trial_days': trialDays,
+      'p_plan': plan,
+      'p_max_members': maxMembers,
     });
     return ((rows as List).first as Map<String, dynamic>)['token'] as String;
   }
+
+  static Future<PlatformStats?> platformStats() async {
+    final rows = await _db.rpc('platform_stats');
+    if (rows is List && rows.isNotEmpty) {
+      return PlatformStats.fromJson(rows.first as Map<String, dynamic>);
+    }
+    return null;
+  }
+
+  static Future<void> platformUpdateOrg(String orgId,
+          {required String plan, double? monthlyFee, int? maxMembers}) =>
+      _db.rpc('platform_update_org', params: {
+        'p_org': orgId,
+        'p_plan': plan,
+        'p_monthly_fee': monthlyFee,
+        'p_max_members': maxMembers,
+      });
 
   static Future<String> platformOwnerInvite(String orgId) async {
     final token = await _db.rpc('create_invitation',
@@ -220,6 +284,9 @@ class OrganizationService {
       return 'La invitación no es válida o ya venció. Pide un enlace nuevo.';
     }
     if (m.contains('comment_required')) return 'Escribe el motivo del rechazo.';
+    if (m.contains('member_limit')) {
+      return 'Este gimnasio alcanzó el máximo de socios de su plan. Avisa al dueño.';
+    }
     if (m.contains('not_allowed')) return 'No tienes permiso para esta acción.';
     if (m.contains('payment_already_in_review')) {
       return 'Ya tienes un comprobante en revisión.';

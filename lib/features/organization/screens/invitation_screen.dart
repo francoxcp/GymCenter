@@ -32,6 +32,7 @@ class _InvitationScreenState extends State<InvitationScreen> {
   Future<void> _load() async {
     try {
       final info = await OrganizationService.invitationInfo(widget.token);
+      if (info?.valid == true) OrganizationService.trackInvitationView(widget.token);
       if (mounted) setState(() => _info = info);
     } catch (_) {
       if (mounted) setState(() => _error = 'No se pudo cargar la invitación.');

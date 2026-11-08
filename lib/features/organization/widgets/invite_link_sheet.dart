@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/services/share_helper.dart';
@@ -19,8 +20,8 @@ Future<void> showInviteLinkSheet(
     isScrollControlled: true,
     shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-    builder: (ctx) => SafeArea(
-      child: Padding(
+    builder: (ctx) => _InviteSheetBody(builder: (ctx, showQr, toggleQr) => SafeArea(
+      child: SingleChildScrollView(child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -37,6 +38,38 @@ Future<void> showInviteLinkSheet(
             const SizedBox(height: 6),
             Text(hint, style: TextStyle(color: AppColors.textSecondary, height: 1.4)),
             const SizedBox(height: 16),
+            // QR para mostrar en recepción: el socio lo escanea con la cámara
+            if (showQr)
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Semantics(
+                    label: 'Código QR de la invitación',
+                    child: QrImageView(
+                      data: url,
+                      size: 220,
+                      backgroundColor: Colors.white,
+                      eyeStyle: const QrEyeStyle(
+                          eyeShape: QrEyeShape.square, color: Colors.black),
+                      dataModuleStyle: const QrDataModuleStyle(
+                          dataModuleShape: QrDataModuleShape.square, color: Colors.black),
+                    ),
+                  ),
+                ),
+              ),
+            Align(
+              alignment: Alignment.center,
+              child: TextButton.icon(
+                onPressed: toggleQr,
+                icon: Icon(showQr ? Icons.keyboard_arrow_up : Icons.qr_code_2),
+                label: Text(showQr ? 'Ocultar QR' : 'Mostrar QR para escanear'),
+              ),
+            ),
+            if (!showQr)
             // El código grande es lo que se dicta por teléfono si hace falta
             Container(
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
@@ -102,7 +135,25 @@ Future<void> showInviteLinkSheet(
             ]),
           ],
         ),
-      ),
+      )),
     ),
-  );
+  ));
+}
+
+
+/// Cuerpo con estado para alternar entre código y QR.
+class _InviteSheetBody extends StatefulWidget {
+  final Widget Function(BuildContext, bool showQr, VoidCallback toggleQr) builder;
+  const _InviteSheetBody({required this.builder});
+
+  @override
+  State<_InviteSheetBody> createState() => _InviteSheetBodyState();
+}
+
+class _InviteSheetBodyState extends State<_InviteSheetBody> {
+  bool _showQr = false;
+
+  @override
+  Widget build(BuildContext context) =>
+      widget.builder(context, _showQr, () => setState(() => _showQr = !_showQr));
 }

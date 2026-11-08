@@ -205,7 +205,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'CHAMOS',
+                      'GYMCENTER',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -213,7 +213,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     Text(
-                      'FITNESS CENTER',
+                      'RUTINAS · GESTIÓN',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,

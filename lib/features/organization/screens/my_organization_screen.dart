@@ -33,6 +33,8 @@ class MyOrganizationScreen extends StatefulWidget {
 
 class _MyOrganizationScreenState extends State<MyOrganizationScreen> {
   List<OrgPayment> _payments = const [];
+  List<InvitationRow> _invites = const [];
+  int? _members;
   bool _loadingPayments = true;
   bool _busy = false;
 
@@ -48,12 +50,107 @@ class _MyOrganizationScreenState extends State<MyOrganizationScreen> {
     final org = auth.organization;
     if (org == null) return;
     try {
-      final p = await OrganizationService.payments(org.id);
-      if (mounted) setState(() => _payments = p);
+      final results = await Future.wait([
+        OrganizationService.payments(org.id),
+        OrganizationService.activeInvitations(),
+        OrganizationService.memberCount(org.id),
+      ]);
+      if (mounted) {
+        setState(() {
+          _payments = results[0] as List<OrgPayment>;
+          _invites = results[1] as List<InvitationRow>;
+          _members = results[2] as int;
+        });
+      }
     } catch (_) {
     } finally {
       if (mounted) setState(() => _loadingPayments = false);
     }
+  }
+
+  Future<void> _shareExisting(InvitationRow inv, Organization org) => showInviteLinkSheet(
+        context,
+        token: inv.token,
+        title: inv.role == 'trainer' ? 'Invitar entrenador' : 'Enlace para socios',
+        hint: 'Vence el ${fmtDay(inv.expiresAt)}.',
+        shareText: inv.role == 'trainer'
+            ? 'Te invito a ser entrenador en ${org.name}. Crea tu cuenta aquí:'
+            : 'Únete a ${org.name} para ver tus rutinas y tu progreso:',
+      );
+
+  Future<void> _revoke(InvitationRow inv) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Desactivar enlace'),
+        content: Text('El enlace ${inv.token} dejará de funcionar. '
+            'Quien ya se unió no se ve afectado.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true), child: const Text('Desactivar')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await OrganizationService.revokeInvitation(inv.token);
+      await _refresh();
+    } catch (e) {
+      if (mounted) AppSnackbar.error(context, OrganizationService.friendlyError(e));
+    }
+  }
+
+  Widget _invitesSection(Organization org) {
+    if (_invites.isEmpty) return const SizedBox.shrink();
+    final waiting = _invites.fold<int>(0, (s, i) => s + i.pendingSignups);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const SizedBox(height: 20),
+      _sectionTitle('Enlaces activos'),
+      if (waiting > 0)
+        Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.warning.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            waiting == 1
+                ? '1 persona abrió tu enlace y aún no crea su cuenta. Recuérdale por WhatsApp.'
+                : '$waiting personas abrieron tus enlaces y aún no crean su cuenta. Recuérdales por WhatsApp.',
+            style: TextStyle(color: AppColors.textPrimary, height: 1.35),
+          ),
+        ),
+      for (final inv in _invites)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(children: [
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('${inv.roleLabel} · ${inv.token}',
+                    style: TextStyle(
+                        color: AppColors.textPrimary, fontWeight: FontWeight.w700)),
+                Text(
+                    'Abierto ${inv.views} ${inv.views == 1 ? 'vez' : 'veces'} · '
+                    '${inv.uses} ${inv.uses == 1 ? 'se unió' : 'se unieron'} · '
+                    'vence ${fmtDay(inv.expiresAt)}',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              ]),
+            ),
+            IconButton(
+              tooltip: 'Compartir de nuevo',
+              icon: Icon(Icons.send, color: AppColors.primaryText),
+              onPressed: () => _shareExisting(inv, org),
+            ),
+            IconButton(
+              tooltip: 'Desactivar enlace',
+              icon: Icon(Icons.link_off, color: AppColors.textSecondary),
+              onPressed: () => _revoke(inv),
+            ),
+          ]),
+        ),
+    ]);
   }
 
   Future<PlatformFile?> _pick(List<String> exts) async {
@@ -220,6 +317,11 @@ class _MyOrganizationScreenState extends State<MyOrganizationScreen> {
   }
 
   Future<void> _invite(String role, Organization org) async {
+    // Reutiliza el enlace de socios vigente en vez de crear uno nuevo cada vez
+    if (role == 'user') {
+      final existing = _invites.where((i) => i.role == 'user').toList();
+      if (existing.isNotEmpty) return _shareExisting(existing.first, org);
+    }
     try {
       final token = await OrganizationService.createInvitation(role);
       if (!mounted) return;
@@ -235,6 +337,7 @@ class _MyOrganizationScreenState extends State<MyOrganizationScreen> {
             ? 'Te invito a ser entrenador en ${org.name}. Crea tu cuenta aquí:'
             : 'Únete a ${org.name} para ver tus rutinas y tu progreso:',
       );
+      _refresh();
     } catch (e) {
       if (mounted) AppSnackbar.error(context, OrganizationService.friendlyError(e));
     }
@@ -269,6 +372,7 @@ class _MyOrganizationScreenState extends State<MyOrganizationScreen> {
                         'Enlace de un solo uso', () => _invite('trainer', org)),
                   _action(Icons.group_add_outlined, 'Enlace para socios',
                       'Para inscribirse directo contigo', () => _invite('user', org)),
+                  _invitesSection(org),
                   const SizedBox(height: 28),
                   _sectionTitle('Historial de pagos'),
                   if (_loadingPayments)
@@ -360,6 +464,19 @@ class _MyOrganizationScreenState extends State<MyOrganizationScreen> {
                   fontWeight: FontWeight.w900,
                   height: 1.1)),
         ],
+        if (_members != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+                org.maxMembers == null
+                    ? '$_members socios'
+                    : '$_members de ${org.maxMembers} socios del plan',
+                style: TextStyle(
+                    color: org.maxMembers != null && _members! >= org.maxMembers!
+                        ? AppColors.error
+                        : AppColors.textSecondary,
+                    fontWeight: FontWeight.w600)),
+          ),
         if (org.monthlyFee != null)
           Padding(
             padding: const EdgeInsets.only(top: 4),

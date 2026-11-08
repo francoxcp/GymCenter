@@ -235,7 +235,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text('🏆', style: TextStyle(fontSize: 14)),
+                            const Icon(Icons.emoji_events, color: Color(0xFFFFB800), size: 17),
                             const SizedBox(width: 5),
                             Text(
                               _fmtWeight(pr),

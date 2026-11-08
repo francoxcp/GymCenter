@@ -62,11 +62,22 @@ int _locationToIndex(String location) {
   return 0;
 }
 
+/// Enlace profundo pendiente: en web se puede abrir directamente /workouts,
+/// /admin/organization, /platform (también desde una notificación). Mientras
+/// se restaura la sesión o se inicia sesión se muestra /login y después se
+/// vuelve a la ruta pedida.
+class DeepLinkMemory {
+  DeepLinkMemory._();
+  static String? _pending;
+  static void remember(String location) => _pending = location;
+  static String? take() {
+    final p = _pending;
+    _pending = null;
+    return p;
+  }
+}
+
 GoRouter createAppRouter(AuthProvider authProvider) {
-  // Enlace profundo pendiente: en web el usuario puede abrir directamente
-  // /workouts, /progress, etc. Mientras se restaura la sesión guardada se
-  // muestra /login; al terminar se vuelve a la ruta solicitada.
-  String? pendingDeepLink;
 
   return GoRouter(
     initialLocation: '/login',
@@ -91,17 +102,14 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       if (path.startsWith('/invitacion/')) return null;
 
       if (!isAuth && !publicRoutes.contains(path)) {
-        if (authProvider.isInitializing) {
-          pendingDeepLink = state.uri.toString();
-        }
+        // Se recuerda siempre (no solo al restaurar): la sesión guardada en
+        // web puede llegar después de la primera redirección.
+        DeepLinkMemory.remember(state.uri.toString());
         return '/login';
       }
       if (isAuth && path == '/login') {
-        final target = pendingDeepLink;
-        pendingDeepLink = null;
-        return target ?? authProvider.initialRoute;
+        return DeepLinkMemory.take() ?? authProvider.initialRoute;
       }
-      if (!isAuth && !authProvider.isInitializing) pendingDeepLink = null;
       // Password recovery: redirigir a change-password hasta que el usuario
       // complete el cambio de contraseña o cierre sesión
       if (isAuth && authProvider.isPasswordRecovery && path != '/change-password') {

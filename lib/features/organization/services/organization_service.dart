@@ -134,15 +134,25 @@ class OrganizationService {
   static const _kPendingInvite = 'pending_invitation_token';
 
   /// Guarda el código mientras la persona crea su cuenta o inicia sesión.
-  static Future<void> savePendingInvite(String token) async {
+  static const _kPendingInviteOrg = 'pending_invitation_org';
+
+  static Future<void> savePendingInvite(String token, {String? orgName}) async {
     final p = await SharedPreferences.getInstance();
     await p.setString(_kPendingInvite, token.toUpperCase());
+    if (orgName != null) await p.setString(_kPendingInviteOrg, orgName);
+  }
+
+  /// Nombre del gimnasio de la invitación pendiente (para el registro).
+  static Future<String?> pendingInviteOrgName() async {
+    final p = await SharedPreferences.getInstance();
+    return p.getString(_kPendingInvite) == null ? null : p.getString(_kPendingInviteOrg);
   }
 
   static Future<String?> takePendingInvite() async {
     final p = await SharedPreferences.getInstance();
     final t = p.getString(_kPendingInvite);
     if (t != null) await p.remove(_kPendingInvite);
+    await p.remove(_kPendingInviteOrg);
     return t;
   }
 

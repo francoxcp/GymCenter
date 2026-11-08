@@ -19,10 +19,10 @@ String timeAgo(DateTime t) {
 
 /// Respuestas rápidas del entrenador (un toque).
 const quickReplies = [
-  '👏 ¡Buen trabajo!',
-  '🔥 ¡Vas con todo!',
-  '💪 Sube un poco el peso la próxima',
-  '🧘 Cuida la técnica',
+  '¡Buen trabajo!',
+  '¡Vas con todo!',
+  'Sube un poco el peso la próxima',
+  'Cuida la técnica',
 ];
 
 /// Conversación de un entreno. [onChanged] se llama si se agregan o borran
@@ -164,7 +164,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                         ? Padding(
                             padding: EdgeInsets.all(32),
                             child: Text(
-                              'Aún no hay comentarios.\nEscribe el primero 👇',
+                              'Aún no hay comentarios.\nEscribe el primero.',
                               textAlign: TextAlign.center,
                               style: TextStyle(color: AppColors.textSecondary),
                             ),

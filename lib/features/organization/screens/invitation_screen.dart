@@ -41,7 +41,7 @@ class _InvitationScreenState extends State<InvitationScreen> {
   }
 
   Future<void> _continueWithoutSession(String route) async {
-    await OrganizationService.savePendingInvite(widget.token);
+    await OrganizationService.savePendingInvite(widget.token, orgName: _info?.orgName);
     if (mounted) context.go(route);
   }
 
@@ -65,8 +65,13 @@ class _InvitationScreenState extends State<InvitationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final signedIn = context.watch<AuthProvider>().isAuthenticated;
+    final auth = context.watch<AuthProvider>();
+    final signedIn = auth.isAuthenticated;
     final info = _info;
+    // Con sesión: ¿ya pertenece a ese gimnasio o a otro?
+    final myOrg = auth.organization;
+    final alreadyHere = signedIn && myOrg != null && info != null && myOrg.name == info.orgName;
+    final otherOrg = signedIn && myOrg != null && info != null && !alreadyHere;
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -111,7 +116,37 @@ class _InvitationScreenState extends State<InvitationScreen> {
                                   style: TextStyle(color: AppColors.error)),
                               const SizedBox(height: 12),
                             ],
-                            if (signedIn)
+                            if (alreadyHere) ...[
+                              Text('Ya eres parte de ${info.orgName}.',
+                                  style: TextStyle(
+                                      color: AppColors.textPrimary,
+                                      fontWeight: FontWeight.w700)),
+                              const SizedBox(height: 12),
+                              _primary('Ir a la app', () => context.go(auth.initialRoute)),
+                            ] else if (otherOrg) ...[
+                              Text(
+                                'Tu cuenta ya pertenece a ${myOrg.name}. Cada cuenta '
+                                'puede estar en un solo gimnasio: para unirte a '
+                                '${info.orgName} usa otra cuenta.',
+                                style: TextStyle(color: AppColors.warning, height: 1.4),
+                              ),
+                              const SizedBox(height: 12),
+                              _primary('Cerrar sesión y crear otra cuenta', () async {
+                                await OrganizationService.savePendingInvite(widget.token,
+                                    orgName: info.orgName);
+                                await auth.logout();
+                                if (context.mounted) context.go('/register');
+                              }),
+                              const SizedBox(height: 10),
+                              OutlinedButton(
+                                onPressed: () => context.go(auth.initialRoute),
+                                style: OutlinedButton.styleFrom(
+                                    minimumSize: const Size.fromHeight(52),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12))),
+                                child: Text('Seguir en ${myOrg.name}'),
+                              ),
+                            ] else if (signedIn)
                               _primary('Unirme', _joining ? null : _join,
                                   loading: _joining)
                             else ...[
@@ -122,7 +157,9 @@ class _InvitationScreenState extends State<InvitationScreen> {
                                 onPressed: () =>
                                     _continueWithoutSession('/login'),
                                 style: OutlinedButton.styleFrom(
-                                    minimumSize: const Size.fromHeight(52)),
+                                    minimumSize: const Size.fromHeight(52),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12))),
                                 child: const Text('Ya tengo cuenta'),
                               ),
                             ],

@@ -191,7 +191,7 @@ class MembersStatusSectionState extends State<MembersStatusSection> {
           Padding(
             padding: EdgeInsets.all(24),
             child: Center(
-                child: CircularProgressIndicator(color: AppColors.primary)),
+                child: CircularProgressIndicator(color: AppColors.primaryText)),
           )
         else if (_error)
           TextButton.icon(

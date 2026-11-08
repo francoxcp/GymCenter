@@ -72,14 +72,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   color: AppColors.cardBackground,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.3),
+                    color: AppColors.primaryText.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.lock_reset,
-                      color: AppColors.primary,
+                      color: AppColors.primaryText,
                       size: 32,
                     ),
                     const SizedBox(width: 16),
@@ -219,7 +219,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.3),
+                    color: AppColors.primaryText.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Column(
@@ -230,7 +230,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                        color: AppColors.primaryText,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -274,7 +274,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             onPressed: () => Navigator.pop(context),
                             child: Text(
                               l10n.understood,
-                              style: TextStyle(color: AppColors.primary),
+                              style: TextStyle(color: AppColors.primaryText),
                             ),
                           ),
                         ],
@@ -306,7 +306,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           Icon(
             Icons.check_circle_outline,
             size: 14,
-            color: AppColors.primary,
+            color: AppColors.primaryText,
           ),
           const SizedBox(width: 8),
           Text(

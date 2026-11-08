@@ -281,7 +281,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
                     ),
                     child: Icon(
                       Icons.fullscreen,
-                      color: AppColors.primary,
+                      color: AppColors.primaryText,
                       size: 24,
                     ),
                   ),
@@ -297,7 +297,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
                 _controller,
                 allowScrubbing: true,
                 colors: VideoProgressColors(
-                  playedColor: AppColors.primary,
+                  playedColor: AppColors.primaryText,
                   bufferedColor: Colors.grey,
                   backgroundColor: AppColors.textPrimary.withValues(alpha: 0.24),
                 ),
@@ -410,14 +410,14 @@ class VideoThumbnailWidget extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+          border: Border.all(color: AppColors.primaryText.withValues(alpha: 0.3)),
         ),
         child: Stack(
           alignment: Alignment.center,
           children: [
             Icon(
               Icons.play_circle_outline,
-              color: AppColors.primary,
+              color: AppColors.primaryText,
               size: 48,
             ),
             Positioned(
@@ -437,7 +437,7 @@ class VideoThumbnailWidget extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.videocam,
-                      color: AppColors.primary,
+                      color: AppColors.primaryText,
                       size: 14,
                     ),
                     const SizedBox(width: 4),

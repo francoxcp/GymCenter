@@ -112,7 +112,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
               onPressed: () => Navigator.pop(ctx, 'continue_assigned'),
               child: Text(
                 AppL10n.of(ctx).continueInProgress,
-                style: TextStyle(color: AppColors.primary),
+                style: TextStyle(color: AppColors.primaryText),
               ),
             ),
             TextButton(
@@ -259,7 +259,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: AppColors.primary,
+                color: AppColors.primaryText,
                 letterSpacing: 1.5,
               ),
             ),
@@ -526,7 +526,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                     userId: currentUser?.id,
                     isAdmin: isAdmin,
                   ),
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                   child: Builder(builder: (context) {
                     // La base de datos ya filtra qué rutinas puede ver cada
                     // rol (RLS). Aquí solo se separan en dos secciones:
@@ -566,7 +566,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                           _SectionHeader(
                             label: l10n.officialRoutines,
                             icon: Icons.verified_rounded,
-                            color: AppColors.primary,
+                            color: AppColors.primaryText,
                           ),
                           const SizedBox(height: 12),
                           ...officialWorkouts.map(
@@ -686,7 +686,7 @@ class _WorkoutCard extends StatelessWidget {
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.2),
+          color: AppColors.primaryText.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -701,7 +701,7 @@ class _WorkoutCard extends StatelessWidget {
             ),
             child: Icon(
               Icons.fitness_center,
-              color: AppColors.primary,
+              color: AppColors.primaryText,
               size: 28,
             ),
           ),
@@ -739,19 +739,19 @@ class _WorkoutCard extends StatelessWidget {
                           color: AppColors.primary.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(5),
                           border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.45),
+                              color: AppColors.primaryText.withValues(alpha: 0.45),
                               width: 0.8),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.verified_rounded,
-                                size: 9, color: AppColors.primary),
+                                size: 9, color: AppColors.primaryText),
                             const SizedBox(width: 3),
                             Text(l10n.officialBadge,
                                 style: TextStyle(
                                     fontSize: 9,
-                                    color: AppColors.primary,
+                                    color: AppColors.primaryText,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 0.4)),
                           ],
@@ -815,7 +815,7 @@ class _WorkoutCard extends StatelessWidget {
                   child: Row(
                     children: [
                       Icon(Icons.edit,
-                          color: AppColors.primary, size: 20),
+                          color: AppColors.primaryText, size: 20),
                       const SizedBox(width: 12),
                       Text(
                         l10n.editLabel,
@@ -857,13 +857,13 @@ class _WorkoutCard extends StatelessWidget {
                   color: AppColors.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.6),
+                    color: AppColors.primaryText.withValues(alpha: 0.6),
                     width: 1,
                   ),
                 ),
                 child: Icon(
                   Icons.play_arrow_rounded,
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                   size: 24,
                 ),
               ),
@@ -902,7 +902,7 @@ class _PausedWorkoutBanner extends StatelessWidget {
           end: Alignment.centerRight,
         ),
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.45),
+          color: AppColors.primaryText.withValues(alpha: 0.45),
           width: 1.5,
         ),
       ),
@@ -921,7 +921,7 @@ class _PausedWorkoutBanner extends StatelessWidget {
                   ),
                   child: Icon(
                     Icons.pause_circle_outline_rounded,
-                    color: AppColors.primary,
+                    color: AppColors.primaryText,
                     size: 24,
                   ),
                 ),
@@ -934,7 +934,7 @@ class _PausedWorkoutBanner extends StatelessWidget {
                         l10n.routinePausedTitle,
                         style: TextStyle(
                           fontSize: 11,
-                          color: AppColors.primary,
+                          color: AppColors.primaryText,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1,
                         ),
@@ -982,7 +982,7 @@ class _PausedWorkoutBanner extends StatelessWidget {
           ),
           Divider(
             height: 1,
-            color: AppColors.primary.withValues(alpha: 0.2),
+            color: AppColors.primaryText.withValues(alpha: 0.2),
           ),
           TextButton.icon(
             onPressed: onDiscard,

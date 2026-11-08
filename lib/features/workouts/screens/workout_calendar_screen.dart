@@ -95,7 +95,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                 ),
               ),
             )
@@ -162,11 +162,11 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
                 ),
                 leftChevronIcon: Icon(
                   Icons.chevron_left,
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                 ),
                 rightChevronIcon: Icon(
                   Icons.chevron_right,
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                 ),
               ),
               daysOfWeekStyle: DaysOfWeekStyle(
@@ -360,7 +360,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
         borderRadius: BorderRadius.circular(12),
         border: event.isCompleted
             ? Border.all(color: Colors.green.withValues(alpha: 0.5))
-            : Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+            : Border.all(color: AppColors.primaryText.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -369,12 +369,12 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
             decoration: BoxDecoration(
               color: event.isCompleted
                   ? Colors.green.withValues(alpha: 0.2)
-                  : AppColors.primary.withValues(alpha: 0.2),
+                  : AppColors.primaryText.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               event.isCompleted ? Icons.check_circle : Icons.schedule,
-              color: event.isCompleted ? Colors.green : AppColors.primary,
+              color: event.isCompleted ? Colors.green : AppColors.primaryText,
               size: 24,
             ),
           ),

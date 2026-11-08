@@ -75,11 +75,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   color: AppColors.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.35)),
+                      color: AppColors.primaryText.withValues(alpha: 0.35)),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.support_agent, color: AppColors.primary),
+                    Icon(Icons.support_agent, color: AppColors.primaryText),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -146,7 +146,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         AppL10n.of(context).signInLink,
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.primary,
+                          color: AppColors.primaryText,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

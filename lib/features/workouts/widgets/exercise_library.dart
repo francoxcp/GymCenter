@@ -208,9 +208,9 @@ class _LibrarySheetState extends State<_LibrarySheet> {
                 if (i == items.length) {
                   return ListTile(
                     leading: Icon(Icons.add_circle_outline,
-                        color: AppColors.primary),
+                        color: AppColors.primaryText),
                     title: Text('Crear ejercicio personalizado',
-                        style: TextStyle(color: AppColors.primary)),
+                        style: TextStyle(color: AppColors.primaryText)),
                     subtitle: Text('Con nombre propio y video',
                         style: TextStyle(color: AppColors.textSecondary)),
                     onTap: () => Navigator.pop(
@@ -221,7 +221,7 @@ class _LibrarySheetState extends State<_LibrarySheet> {
                 final selected = _selected.contains(e);
                 return CheckboxListTile(
                   value: selected,
-                  activeColor: AppColors.primary,
+                  activeColor: AppColors.primaryText,
                   checkColor: Colors.black,
                   onChanged: (_) => setState(() {
                     selected ? _selected.remove(e) : _selected.add(e);
@@ -338,7 +338,7 @@ class _QuickEditorState extends State<_QuickEditor> {
               tooltip: 'Más $label',
               onPressed: onPlus,
               icon: Icon(Icons.add_circle_outline,
-                  color: AppColors.primary)),
+                  color: AppColors.primaryText)),
         ]),
       );
 

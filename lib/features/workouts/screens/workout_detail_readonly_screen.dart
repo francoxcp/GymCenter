@@ -73,7 +73,7 @@ class _WorkoutDetailReadonlyScreenState
             TextButton(
               onPressed: () => Navigator.pop(ctx, 'continue_assigned'),
               child: Text(l10n.continueInProgress,
-                  style: TextStyle(color: AppColors.primary)),
+                  style: TextStyle(color: AppColors.primaryText)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, 'start_extra'),
@@ -204,9 +204,9 @@ class _WorkoutDetailReadonlyScreenState
                                 }
                               },
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.primary,
+                                foregroundColor: AppColors.primaryText,
                                 side:
-                                    BorderSide(color: AppColors.primary),
+                                    BorderSide(color: AppColors.primaryText),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12)),
                                 padding:
@@ -319,7 +319,7 @@ class _WorkoutDetailReadonlyScreenState
                         Icon(
                           Icons.fitness_center,
                           size: 80,
-                          color: AppColors.primary,
+                          color: AppColors.primaryText,
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -441,11 +441,11 @@ class _WorkoutDetailReadonlyScreenState
           decoration: BoxDecoration(
             color: AppColors.cardBackground,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+            border: Border.all(color: AppColors.primaryText.withValues(alpha: 0.3)),
           ),
           child: Icon(
             icon,
-            color: AppColors.primary,
+            color: AppColors.primaryText,
             size: 30,
           ),
         ),
@@ -493,7 +493,7 @@ class _ExerciseCard extends StatelessWidget {
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.2),
+          color: AppColors.primaryText.withValues(alpha: 0.2),
         ),
       ),
       child: Row(

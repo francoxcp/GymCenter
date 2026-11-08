@@ -140,7 +140,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: Theme(
                           data: Theme.of(context).copyWith(
                             colorScheme: Theme.of(context).colorScheme.copyWith(
-                                  tertiaryContainer: AppColors.primary,
+                                  tertiaryContainer: AppColors.primaryText,
                                   onTertiaryContainer: Colors.black,
                                 ),
                           ),
@@ -319,7 +319,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   look.textScale == e.key
                       ? Icons.radio_button_checked
                       : Icons.radio_button_unchecked,
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                 ),
                 title: Text(e.value,
                     style: TextStyle(
@@ -367,7 +367,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.primary, size: 24),
+          Icon(icon, color: AppColors.primaryText, size: 24),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -398,7 +398,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               HapticFeedback.selectionClick();
               onChanged(v);
             },
-            activeThumbColor: AppColors.primary,
+            activeThumbColor: AppColors.primaryText,
           ),
         ],
       ),
@@ -422,7 +422,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         child: Row(
           children: [
-            Icon(icon, color: AppColors.primary, size: 24),
+            Icon(icon, color: AppColors.primaryText, size: 24),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -543,7 +543,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
       trailing:
-          isSelected ? Icon(Icons.check, color: AppColors.primary) : null,
+          isSelected ? Icon(Icons.check, color: AppColors.primaryText) : null,
       onTap: () {
         provider.changeLanguage(languageCode);
         Navigator.pop(context);
@@ -559,7 +559,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Row(
           children: [
             Icon(Icons.fitness_center,
-                color: AppColors.primary, size: 32),
+                color: AppColors.primaryText, size: 32),
             const SizedBox(width: 12),
             Text(l10n.chamosFitness,
                 style: TextStyle(color: AppColors.textPrimary)),
@@ -574,7 +574,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               l10n.close,
-              style: TextStyle(color: AppColors.primary),
+              style: TextStyle(color: AppColors.primaryText),
             ),
           ),
         ],

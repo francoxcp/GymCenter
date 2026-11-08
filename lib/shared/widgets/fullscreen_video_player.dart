@@ -378,7 +378,7 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
                   _controller,
                   allowScrubbing: true,
                   colors: VideoProgressColors(
-                    playedColor: AppColors.primary,
+                    playedColor: AppColors.primaryText,
                     bufferedColor: Colors.grey,
                     backgroundColor: AppColors.textPrimary.withValues(alpha: 0.24),
                   ),

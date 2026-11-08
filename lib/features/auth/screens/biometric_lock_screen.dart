@@ -66,7 +66,7 @@ class _BiometricLockScreenState extends State<BiometricLockScreen> {
               children: [
                 Icon(
                   Icons.lock_outline,
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                   size: 64,
                 ),
                 const SizedBox(height: 24),

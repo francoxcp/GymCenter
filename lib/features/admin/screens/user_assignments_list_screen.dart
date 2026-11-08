@@ -50,7 +50,7 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: AppColors.primary,
+                color: AppColors.primaryText,
                 letterSpacing: 1.5,
               ),
             ),
@@ -105,14 +105,14 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.3),
+                      color: AppColors.primaryText.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(
                     children: [
                       Icon(
                         Icons.info_outline,
-                        color: AppColors.primary,
+                        color: AppColors.primaryText,
                         size: 20,
                       ),
                       const SizedBox(width: 12),
@@ -120,7 +120,7 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
                         child: Text(
                           AppL10n.of(context).assignHint,
                           style: TextStyle(
-                            color: AppColors.primary,
+                            color: AppColors.primaryText,
                             fontSize: 12,
                           ),
                         ),
@@ -195,7 +195,7 @@ class _UserAssignmentCard extends StatelessWidget {
           color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.2),
+            color: AppColors.primaryText.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -256,7 +256,7 @@ class _UserAssignmentCard extends StatelessWidget {
                         l10n.routineAssigned,
                         style: TextStyle(
                           fontSize: 11,
-                          color: AppColors.primary,
+                          color: AppColors.primaryText,
                           fontWeight: FontWeight.w500,
                         ),
                       ),

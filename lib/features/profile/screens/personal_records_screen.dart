@@ -306,7 +306,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
       body: SafeArea(
         child: _loading
             ? Center(
-                child: CircularProgressIndicator(color: AppColors.primary))
+                child: CircularProgressIndicator(color: AppColors.primaryText))
             : _buildContent(),
       ),
     );
@@ -394,7 +394,7 @@ class _PersonalRecordsScreenState extends State<PersonalRecordsScreen> {
                 )
               : RefreshIndicator(
                   onRefresh: _load,
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                   backgroundColor: AppColors.cardBackground,
                   child: ListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
@@ -530,7 +530,7 @@ class _PRWeight extends StatelessWidget {
               fontSize: 36,
               fontWeight: FontWeight.w900,
               fontStyle: FontStyle.italic,
-              color: AppColors.primary,
+              color: AppColors.primaryText,
               height: 1,
             ),
           ),
@@ -540,7 +540,7 @@ class _PRWeight extends StatelessWidget {
               fontSize: 18,
               fontWeight: FontWeight.w700,
               fontStyle: FontStyle.italic,
-              color: AppColors.primary,
+              color: AppColors.primaryText,
               height: 1,
             ),
           ),

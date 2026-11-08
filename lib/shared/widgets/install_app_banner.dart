@@ -105,7 +105,7 @@ class _InstallAppBannerState extends State<InstallAppBanner> {
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+        border: Border.all(color: AppColors.primaryText.withValues(alpha: 0.35)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,7 +118,7 @@ class _InstallAppBannerState extends State<InstallAppBanner> {
             ),
             child: Icon(
               isIOS ? Icons.ios_share : Icons.install_mobile,
-              color: AppColors.primary,
+              color: AppColors.primaryText,
               size: 22,
             ),
           ),

@@ -128,7 +128,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             title: Row(
               children: [
                 Icon(Icons.mark_email_unread_outlined,
-                    color: AppColors.primary),
+                    color: AppColors.primaryText),
                 const SizedBox(width: 12),
                 Text(l10n.confirmEmailTitle),
               ],
@@ -202,7 +202,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                        color: AppColors.primaryText,
                       ),
                     ),
                     Text(
@@ -409,7 +409,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           TextSpan(
                             text: AppL10n.of(context).termsOfServiceLink,
                             style: TextStyle(
-                              color: AppColors.primary,
+                              color: AppColors.primaryText,
                               decoration: TextDecoration.underline,
                             ),
                           ),
@@ -417,7 +417,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           TextSpan(
                             text: AppL10n.of(context).privacyPolicyLinkText,
                             style: TextStyle(
-                              color: AppColors.primary,
+                              color: AppColors.primaryText,
                               decoration: TextDecoration.underline,
                             ),
                           ),
@@ -463,7 +463,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         AppL10n.of(context).signInLink,
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.primary,
+                          color: AppColors.primaryText,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

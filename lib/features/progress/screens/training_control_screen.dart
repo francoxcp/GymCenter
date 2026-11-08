@@ -216,11 +216,11 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
       ),
       body: _loading
           ? Center(
-              child: CircularProgressIndicator(color: AppColors.primary))
+              child: CircularProgressIndicator(color: AppColors.primaryText))
           : _error != null
               ? _buildError(isEn)
               : RefreshIndicator(
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                   onRefresh: _load,
                   child: ListView(
                     padding: const EdgeInsets.all(20),
@@ -232,7 +232,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
                       Text(
                         isEn ? 'EXERCISES' : 'EJERCICIOS',
                         style: TextStyle(
-                          color: AppColors.primary,
+                          color: AppColors.primaryText,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1.5,
@@ -339,7 +339,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
               Text(
                 planned > 0 ? '$done/$planned' : '$done',
                 style: TextStyle(
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                   fontSize: 34,
                   fontWeight: FontWeight.bold,
                   height: 1,
@@ -365,7 +365,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
                 value: ratio,
                 minHeight: 8,
                 backgroundColor: AppColors.surface,
-                color: ratio >= 1 ? AppColors.success : AppColors.primary,
+                color: ratio >= 1 ? AppColors.success : AppColors.primaryText,
               ),
             ),
           ],
@@ -486,7 +486,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
                         width: 16,
                         color: i == values.length - 1
                             ? AppColors.primary
-                            : AppColors.primary.withValues(alpha: 0.45),
+                            : AppColors.primaryText.withValues(alpha: 0.45),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ]),
@@ -644,7 +644,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
                         LineChartBarData(
                           spots: topSpots,
                           isCurved: true,
-                          color: AppColors.primary,
+                          color: AppColors.primaryText,
                           barWidth: 3,
                           dotData: const FlDotData(show: true),
                         ),

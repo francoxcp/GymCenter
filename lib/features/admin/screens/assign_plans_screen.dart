@@ -388,7 +388,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                   letterSpacing: 1.5,
                 ),
               ),
@@ -482,7 +482,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                             AppL10n.of(context).tapDayToAssign,
                             style: TextStyle(
                               fontSize: 11,
-                              color: AppColors.primary,
+                              color: AppColors.primaryText,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -605,7 +605,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                                       style: TextStyle(
                                                         fontSize: 10,
                                                         color:
-                                                            AppColors.primary,
+                                                            AppColors.primaryText,
                                                         fontWeight:
                                                             FontWeight.w600,
                                                       ),
@@ -661,7 +661,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                 border: Border.all(
                                   color: hasChange
                                       ? AppColors.primary
-                                      : AppColors.primary
+                                      : AppColors.primaryText
                                           .withValues(alpha: 0.4),
                                   width: hasChange ? 2 : 1.5,
                                 ),
@@ -717,7 +717,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                           AppL10n.of(context).modifiedBadge,
                                           style: TextStyle(
                                             fontSize: 10,
-                                            color: AppColors.primary,
+                                            color: AppColors.primaryText,
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
@@ -728,13 +728,13 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                 subtitle: Text(
                                   workoutName,
                                   style: TextStyle(
-                                    color: AppColors.primary,
+                                    color: AppColors.primaryText,
                                     fontSize: 12,
                                   ),
                                 ),
                                 trailing: Icon(
                                   Icons.edit,
-                                  color: AppColors.primary,
+                                  color: AppColors.primaryText,
                                   size: 22,
                                 ),
                               ),
@@ -760,7 +760,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     disabledBackgroundColor:
-                        AppColors.primary.withValues(alpha: 0.5),
+                        AppColors.primaryText.withValues(alpha: 0.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -845,7 +845,7 @@ class _UserInfoCard extends StatelessWidget {
                   AppL10n.of(context).levelInfo(user.level),
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.primary,
+                    color: AppColors.primaryText,
                   ),
                 ),
               ],
@@ -917,7 +917,7 @@ class _BottomSheetTile extends StatelessWidget {
                   badge!,
                   style: TextStyle(
                     fontSize: 10,
-                    color: AppColors.primary,
+                    color: AppColors.primaryText,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -933,7 +933,7 @@ class _BottomSheetTile extends StatelessWidget {
           ),
         ),
         trailing: isSelected
-            ? Icon(Icons.check_circle, color: AppColors.primary)
+            ? Icon(Icons.check_circle, color: AppColors.primaryText)
             : null,
       ),
     );

@@ -109,7 +109,7 @@ class _CustomTextFieldState extends State<CustomTextField>
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: AppColors.primary,
+                color: AppColors.primaryText,
                 width: 2,
               ),
             ),

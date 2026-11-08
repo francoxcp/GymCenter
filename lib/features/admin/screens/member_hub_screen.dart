@@ -47,7 +47,7 @@ class MemberHubScreen extends StatelessWidget {
           ),
           child: ListTile(
             onTap: onTap,
-            leading: Icon(icon, color: AppColors.primary, size: 28),
+            leading: Icon(icon, color: AppColors.primaryText, size: 28),
             title: Text(title,
                 style: TextStyle(
                     color: AppColors.textPrimary, fontWeight: FontWeight.w600)),

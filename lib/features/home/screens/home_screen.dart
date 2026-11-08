@@ -157,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _refreshData,
-          color: AppColors.primary,
+          color: AppColors.primaryText,
           backgroundColor: AppColors.surface,
           strokeWidth: 3.0,
           displacement: 40,
@@ -180,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.primary,
+                              color: AppColors.primaryText,
                               letterSpacing: 1.8,
                             ),
                           ),
@@ -420,7 +420,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                     children: [
                       Icon(
                         Icons.event_available,
-                        color: AppColors.primary,
+                        color: AppColors.primaryText,
                         size: 26,
                       ),
                       const SizedBox(height: 8),
@@ -456,7 +456,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                     children: [
                       Icon(
                         Icons.fitness_center,
-                        color: AppColors.primary,
+                        color: AppColors.primaryText,
                         size: 26,
                       ),
                       const SizedBox(height: 8),
@@ -531,7 +531,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                   child: Column(
                     children: [
                       CircularProgressIndicator(
-                        color: AppColors.primary,
+                        color: AppColors.primaryText,
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -559,7 +559,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                 color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.3),
+                  color: AppColors.primaryText.withValues(alpha: 0.3),
                   width: 1.5,
                 ),
               ),
@@ -575,7 +575,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                     ),
                     child: Icon(
                       Icons.bedtime_outlined,
-                      color: AppColors.primary,
+                      color: AppColors.primaryText,
                       size: 34,
                     ),
                   ),
@@ -683,7 +683,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
-                          foregroundColor: AppColors.primary,
+                          foregroundColor: AppColors.primaryText,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           elevation: 2,
                           shape: RoundedRectangleBorder(
@@ -876,7 +876,7 @@ class _QuickActionCard extends StatelessWidget {
       enableShadow: false,
       child: Column(
         children: [
-          Icon(icon, size: 36, color: AppColors.primary),
+          Icon(icon, size: 36, color: AppColors.primaryText),
           const SizedBox(height: 10),
           Text(
             title,

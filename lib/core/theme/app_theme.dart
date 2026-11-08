@@ -6,6 +6,8 @@ export 'spacing.dart';
 class AppPalette {
   final Brightness brightness;
   final Color primary;
+  /// Acento para texto, iconos, bordes y trazos (contraste ≥4.5:1).
+  final Color primaryText;
   final Color onPrimary;
   final Color background;
   final Color surface;
@@ -20,6 +22,7 @@ class AppPalette {
   const AppPalette({
     required this.brightness,
     required this.primary,
+    required this.primaryText,
     required this.onPrimary,
     required this.background,
     required this.surface,
@@ -35,6 +38,7 @@ class AppPalette {
   static const dark = AppPalette(
     brightness: Brightness.dark,
     primary: Color(0xFFFFEB00), // Amarillo Chamos
+    primaryText: Color(0xFFFFEB00),
     onPrimary: Color(0xFF000000),
     background: Color(0xFF0A0A0A),
     surface: Color(0xFF1A1A1A),
@@ -47,12 +51,13 @@ class AppPalette {
     warning: Color(0xFFFFA726),
   );
 
-  /// Tema claro: el amarillo de marca no se lee sobre blanco, así que como
-  /// color de acento se usa un dorado oscuro (≥3:1 sobre blanco y 6.5:1 con
-  /// texto negro encima), según WCAG para iconos y texto grande.
+  /// Tema claro: los rellenos (botones, chips, FAB) usan un amarillo de
+  /// marca con texto negro encima (13:1); textos, iconos y bordes usan un
+  /// dorado oscuro que sí se lee sobre blanco (5:1, WCAG AA).
   static const light = AppPalette(
     brightness: Brightness.light,
-    primary: Color(0xFFAD8B00),
+    primary: Color(0xFFFFD000),
+    primaryText: Color(0xFF8A6A00),
     onPrimary: Color(0xFF000000),
     background: Color(0xFFF4F4F6),
     surface: Color(0xFFFFFFFF),
@@ -77,6 +82,7 @@ class AppColors {
   static void usePalette(AppPalette p) => _p = p;
 
   static Color get primary => _p.primary;
+  static Color get primaryText => _p.primaryText;
   static Color get onPrimary => _p.onPrimary;
   static Color get background => _p.background;
   static Color get surface => _p.surface;
@@ -139,6 +145,28 @@ ThemeData buildAppTheme() {
       ),
     ),
     dialogTheme: DialogThemeData(backgroundColor: p.surface),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(foregroundColor: p.primaryText),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(foregroundColor: p.primaryText),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: p.primary,
+        foregroundColor: p.onPrimary,
+      ),
+    ),
+    progressIndicatorTheme: ProgressIndicatorThemeData(color: p.primaryText),
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: p.primaryText,
+      selectionHandleColor: p.primaryText,
+    ),
+    chipTheme: ChipThemeData(
+      backgroundColor: p.surface,
+      selectedColor: p.primary,
+      side: BorderSide(color: p.textPrimary.withValues(alpha: 0.15)),
+    ),
     bottomSheetTheme: BottomSheetThemeData(backgroundColor: p.surface),
     textTheme: TextTheme(
       bodyLarge: TextStyle(color: p.textPrimary),
@@ -161,7 +189,7 @@ ThemeData buildAppTheme() {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: p.primary, width: 2),
+        borderSide: BorderSide(color: p.primaryText, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -176,7 +204,7 @@ ThemeData buildAppTheme() {
       hintStyle: TextStyle(color: p.textSecondary),
       labelStyle: TextStyle(color: p.textSecondary),
       floatingLabelStyle: TextStyle(
-        color: p.primary,
+        color: p.primaryText,
         fontWeight: FontWeight.w600,
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

@@ -47,15 +47,18 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // La navegación tras restaurar la sesión la decide el router
+  // (app_router.dart): así se respeta el enlace que se abrió (notificación,
+  // invitación, /workouts…) en lugar de ir siempre al inicio.
   void _onAuthChanged() {
     if (_authProvider.isAuthenticated && mounted) {
-      context.go(_authProvider.initialRoute);
+      GoRouter.of(context).refresh();
     }
   }
 
   void _checkSession() {
     if (_authProvider.isAuthenticated && mounted) {
-      context.go(_authProvider.initialRoute);
+      GoRouter.of(context).refresh();
     }
   }
 

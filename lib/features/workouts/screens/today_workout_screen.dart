@@ -332,7 +332,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               value: progressPercent / 100,
               backgroundColor: AppColors.background,
               valueColor:
-                  final AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  AlwaysStoppedAnimation<Color>(AppColors.primary),
             ),
           ],
         ),
@@ -2014,7 +2014,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                     value: value,
                     backgroundColor: AppColors.surface,
                     valueColor:
-                        final AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        AlwaysStoppedAnimation<Color>(AppColors.primary),
                     minHeight: 6,
                   ),
                 ),

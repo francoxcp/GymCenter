@@ -10,7 +10,7 @@ class AppearanceProvider extends ChangeNotifier {
   static const _kScale = 'appearance_text_scale';
 
   /// Tamaños de texto ofrecidos en Ajustes.
-  static const scales = <double, String>{
+  static final scales = <double, String>{
     1.0: 'Normal',
     1.15: 'Grande',
     1.3: 'Muy grande',

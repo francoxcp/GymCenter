@@ -587,7 +587,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                                 if (hasChange) ...[
                                                   const SizedBox(width: 6),
                                                   Container(
-                                                    padding: final EdgeInsets
+                                                    padding: const EdgeInsets
                                                         .symmetric(
                                                         horizontal: 6,
                                                         vertical: 2),

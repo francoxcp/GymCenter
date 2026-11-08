@@ -293,6 +293,29 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
+  /// Asigna una contraseña temporal a un socio (y activa su cuenta si no
+  /// estaba confirmada). Devuelve null si salió bien, o un código de error.
+  Future<String?> resetMemberPassword(String userId, String password) async {
+    try {
+      final res = await SupabaseConfig.client.functions.invoke(
+        'reset-member-password',
+        body: {'user_id': userId, 'password': password},
+      );
+      final data = res.data;
+      if (data is Map && data['error'] != null) return data['error'] as String;
+      return null;
+    } on FunctionException catch (e) {
+      final details = e.details;
+      if (details is Map && details['error'] is String) {
+        return details['error'] as String;
+      }
+      return 'reset_failed';
+    } catch (e) {
+      debugPrint('resetMemberPassword error: $e');
+      return 'reset_failed';
+    }
+  }
+
   Future<void> toggleUserStatus(String userId, bool isActive) async {
     try {
       await SupabaseConfig.client

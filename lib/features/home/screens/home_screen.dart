@@ -14,6 +14,7 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/coming_soon_workout_card.dart';
 import '../../../shared/widgets/install_app_banner.dart';
 import '../../../shared/services/offline_sync_queue.dart';
+import '../widgets/weekly_goal_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -479,6 +480,11 @@ class _UserHomeContentState extends State<_UserHomeContent> {
             ),
           ],
         ),
+
+        const SizedBox(height: 16),
+
+        // Meta semanal: entrenos hechos vs plan del entrenador
+        const WeeklyGoalCard(),
 
         const SizedBox(height: 28),
 

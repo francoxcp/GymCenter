@@ -66,7 +66,33 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   height: 1.5,
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 16),
+              // El correo gratuito puede no llegar: alternativa por el gimnasio
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.35)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.support_agent, color: AppColors.primary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        AppL10n.of(context).isEn
+                            ? "Didn't get the email? Ask your trainer or the front desk: they can set a temporary password for you in the app."
+                            : '¿No te llega el correo? Pídele a tu entrenador o en recepción: pueden ponerte una contraseña temporal desde la app.',
+                        style: const TextStyle(
+                            fontSize: 13, color: Colors.white, height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 28),
               Text(
                 AppL10n.of(context).emailFieldLabel,
                 style: const TextStyle(

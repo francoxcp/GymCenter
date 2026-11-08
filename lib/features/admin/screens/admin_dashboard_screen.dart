@@ -8,6 +8,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/user_provider.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../profile/widgets/trainer_link_card.dart';
+import '../widgets/members_status_section.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -22,6 +23,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   List<int> _dailySessions = [0, 0, 0, 0, 0, 0, 0];
   bool _isLoading = true;
   bool _hasError = false;
+  final _membersKey = GlobalKey<MembersStatusSectionState>();
 
   @override
   void initState() {
@@ -80,6 +82,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         _isLoading = false;
         _hasError = false;
       });
+      // La lista de socios ya está cargada: calcular el semáforo
+      _membersKey.currentState?.reload();
     } catch (e) {
       debugPrint('Error loading dashboard data: $e');
       if (!mounted) return;
@@ -151,6 +155,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
                 // Código para que los socios se vinculen con este entrenador
                 const TrainerLinkCard(),
+                const SizedBox(height: AppSpacing.xl),
+                // Mis socios con semáforo de constancia (lo primero que mira
+                // un entrenador al abrir la app)
+                MembersStatusSection(key: _membersKey),
                 const SizedBox(height: AppSpacing.xl),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

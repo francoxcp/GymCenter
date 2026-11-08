@@ -429,10 +429,22 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   void _toggleSet(int exerciseIndex, int setIndex) {
     final isCompleted = _completedSets[exerciseIndex][setIndex];
 
+    // Registro en un toque: si la serie se marca como hecha sin peso
+    // anotado, usar el sugerido por la progresión, el de la serie anterior
+    // o el que indicó el entrenador. Así la progresión siempre aprende.
+    double? autoWeight;
+    if (!isCompleted && _setWeights[exerciseIndex]?[setIndex] == null) {
+      autoWeight = _autoWeightFor(exerciseIndex, setIndex);
+    }
+
     setState(() {
       _completedSets[exerciseIndex][setIndex] = !isCompleted;
       if (!isCompleted) {
         _lastCompletedSet = setIndex;
+        if (autoWeight != null) {
+          _setWeights[exerciseIndex] ??= {};
+          _setWeights[exerciseIndex]![setIndex] = autoWeight;
+        }
       }
     });
 
@@ -1275,6 +1287,40 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         );
       },
     ).whenComplete(() => controller.dispose());
+  }
+
+  /// Peso (kg) para una serie marcada sin peso anotado, o null si no hay
+  /// ninguna referencia (ejercicio nuevo sin peso del entrenador).
+  double? _autoWeightFor(int exerciseIndex, int setIndex) {
+    // 1. Serie anterior de este ejercicio en la sesión actual
+    for (var i = setIndex - 1; i >= 0; i--) {
+      final w = _setWeights[exerciseIndex]?[i];
+      if (w != null) return w;
+    }
+    // 2. Sugerencia de progresión (o última sesión)
+    final history = _historyByExercise[exerciseIndex];
+    final effectiveId = widget.extraWorkoutId ??
+        context.read<AuthProvider>().currentUser?.assignedWorkoutId;
+    final workout = effectiveId != null
+        ? context.read<WorkoutProvider>().getWorkoutById(effectiveId)
+        : null;
+    if (workout == null || exerciseIndex >= workout.exercises.length) {
+      return null;
+    }
+    final exercise = workout.exercises[exerciseIndex];
+    if (history != null && history.isNotEmpty) {
+      final s = ProgressionEngine.suggest(
+        logs: history,
+        targetSets: exercise.sets,
+        targetReps: exercise.reps,
+        lowerBody:
+            ProgressionEngine.isLowerBody(exercise.muscleGroup, exercise.name),
+      );
+      if (s != null) return s.suggestedWeightKg;
+    }
+    // 3. Peso indicado por el entrenador (en lbs)
+    if (exercise.weight > 0) return exercise.weight / kKgToLbs;
+    return null;
   }
 
   // -- Progresión inteligente ------------------------------------------------

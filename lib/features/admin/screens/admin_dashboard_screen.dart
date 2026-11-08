@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../config/supabase_config.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../organization/widgets/org_billing_banner.dart';
 import '../../profile/providers/user_provider.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../profile/widgets/trainer_link_card.dart';
@@ -100,11 +101,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final l10n = AppL10n.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Column(
+        title: Consumer<AuthProvider>(builder: (context, auth, _) {
+          final org = auth.organization;
+          return Row(children: [
+            if (org?.logoUrl != null) ...[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(org!.logoUrl!, width: 36, height: 36, fit: BoxFit.cover),
+              ),
+              const SizedBox(width: 10),
+            ],
+            Expanded(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.adminPortal,
+              org == null
+                  ? l10n.adminPortal
+                  : 'PANEL · ${org.isIndependent ? 'ENTRENADOR' : 'GIMNASIO'}',
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
@@ -113,7 +126,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
             Text(
-              l10n.appTitleUpper,
+              (org?.name ?? l10n.appTitleUpper).toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -121,7 +136,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
           ],
-        ),
+        )),
+          ]);
+        }),
         actions: const [],
       ),
       body: SafeArea(
@@ -154,6 +171,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     );
                   },
                 ),
+                // Suscripción del negocio (pago pendiente / en revisión)
+                const OrgBillingBanner(),
                 // Membresías por vencer / vencidas (solo dueño)
                 const MembershipsAlertCard(),
                 // Código para que los socios se vinculen con este entrenador
@@ -290,6 +309,26 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
+                if (context.read<AuthProvider>().isPlatformAdmin) ...[
+                  _QuickActionButton(
+                    icon: Icons.storefront_outlined,
+                    iconColor: AppColors.primaryText,
+                    title: 'Clientes de la plataforma',
+                    onTap: () => context.push('/platform'),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                ],
+                if (context.read<AuthProvider>().isAdmin) ...[
+                  _QuickActionButton(
+                    icon: Icons.store_mall_directory_outlined,
+                    iconColor: AppColors.primaryText,
+                    title: context.read<AuthProvider>().isIndependent
+                        ? 'Mi negocio: marca, pagos e invitaciones'
+                        : 'Mi gimnasio: marca, pagos e invitaciones',
+                    onTap: () => context.push('/admin/organization'),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                ],
                 _QuickActionButton(
                   icon: Icons.dynamic_feed,
                   iconColor: AppColors.primaryText,

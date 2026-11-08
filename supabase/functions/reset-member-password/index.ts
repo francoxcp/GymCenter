@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
 
   const { data: callerRow } = await admin
     .from('users')
-    .select('id, role')
+    .select('id, role, org_id')
     .eq('id', caller.user.id)
     .maybeSingle();
   const role = callerRow?.role;
@@ -60,11 +60,15 @@ Deno.serve(async (req) => {
 
   const { data: target } = await admin
     .from('users')
-    .select('id, role, trainer_id')
+    .select('id, role, trainer_id, org_id')
     .eq('id', userId)
     .maybeSingle();
   if (!target) return json({ error: 'invalid_user' }, 404);
   if (target.role === 'admin') return json({ error: 'not_allowed' }, 403);
+  // Multi-cliente: solo usuarios de la misma organización
+  if (!callerRow?.org_id || target.org_id !== callerRow.org_id) {
+    return json({ error: 'not_allowed' }, 403);
+  }
   if (role === 'trainer' && (target.role !== 'user' || target.trainer_id !== caller.user.id)) {
     return json({ error: 'not_allowed' }, 403);
   }

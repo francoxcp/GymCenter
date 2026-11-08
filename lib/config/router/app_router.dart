@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/social/activity_feed_screen.dart';
+import '../../features/organization/screens/invitation_screen.dart';
+import '../../features/organization/screens/join_organization_screen.dart';
+import '../../features/organization/screens/my_organization_screen.dart';
+import '../../features/organization/screens/platform_screen.dart';
 import '../../features/admin/screens/memberships_screen.dart';
 import 'package:provider/provider.dart';
 import '../../features/auth/screens/login_screen.dart';
@@ -83,6 +87,9 @@ GoRouter createAppRouter(AuthProvider authProvider) {
         return isAuth ? authProvider.initialRoute : '/login';
       }
 
+      // Enlaces de invitación: públicos (con o sin sesión)
+      if (path.startsWith('/invitacion/')) return null;
+
       if (!isAuth && !publicRoutes.contains(path)) {
         if (authProvider.isInitializing) {
           pendingDeepLink = state.uri.toString();
@@ -99,6 +106,27 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       // complete el cambio de contraseña o cierre sesión
       if (isAuth && authProvider.isPasswordRecovery && path != '/change-password') {
         return '/change-password';
+      }
+      // Multi-cliente: cuenta sin gimnasio → pantalla para unirse
+      if (isAuth && authProvider.needsOrganization) {
+        return path == '/unirme' ? null : '/unirme';
+      }
+      if (isAuth && path == '/unirme') return authProvider.initialRoute;
+      // Cliente suspendido por la plataforma (el dueño puede ir a pagar)
+      if (isAuth && authProvider.isOrgSuspended && !authProvider.isPlatformAdmin) {
+        const allowed = {'/suspendido', '/admin/organization'};
+        if (!allowed.contains(path) ||
+            (path == '/admin/organization' && !authProvider.isAdmin)) {
+          return '/suspendido';
+        }
+        return null;
+      }
+      if (isAuth && path == '/suspendido') return authProvider.initialRoute;
+      if (isAuth && path.startsWith('/platform') && !authProvider.isPlatformAdmin) {
+        return authProvider.initialRoute;
+      }
+      if (isAuth && path == '/admin/organization' && !authProvider.isAdmin) {
+        return authProvider.initialRoute;
       }
       // Admin siempre va al panel de administración
       if (isAuth && authProvider.isStaff && path == '/home') return '/admin';
@@ -118,6 +146,27 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/invitacion/:token',
+        builder: (context, state) =>
+            InvitationScreen(token: state.pathParameters['token'] ?? ''),
+      ),
+      GoRoute(
+        path: '/unirme',
+        builder: (context, state) => const JoinOrganizationScreen(),
+      ),
+      GoRoute(
+        path: '/suspendido',
+        builder: (context, state) => const SuspendedOrganizationScreen(),
+      ),
+      GoRoute(
+        path: '/platform',
+        builder: (context, state) => const PlatformScreen(),
+      ),
+      GoRoute(
+        path: '/admin/organization',
+        builder: (context, state) => const MyOrganizationScreen(),
       ),
       GoRoute(
         path: '/register',

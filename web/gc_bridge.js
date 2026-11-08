@@ -274,6 +274,13 @@
       setTimeout(() => URL.revokeObjectURL(url), 10000);
     },
 
+    // Abrir un enlace (p. ej. comprobante firmado) en otra pestaña
+    openUrl: (url) => {
+      if (typeof url === 'string' && url.startsWith('https://')) {
+        window.open(url, '_blank', 'noopener');
+      }
+    },
+
     // Compartir un archivo (p. ej. imagen del resumen) con la hoja nativa
     // del teléfono. Si el navegador no soporta compartir archivos, lo
     // descarga. Devuelve 'shared', 'downloaded' o 'cancelled'.

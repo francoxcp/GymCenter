@@ -4,6 +4,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import '../models/user.dart';
+import '../../organization/models/organization.dart';
+import '../../organization/services/organization_service.dart';
 import '../../../config/supabase_config.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/services/offline_cache_service.dart';
@@ -47,6 +49,39 @@ class AuthProvider extends ChangeNotifier {
 
   bool get isAuthenticated => _isAuthenticated;
   User? get currentUser => _currentUser;
+
+  // Multi-cliente: organización del usuario y rol de plataforma
+  Organization? _org;
+  bool _isPlatformAdmin = false;
+  Organization? get organization => _org;
+  bool get isPlatformAdmin => _isPlatformAdmin;
+  /// Usuario sin gimnasio/entrenador todavía (registro sin código).
+  bool get needsOrganization =>
+      _isAuthenticated && _currentUser != null && _currentUser!.orgId == null;
+  bool get isOrgSuspended => _org?.isSuspended ?? false;
+  bool get isIndependent => _org?.isIndependent ?? false;
+
+  Future<void> _loadOrgContext() async {
+    final orgId = _currentUser?.orgId;
+    try {
+      final results = await Future.wait([
+        orgId == null
+            ? Future<Organization?>.value(null)
+            : OrganizationService.loadMine(orgId),
+        OrganizationService.isPlatformAdmin(),
+      ]);
+      _org = results[0] as Organization?;
+      _isPlatformAdmin = results[1] as bool;
+    } catch (e) {
+      debugPrint('No se pudo cargar la organización: $e');
+    }
+  }
+
+  /// Recarga la organización (tras subir logo, pagar, etc.).
+  Future<void> reloadOrganization() async {
+    await _loadOrgContext();
+    notifyListeners();
+  }
   /// Dueño del gimnasio (control total).
   bool get isAdmin => _currentUser?.role == 'admin';
   /// Entrenador: gestiona solo a sus socios.
@@ -187,6 +222,7 @@ class AuthProvider extends ChangeNotifier {
           .single();
 
       _currentUser = User.fromJson(response);
+      await _loadOrgContext();
       _isAuthenticated = true;
       _isInitializing = false;
       notifyListeners();
@@ -377,6 +413,8 @@ class AuthProvider extends ChangeNotifier {
   Future<void> _clearSessionData() async {
     _isAuthenticated = false;
     _currentUser = null;
+    _org = null;
+    _isPlatformAdmin = false;
     notifyListeners();
     try {
       await OfflineCacheService().clearCache();

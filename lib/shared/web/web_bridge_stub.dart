@@ -55,4 +55,6 @@ class WebBridge {
     String text = '',
   }) async =>
       '';
+
+  static void openUrl(String url) {}
 }

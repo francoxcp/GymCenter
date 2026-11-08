@@ -42,11 +42,14 @@ Deno.serve(async (req) => {
 
   const { data: callerRow } = await admin
     .from('users')
-    .select('id, role')
+    .select('id, role, org_id')
     .eq('id', caller.user.id)
     .maybeSingle();
   const role = callerRow?.role;
   if (role !== 'admin' && role !== 'trainer') return json({ error: 'not_allowed' }, 403);
+  // Multi-cliente: el socio nuevo entra a la organización de quien lo crea
+  const orgId = callerRow?.org_id as string | null;
+  if (!orgId) return json({ error: 'no_organization' }, 403);
 
   let body: { name?: string; email?: string; password?: string; trainer_id?: string | null };
   try {
@@ -67,10 +70,10 @@ Deno.serve(async (req) => {
   if (role === 'admin' && trainerId) {
     const { data: t } = await admin
       .from('users')
-      .select('id, role')
+      .select('id, role, org_id')
       .eq('id', trainerId)
       .maybeSingle();
-    if (!t || (t.role !== 'trainer' && t.role !== 'admin')) trainerId = null;
+    if (!t || (t.role !== 'trainer' && t.role !== 'admin') || t.org_id !== orgId) trainerId = null;
   }
 
   const { data: created, error: createErr } = await admin.auth.admin.createUser({
@@ -91,9 +94,10 @@ Deno.serve(async (req) => {
   }
 
   // El trigger handle_new_user ya creó la fila en public.users
-  if (trainerId) {
-    await admin.from('users').update({ trainer_id: trainerId }).eq('id', created.user.id);
-  }
+  await admin
+    .from('users')
+    .update({ org_id: orgId, trainer_id: trainerId })
+    .eq('id', created.user.id);
 
   return json({ id: created.user.id, email, name, trainer_id: trainerId });
 });

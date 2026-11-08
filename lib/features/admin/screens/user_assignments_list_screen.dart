@@ -156,8 +156,8 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
                             itemCount: userProvider.filteredUsers.length,
                             itemBuilder: (context, index) {
                               final user = userProvider.filteredUsers[index];
-                              // Solo mostrar usuarios normales (no admins)
-                              if (user.role == 'admin') {
+                              // Solo socios (no dueños ni entrenadores)
+                              if (user.role != 'user') {
                                 return const SizedBox.shrink();
                               }
                               return Padding(

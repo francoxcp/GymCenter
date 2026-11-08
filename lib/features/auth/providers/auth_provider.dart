@@ -47,19 +47,24 @@ class AuthProvider extends ChangeNotifier {
 
   bool get isAuthenticated => _isAuthenticated;
   User? get currentUser => _currentUser;
+  /// Dueño del gimnasio (control total).
   bool get isAdmin => _currentUser?.role == 'admin';
+  /// Entrenador: gestiona solo a sus socios.
+  bool get isTrainer => _currentUser?.role == 'trainer';
+  /// Dueño o entrenador: accede al panel de gestión.
+  bool get isStaff => isAdmin || isTrainer;
   bool get isLoading => _isLoading;
   bool get isInitializing => _isInitializing;
   bool get isPasswordRecovery => _isPasswordRecovery;
   bool get pendingEmailConfirmation => _pendingEmailConfirmation;
   String get initialRoute =>
-      isAdmin ? AppConstants.adminRoute : AppConstants.homeRoute;
+      isStaff ? AppConstants.adminRoute : AppConstants.homeRoute;
 
   /// true cuando el usuario autenticado aún no ha completado el onboarding
   /// de datos de fitness (edad, peso y sexo son los campos mínimos).
   bool get needsOnboarding =>
       _isAuthenticated &&
-      !isAdmin &&
+      !isStaff &&
       _currentUser != null &&
       (_currentUser!.age == null ||
           _currentUser!.weightKg == null ||
@@ -264,7 +269,8 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> register(String email, String password, String name) async {
+  Future<bool> register(String email, String password, String name,
+      {String? trainerCode}) async {
     // Rate limiting
     if (_registerLockoutUntil != null &&
         DateTime.now().isBefore(_registerLockoutUntil!)) {
@@ -283,6 +289,9 @@ class AuthProvider extends ChangeNotifier {
         // asigna siempre 'user' (ver database/web_pwa_migration.sql).
         data: {
           'name': name,
+          // Si trae código, la base de datos lo vincula con su entrenador
+          if (trainerCode != null && trainerCode.trim().isNotEmpty)
+            'trainer_code': trainerCode.trim().toUpperCase(),
         },
       );
 
@@ -420,6 +429,39 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('❌ Error saving onboarding data: $e');
       rethrow;
+    }
+  }
+
+  // ── Entrenador ──────────────────────────────────────────────────────────
+
+  /// Socio: se vincula con su entrenador usando el código.
+  /// Devuelve el nombre del entrenador; lanza excepción si el código no es válido.
+  Future<String> linkTrainerByCode(String code) async {
+    final name = await SupabaseConfig.client
+        .rpc('link_trainer_by_code', params: {'p_code': code.trim()});
+    await refreshUser();
+    return name as String;
+  }
+
+  /// Entrenador/dueño: genera un código nuevo.
+  Future<void> regenerateTrainerCode() async {
+    await SupabaseConfig.client.rpc('regenerate_my_trainer_code');
+    await refreshUser();
+  }
+
+  /// Nombre del entrenador del socio actual (o null).
+  Future<String?> loadTrainerName() async {
+    final trainerId = _currentUser?.trainerId;
+    if (trainerId == null) return null;
+    try {
+      final row = await SupabaseConfig.client
+          .from('users')
+          .select('name')
+          .eq('id', trainerId)
+          .maybeSingle();
+      return row?['name'] as String?;
+    } catch (_) {
+      return null;
     }
   }
 

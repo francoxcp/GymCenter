@@ -12,6 +12,7 @@ import '../../../config/supabase_config.dart';
 import '../../../shared/services/storage_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../shared/widgets/app_snackbar.dart';
+import '../widgets/trainer_link_card.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -455,6 +456,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   title: AppL10n.of(context).myProgress,
                   onTap: () => context.push('/progress'),
                 ),
+                const SizedBox(height: 10),
+                // Vínculo con el entrenador (socio) o código (entrenador)
+                const TrainerLinkCard(),
                 const SizedBox(height: 10),
                 _MenuItem(
                   icon: Icons.straighten,

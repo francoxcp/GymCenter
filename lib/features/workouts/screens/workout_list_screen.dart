@@ -246,7 +246,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
     final isAdmin = authProvider.isAdmin;
     final currentUser = authProvider.currentUser;
     final hasAssignedWorkout =
-        !isAdmin && currentUser?.assignedWorkoutId != null;
+        !authProvider.isStaff && currentUser?.assignedWorkoutId != null;
     final l10n = AppL10n.of(context);
 
     return Scaffold(
@@ -528,15 +528,21 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                   ),
                   color: AppColors.primary,
                   child: Builder(builder: (context) {
+                    // La base de datos ya filtra qué rutinas puede ver cada
+                    // rol (RLS). Aquí solo se separan en dos secciones:
+                    // - Dueño: arriba la biblioteca del gimnasio (las suyas
+                    //   y las antiguas), abajo las de entrenadores y socios.
+                    // - Entrenador/socio: arriba las del gimnasio y de su
+                    //   entrenador, abajo "Mis rutinas".
+                    final me = currentUser?.id;
+                    bool isOfficial(Workout w) => isAdmin
+                        ? (w.createdBy == null || w.createdBy == me)
+                        : w.createdBy != me;
                     final officialWorkouts = workoutProvider.filteredWorkouts
-                        .where((w) => w.createdBy == null)
+                        .where(isOfficial)
                         .toList();
-                    // Usuarios normales ven solo sus propias rutinas.
-                    // El admin ve todas las rutinas creadas por usuarios.
                     final userWorkouts = workoutProvider.filteredWorkouts
-                        .where((w) =>
-                            w.createdBy != null &&
-                            (isAdmin || w.createdBy == currentUser?.id))
+                        .where((w) => !isOfficial(w))
                         .toList();
 
                     if (officialWorkouts.isEmpty && userWorkouts.isEmpty) {

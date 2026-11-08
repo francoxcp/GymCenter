@@ -7,6 +7,7 @@ import '../../../config/supabase_config.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/user_provider.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
+import '../../profile/widgets/trainer_link_card.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -148,6 +149,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     );
                   },
                 ),
+                // Código para que los socios se vinculen con este entrenador
+                const TrainerLinkCard(),
+                const SizedBox(height: AppSpacing.xl),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

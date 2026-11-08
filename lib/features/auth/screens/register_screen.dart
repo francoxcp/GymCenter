@@ -21,6 +21,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _trainerCodeController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _acceptedTerms = false;
@@ -38,6 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _trainerCodeController.dispose();
     super.dispose();
   }
 
@@ -94,7 +96,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final success = await authProvider.register(email, password, 'Usuario');
+      final success = await authProvider.register(
+        email,
+        password,
+        'Usuario',
+        trainerCode: _trainerCodeController.text,
+      );
 
       if (success && mounted) {
         context.go(authProvider.initialRoute);
@@ -323,6 +330,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     });
                   },
                 ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Código del entrenador (opcional): vincula al socio al registrarse
+              CustomTextField(
+                controller: _trainerCodeController,
+                hintText: AppL10n.of(context).isEn
+                    ? 'Trainer code (optional)'
+                    : 'Código de tu entrenador (opcional)',
+                prefixIcon: Icons.sports,
               ),
 
               const SizedBox(height: 24),

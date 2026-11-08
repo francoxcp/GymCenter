@@ -15,6 +15,8 @@
 -- permisivas). Idempotente: se puede ejecutar más de una vez.
 -- ============================================================================
 
+BEGIN;
+
 -- 1. Columnas y rol nuevo ----------------------------------------------------
 ALTER TABLE public.users
   ADD COLUMN IF NOT EXISTS trainer_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
@@ -336,6 +338,8 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
 $$;
 REVOKE ALL ON FUNCTION public.list_trainers() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.list_trainers() TO authenticated;
+
+COMMIT;
 
 SELECT 'ROLES OK' AS resultado,
        (SELECT count(*) FROM public.users WHERE role = 'admin') AS duenos,

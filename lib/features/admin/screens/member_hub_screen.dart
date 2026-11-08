@@ -8,6 +8,7 @@ import '../../auth/models/user.dart';
 import '../../profile/providers/user_provider.dart';
 import '../models/member_status.dart';
 import '../widgets/members_status_section.dart';
+import '../widgets/membership_card.dart';
 import 'assign_plans_screen.dart';
 
 /// Ficha del socio: todo lo que el entrenador necesita en un solo lugar.
@@ -115,7 +116,8 @@ class MemberHubScreen extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          MembershipCard(memberId: member.id),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Text(member.email,

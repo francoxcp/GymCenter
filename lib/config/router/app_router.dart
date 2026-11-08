@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/social/activity_feed_screen.dart';
+import '../../features/admin/screens/memberships_screen.dart';
 import 'package:provider/provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
@@ -246,6 +247,10 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           GoRoute(
             path: '/admin',
             builder: (context, state) => const AdminDashboardScreen(),
+          ),
+          GoRoute(
+            path: '/admin/memberships',
+            builder: (context, state) => const MembershipsScreen(),
           ),
           GoRoute(
             path: '/admin/activity',

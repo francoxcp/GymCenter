@@ -1,3 +1,40 @@
+/// Estado de la membresía según su fecha de vencimiento.
+enum MembershipStatus { none, active, expiring, expired }
+
+class Membership {
+  Membership._();
+
+  /// Días de aviso antes del vencimiento.
+  static const warnDays = 7;
+
+  static DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  /// Días que faltan (0 = vence hoy, negativo = vencida). Null si no tiene.
+  static int? daysLeft(DateTime? end, {DateTime? today}) {
+    if (end == null) return null;
+    return _day(end).difference(_day(today ?? DateTime.now())).inDays;
+  }
+
+  static MembershipStatus status(DateTime? end, {DateTime? today}) {
+    final d = daysLeft(end, today: today);
+    if (d == null) return MembershipStatus.none;
+    if (d < 0) return MembershipStatus.expired;
+    if (d <= warnDays) return MembershipStatus.expiring;
+    return MembershipStatus.active;
+  }
+
+  /// Texto corto en español: "Vence hoy", "Vence en 3 días", "Vencida hace 2 días".
+  static String label(DateTime? end, {DateTime? today}) {
+    final d = daysLeft(end, today: today);
+    if (d == null) return 'Sin membresía';
+    if (d == 0) return 'Vence hoy';
+    if (d == 1) return 'Vence mañana';
+    if (d > 1) return 'Vence en $d días';
+    if (d == -1) return 'Venció ayer';
+    return 'Vencida hace ${-d} días';
+  }
+}
+
 class User {
   final String id;
   final String email;
@@ -17,6 +54,12 @@ class User {
   // Entrenador asignado (socios) y código para vincular socios (personal)
   final String? trainerId;
   final String? trainerCode;
+  // Membresía (la gestiona el dueño)
+  final String? membershipPlan;
+  final DateTime? membershipStart;
+  final DateTime? membershipEnd;
+
+  MembershipStatus get membershipStatus => Membership.status(membershipEnd);
 
   bool get isAdmin => role == 'admin';
   bool get isTrainer => role == 'trainer';
@@ -40,7 +83,17 @@ class User {
     this.sex,
     this.trainerId,
     this.trainerCode,
+    this.membershipPlan,
+    this.membershipStart,
+    this.membershipEnd,
   });
+
+  static DateTime? _date(dynamic v) =>
+      v is String && v.isNotEmpty ? DateTime.tryParse(v) : null;
+
+  static String? _dateStr(DateTime? d) => d == null
+      ? null
+      : '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   static const _sentinel = Object();
 
@@ -61,6 +114,9 @@ class User {
     Object? sex = _sentinel,
     Object? trainerId = _sentinel,
     Object? trainerCode = _sentinel,
+    Object? membershipPlan = _sentinel,
+    Object? membershipStart = _sentinel,
+    Object? membershipEnd = _sentinel,
   }) {
     return User(
       id: id ?? this.id,
@@ -85,6 +141,15 @@ class User {
           trainerId == _sentinel ? this.trainerId : trainerId as String?,
       trainerCode:
           trainerCode == _sentinel ? this.trainerCode : trainerCode as String?,
+      membershipPlan: membershipPlan == _sentinel
+          ? this.membershipPlan
+          : membershipPlan as String?,
+      membershipStart: membershipStart == _sentinel
+          ? this.membershipStart
+          : membershipStart as DateTime?,
+      membershipEnd: membershipEnd == _sentinel
+          ? this.membershipEnd
+          : membershipEnd as DateTime?,
     );
   }
 
@@ -107,6 +172,9 @@ class User {
       sex: json['sex'] as String?,
       trainerId: json['trainer_id'] as String?,
       trainerCode: json['trainer_code'] as String?,
+      membershipPlan: json['membership_plan'] as String?,
+      membershipStart: _date(json['membership_start']),
+      membershipEnd: _date(json['membership_end']),
     );
   }
 
@@ -128,6 +196,9 @@ class User {
       'sex': sex,
       'trainer_id': trainerId,
       'trainer_code': trainerCode,
+      'membership_plan': membershipPlan,
+      'membership_start': _dateStr(membershipStart),
+      'membership_end': _dateStr(membershipEnd),
     };
   }
 }

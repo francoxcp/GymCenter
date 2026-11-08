@@ -16,6 +16,7 @@ import '../../../shared/widgets/install_app_banner.dart';
 import '../../../shared/services/offline_sync_queue.dart';
 import '../widgets/weekly_goal_card.dart';
 import '../widgets/trainer_comments_card.dart';
+import '../../admin/screens/memberships_screen.dart' show MyMembershipBanner;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -489,6 +490,9 @@ class _UserHomeContentState extends State<_UserHomeContent> {
 
         // Comentarios recientes del entrenador
         const TrainerCommentsCard(),
+
+        // Aviso de membresía por vencer / vencida
+        const MyMembershipBanner(),
 
         const SizedBox(height: 28),
 

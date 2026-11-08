@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'memberships_screen.dart' show MembershipsAlertCard;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -153,6 +154,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     );
                   },
                 ),
+                // Membresías por vencer / vencidas (solo dueño)
+                const MembershipsAlertCard(),
                 // Código para que los socios se vinculen con este entrenador
                 const TrainerLinkCard(),
                 const SizedBox(height: AppSpacing.xl),
@@ -294,6 +297,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ? 'Member activity'
                       : 'Actividad de socios',
                   onTap: () => context.push('/admin/activity'),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                _QuickActionButton(
+                  icon: Icons.card_membership,
+                  iconColor: Colors.purpleAccent,
+                  title: AppL10n.of(context).isEn
+                      ? 'Memberships'
+                      : 'Membresías y vencimientos',
+                  onTap: () => context.push('/admin/memberships'),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 _QuickActionButton(

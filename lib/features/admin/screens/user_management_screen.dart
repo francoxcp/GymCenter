@@ -119,6 +119,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       onTap: () => setState(() => _filterRole = 'all'),
                     ),
                     const SizedBox(width: 8),
+                    if (!context.read<AuthProvider>().isIndependent) ...[
                     _FilterChip(
                       label: AppL10n.of(context).filterAdmins,
                       isSelected: _filterRole == 'admin',
@@ -131,6 +132,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       onTap: () => setState(() => _filterRole = 'trainer'),
                     ),
                     const SizedBox(width: 8),
+                    ],
                     _FilterChip(
                       label: AppL10n.of(context).filterUsers,
                       isSelected: _filterRole == 'user',
@@ -154,6 +156,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         value: userProvider.users.length.toString(),
                       ),
                     ),
+                    if (!context.read<AuthProvider>().isIndependent) ...[
                     const SizedBox(width: 12),
                     Expanded(
                       child: _StatCard(
@@ -165,6 +168,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             .toString(),
                       ),
                     ),
+                    ],
                   ],
                 ),
               ),
@@ -273,6 +277,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final currentUserId = authProvider.currentUser?.id;
     final isOwner = authProvider.isAdmin;
+    // Entrenador independiente: no hay entrenadores ni otros dueños
+    final manageRoles = isOwner && !authProvider.isIndependent;
     final isEn = AppL10n.of(context).isEn;
 
     showModalBottomSheet(
@@ -332,7 +338,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   },
                 ),
               // ── Solo el dueño gestiona roles y entrenadores ──
-              if (isOwner && user.role == 'user')
+              if (manageRoles && user.role == 'user')
                 ListTile(
                   leading: Icon(Icons.sports, color: AppColors.primaryText),
                   title: Text(isEn ? 'Assign trainer' : 'Asignar entrenador'),
@@ -341,7 +347,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     _showAssignTrainerDialog(user);
                   },
                 ),
-              if (isOwner && user.id != currentUserId && user.role != 'admin')
+              if (manageRoles && user.id != currentUserId && user.role != 'admin')
                 ListTile(
                   leading: Icon(Icons.sports_gymnastics,
                       color: Colors.lightBlueAccent),
@@ -353,7 +359,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     _setRole(user, user.role == 'trainer' ? 'user' : 'trainer');
                   },
                 ),
-              if (isOwner && user.id != currentUserId)
+              if (manageRoles && user.id != currentUserId)
                 ListTile(
                   leading: Icon(Icons.admin_panel_settings,
                       color: Colors.orange),

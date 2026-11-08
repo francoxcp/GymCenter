@@ -39,10 +39,10 @@ Deno.serve(async (req) => {
 
   const { data: callerRow } = await admin
     .from('users')
-    .select('role')
+    .select('role, org_id')
     .eq('id', caller.user.id)
     .maybeSingle();
-  if (callerRow?.role !== 'admin') return json({ error: 'not_allowed' }, 403);
+  if (callerRow?.role !== 'admin' || !callerRow.org_id) return json({ error: 'not_allowed' }, 403);
 
   let body: { user_id?: string };
   try {
@@ -53,6 +53,29 @@ Deno.serve(async (req) => {
   const userId = body.user_id ?? '';
   if (!/^[0-9a-f-]{36}$/i.test(userId)) return json({ error: 'invalid_user' }, 400);
   if (userId === caller.user.id) return json({ error: 'cannot_delete_self' }, 400);
+
+  // Multi-cliente: solo usuarios de la misma organización
+  const { data: target } = await admin
+    .from('users')
+    .select('org_id, role')
+    .eq('id', userId)
+    .maybeSingle();
+  if (!target || target.org_id !== callerRow.org_id) return json({ error: 'not_allowed' }, 403);
+  // Nunca borrar a otro dueño ni a un administrador de la plataforma
+  const { data: platform } = await admin
+    .from('platform_admins')
+    .select('user_id')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (target.role === 'admin' || platform) return json({ error: 'not_allowed' }, 403);
+
+  // Cliente suspendido por la plataforma: sin gestión de socios
+  const { data: orgRow } = await admin
+    .from('organizations')
+    .select('status')
+    .eq('id', callerRow.org_id)
+    .maybeSingle();
+  if (orgRow?.status !== 'active') return json({ error: 'organization_suspended' }, 403);
 
   // Los socios de un entrenador eliminado quedan sin entrenador (ON DELETE SET NULL)
   const { error } = await admin.auth.admin.deleteUser(userId);

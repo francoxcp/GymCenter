@@ -54,6 +54,8 @@ class User {
   // Entrenador asignado (socios) y código para vincular socios (personal)
   final String? trainerId;
   final String? trainerCode;
+  /// Organización (gimnasio o entrenador independiente) a la que pertenece.
+  final String? orgId;
   // Membresía (la gestiona el dueño)
   final String? membershipPlan;
   final DateTime? membershipStart;
@@ -83,6 +85,7 @@ class User {
     this.sex,
     this.trainerId,
     this.trainerCode,
+    this.orgId,
     this.membershipPlan,
     this.membershipStart,
     this.membershipEnd,
@@ -141,6 +144,7 @@ class User {
           trainerId == _sentinel ? this.trainerId : trainerId as String?,
       trainerCode:
           trainerCode == _sentinel ? this.trainerCode : trainerCode as String?,
+      orgId: orgId,
       membershipPlan: membershipPlan == _sentinel
           ? this.membershipPlan
           : membershipPlan as String?,
@@ -172,6 +176,7 @@ class User {
       sex: json['sex'] as String?,
       trainerId: json['trainer_id'] as String?,
       trainerCode: json['trainer_code'] as String?,
+      orgId: json['org_id'] as String?,
       membershipPlan: json['membership_plan'] as String?,
       membershipStart: _date(json['membership_start']),
       membershipEnd: _date(json['membership_end']),
@@ -196,6 +201,7 @@ class User {
       'sex': sex,
       'trainer_id': trainerId,
       'trainer_code': trainerCode,
+      'org_id': orgId,
       'membership_plan': membershipPlan,
       'membership_start': _dateStr(membershipStart),
       'membership_end': _dateStr(membershipEnd),

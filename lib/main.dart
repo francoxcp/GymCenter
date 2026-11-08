@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,6 +24,7 @@ import 'shared/services/biometric_service.dart';
 import 'shared/services/notification_service.dart';
 import 'shared/services/offline_sync_queue.dart';
 import 'shared/web/web_bridge.dart';
+import 'features/organization/services/organization_service.dart';
 
 /// Tema y tamaño de texto del dispositivo (se carga antes del primer frame).
 final appearance = AppearanceProvider();
@@ -213,6 +215,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     if (_wasAuthenticated && !_authProvider.isAuthenticated) {
       _workoutProvider.clearData();
     }
+    // Al quedar autenticado: aplicar una invitación pendiente (se abrió el
+    // enlace antes de crear la cuenta o de iniciar sesión).
+    if (!_wasAuthenticated && _authProvider.isAuthenticated) {
+      unawaited(_applyPendingInvite());
+    }
     // Al quedar autenticado, ir a la ruta pendiente de una notificación.
     if (!_wasAuthenticated && _authProvider.isAuthenticated) {
       final pending = _pendingLaunchPath;
@@ -222,6 +229,21 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       }
     }
     _wasAuthenticated = _authProvider.isAuthenticated;
+  }
+
+  Future<void> _applyPendingInvite() async {
+    final token = await OrganizationService.takePendingInvite();
+    if (token == null) return;
+    try {
+      final orgName = await OrganizationService.acceptInvitation(token);
+      await _authProvider.refreshUser();
+      _router.go(_authProvider.initialRoute);
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+          SnackBar(content: Text('Te uniste a $orgName')));
+    } catch (e) {
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+          SnackBar(content: Text(OrganizationService.friendlyError(e))));
+    }
   }
 
   @override

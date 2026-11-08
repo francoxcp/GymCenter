@@ -19,8 +19,13 @@ class ShareSummaryData {
   final int exercises;
   final int newRecords;
   final DateTime date;
+  /// Marca del gimnasio o entrenador (multi-cliente)
+  final String brandName;
+  final String? brandLogo;
 
   const ShareSummaryData({
+    this.brandName = 'Chamos Fitness',
+    this.brandLogo,
     required this.workoutName,
     required this.memberName,
     required this.durationMinutes,
@@ -73,7 +78,7 @@ class _ShareSheetState extends State<_ShareSheet> {
       final png = await _capture();
       if (png == null) return;
       const name = 'chamos-entreno.png';
-      const text = '💪 Entreno completado en Chamos Fitness Center';
+      final text = 'Entreno completado en ${widget.data.brandName}';
       if (kIsWeb) {
         final r = await WebBridge.shareFile(
             fileName: name, bytes: png, mimeType: 'image/png', text: text);
@@ -174,15 +179,20 @@ class SummaryShareCard extends StatelessWidget {
           Row(children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset('assets/icons/app_icon.png',
-                  width: 36, height: 36),
+              child: data.brandLogo != null
+                  ? Image.network(data.brandLogo!, width: 36, height: 36, fit: BoxFit.cover)
+                  : Image.asset('assets/icons/app_icon.png', width: 36, height: 36),
             ),
             const SizedBox(width: 10),
-            const Text('CHAMOS FITNESS',
-                style: TextStyle(
-                    color: _kYellow,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.5)),
+            Expanded(
+              child: Text(data.brandName.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      color: _kYellow,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.5)),
+            ),
           ]),
           const Spacer(),
           const Text('ENTRENO COMPLETADO',

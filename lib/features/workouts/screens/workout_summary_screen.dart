@@ -612,6 +612,15 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                               exercises: widget.workout.exercises.length,
                               newRecords: widget.newRecords,
                               date: DateTime.now(),
+                              brandName: context
+                                      .read<AuthProvider>()
+                                      .organization
+                                      ?.name ??
+                                  'Chamos Fitness',
+                              brandLogo: context
+                                  .read<AuthProvider>()
+                                  .organization
+                                  ?.logoUrl,
                             ),
                           );
                         },

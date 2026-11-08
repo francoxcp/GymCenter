@@ -176,7 +176,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'CHAMOS FITNESS CENTER',
+                            (context.watch<AuthProvider>().organization?.name ??
+                                    'Chamos Fitness Center')
+                                .toUpperCase(),
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,

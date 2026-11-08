@@ -21,6 +21,9 @@ import '../../../shared/widgets/video_player_widget.dart';
 import 'workout_summary_screen.dart';
 import '../../../features/progress/providers/body_measurement_provider.dart';
 import '../../../shared/services/unsaved_changes_guard.dart';
+import '../../../shared/services/offline_cache_service.dart';
+import '../../../shared/services/offline_sync_queue.dart';
+import '../services/progression_engine.dart';
 
 class TodayWorkoutScreen extends StatefulWidget {
   /// Si se pasa, se ejecuta esta rutina en lugar de la asignada (modo extra).
@@ -66,6 +69,12 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
   // PR histórico por ejercicio (max weight ever logged)
   Map<int, double> _exercisePRs = {};
+  // Repeticiones REALES por serie: [exerciseIndex][setIndex] → reps
+  final Map<int, Map<int, int>> _setReps = {};
+  // Historial completo por ejercicio (para la progresión inteligente)
+  Map<int, List<SetLog>> _historyByExercise = {};
+  // Sugerencias ya aplicadas en esta sesión (oculta la tarjeta)
+  final Set<int> _appliedSuggestions = {};
   // Ejercicios que superaron su PR en esta sesión
   final Set<int> _newPRsThisSession = {};
   // Pre-caché de videos: solo se lanza una vez por sesión
@@ -858,22 +867,33 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     if (_hasLoadedWeights) return;
     _hasLoadedWeights = true;
     try {
-      final supabase = Supabase.instance.client;
-      final response = await supabase
-          .from('exercise_set_logs')
-          .select('exercise_index, set_index, weight_kg')
-          .eq('user_id', userId)
-          .eq('workout_id', workoutId)
-          .order('logged_at', ascending: false);
+      List<dynamic> logs;
+      try {
+        final supabase = Supabase.instance.client;
+        logs = await supabase
+            .from('exercise_set_logs')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('workout_id', workoutId)
+            .order('logged_at', ascending: false)
+            .limit(600);
+        unawaited(OfflineCacheService().saveSetLogs(workoutId, logs));
+      } catch (e) {
+        // Sin conexión: usar el historial guardado en el dispositivo
+        logs = await OfflineCacheService().loadSetLogs(workoutId) ?? [];
+      }
 
-      final logs = response as List;
       final Map<int, Map<int, double?>> weights = {};
       final Map<int, double> prs = {};
+      final Map<int, List<SetLog>> history = {};
       // La respuesta está ordenada desc ? la primera entrada de cada combo es la más reciente
       for (final log in logs) {
         final exIdx = log['exercise_index'] as int;
         final setIdx = log['set_index'] as int;
         final weightKg = (log['weight_kg'] as num?)?.toDouble();
+        history
+            .putIfAbsent(exIdx, () => [])
+            .add(SetLog.fromJson((log as Map).cast<String, dynamic>()));
         if (!(weights.containsKey(exIdx) &&
             weights[exIdx]!.containsKey(setIdx))) {
           weights[exIdx] ??= {};
@@ -896,6 +916,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           _setWeights = weights;
           _lastSessionWeights = lastSession;
           _exercisePRs = prs;
+          _historyByExercise = history;
         });
       }
     } catch (e) {
@@ -910,7 +931,6 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   }) async {
     try {
       if (_setWeights.isEmpty) return;
-      final supabase = Supabase.instance.client;
       final logs = <Map<String, dynamic>>[];
       final now = DateTime.now().toIso8601String();
       for (final exEntry in _setWeights.entries) {
@@ -919,22 +939,35 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             exIdx < workout.exercises.length ? workout.exercises[exIdx] : null;
         for (final setEntry in exEntry.value.entries) {
           if (setEntry.value != null) {
+            final setIdx = setEntry.key;
+            final completed = exIdx < _completedSets.length &&
+                setIdx < _completedSets[exIdx].length &&
+                _completedSets[exIdx][setIdx];
             logs.add({
               'user_id': userId,
               'workout_id': workoutId,
               'exercise_index': exIdx,
-              'set_index': setEntry.key,
+              'set_index': setIdx,
               'exercise_name': exercise?.name ?? '',
               'weight_kg': setEntry.value,
-              'reps': exercise?.reps,
+              // Reps reales (si el usuario las ajustó) o las planificadas
+              'reps': _setReps[exIdx]?[setIdx] ?? exercise?.reps,
+              'target_reps': exercise?.reps,
+              'completed': completed,
               'logged_at': now,
             });
           }
         }
       }
       if (logs.isNotEmpty) {
-        await supabase.from('exercise_set_logs').insert(logs);
-        debugPrint('?? Pesos guardados: ${logs.length} registros');
+        // Se encola automáticamente si no hay conexión
+        await OfflineSyncQueue.instance.insert('exercise_set_logs', logs);
+        // Mantener el historial local al día para las sugerencias offline
+        final cached =
+            await OfflineCacheService().loadSetLogs(workoutId) ?? <dynamic>[];
+        unawaited(OfflineCacheService()
+            .saveSetLogs(workoutId, [...logs, ...cached].take(600).toList()));
+        debugPrint('Pesos guardados: ${logs.length} registros');
       }
     } catch (e) {
       debugPrint('Error guardando pesos: $e');
@@ -974,6 +1007,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         : '';
 
     final controller = TextEditingController(text: suggestionText);
+    // Repeticiones reales de esta serie (por defecto, las planificadas)
+    var repsValue = _setReps[exerciseIndex]?[setIndex] ?? exercise.reps;
 
     void saveWeight(String rawText, void Function() closeSheet) {
       final inputLbs = double.tryParse(rawText.replaceAll(',', '.'));
@@ -990,6 +1025,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       setState(() {
         _setWeights[exerciseIndex] ??= {};
         _setWeights[exerciseIndex]![setIndex] = weight;
+        _setReps[exerciseIndex] ??= {};
+        _setReps[exerciseIndex]![setIndex] = repsValue;
         if (isNewPR) {
           _exercisePRs[exerciseIndex] = weight;
           _newPRsThisSession.add(exerciseIndex);
@@ -1149,7 +1186,62 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
+
+                // Repeticiones realizadas (para la progresión inteligente)
+                StatefulBuilder(
+                  builder: (ctx2, setSheetState) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Row(
+                      children: [
+                        Text(
+                          AppL10n.of(context).isEn
+                              ? 'Reps done'
+                              : 'Reps hechas',
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: repsValue > 0
+                              ? () => setSheetState(() => repsValue--)
+                              : null,
+                          icon: const Icon(Icons.remove_circle_outline),
+                          color: AppColors.textSecondary,
+                        ),
+                        SizedBox(
+                          width: 44,
+                          child: Text(
+                            '$repsValue',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: repsValue < exercise.reps
+                                  ? Colors.orangeAccent
+                                  : Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => setSheetState(() => repsValue++),
+                          icon: const Icon(Icons.add_circle_outline),
+                          color: AppColors.primary,
+                        ),
+                        Text(
+                          '/ ${exercise.reps}',
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
 
                 // Botón Listo
                 Padding(
@@ -1183,6 +1275,125 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         );
       },
     ).whenComplete(() => controller.dispose());
+  }
+
+  // -- Progresión inteligente ------------------------------------------------
+
+  Widget _buildProgressionCard(Exercise exercise, int exerciseIndex) {
+    if (_appliedSuggestions.contains(exerciseIndex)) {
+      return const SizedBox.shrink();
+    }
+    final history = _historyByExercise[exerciseIndex];
+    if (history == null || history.isEmpty) return const SizedBox.shrink();
+    final suggestion = ProgressionEngine.suggest(
+      logs: history,
+      targetSets: exercise.sets,
+      targetReps: exercise.reps,
+      lowerBody: ProgressionEngine.isLowerBody(
+          exercise.muscleGroup, exercise.name),
+    );
+    if (suggestion == null) return const SizedBox.shrink();
+
+    final isEn = AppL10n.of(context).isEn;
+    final next = _fmtWeight(suggestion.suggestedWeightKg);
+    final last = _fmtWeight(suggestion.lastWeightKg);
+    final done =
+        '${suggestion.lastCompletedSets}/${suggestion.lastTargetSets}';
+
+    late final IconData icon;
+    late final Color color;
+    late final String title;
+    late final String detail;
+    switch (suggestion.action) {
+      case ProgressionAction.increase:
+        icon = Icons.trending_up;
+        color = AppColors.success;
+        title = isEn ? 'Go up to $next today' : 'Hoy sube a $next';
+        detail = isEn
+            ? 'Last time you completed every set of ${suggestion.targetReps} reps with $last.'
+            : 'La última vez completaste todas las series de ${suggestion.targetReps} reps con $last.';
+        break;
+      case ProgressionAction.maintain:
+        icon = Icons.trending_flat;
+        color = AppColors.primary;
+        title = isEn ? 'Stay at $last' : 'Mantén $last';
+        detail = isEn
+            ? 'Last time $done sets reached ${suggestion.targetReps} reps. Complete them all to move up.'
+            : 'La última vez lograste $done series de ${suggestion.targetReps} reps. Complétalas todas para subir.';
+        break;
+      case ProgressionAction.deload:
+        icon = Icons.trending_down;
+        color = Colors.orangeAccent;
+        title = isEn ? 'Deload: use $next' : 'Descarga: usa $next';
+        detail = isEn
+            ? 'Two sessions in a row without completing $last. Go lighter today, focus on form and build back up.'
+            : 'Dos sesiones seguidas sin completar $last. Baja hoy, cuida la técnica y vuelve a subir.';
+        break;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 26),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  detail,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (suggestion.action != ProgressionAction.maintain)
+            TextButton(
+              onPressed: () => _applySuggestion(
+                  exerciseIndex, exercise.sets, suggestion.suggestedWeightKg),
+              child: Text(
+                isEn ? 'Apply' : 'Aplicar',
+                style: TextStyle(color: color, fontWeight: FontWeight.bold),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Pone el peso sugerido en todas las series aún no completadas.
+  void _applySuggestion(int exerciseIndex, int sets, double weightKg) {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _setWeights[exerciseIndex] ??= {};
+      for (var i = 0; i < sets; i++) {
+        final done = exerciseIndex < _completedSets.length &&
+            i < _completedSets[exerciseIndex].length &&
+            _completedSets[exerciseIndex][i];
+        if (!done) _setWeights[exerciseIndex]![i] = weightKg;
+      }
+      _appliedSuggestions.add(exerciseIndex);
+    });
   }
 
   /// Bottom sheet con historial de las Últimas sesiones del ejercicio.
@@ -1938,6 +2149,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             const SizedBox(height: 24),
           ],
 
+          // -- Progresión inteligente: peso sugerido para hoy --
+          _buildProgressionCard(exercise, exerciseIndex),
+
           // -- Barra de referencia (PR + sugerencia admin + historial) --
           _ExerciseReferenceBar(
             onHistoryTap: () =>
@@ -2027,7 +2241,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         const Spacer(),
                         _WeightChip(
                           weight: _setWeights[exerciseIndex]?[setIndex],
-                          reps: exercise.reps,
+                          reps: _setReps[exerciseIndex]?[setIndex] ??
+                              exercise.reps,
+                          belowTarget: (_setReps[exerciseIndex]?[setIndex] ??
+                                  exercise.reps) <
+                              exercise.reps,
                           isNewPR: _newPRsThisSession.contains(exerciseIndex) &&
                               _setWeights[exerciseIndex]?[setIndex] ==
                                   _exercisePRs[exerciseIndex],
@@ -2198,6 +2416,7 @@ class _WeightChip extends StatelessWidget {
   final double? weight;
   final int reps;
   final bool isNewPR;
+  final bool belowTarget;
   final VoidCallback onTap;
 
   const _WeightChip({
@@ -2205,6 +2424,7 @@ class _WeightChip extends StatelessWidget {
     required this.reps,
     required this.onTap,
     this.isNewPR = false,
+    this.belowTarget = false,
   });
 
   @override
@@ -2223,9 +2443,10 @@ class _WeightChip extends StatelessWidget {
       children: [
         Text(
           '$reps reps',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
-            color: AppColors.textSecondary,
+            color: belowTarget ? Colors.orangeAccent : AppColors.textSecondary,
+            fontWeight: belowTarget ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
         const SizedBox(width: 8),

@@ -8,6 +8,7 @@ import '../../../config/supabase_config.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/services/offline_cache_service.dart';
 import '../../../shared/services/web_push_service.dart';
+import '../../../shared/services/offline_sync_queue.dart';
 
 class AuthProvider extends ChangeNotifier {
   bool _isAuthenticated = false;
@@ -184,7 +185,21 @@ class AuthProvider extends ChangeNotifier {
       _isAuthenticated = true;
       _isInitializing = false;
       notifyListeners();
+      // Copia local para poder abrir la app sin conexión
+      unawaited(OfflineCacheService().saveUser(response));
+      unawaited(OfflineSyncQueue.instance.flush());
     } catch (e) {
+      // Sin conexión: usar el perfil guardado si hay una sesión válida
+      if (OfflineSyncQueue.isNetworkError(e)) {
+        final cached = await OfflineCacheService().loadUser(userId);
+        if (cached != null) {
+          _currentUser = User.fromJson(cached);
+          _isAuthenticated = true;
+          _isInitializing = false;
+          notifyListeners();
+          return;
+        }
+      }
       _isInitializing = false;
       debugPrint('❌ ERROR loading user: $e');
       notifyListeners();

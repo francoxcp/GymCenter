@@ -20,6 +20,7 @@ import 'features/workouts/providers/workout_session_provider.dart';
 import 'features/workouts/providers/workout_progress_provider.dart';
 import 'shared/services/biometric_service.dart';
 import 'shared/services/notification_service.dart';
+import 'shared/services/offline_sync_queue.dart';
 import 'shared/web/web_bridge.dart';
 
 void main() async {
@@ -48,6 +49,8 @@ void main() async {
   const sentryDsn = String.fromEnvironment('SENTRY_DSN');
 
   Future<void> bootstrap() async {
+    // Cola de cambios hechos sin conexión (series, sesiones, progreso)
+    await OfflineSyncQueue.instance.init();
     runApp(const MyApp());
     // Inicializar notificaciones DESPUÉS de runApp — no bloquea el arranque
     NotificationService().initialize();
@@ -215,6 +218,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: _authProvider),
+        ChangeNotifierProvider.value(value: OfflineSyncQueue.instance),
         ChangeNotifierProvider.value(value: _workoutProvider),
         ChangeNotifierProvider.value(value: _userProvider),
         ChangeNotifierProvider(create: (_) => BodyMeasurementProvider()),

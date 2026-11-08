@@ -13,6 +13,7 @@ import '../../../shared/widgets/animated_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/coming_soon_workout_card.dart';
 import '../../../shared/widgets/install_app_banner.dart';
+import '../../../shared/services/offline_sync_queue.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -202,10 +203,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Web: invitar a instalar la app en la pantalla de inicio
                 const InstallAppBanner(),
 
-                // Banner modo offline
-                Consumer<WorkoutProvider>(
-                  builder: (context, wp, _) {
-                    if (!wp.isOffline) return const SizedBox.shrink();
+                // Banner modo offline / cambios pendientes de sincronizar
+                Consumer2<WorkoutProvider, OfflineSyncQueue>(
+                  builder: (context, wp, queue, _) {
+                    final pending = queue.pendingCount;
+                    if (!wp.isOffline && pending == 0) {
+                      return const SizedBox.shrink();
+                    }
+                    final isEn = AppL10n.of(context).isEn;
+                    final pendingText = pending == 0
+                        ? ''
+                        : isEn
+                            ? ' · $pending change(s) will sync when you are back online'
+                            : ' · $pending cambio(s) se enviarán al recuperar la conexión';
                     return Container(
                       width: double.infinity,
                       margin: const EdgeInsets.only(bottom: 12),
@@ -224,7 +234,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              AppL10n.of(context).offlineBanner,
+                              (wp.isOffline
+                                      ? AppL10n.of(context).offlineBanner
+                                      : (isEn
+                                          ? 'Syncing your workout…'
+                                          : 'Sincronizando tu entrenamiento…')) +
+                                  pendingText,
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: Colors.orange,

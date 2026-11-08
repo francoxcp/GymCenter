@@ -1,5 +1,6 @@
 ﻿import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
@@ -273,6 +274,17 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+              ListTile(
+                leading: const Icon(Icons.insights, color: AppColors.primary),
+                title: Text(AppL10n.of(context).isEn
+                    ? 'Training control'
+                    : 'Control de entrenamiento'),
+                onTap: () {
+                  Navigator.pop(context);
+                  this.context.push(
+                      '/admin/user-progress/${user.id}?name=${Uri.encodeQueryComponent(user.name)}');
+                },
+              ),
               ListTile(
                 leading: const Icon(Icons.edit, color: Colors.blue),
                 title: Text(AppL10n.of(context).editUserLabel),

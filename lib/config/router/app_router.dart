@@ -17,6 +17,7 @@ import '../../features/profile/screens/personal_records_screen.dart';
 import '../../features/progress/screens/progress_screen.dart';
 import '../../features/progress/screens/body_measurements_screen.dart';
 import '../../features/progress/screens/achievements_screen.dart';
+import '../../features/progress/screens/training_control_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/settings/screens/change_password_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
@@ -41,6 +42,7 @@ int _locationToIndex(String location) {
   }
 
   if (location.startsWith('/progress') ||
+      location.startsWith('/training-control') ||
       location.startsWith('/body-measurements') ||
       location.startsWith('/achievements') ||
       location.startsWith('/settings') ||
@@ -214,6 +216,10 @@ GoRouter createAppRouter(AuthProvider authProvider) {
             path: '/achievements',
             builder: (context, state) => const AchievementsScreen(),
           ),
+          GoRoute(
+            path: '/training-control',
+            builder: (context, state) => const TrainingControlScreen(),
+          ),
 
           // Settings routes
           GoRoute(
@@ -247,6 +253,13 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           GoRoute(
             path: '/admin/assignments',
             builder: (context, state) => const UserAssignmentsListScreen(),
+          ),
+          GoRoute(
+            path: '/admin/user-progress/:id',
+            builder: (context, state) => TrainingControlScreen(
+              userId: state.pathParameters['id'],
+              userName: state.uri.queryParameters['name'],
+            ),
           ),
           GoRoute(
             path: '/admin/create-workout',

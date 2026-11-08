@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:flutter/material.dart';
 import '../models/workout.dart';
 import '../models/exercise.dart';
 import '../../../config/supabase_config.dart';
@@ -166,6 +167,9 @@ class WorkoutProvider extends ChangeNotifier {
       }).toList();
 
       await OfflineCacheService().saveWorkouts(response as List);
+      // Descargar en segundo plano los ejercicios de todas las rutinas para
+      // poder entrenar sin conexión.
+      unawaited(_prefetchExercises());
 
       _lastFetch = DateTime.now();
       _isOffline = false;
@@ -206,18 +210,32 @@ class WorkoutProvider extends ChangeNotifier {
     if (_workouts[idx].exercises.isNotEmpty) return;
 
     try {
-      final response = await SupabaseConfig.client
-          .from('exercises')
-          .select('*')
-          .eq('workout_id', workoutId)
-          .order('order_index', ascending: true);
+      List<dynamic> rows;
+      try {
+        rows = await SupabaseConfig.client
+            .from('exercises')
+            .select('*')
+            .eq('workout_id', workoutId)
+            .order('order_index', ascending: true);
+        unawaited(OfflineCacheService().saveExercises({workoutId: rows}));
+      } catch (e) {
+        // Sin conexión: usar la copia guardada en el dispositivo
+        final cached = await OfflineCacheService().loadExercises(workoutId);
+        if (cached == null) rethrow;
+        rows = cached;
+        _isOffline = true;
+      }
 
-      final exercises = (response as List)
-          .map((e) => Exercise.fromJson(e as Map<String, dynamic>))
+      final exercises = rows
+          .map((e) => Exercise.fromJson((e as Map).cast<String, dynamic>()))
           .toList();
+      if (exercises.isEmpty) return;
+      // La lista pudo cambiar mientras se esperaba la respuesta
+      final idxNow = _workouts.indexWhere((w) => w.id == workoutId);
+      if (idxNow == -1) return;
 
-      final w = _workouts[idx];
-      _workouts[idx] = Workout(
+      final w = _workouts[idxNow];
+      _workouts[idxNow] = Workout(
         id: w.id,
         name: w.name,
         duration: w.duration,
@@ -232,6 +250,29 @@ class WorkoutProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('Error loading exercises for workout $workoutId: $e');
+    }
+  }
+
+  /// Descarga y guarda en caché los ejercicios de todas las rutinas
+  /// visibles, en una sola consulta.
+  Future<void> _prefetchExercises() async {
+    final ids = _workouts.map((w) => w.id).toList();
+    if (ids.isEmpty) return;
+    try {
+      final rows = await SupabaseConfig.client
+          .from('exercises')
+          .select('*')
+          .inFilter('workout_id', ids)
+          .order('order_index', ascending: true);
+      final byWorkout = <String, List<dynamic>>{};
+      for (final r in rows as List) {
+        final wid = (r as Map)['workout_id']?.toString();
+        if (wid == null) continue;
+        byWorkout.putIfAbsent(wid, () => []).add(r);
+      }
+      await OfflineCacheService().saveExercises(byWorkout);
+    } catch (e) {
+      debugPrint('Prefetch de ejercicios falló (se reintentará): $e');
     }
   }
 

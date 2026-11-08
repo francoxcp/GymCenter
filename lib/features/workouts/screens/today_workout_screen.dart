@@ -19,6 +19,7 @@ import '../models/workout_progress.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/video_player_widget.dart';
 import 'workout_summary_screen.dart';
+import '../services/workout_completion.dart';
 import '../../../features/progress/providers/body_measurement_provider.dart';
 import '../../../shared/services/unsaved_changes_guard.dart';
 import '../../../shared/services/offline_cache_service.dart';
@@ -641,10 +642,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         ),
       );
       if (confirmed == true && mounted) {
-        // Mostrar resumen con los datos parciales ya completados.
-        // _showWorkoutSummary guarda los pesos y la sesión en BD.
+        // Solo se cierra si está todo registrado; si no, se muestra qué falta.
         if (partialWorkout != null) {
-          _showWorkoutSummary(partialWorkout);
+          await _tryFinish(partialWorkout, fromExitMenu: true);
         } else {
           // Fallback: sin workout cargado, salir directamente
           final progressProvider = context.read<WorkoutProgressProvider>();
@@ -713,10 +713,160 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         curve: Curves.easeOutCubic,
       );
     } else {
-      debugPrint('Último ejercicio completado, mostrando resumen');
-      _showWorkoutSummary(workout);
+      _tryFinish(workout);
     }
   }
+
+  List<PendingExercise> _pendingFor(Workout workout) =>
+      WorkoutCompletion.pending(
+        names: workout.exercises.map((e) => e.name).toList(),
+        completed: _completedSets,
+        weights: _setWeights,
+        weightRequired:
+            workout.exercises.map((e) => !_isCardioExercise(e)).toList(),
+      );
+
+  /// Solo deja terminar con todas las series hechas y sus pesos anotados.
+  Future<void> _tryFinish(Workout workout, {bool fromExitMenu = false}) async {
+    final pending = _pendingFor(workout);
+    if (pending.isEmpty) {
+      _showWorkoutSummary(workout);
+      return;
+    }
+    HapticFeedback.mediumImpact();
+    final en = AppL10n.of(context).isEn;
+    final total = WorkoutCompletion.totalMissing(pending);
+    final plural = total == 1 ? '' : 's';
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => SafeArea(
+        child: ConstrainedBox(
+          constraints:
+              BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.75),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Semantics(
+                  header: true,
+                  child: Row(children: [
+                    const Icon(Icons.playlist_add_check,
+                        color: Colors.orangeAccent, size: 28),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        en
+                            ? '$total set$plural left to log'
+                            : 'Te falta${total == 1 ? '' : 'n'} $total serie$plural por registrar',
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ]),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  en
+                      ? 'To finish, mark every set as done and log the weight you used.'
+                      : 'Para terminar, marca cada serie como hecha y anota el peso que usaste.',
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      for (final p in pending)
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          minVerticalPadding: 10,
+                          title: Text(p.name,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600)),
+                          subtitle: Text(
+                            [
+                              if (p.unfinishedSets.isNotEmpty)
+                                '${en ? 'Not done' : 'Sin hacer'}: ${p.unfinishedSets.join(', ')}',
+                              if (p.setsWithoutWeight.isNotEmpty)
+                                '${en ? 'No weight' : 'Sin peso'}: ${p.setsWithoutWeight.join(', ')}',
+                            ].join(' · '),
+                            style: const TextStyle(color: Colors.orangeAccent),
+                          ),
+                          trailing: TextButton(
+                            onPressed: () =>
+                                Navigator.pop(ctx, 'go:${p.index}'),
+                            child: Text(en ? 'Go' : 'Ir'),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        Navigator.pop(ctx, 'go:${pending.first.index}'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.black,
+                      minimumSize: const Size.fromHeight(52),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text(
+                      en ? 'Complete pending sets' : 'Completar lo pendiente',
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                if (fromExitMenu) ...[
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(ctx, 'save_later'),
+                      style: TextButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48)),
+                      child: Text(en
+                          ? 'Save and continue later'
+                          : 'Guardar y continuar después'),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (!mounted) return;
+    if (choice == 'save_later') {
+      await _handleExitChoice('save_later');
+      return;
+    }
+    if (fromExitMenu) _resumeWorkout();
+    if (choice != null && choice.startsWith('go:')) {
+      final idx = int.tryParse(choice.substring(3)) ?? 0;
+      setState(() => _currentExerciseIndex = idx);
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(idx,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic);
+      }
+    }
+  }
+
 
   void _previousExercise() {
     if (_currentExerciseIndex > 0) {
@@ -1022,7 +1172,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     // Repeticiones reales de esta serie (por defecto, las planificadas)
     var repsValue = _setReps[exerciseIndex]?[setIndex] ?? exercise.reps;
 
-    void saveWeight(String rawText, void Function() closeSheet) {
+    void saveWeight(String rawText, void Function() closeSheet,
+        {bool bodyweight = false}) {
+      if (bodyweight) rawText = '';
       final inputLbs = double.tryParse(rawText.replaceAll(',', '.'));
       if (rawText.trim().isNotEmpty && inputLbs == null) {
         AppSnackbar.error(context, AppL10n.of(context).enterValidNumber);
@@ -1032,8 +1184,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         AppSnackbar.error(context, AppL10n.of(context).weightMustBePositive);
         return;
       }
-      final weight = inputLbs != null ? _toKg(inputLbs) : null;
-      final isNewPR = weight != null && (pr == null || weight > pr);
+      // 0 = peso corporal (cuenta como registrado, no como récord)
+      final double? weight =
+          bodyweight ? 0.0 : (inputLbs != null ? _toKg(inputLbs) : null);
+      final isNewPR =
+          weight != null && weight > 0 && (pr == null || weight > pr);
       setState(() {
         _setWeights[exerciseIndex] ??= {};
         _setWeights[exerciseIndex]![setIndex] = weight;
@@ -1254,6 +1409,32 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // Peso corporal (flexiones, dominadas, abdominales…)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => saveWeight('', () => Navigator.pop(ctx),
+                          bodyweight: true),
+                      icon: const Icon(Icons.accessibility_new, size: 20),
+                      label: Text(AppL10n.of(context).isEn
+                          ? 'Bodyweight (no extra load)'
+                          : 'Peso corporal (sin carga)'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textSecondary,
+                        minimumSize: const Size.fromHeight(48),
+                        side: BorderSide(
+                            color: AppColors.textSecondary
+                                .withValues(alpha: 0.4)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
 
                 // Botón Listo
                 Padding(
@@ -1657,6 +1838,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         caloriesBurned: _summaryCaloriesBurned,
         totalVolume: _summaryTotalVolume,
         completedSets: _completedSets,
+        newRecords: _newPRsThisSession.length,
       );
     }
 
@@ -2295,6 +2477,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                           isNewPR: _newPRsThisSession.contains(exerciseIndex) &&
                               _setWeights[exerciseIndex]?[setIndex] ==
                                   _exercisePRs[exerciseIndex],
+                          missing: isCompleted &&
+                              !_isCardioExercise(exercise) &&
+                              _setWeights[exerciseIndex]?[setIndex] == null,
                           onTap: () => _showWeightDialog(
                               exerciseIndex, setIndex, exercise),
                         ),
@@ -2463,6 +2648,7 @@ class _WeightChip extends StatelessWidget {
   final int reps;
   final bool isNewPR;
   final bool belowTarget;
+  final bool missing;
   final VoidCallback onTap;
 
   const _WeightChip({
@@ -2471,6 +2657,7 @@ class _WeightChip extends StatelessWidget {
     required this.onTap,
     this.isNewPR = false,
     this.belowTarget = false,
+    this.missing = false,
   });
 
   @override
@@ -2478,7 +2665,9 @@ class _WeightChip extends StatelessWidget {
     final hasWeight = weight != null;
     // weight está en kg internamente; mostrar en lbs
     final lbs = hasWeight ? weight! * 2.20462 : null;
-    final weightLabel = lbs != null
+    final weightLabel = weight == 0
+        ? 'corporal'
+        : lbs != null
         ? (lbs == lbs.roundToDouble()
             ? '${lbs.toInt()} lbs'
             : '${lbs.toStringAsFixed(1)} lbs')
@@ -2513,7 +2702,9 @@ class _WeightChip extends StatelessWidget {
                     ? Colors.amber
                     : hasWeight
                         ? AppColors.primary
-                        : AppColors.textSecondary.withValues(alpha: 0.4),
+                        : missing
+                            ? Colors.orangeAccent
+                            : AppColors.textSecondary.withValues(alpha: 0.4),
               ),
             ),
             child: Row(
@@ -2532,7 +2723,9 @@ class _WeightChip extends StatelessWidget {
                         ? Colors.amber
                         : hasWeight
                             ? AppColors.primary
-                            : AppColors.textSecondary,
+                            : missing
+                                ? Colors.orangeAccent
+                                : AppColors.textSecondary,
                   ),
                 ),
               ],

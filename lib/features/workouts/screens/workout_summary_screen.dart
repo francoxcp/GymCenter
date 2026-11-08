@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../core/utils/unit_converter.dart';
 import '../models/workout.dart';
+import '../widgets/share_summary_card.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/user_provider.dart';
 import '../providers/workout_provider.dart';
@@ -22,6 +23,7 @@ class WorkoutSummaryScreen extends StatefulWidget {
   final int caloriesBurned;
   final double totalVolume;
   final List<List<bool>>? completedSets;
+  final int newRecords;
 
   const WorkoutSummaryScreen({
     super.key,
@@ -30,6 +32,7 @@ class WorkoutSummaryScreen extends StatefulWidget {
     required this.caloriesBurned,
     required this.totalVolume,
     this.completedSets,
+    this.newRecords = 0,
   });
 
   @override
@@ -582,6 +585,50 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                       ),
                       const SizedBox(height: 32),
                     ],
+
+                    // Compartir resumen (historia de Instagram / WhatsApp)
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          final sets = widget.completedSets
+                                  ?.expand((e) => e)
+                                  .where((d) => d)
+                                  .length ??
+                              0;
+                          showShareSummarySheet(
+                            context,
+                            ShareSummaryData(
+                              workoutName: widget.workout.name,
+                              memberName: context
+                                      .read<AuthProvider>()
+                                      .currentUser
+                                      ?.name ??
+                                  '',
+                              durationMinutes: widget.durationMinutes,
+                              volumeKg: widget.totalVolume,
+                              setsDone: sets,
+                              exercises: widget.workout.exercises.length,
+                              newRecords: widget.newRecords,
+                              date: DateTime.now(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.ios_share),
+                        label: Text(l10n.isEn
+                            ? 'Share my workout'
+                            : 'Compartir mi entreno'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(color: AppColors.primary),
+                          minimumSize: const Size.fromHeight(52),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
 
                     // Botón Volver al Inicio
                     SizedBox(

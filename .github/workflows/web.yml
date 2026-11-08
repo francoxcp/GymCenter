@@ -26,9 +26,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Versión fijada a la del pubspec.lock del proyecto (Flutter 3.35).
+      # Subirla requiere actualizar dependencias (p. ej. intl) a la vez.
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.35.x
           cache: true
 
       - name: Versión de Flutter

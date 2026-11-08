@@ -1,4 +1,5 @@
 ﻿import 'dart:io';
+import '../widgets/exercise_library.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
@@ -285,9 +286,12 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                   itemBuilder: (context, index) {
                     final exercise = _exercises[index];
                     return _ExerciseCard(
-                      key: ValueKey(index),
+                      key: ObjectKey(exercise),
                       exercise: exercise,
                       dragIndex: index,
+                      onTap: () => _quickEdit(index),
+                      onDuplicate: () => setState(() => _exercises.insert(
+                          index + 1, duplicateExercise(exercise))),
                       onEdit: () => _editExercise(index),
                       onDelete: () => _removeExercise(index),
                     );
@@ -298,8 +302,21 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
     );
   }
 
-  void _addExercise() {
-    _showExerciseDialog();
+  Future<void> _addExercise() async {
+    final result = await showExerciseLibrary(context);
+    if (!mounted || result == null) return;
+    if (result.createCustom) {
+      _showExerciseDialog();
+    } else if (result.exercises.isNotEmpty) {
+      setState(() => _exercises.addAll(result.exercises));
+    }
+  }
+
+  Future<void> _quickEdit(int index) async {
+    final updated = await showQuickExerciseEditor(context, _exercises[index]);
+    if (updated != null && mounted) {
+      setState(() => _exercises[index] = updated);
+    }
   }
 
   void _editExercise(int index) {
@@ -433,11 +450,15 @@ class _ExerciseCard extends StatelessWidget {
   final int dragIndex;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback onTap;
+  final VoidCallback onDuplicate;
 
   const _ExerciseCard({
     super.key,
     required this.exercise,
     required this.dragIndex,
+    required this.onTap,
+    required this.onDuplicate,
     required this.onEdit,
     required this.onDelete,
   });
@@ -465,6 +486,8 @@ class _ExerciseCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
+              child: InkWell(
+              onTap: onTap,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -478,18 +501,28 @@ class _ExerciseCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${exercise.sets} series × ${exercise.reps} reps × ${exercise.restSeconds}s',
+                    '${exercise.sets} series · ${exercise.reps} reps · ${exercise.restSeconds}s',
                     style: const TextStyle(
                         color: AppColors.textSecondary, fontSize: 12),
                   ),
                 ],
               ),
+              ),
             ),
-            ReorderableDelayedDragStartListener(
+            IconButton(
+              tooltip: 'Duplicar',
+              icon: const Icon(Icons.copy_all_outlined,
+                  color: Colors.white54, size: 20),
+              onPressed: onDuplicate,
+            ),
+            ReorderableDragStartListener(
               index: dragIndex,
-              child: const Padding(
-                padding: EdgeInsets.all(8),
-                child: Icon(Icons.drag_handle, color: Colors.white54),
+              child: Semantics(
+                label: 'Arrastrar para reordenar',
+                child: const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Icon(Icons.drag_indicator, color: Colors.white70),
+                ),
               ),
             ),
             IconButton(

@@ -1,4 +1,5 @@
 ﻿import 'dart:io';
+import '../widgets/exercise_library.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
@@ -178,7 +179,24 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
     super.dispose();
   }
 
-  void _addExercise() {
+  Future<void> _addExercise() async {
+    final result = await showExerciseLibrary(context);
+    if (!mounted || result == null) return;
+    if (result.createCustom) {
+      _addCustomExercise();
+    } else if (result.exercises.isNotEmpty) {
+      setState(() => _exercises.addAll(result.exercises));
+    }
+  }
+
+  Future<void> _quickEdit(int index) async {
+    final updated = await showQuickExerciseEditor(context, _exercises[index]);
+    if (updated != null && mounted) {
+      setState(() => _exercises[index] = updated);
+    }
+  }
+
+  void _addCustomExercise() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     showDialog(
       context: context,
@@ -579,7 +597,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
             itemBuilder: (context, index) {
               final exercise = _exercises[index];
               return Card(
-                key: ValueKey(index),
+                key: ObjectKey(exercise),
                 margin: const EdgeInsets.only(bottom: 8),
                 color: AppColors.cardBackground,
                 child: Padding(
@@ -600,6 +618,8 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
+                        child: InkWell(
+                        onTap: () => _quickEdit(index),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
@@ -610,27 +630,39 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              '${exercise.sets} series × ${exercise.reps} reps',
+                              '${exercise.sets} series · ${exercise.reps} reps'
+                              '${exercise.weight > 0 ? ' · ${exercise.weight.toStringAsFixed(0)} lbs' : ''}'
+                              ' · toca para ajustar',
                               style: const TextStyle(
                                   color: AppColors.textSecondary),
                             ),
                           ],
                         ),
+                        ),
                       ),
-                      ReorderableDelayedDragStartListener(
+                      IconButton(
+                        tooltip: 'Duplicar',
+                        icon: const Icon(Icons.copy_all_outlined,
+                            color: Colors.white54),
+                        onPressed: () => setState(() => _exercises.insert(
+                            index + 1, duplicateExercise(exercise))),
+                      ),
+                      ReorderableDragStartListener(
                         index: index,
-                        child: const Padding(
-                          padding: EdgeInsets.all(8),
-                          child: Icon(Icons.drag_handle, color: Colors.white54),
+                        child: Semantics(
+                          label: 'Arrastrar para reordenar',
+                          child: const Padding(
+                            padding: EdgeInsets.all(12),
+                            child:
+                                Icon(Icons.drag_indicator, color: Colors.white70),
+                          ),
                         ),
                       ),
                       IconButton(
                         icon:
                             const Icon(Icons.delete_outline, color: Colors.red),
+                        tooltip: 'Quitar',
                         onPressed: () => _removeExercise(index),
-                        padding: EdgeInsets.zero,
-                        constraints:
-                            const BoxConstraints(minWidth: 36, minHeight: 36),
                       ),
                     ],
                   ),

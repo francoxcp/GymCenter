@@ -486,10 +486,10 @@ DECLARE
   v_my_org UUID;
 BEGIN
   IF auth.uid() IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
+  v_my_org := public.my_org_id();
   SELECT u.id, u.name, u.org_id INTO v_trainer FROM public.users u
     JOIN public.organizations o ON o.id = u.org_id AND o.status = 'active'
    WHERE u.trainer_code = upper(trim(p_code)) AND u.role IN ('trainer', 'admin');
-  v_my_org := public.my_org_id();
   -- Mismo error en todos los casos: no permite averiguar códigos válidos
   IF NOT FOUND OR v_trainer.id = auth.uid()
      OR (v_my_org IS NOT NULL AND v_my_org <> v_trainer.org_id) THEN

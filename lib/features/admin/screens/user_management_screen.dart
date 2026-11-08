@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../shared/widgets/app_snackbar.dart';
+import 'member_hub_screen.dart' show showResetPasswordDialog;
 import '../../profile/providers/user_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/models/user.dart';
@@ -314,6 +315,22 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   _showEditUserDialog(user);
                 },
               ),
+              // Contraseña temporal (el correo gratuito no llega a los socios)
+              if (user.id != currentUserId &&
+                  user.role != 'admin' &&
+                  (isOwner || user.trainerId == currentUserId))
+                ListTile(
+                  leading: const Icon(Icons.lock_reset, color: AppColors.primary),
+                  title: Text(isEn ? 'Reset password' : 'Restablecer contraseña'),
+                  subtitle: Text(
+                    isEn ? 'Also activates the account' : 'También activa la cuenta',
+                    style: const TextStyle(color: AppColors.textSecondary),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    showResetPasswordDialog(this.context, user);
+                  },
+                ),
               // ── Solo el dueño gestiona roles y entrenadores ──
               if (isOwner && user.role == 'user')
                 ListTile(

@@ -30,6 +30,12 @@ Node.js sirve para ejecutar 3 comandos de esta guía.
    node -v
    ```
    Debe responder algo como `v22.11.0`. Si dice "no se reconoce", reinicia la computadora y prueba otra vez.
+5. **Permitir comandos `npx` en PowerShell** (una sola vez). Windows los bloquea por defecto y da el error *"la ejecución de scripts está deshabilitada en este sistema"*. En la misma ventana escribe:
+   ```
+   Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+   ```
+   Si pregunta, responde `S` (o `Y`) y Enter. Luego cierra PowerShell y ábrelo de nuevo.
+   > Alternativa sin cambiar nada: escribe `npx.cmd` en lugar de `npx` en todos los comandos de esta guía (ej. `npx.cmd vercel login`).
 
 ### 0.3 Crea tu "hoja de valores"
 

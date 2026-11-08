@@ -103,7 +103,7 @@ class _WorkoutDetailReadonlyScreenState
       case 'avanzado':
         return AppColors.badgeAvanzado;
       default:
-        return AppColors.primary;
+        return AppColors.primaryText;
     }
   }
 

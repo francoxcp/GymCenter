@@ -1972,7 +1972,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   icon: Icon(
                     _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
                     color:
-                        _isPaused ? AppColors.primary : AppColors.textSecondary,
+                        _isPaused ? AppColors.primaryText : AppColors.textSecondary,
                   ),
                   tooltip: _isPaused
                       ? AppL10n.of(context).resumeTooltip
@@ -2433,7 +2433,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color:
-                            isCompleted ? AppColors.primary : AppColors.surface,
+                            isCompleted ? AppColors.primaryText : AppColors.surface,
                         width: 2,
                       ),
                       boxShadow: isCompleted
@@ -2462,7 +2462,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                                 : Icons.circle_outlined,
                             key: ValueKey(isCompleted),
                             color: isCompleted
-                                ? AppColors.primary
+                                ? AppColors.primaryText
                                 : AppColors.textSecondary,
                             size: 28,
                           ),
@@ -2474,7 +2474,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color:
-                                isCompleted ? AppColors.primary : AppColors.textPrimary,
+                                isCompleted ? AppColors.primaryText : AppColors.textPrimary,
                           ),
                         ),
                         const Spacer(),
@@ -2712,7 +2712,7 @@ class _WeightChip extends StatelessWidget {
                 color: isNewPR
                     ? Colors.amber
                     : hasWeight
-                        ? AppColors.primary
+                        ? AppColors.primaryText
                         : missing
                             ? Colors.orangeAccent
                             : AppColors.textSecondary.withValues(alpha: 0.4),
@@ -2733,7 +2733,7 @@ class _WeightChip extends StatelessWidget {
                     color: isNewPR
                         ? Colors.amber
                         : hasWeight
-                            ? AppColors.primary
+                            ? AppColors.primaryText
                             : missing
                                 ? Colors.orangeAccent
                                 : AppColors.textSecondary,

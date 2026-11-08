@@ -485,7 +485,7 @@ class _TrainingControlScreenState extends State<TrainingControlScreen> {
                         toY: values[i],
                         width: 16,
                         color: i == values.length - 1
-                            ? AppColors.primary
+                            ? AppColors.primaryText
                             : AppColors.primaryText.withValues(alpha: 0.45),
                         borderRadius: BorderRadius.circular(4),
                       ),

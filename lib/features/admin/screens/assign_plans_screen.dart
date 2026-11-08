@@ -213,7 +213,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
                                       color: isSelected
-                                          ? AppColors.primary
+                                          ? AppColors.primaryText
                                           : Colors.transparent,
                                     ),
                                   ),
@@ -542,7 +542,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                     borderRadius: BorderRadius.circular(14),
                                     border: Border.all(
                                       color: hasChange
-                                          ? AppColors.primary
+                                          ? AppColors.primaryText
                                           : Colors.amber
                                               .withValues(alpha: 0.45),
                                       width: hasChange ? 2 : 1.5,
@@ -660,7 +660,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
                                   color: hasChange
-                                      ? AppColors.primary
+                                      ? AppColors.primaryText
                                       : AppColors.primaryText
                                           .withValues(alpha: 0.4),
                                   width: hasChange ? 2 : 1.5,
@@ -884,7 +884,7 @@ class _BottomSheetTile extends StatelessWidget {
             : AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isSelected ? AppColors.primary : Colors.transparent,
+          color: isSelected ? AppColors.primaryText : Colors.transparent,
           width: 1.5,
         ),
       ),
@@ -892,7 +892,7 @@ class _BottomSheetTile extends StatelessWidget {
         onTap: onTap,
         leading: Icon(
           icon,
-          color: isSelected ? AppColors.primary : AppColors.textSecondary,
+          color: isSelected ? AppColors.primaryText : AppColors.textSecondary,
         ),
         title: Row(
           children: [
@@ -901,7 +901,7 @@ class _BottomSheetTile extends StatelessWidget {
                 title,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                  color: isSelected ? AppColors.primaryText : AppColors.textPrimary,
                 ),
               ),
             ),

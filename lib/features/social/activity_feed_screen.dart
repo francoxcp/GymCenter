@@ -221,7 +221,7 @@ class _FeedCard extends StatelessWidget {
                         : Icons.chat_bubble_outline,
                     size: 20,
                     color: item.commentCount > 0
-                        ? AppColors.primary
+                        ? AppColors.primaryText
                         : AppColors.textSecondary,
                   ),
                   const SizedBox(width: 6),

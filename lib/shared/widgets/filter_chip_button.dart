@@ -62,7 +62,7 @@ class _FilterChipButtonState extends State<FilterChipButton>
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: widget.isSelected
-                  ? AppColors.primary
+                  ? AppColors.primaryText
                   : AppColors.surface.withValues(alpha: 0.3),
               width: 1.5,
             ),

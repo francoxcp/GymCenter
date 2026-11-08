@@ -673,7 +673,7 @@ class _WorkoutCard extends StatelessWidget {
       case 'Avanzado':
         return AppColors.badgeAvanzado;
       default:
-        return AppColors.primary;
+        return AppColors.primaryText;
     }
   }
 

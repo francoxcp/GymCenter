@@ -64,11 +64,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   Map<int, Map<int, double?>> _lastSessionWeights = {};
   bool _hasLoadedWeights = false;
 
-  // PR histÓrico por ejercicio (max weight ever logged)
+  // PR histórico por ejercicio (max weight ever logged)
   Map<int, double> _exercisePRs = {};
-  // Ejercicios que superaron su PR en esta sesiÓn
+  // Ejercicios que superaron su PR en esta sesión
   final Set<int> _newPRsThisSession = {};
-  // Pre-cachÉ de videos: solo se lanza una vez por sesiÓn
+  // Pre-caché de videos: solo se lanza una vez por sesión
   bool _videosCacheStarted = false;
 
   @override
@@ -84,16 +84,16 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     _resumeTime = DateTime.now();
     WidgetsBinding.instance.addObserver(this);
 
-    // Guard de navegaciÓn: interceptar taps en la barra inferior durante la rutina
+    // Guard de navegación: interceptar taps en la barra inferior durante la rutina
     UnsavedChangesGuard.register(() async {
       if (_workoutCompleted) return true;
       if (!mounted) return true;
       final choice = await _showExitWorkoutDialog();
       await _handleExitChoice(choice);
-      return false; // siempre bloqueamos; la navegaciÓn la manejamos nosotros
+      return false; // siempre bloqueamos; la navegación la manejamos nosotros
     });
 
-    // Verificar progreso pendiente despuÉs de que se construya el widget
+    // Verificar progreso pendiente después de que se construya el widget
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Ensure exercises are loaded before the workout begins
       final authProvider = context.read<AuthProvider>();
@@ -129,7 +129,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     }
   }
 
-  // -- CronÓmetro activo ------------------------------------------------------
+  // -- Cronómetro activo ------------------------------------------------------
   int _getActiveDurationSeconds() {
     if (_isPaused || _resumeTime == null) return _accumulatedSeconds;
     return _accumulatedSeconds +
@@ -188,7 +188,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   }
 
   /// Pre-descarga todos los videos de la rutina en background.
-  /// No bloquea — se ejecuta una sola vez por sesiÓn.
+  /// No bloquea — se ejecuta una sola vez por sesión.
   void _preCacheVideos(List<Exercise> exercises) {
     if (kIsWeb) return; // En web el navegador gestiona la caché de video
     final cache = DefaultCacheManager();
@@ -197,7 +197,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       if (url != null && url.isNotEmpty) {
         cache.getFileFromCache(url).then((info) {
           if (info == null) {
-            // No estÁ en cachÉ ? descargar en background silenciosamente
+            // No está en caché ? descargar en background silenciosamente
             cache.downloadFile(url).ignore();
           }
         }).ignore();
@@ -234,7 +234,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           .getWorkoutById(authProvider.currentUser!.assignedWorkoutId!);
 
       if (workout != null && progress.workoutId == workout.id) {
-        // Verificar si el progreso es del mismo dÍa
+        // Verificar si el progreso es del mismo día
         final progressDate = DateTime(
           progress.updatedAt.year,
           progress.updatedAt.month,
@@ -247,12 +247,12 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         );
 
         if (progressDate.isBefore(today)) {
-          // El progreso es de un dÍa anterior, eliminarlo automÁticamente
-          debugPrint('??? Progreso del dÍa anterior detectado, eliminando...');
+          // El progreso es de un día anterior, eliminarlo automáticamente
+          debugPrint('??? Progreso del día anterior detectado, eliminando...');
           await progressProvider.deleteProgress();
           debugPrint('? Progreso anterior eliminado');
         } else {
-          // El progreso es del mismo dÍa, mostrar diÁlogo
+          // El progreso es del mismo día, mostrar diálogo
           _showRestoreDialog(progress, workout.name);
         }
       } else {
@@ -369,7 +369,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       _resumeTime = DateTime.now();
       _isPaused = false;
     });
-    // TambiÉn cargar timer local (SharedPrefs) en paralelo
+    // También cargar timer local (SharedPrefs) en paralelo
     _loadTimerLocally().then((_) {
       // Si SharedPrefs tiene un valor mayor, usarlo
       setState(() => _resumeTime = DateTime.now());
@@ -471,7 +471,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     }
   }
 
-  // -- DiÁlogo de salida ----------------------------------------------------
+  // -- Diálogo de salida ----------------------------------------------------
   Future<String?> _showExitWorkoutDialog() async {
     return showDialog<String>(
       context: context,
@@ -735,7 +735,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         authUser?.weightKg ??
         70.0;
 
-    // CÁlculo de calorÍas mejorado con datos del perfil de usuario
+    // CÁlculo de calorías mejorado con datos del perfil de usuario
     final caloriesBurned = _estimateCalories(
       workout,
       durationMinutes,
@@ -794,7 +794,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         ? 9.247 * weightKg + 3.098 * heightCm - 4.330 * age + 447.593
         : 13.397 * weightKg + 4.799 * heightCm - 5.677 * age + 88.362;
 
-    // -- DetecciÓn de ejercicios cardio ----------------------------------------
+    // -- Detección de ejercicios cardio ----------------------------------------
     final exercises = workout.exercises;
     int cardioCount = 0;
     for (final ex in exercises) {
@@ -807,13 +807,13 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     final avgMet = 5.0 + (cardioRatio * 4.0);
 
     // -- FÓrmula: kcal = BMR/1440 × min × MET ----------------------------------
-    // (BMR/1440 es el gasto calÓrico por minuto en reposo)
+    // (BMR/1440 es el gasto calórico por minuto en reposo)
     final calories = (bmr / 1440.0) * durationMinutes * avgMet;
     return calories.round();
   }
 
-  /// Detecta si un ejercicio es cardiovascular usando mÚltiples señales:
-  /// 1. Campo muscleGroup == 'Cardio' (señal primaria, mÁs fiable)
+  /// Detecta si un ejercicio es cardiovascular usando múltiples señales:
+  /// 1. Campo muscleGroup == 'Cardio' (señal primaria, más fiable)
   /// 2. Nombre del ejercicio contra lista de palabras clave (ES + EN)
   bool _isCardioExercise(Exercise exercise) {
     // Señal primaria: grupo muscular clasificado como Cardio en la DB
@@ -825,8 +825,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       // Español
       'burpee', 'salto', 'saltar', 'carrera', 'correr', 'trote',
       'trotar', 'bicicleta', 'cuerda', 'comba', 'cardio', 'hiit',
-      'sprint', 'escalador', 'escaladora', 'aerÓbico', 'aerobico',
-      'elÍptica', 'eliptica', 'remo', 'nadar', 'nataciÓn', 'natacion',
+      'sprint', 'escalador', 'escaladora', 'aeróbico', 'aerobico',
+      'elíptica', 'eliptica', 'remo', 'nadar', 'natación', 'natacion',
       'step', 'zumba', 'baile', 'bailar', 'patinar',
       // English
       'jump', 'jumping', 'run', 'running', 'jog', 'jogging',
@@ -869,7 +869,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       final logs = response as List;
       final Map<int, Map<int, double?>> weights = {};
       final Map<int, double> prs = {};
-      // La respuesta estÁ ordenada desc ? la primera entrada de cada combo es la mÁs reciente
+      // La respuesta está ordenada desc ? la primera entrada de cada combo es la más reciente
       for (final log in logs) {
         final exIdx = log['exercise_index'] as int;
         final setIdx = log['set_index'] as int;
@@ -879,7 +879,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           weights[exIdx] ??= {};
           weights[exIdx]![setIdx] = weightKg;
         }
-        // PR = mÁximo histÓrico por ejercicio
+        // PR = máximo histórico por ejercicio
         if (weightKg != null) {
           if (!prs.containsKey(exIdx) || weightKg > prs[exIdx]!) {
             prs[exIdx] = weightKg;
@@ -1213,7 +1213,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
     if (!mounted) return;
 
-    // Agrupar por fecha (dÍa)
+    // Agrupar por fecha (día)
     final Map<String, List<Map>> byDate = {};
     for (final log in logs) {
       final dt = DateTime.tryParse(log['logged_at'] as String? ?? '');
@@ -1525,7 +1525,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 ],
               ),
               actions: [
-                // BotÓn pausa / reanudar
+                // Botón pausa / reanudar
                 IconButton(
                   onPressed: _isPaused ? _resumeWorkout : _onManualPause,
                   icon: Icon(
@@ -1599,7 +1599,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         },
                       ),
 
-                      // Botones de navegaciÓn lateral
+                      // Botones de navegación lateral
                       if (_currentExerciseIndex > 0)
                         Positioned(
                           left: 8,
@@ -1649,7 +1649,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               ],
             ),
           ),
-          // - Overlay de PAUSA eliminado: el botÓn pause ahora usa _onManualPause
+          // - Overlay de PAUSA eliminado: el botón pause ahora usa _onManualPause
         ],
       ), // Stack
     ); // PopScope
@@ -1664,7 +1664,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Exercise Counter con animaciÓn
+          // Exercise Counter con animación
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1712,7 +1712,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
           const SizedBox(height: 16),
 
-          // Exercise Name con animaciÓn
+          // Exercise Name con animación
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
             child: Text(
@@ -1914,7 +1914,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
                   const SizedBox(height: 24),
 
-                  // BotÓn para saltar descanso
+                  // Botón para saltar descanso
                   TextButton(
                     onPressed: () {
                       _timer?.cancel();
@@ -2210,7 +2210,7 @@ class _WeightChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasWeight = weight != null;
-    // weight estÁ en kg internamente; mostrar en lbs
+    // weight está en kg internamente; mostrar en lbs
     final lbs = hasWeight ? weight! * 2.20462 : null;
     final weightLabel = lbs != null
         ? (lbs == lbs.roundToDouble()

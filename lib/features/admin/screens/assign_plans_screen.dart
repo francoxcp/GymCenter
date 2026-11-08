@@ -49,7 +49,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
-    // Interceptar navegaciÓn del navbar mientras haya cambios sin guardar.
+    // Interceptar navegación del navbar mientras haya cambios sin guardar.
     UnsavedChangesGuard.register(() async {
       if (!_hasAnyWorkoutInSchedule) return true;
       return await _confirmDiscard();
@@ -77,7 +77,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
     try {
       // Si el usuario no tiene assigned_workout_id activo, sus registros en
       // user_workout_schedule pueden ser datos huérfanos de sesiones anteriores.
-      // Mostramos todos los dÍas vacíos para que el admin parta de cero.
+      // Mostramos todos los días vacíos para que el admin parta de cero.
       final Map<int, String> weekMap = widget.user.assignedWorkoutId == null
           ? {}
           : await userProvider.getWeekWorkouts(widget.user.id);
@@ -95,10 +95,10 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
     }
   }
 
-  /// True si al menos un dÍa del horario actual tiene rutina asignada.
+  /// True si al menos un día del horario actual tiene rutina asignada.
   bool get _hasAnyWorkoutInSchedule => _schedule.values.any((v) => v != null);
 
-  /// Devuelve el nombre del próximo dÍa (después de [fromDay]) que tenga
+  /// Devuelve el nombre del próximo día (después de [fromDay]) que tenga
   /// rutina asignada en el horario actual. Wrappea si es necesario.
   String? _nextTrainingDayLabel(int fromDay) {
     final dayNames = _localizedDayNames(AppL10n.of(context));
@@ -315,7 +315,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
         }
       }
 
-      // Siempre sincronizar assigned_workout_id con el primer dÍa con rutina.
+      // Siempre sincronizar assigned_workout_id con el primer día con rutina.
       // Esto corrige el caso donde el horario existía pero assigned_workout_id
       // nunca se actualizó (p.ej. guardado parcial anterior).
       final firstWorkout = [1, 2, 3, 4, 5, 6]
@@ -526,7 +526,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                             final hasWorkout = workoutId != null;
 
                             if (!hasWorkout) {
-                              // -- Tarjeta dÍa de descanso ------------------
+                              // -- Tarjeta día de descanso ------------------
                               final nextDay = _nextTrainingDayLabel(day);
                               return GestureDetector(
                                 onTap: _isSaving
@@ -651,7 +651,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                               );
                             }
 
-                            // -- Tarjeta dÍa con rutina --------------------
+                            // -- Tarjeta día con rutina --------------------
                             return AnimatedContainer(
                               duration: const Duration(milliseconds: 250),
                               margin: const EdgeInsets.only(bottom: 10),

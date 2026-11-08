@@ -476,7 +476,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: 32),
 
-                // -- Cerrar sesiÓn -----------------------------------------
+                // -- Cerrar sesión -----------------------------------------
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(

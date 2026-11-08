@@ -265,7 +265,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 _buildLevelSelector(),
                 const SizedBox(height: 16),
 
-                // Tip: medidas corporales disponibles en secciÓn aparte
+                // Tip: medidas corporales disponibles en sección aparte
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(

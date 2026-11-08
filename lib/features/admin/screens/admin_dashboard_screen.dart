@@ -45,7 +45,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
       final totalUsers = (usersResponse as List).length;
 
-      // Obtener sesiones de los Últimos 7 dÍas
+      // Obtener sesiones de los Últimos 7 días
       final now = DateTime.now();
       final sevenDaysAgo = now.subtract(const Duration(days: 6));
       final startOfDay =
@@ -59,7 +59,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
       final sessions = sessionsResponse as List;
 
-      // Calcular sesiones por dÍa
+      // Calcular sesiones por día
       final dailyCounts = List<int>.filled(7, 0);
       for (var session in sessions) {
         final completedAt = DateTime.tryParse(session['completed_at'] ?? '');

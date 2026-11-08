@@ -639,7 +639,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                             }
                           }
 
-                          // Validar rangos mÁximos razonables
+                          // Validar rangos máximos razonables
                           final maxRanges = <TextEditingController, double>{
                             weightController: 300,
                             heightController: 250,

@@ -67,7 +67,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             _buildSection(
               'Introducción',
               'En Chamos Fitness Center, respetamos su privacidad y nos comprometemos a proteger '
-                  'sus datos personales. Esta política explica cÓmo recopilamos, usamos y protegemos '
+                  'sus datos personales. Esta política explica cómo recopilamos, usamos y protegemos '
                   'su información cuando utiliza nuestra aplicación.',
             ),
 
@@ -79,7 +79,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   '• Correo electrúnico\n'
                   '• Contraseña (encriptada)\n'
                   '• Fecha de nacimiento\n\n'
-                  'Información fÍsica:\n'
+                  'Información física:\n'
                   '• Peso y altura\n'
                   '• Medidas corporales (pecho, cintura, cadera, bíceps, muslos)\n'
                   '• Fotografías de progreso (opcional)\n'
@@ -127,7 +127,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'Usted tiene derecho a:\n\n'
                   '**Acceso:** Ver toda su información personal\n'
                   '**Rectificación:** Corregir datos incorrectos\n'
-                  '**EliminaciÓn:** Borrar su cuenta y datos permanentemente\n'
+                  '**Eliminación:** Borrar su cuenta y datos permanentemente\n'
                   '**Portabilidad:** Exportar sus datos\n'
                   '**Revocación:** Retirar consentimientos en cualquier momento',
             ),
@@ -138,7 +138,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   '• Su cuenta está activa\n'
                   '• Sea necesario para proporcionar servicios\n'
                   '• Lo requieran obligaciones legales\n\n'
-                  'Al eliminar su cuenta, todos sus datos se borran permanentemente en un plazo de 30 dÍas.',
+                  'Al eliminar su cuenta, todos sus datos se borran permanentemente en un plazo de 30 días.',
             ),
 
             _buildSection(
@@ -171,7 +171,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             _buildSection(
               '10. Transferencias Internacionales',
               'Sus datos pueden ser procesados en servidores ubicados fuera de Venezuela. '
-                  'Garantizamos que estas transferencias cumplan con las leyes de protecciÓn de datos aplicables.',
+                  'Garantizamos que estas transferencias cumplan con las leyes de protección de datos aplicables.',
             ),
 
             _buildSection(
@@ -179,7 +179,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'Podemos actualizar esta política ocasionalmente. Le notificaremos de cambios '
                   'significativos mediante:\n\n'
                   '• Notificación en la aplicación\n'
-                  '• Email a su direcciÓn registrada\n'
+                  '• Email a su dirección registrada\n'
                   '• Actualización de la fecha al inicio de este documento',
             ),
 
@@ -188,7 +188,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'Para ejercer sus derechos o preguntas sobre privacidad:\n\n'
                   '• Email: privacy@chamosfitnesscenter.com\n'
                   '• Sección de Ajustes ? Privacidad\n'
-                  '• Responderemos en un plazo de 30 dÍas',
+                  '• Responderemos en un plazo de 30 días',
             ),
 
             _buildSection(

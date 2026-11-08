@@ -50,13 +50,13 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
     final sessions = sessionProvider.sessions;
     final workouts = workoutProvider.workouts;
 
-    // Construir mapa de eventos por dÍa normalizado (sin hora)
+    // Construir mapa de eventos por día normalizado (sin hora)
     final Map<DateTime, List<WorkoutEvent>> events = {};
     final l10n = AppL10n.of(context);
     for (final session in sessions) {
       final key =
           DateTime(session.date.year, session.date.month, session.date.day);
-      // Buscar el nombre del workout; si no estÁ cargado, usar ID corto
+      // Buscar el nombre del workout; si no está cargado, usar ID corto
       final workout =
           workouts.where((w) => w.id == session.workoutId).firstOrNull;
       final name = workout?.name ?? l10n.workoutFallback;
@@ -198,7 +198,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
           // Estadísticas del mes
           _buildMonthStats(),
 
-          // Eventos del dÍa seleccionado
+          // Eventos del día seleccionado
           Expanded(
             child: _buildSelectedDayEvents(),
           ),

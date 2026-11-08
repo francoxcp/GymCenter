@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (userId != null) {
         progressProvider.loadProgress(userId);
 
-        // Cargar sesiones usando cachÉ (5 min) al cambiar de tab.
+        // Cargar sesiones usando caché (5 min) al cambiar de tab.
         // Solo el pull-to-refresh obliga a re-descargar desde red.
         final sessionProvider =
             Provider.of<WorkoutSessionProvider>(context, listen: false);
@@ -309,7 +309,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         Provider.of<AuthProvider>(context, listen: false).currentUser?.id;
     if (userId == null) return;
 
-    // Cargar próxima sesión y verificar si hoy es dÍa de descanso en paralelo
+    // Cargar próxima sesión y verificar si hoy es día de descanso en paralelo
     final results = await Future.wait([
       progressProvider.getNextScheduledWorkout(userId),
       progressProvider.isTodayScheduled(userId),

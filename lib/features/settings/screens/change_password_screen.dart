@@ -239,7 +239,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
               const SizedBox(height: 32),
 
-              // BotÓn de cambiar contraseña
+              // Botón de cambiar contraseña
               PrimaryButton(
                 text: l10n.changePasswordButton,
                 isLoading: _isLoading,

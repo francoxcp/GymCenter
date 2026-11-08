@@ -45,7 +45,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
   @override
   void initState() {
     super.initState();
-    // Escuchar cambios en el campo de bÚsqueda
+    // Escuchar cambios en el campo de búsqueda
     _searchController.addListener(() {
       final hasText = _searchController.text.isNotEmpty;
       if (hasText != _searchHasText) setState(() => _searchHasText = hasText);
@@ -1002,7 +1002,7 @@ class _PausedWorkoutBanner extends StatelessWidget {
   }
 }
 
-/// Header de secciÓn para separar rutinas oficiales de las del usuario.
+/// Header de sección para separar rutinas oficiales de las del usuario.
 class _SectionHeader extends StatelessWidget {
   final String label;
   final IconData icon;

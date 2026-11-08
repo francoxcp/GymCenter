@@ -34,7 +34,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _nextPage() {
-    // Cuando el usuario sale de la pÁgina de stats sin modificar, confirmar
+    // Cuando el usuario sale de la página de stats sin modificar, confirmar
     if (_currentPage == 2 && !_statsModified) {
       final l10n = AppL10n.of(context);
       showDialog(
@@ -631,7 +631,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         'color': Colors.red,
       },
       {
-        'key': 'Ganar mÁsculo',
+        'key': 'Ganar músculo',
         'title': l10n.goalGainMuscle,
         'icon': Icons.fitness_center,
         'color': Colors.blue,

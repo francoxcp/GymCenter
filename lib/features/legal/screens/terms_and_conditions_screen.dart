@@ -89,9 +89,9 @@ class TermsAndConditionsScreen extends StatelessWidget {
 
             _buildSection(
               '4. Privacidad y Protección de Datos',
-              'Nos tomamos muy en serio la protecciÓn de sus datos personales. '
+              'Nos tomamos muy en serio la protección de sus datos personales. '
                   'Su información será tratada de acuerdo con nuestra Política de Privacidad, '
-                  'que cumple con las regulaciones de protecciÓn de datos aplicables.',
+                  'que cumple con las regulaciones de protección de datos aplicables.',
             ),
 
             _buildSection(
@@ -115,7 +115,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
             _buildSection(
               '7. Cancelaci?n de Cuenta',
               'Usted puede eliminar su cuenta en cualquier momento desde la configuración. '
-                  'Esta acciÓn es permanente e irreversible, eliminando todos sus datos asociados.',
+                  'Esta acción es permanente e irreversible, eliminando todos sus datos asociados.',
             ),
 
             _buildSection(
@@ -151,7 +151,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
               '12. Contacto',
               'Para preguntas sobre estos términos, puede contactarnos a través de:\n\n'
                   '• Email: legal@chamos?tnessenter.com\n'
-                  '• En la secciÓn de Ajustes de la aplicación',
+                  '• En la sección de Ajustes de la aplicación',
             ),
 
             const SizedBox(height: 32),

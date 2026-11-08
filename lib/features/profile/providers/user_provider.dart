@@ -306,16 +306,24 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
+  /// Elimina por completo a un usuario (cuenta de acceso + perfil + datos)
+  /// mediante la Edge Function delete-member. Antes solo se borraba el
+  /// perfil y la persona podía seguir iniciando sesión.
   Future<void> deleteUser(String userId) async {
     try {
-      // Remover de la lista local inmediatamente para UX responsiva
+      final res = await SupabaseConfig.client.functions
+          .invoke('delete-member', body: {'user_id': userId});
+      final data = res.data;
+      if (data is Map && data['error'] != null) {
+        throw Exception(data['error']);
+      }
       _users.removeWhere((u) => u.id == userId);
       notifyListeners();
-
-      // Esto también eliminará el usuario de auth.users debido a CASCADE
-      await SupabaseConfig.client.from('users').delete().eq('id', userId);
-
       await loadUsers();
+    } on FunctionException catch (e) {
+      debugPrint('Error deleting user: ${e.status} ${e.details}');
+      final details = e.details;
+      throw Exception(details is Map ? details['error'] : 'delete_failed');
     } catch (e) {
       debugPrint('Error deleting user: $e');
       rethrow;

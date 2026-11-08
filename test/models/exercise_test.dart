@@ -101,4 +101,27 @@ void main() {
       expect(exercise.reps, 12); // Default value
     });
   });
+
+  group('Peso sugerido (weight_kg)', () {
+    test('lee weight_kg de la BD y lo expone en lbs', () {
+      final e = Exercise.fromJson({
+        'id': '1',
+        'name': 'Press banca',
+        'sets': 3,
+        'reps': 10,
+        'muscle_group': 'Pecho',
+        'weight_kg': 45.36,
+      });
+      expect(e.weight, closeTo(100.0, 0.1));
+    });
+
+    test('convierte a kg para guardar y null si no hay peso', () {
+      final e = Exercise(
+          id: '1', name: 'x', sets: 3, reps: 10, muscleGroup: 'Pecho', weight: 100);
+      expect(e.weightKgForDb, closeTo(45.36, 0.01));
+      final sinPeso =
+          Exercise(id: '2', name: 'y', sets: 3, reps: 10, muscleGroup: 'Pecho');
+      expect(sinPeso.weightKgForDb, isNull);
+    });
+  });
 }

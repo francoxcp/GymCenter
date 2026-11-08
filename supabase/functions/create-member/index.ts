@@ -78,6 +78,8 @@ Deno.serve(async (req) => {
     password,
     email_confirm: true,
     user_metadata: { name },
+    // Registro de quién dio de alta la cuenta (no lo puede modificar el usuario)
+    app_metadata: { created_by: callerRow!.id, created_by_role: role },
   });
   if (createErr || !created?.user) {
     const msg = (createErr?.message ?? '').toLowerCase();

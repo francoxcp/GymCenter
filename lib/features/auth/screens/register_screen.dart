@@ -18,6 +18,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -36,6 +37,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void dispose() {
     SecureScreenService.disable();
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -44,13 +46,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _handleRegister() async {
+    final name = _nameController.text.trim().replaceAll(RegExp(r'\s+'), ' ');
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
     // Validar campos vacíos
-    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+    if (name.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
       _showError(AppL10n.of(context).fillAllFields);
+      return;
+    }
+
+    // Nombre: el entrenador lo necesita para identificar al socio
+    if (name.length < 2 || name.length > 60) {
+      _showError(AppL10n.of(context).isEn
+          ? 'Enter your name (2 to 60 characters).'
+          : 'Escribe tu nombre (de 2 a 60 caracteres).');
       return;
     }
 
@@ -99,7 +113,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final success = await authProvider.register(
         email,
         password,
-        'Usuario',
+        name,
         trainerCode: _trainerCodeController.text,
       );
 
@@ -224,6 +238,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
 
               const SizedBox(height: 32),
+
+              // Nombre completo
+              Text(
+                AppL10n.of(context).isEn ? 'FULL NAME' : 'NOMBRE COMPLETO',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondary,
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(height: 8),
+              CustomTextField(
+                controller: _nameController,
+                hintText: AppL10n.of(context).isEn ? 'Your name' : 'Tu nombre',
+                prefixIcon: Icons.person_outline,
+              ),
+
+              const SizedBox(height: 20),
 
               // Email Field
               Text(

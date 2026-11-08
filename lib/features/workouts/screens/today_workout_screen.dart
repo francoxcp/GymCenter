@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:go_router/go_router.dart';
@@ -189,6 +190,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   /// Pre-descarga todos los videos de la rutina en background.
   /// No bloquea — se ejecuta una sola vez por sesiÓn.
   void _preCacheVideos(List<Exercise> exercises) {
+    if (kIsWeb) return; // En web el navegador gestiona la caché de video
     final cache = DefaultCacheManager();
     for (final ex in exercises) {
       final url = ex.videoUrl;

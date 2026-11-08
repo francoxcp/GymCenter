@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/services/biometric_service.dart';
+import '../providers/auth_provider.dart';
 
 /// Pantalla de bloqueo biométrico.
 /// Se muestra al volver a la app cuando el bloqueo está habilitado.
@@ -20,8 +23,11 @@ class _BiometricLockScreenState extends State<BiometricLockScreen> {
   @override
   void initState() {
     super.initState();
-    // Iniciar autenticación automáticamente al mostrar la pantalla
-    WidgetsBinding.instance.addPostFrameCallback((_) => _authenticate());
+    // En móvil se inicia automáticamente. En web, Safari/Chrome exigen que
+    // la solicitud de Face ID/huella parta de un toque del usuario.
+    if (!kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _authenticate());
+    }
   }
 
   Future<void> _authenticate() async {
@@ -108,11 +114,29 @@ class _BiometricLockScreenState extends State<BiometricLockScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: _isAuthenticating ? null : _logout,
+                  child: const Text(
+                    'Cerrar sesión e ingresar con contraseña',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                ),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  /// Salida de emergencia: si la passkey/biometría no está disponible
+  /// (p. ej. se borró del dispositivo) el usuario puede volver a entrar
+  /// con su contraseña.
+  Future<void> _logout() async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    await BiometricService().disable();
+    await auth.logout();
+    if (mounted) widget.onUnlocked();
   }
 }

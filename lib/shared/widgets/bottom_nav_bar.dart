@@ -58,16 +58,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
                 index: 1,
               ),
               _buildNavItem(
-                icon: Icons.restaurant_menu_outlined,
-                activeIcon: Icons.restaurant_menu,
-                label: l10n.navPlans,
-                index: 2,
-              ),
-              _buildNavItem(
                 icon: Icons.person_outline,
                 activeIcon: Icons.person,
                 label: l10n.navProfile,
-                index: 3,
+                index: 2,
               ),
             ],
           ),

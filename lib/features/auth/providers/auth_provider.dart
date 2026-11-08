@@ -7,6 +7,7 @@ import '../models/user.dart';
 import '../../../config/supabase_config.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/services/offline_cache_service.dart';
+import '../../../shared/services/web_push_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   bool _isAuthenticated = false;
@@ -134,6 +135,36 @@ class AuthProvider extends ChangeNotifier {
     super.dispose();
   }
 
+  /// Verifica el enlace de recuperación de contraseña enviado por correo
+  /// (`/reset-password?token_hash=...&type=recovery`).
+  ///
+  /// Se usa token_hash en lugar del flujo PKCE porque en iPhone la PWA
+  /// instalada y Safari no comparten almacenamiento: el enlace del correo
+  /// se abre en Safari y PKCE fallaría. token_hash funciona en cualquier
+  /// navegador.
+  Future<bool> verifyRecoveryToken(String tokenHash) async {
+    _isPasswordRecovery = true;
+    try {
+      final res = await SupabaseConfig.auth.verifyOTP(
+        tokenHash: tokenHash,
+        type: OtpType.recovery,
+      );
+      final session = res.session;
+      if (session == null) {
+        _isPasswordRecovery = false;
+        notifyListeners();
+        return false;
+      }
+      await _loadCurrentUser(session.user.id);
+      return true;
+    } catch (e) {
+      debugPrint('verifyRecoveryToken error: $e');
+      _isPasswordRecovery = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Limpia el flag de recuperación de contraseña una vez que el usuario
   /// completó el cambio de contraseña desde el enlace de email.
   void clearPasswordRecovery() {
@@ -232,9 +263,11 @@ class AuthProvider extends ChangeNotifier {
       final response = await SupabaseConfig.auth.signUp(
         email: email,
         password: password,
+        emailRedirectTo: SupabaseConfig.emailConfirmRedirect,
+        // El rol NUNCA se envía desde el cliente: el trigger handle_new_user
+        // asigna siempre 'user' (ver database/web_pwa_migration.sql).
         data: {
           'name': name,
-          'role': 'user',
         },
       );
 
@@ -282,7 +315,10 @@ class AuthProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      await SupabaseConfig.auth.resetPasswordForEmail(email);
+      await SupabaseConfig.auth.resetPasswordForEmail(
+        email,
+        redirectTo: SupabaseConfig.passwordResetRedirect,
+      );
 
       _isLoading = false;
       notifyListeners();
@@ -302,6 +338,9 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> logout() async {
     try {
+      // Quitar la suscripción push de este navegador antes de cerrar sesión
+      // (con la sesión aún activa para que RLS permita borrarla).
+      await WebPushService().unsubscribe();
       await SupabaseConfig.auth.signOut();
       await _clearSessionData();
     } catch (e) {

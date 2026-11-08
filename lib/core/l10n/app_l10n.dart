@@ -141,10 +141,6 @@ class AppL10n {
   String get manageWorkoutsSubtitle => isEn
       ? 'Create, edit and assign workouts'
       : 'Crear, editar y asignar rutinas';
-  String get manageMealPlans =>
-      isEn ? 'Manage Meal Plans' : 'Gestionar Planes Alimenticios';
-  String get manageMealPlansSubtitle =>
-      isEn ? 'Create and assign diets' : 'Crear y asignar dietas';
   String get adminPanel => isEn ? 'Admin Panel' : 'Panel de Administración';
   String get adminPanelSubtitle =>
       isEn ? 'View stats and users' : 'Ver estadísticas y usuarios';

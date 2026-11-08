@@ -4,7 +4,10 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../shared/services/biometric_service.dart';
+import '../../../shared/widgets/app_snackbar.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../providers/preferences_provider.dart';
+import '../../../shared/navigation/safe_pop.dart';
 
 class PrivacySettingsScreen extends StatefulWidget {
   const PrivacySettingsScreen({super.key});
@@ -36,14 +39,32 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
 
   Future<void> _toggleBiometric(bool value) async {
     final service = BiometricService();
+    final isEn = AppL10n.of(context).isEn;
     if (value) {
-      // Verificar identidad antes de activar
-      final authenticated = await service.authenticate(
-        reason: 'Verifica tu identidad para activar el bloqueo',
+      // Verificar identidad (o registrar passkey en web) antes de activar
+      final user = Provider.of<AuthProvider>(context, listen: false).currentUser;
+      if (user == null) return;
+      final enabled = await service.enable(
+        userId: user.id,
+        userName: user.email,
+        displayName: user.name,
+        reason: isEn
+            ? 'Verify your identity to enable the lock'
+            : 'Verifica tu identidad para activar el bloqueo',
       );
-      if (!authenticated) return;
+      if (!mounted) return;
+      if (!enabled) {
+        AppSnackbar.error(
+          context,
+          isEn
+              ? 'Could not verify your identity. Try again.'
+              : 'No se pudo verificar tu identidad. Inténtalo de nuevo.',
+        );
+        return;
+      }
+    } else {
+      await service.disable();
     }
-    await service.setEnabled(value);
     if (!mounted) return;
     setState(() => _biometricEnabled = value);
   }
@@ -63,7 +84,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrGo('/settings'),
         ),
         title: Text(l10n.privacy),
       ),
@@ -111,8 +132,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
             _buildSwitchTile(
               title: l10n.isEn ? 'Biometric Lock' : 'Bloqueo Biométrico',
               subtitle: l10n.isEn
-                  ? 'Require fingerprint or Face ID when opening the app'
-                  : 'Requiere huella o Face ID al abrir la app',
+                  ? 'Require fingerprint, Face ID or device PIN to open the app'
+                  : 'Pide huella, Face ID o el PIN del teléfono para abrir la app',
               icon: Icons.fingerprint,
               value: _biometricEnabled,
               onChanged: _toggleBiometric,

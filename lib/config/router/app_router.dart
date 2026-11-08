@@ -4,14 +4,13 @@ import 'package:provider/provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/auth/screens/forgot_password_screen.dart';
+import '../../features/auth/screens/reset_password_link_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/workouts/screens/workout_list_screen.dart';
 import '../../features/workouts/screens/today_workout_screen.dart';
 import '../../features/workouts/screens/workout_detail_readonly_screen.dart';
 import '../../features/workouts/screens/workout_history_screen.dart';
 import '../../features/workouts/screens/workout_calendar_screen.dart';
-import '../../features/meal_plans/screens/meal_plan_list_screen.dart';
-import '../../features/meal_plans/screens/meal_plan_detail_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/profile/screens/edit_profile_screen.dart';
 import '../../features/profile/screens/personal_records_screen.dart';
@@ -41,25 +40,26 @@ int _locationToIndex(String location) {
     return 1;
   }
 
-  if (location.startsWith('/meal-plans') ||
-      location.startsWith('/meal-plan-detail')) {
-    return 2;
-  }
-
   if (location.startsWith('/progress') ||
       location.startsWith('/body-measurements') ||
       location.startsWith('/achievements') ||
       location.startsWith('/settings') ||
+      location.startsWith('/privacy-settings') ||
       location.startsWith('/profile') ||
       location.startsWith('/edit-profile') ||
       location.startsWith('/personal-records')) {
-    return 3;
+    return 2;
   }
 
   return 0;
 }
 
 GoRouter createAppRouter(AuthProvider authProvider) {
+  // Enlace profundo pendiente: en web el usuario puede abrir directamente
+  // /workouts, /progress, etc. Mientras se restaura la sesión guardada se
+  // muestra /login; al terminar se vuelve a la ruta solicitada.
+  String? pendingDeepLink;
+
   return GoRouter(
     initialLocation: '/login',
     refreshListenable: authProvider,
@@ -70,11 +70,27 @@ GoRouter createAppRouter(AuthProvider authProvider) {
         '/login',
         '/register',
         '/forgot-password',
+        '/reset-password',
         '/onboarding',
       };
 
-      if (!isAuth && !publicRoutes.contains(path)) return '/login';
-      if (isAuth && path == '/login') return authProvider.initialRoute;
+      // Raíz del sitio (web) o enlaces de correo de Supabase (/?code=...)
+      if (path == '/' || path.isEmpty) {
+        return isAuth ? authProvider.initialRoute : '/login';
+      }
+
+      if (!isAuth && !publicRoutes.contains(path)) {
+        if (authProvider.isInitializing) {
+          pendingDeepLink = state.uri.toString();
+        }
+        return '/login';
+      }
+      if (isAuth && path == '/login') {
+        final target = pendingDeepLink;
+        pendingDeepLink = null;
+        return target ?? authProvider.initialRoute;
+      }
+      if (!isAuth && !authProvider.isInitializing) pendingDeepLink = null;
       // Password recovery: redirigir a change-password hasta que el usuario
       // complete el cambio de contraseña o cierre sesión
       if (isAuth && authProvider.isPasswordRecovery && path != '/change-password') {
@@ -82,8 +98,11 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       }
       // Admin siempre va al panel de administración
       if (isAuth && authProvider.isAdmin && path == '/home') return '/admin';
-      // Bloquear acceso a rutas admin para usuarios no-admin
-      if (isAuth && !authProvider.isAdmin && path == '/admin') return '/home';
+      // Bloquear acceso a TODAS las rutas admin para usuarios no-admin
+      // (en web cualquiera puede escribir la URL a mano).
+      if (isAuth && !authProvider.isAdmin && path.startsWith('/admin')) {
+        return '/home';
+      }
       // Primer login: redirigir a onboarding si faltan datos de fitness
       if (isAuth && authProvider.needsOnboarding && path != '/onboarding') {
         return '/onboarding';
@@ -103,6 +122,12 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       GoRoute(
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (context, state) => ResetPasswordLinkScreen(
+          tokenHash: state.uri.queryParameters['token_hash'],
+        ),
       ),
       GoRoute(
         path: '/onboarding',
@@ -160,19 +185,6 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           GoRoute(
             path: '/workout-calendar',
             builder: (context, state) => const WorkoutCalendarScreen(),
-          ),
-
-          // Meal plan routes
-          GoRoute(
-            path: '/meal-plans',
-            builder: (context, state) => const MealPlanListScreen(),
-          ),
-          GoRoute(
-            path: '/meal-plan-detail/:id',
-            builder: (context, state) {
-              final mealPlanId = state.pathParameters['id']!;
-              return MealPlanDetailScreen(mealPlanId: mealPlanId);
-            },
           ),
 
           // Profile routes
@@ -321,9 +333,6 @@ class _AppShellState extends State<_AppShell> {
               context.go('/workouts');
               break;
             case 2:
-              context.go('/meal-plans');
-              break;
-            case 3:
               context.go('/profile');
               break;
           }

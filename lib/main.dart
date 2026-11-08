@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -11,7 +12,6 @@ import 'config/supabase_config.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/biometric_lock_screen.dart';
 import 'features/workouts/providers/workout_provider.dart';
-import 'features/meal_plans/providers/meal_plan_provider.dart';
 import 'features/profile/providers/user_provider.dart';
 import 'features/progress/providers/body_measurement_provider.dart';
 import 'features/settings/providers/preferences_provider.dart';
@@ -20,6 +20,7 @@ import 'features/workouts/providers/workout_session_provider.dart';
 import 'features/workouts/providers/workout_progress_provider.dart';
 import 'shared/services/biometric_service.dart';
 import 'shared/services/notification_service.dart';
+import 'shared/web/web_bridge.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,14 +30,20 @@ void main() async {
     debugPrint = (String? message, {int? wrapWidth}) {};
   }
 
+  // Web: URLs limpias (/workouts en lugar de /#/workouts). Necesario para
+  // que los enlaces de correo de Supabase y las notificaciones funcionen.
+  if (kIsWeb) usePathUrlStrategy();
+
   // Inicializar Supabase (credenciales compiladas con --dart-define)
   await SupabaseConfig.initialize();
 
-  // Bloquear orientación a portrait
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  // Bloquear orientación a portrait (en web lo decide el manifest de la PWA)
+  if (!kIsWeb) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
 
   const sentryDsn = String.fromEnvironment('SENTRY_DSN');
 
@@ -86,12 +93,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late final UserProvider _userProvider;
   late final PreferencesProvider _preferencesProvider;
   late final WorkoutProvider _workoutProvider;
-  late final MealPlanProvider _mealPlanProvider;
   late final GoRouter _router;
-  late final _DoubleBackButtonDispatcher _backButtonDispatcher;
+  _DoubleBackButtonDispatcher? _backButtonDispatcher;
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   bool _isLocked = false;
   bool _wasAuthenticated = false;
+  // Web: momento en que la pestaña/PWA pasó a segundo plano.
+  DateTime? _backgroundedAt;
+  // Web: ruta pendiente si la app se abrió desde una notificación.
+  String? _pendingLaunchPath;
+  static const _webLockGrace = Duration(seconds: 30);
 
   @override
   void initState() {
@@ -102,14 +113,37 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _userProvider = UserProvider()..setAuthProvider(_authProvider);
     _preferencesProvider = PreferencesProvider();
     _workoutProvider = WorkoutProvider();
-    _mealPlanProvider = MealPlanProvider();
     _router = createAppRouter(_authProvider);
-    _backButtonDispatcher = _DoubleBackButtonDispatcher(
-      scaffoldMessengerKey: _scaffoldMessengerKey,
-      preferencesProvider: _preferencesProvider,
-    );
+    // En web el botón atrás lo gestiona el navegador.
+    if (!kIsWeb) {
+      _backButtonDispatcher = _DoubleBackButtonDispatcher(
+        scaffoldMessengerKey: _scaffoldMessengerKey,
+        preferencesProvider: _preferencesProvider,
+      );
+    }
     // Registrar el router en NotificationService para manejar deep links
     NotificationService.setRouter(_router);
+
+    if (kIsWeb) {
+      // Notificación tocada con la app abierta → navegar dentro de la app.
+      WebBridge.setNavigateHandler((path) {
+        if (_authProvider.isAuthenticated) {
+          _router.go(path);
+        } else {
+          _pendingLaunchPath = path;
+        }
+      });
+      final launchPath = WebBridge.consumeLaunchPath();
+      if (launchPath.startsWith('/')) _pendingLaunchPath = launchPath;
+    }
+
+    // Sesión restaurada al abrir la app: pedir biometría si está activada.
+    // (Tras un login con contraseña no se pide, porque no hay sesión previa.)
+    if (SupabaseConfig.hasActiveSession) {
+      BiometricService().isEnabled().then((enabled) {
+        if (enabled && mounted) setState(() => _isLocked = true);
+      });
+    }
 
     // Propagar cambios de auth a los providers dependientes fuera del build
     _authProvider.addListener(_onAuthChanged);
@@ -119,6 +153,22 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (kIsWeb) {
+      // En web cambiar de pestaña es muy frecuente: solo se bloquea si la app
+      // estuvo en segundo plano más de [_webLockGrace].
+      if (state == AppLifecycleState.hidden ||
+          state == AppLifecycleState.paused) {
+        _backgroundedAt ??= DateTime.now();
+      } else if (state == AppLifecycleState.resumed) {
+        final since = _backgroundedAt;
+        _backgroundedAt = null;
+        if (since != null &&
+            DateTime.now().difference(since) >= _webLockGrace) {
+          _checkAndLock();
+        }
+      }
+      return;
+    }
     if (state == AppLifecycleState.paused) {
       // Al salir de la app, marcar como bloqueada si biometría está activa
       _checkAndLock();
@@ -139,7 +189,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // de datos de un usuario a otro en el mismo dispositivo.
     if (_wasAuthenticated && !_authProvider.isAuthenticated) {
       _workoutProvider.clearData();
-      _mealPlanProvider.clearData();
+    }
+    // Al quedar autenticado, ir a la ruta pendiente de una notificación.
+    if (!_wasAuthenticated && _authProvider.isAuthenticated) {
+      final pending = _pendingLaunchPath;
+      if (pending != null) {
+        _pendingLaunchPath = null;
+        WidgetsBinding.instance.addPostFrameCallback((_) => _router.go(pending));
+      }
     }
     _wasAuthenticated = _authProvider.isAuthenticated;
   }
@@ -150,7 +207,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _authProvider.removeListener(_onAuthChanged);
     _authProvider.dispose();
     _workoutProvider.dispose();
-    _mealPlanProvider.dispose();
     super.dispose();
   }
 
@@ -160,7 +216,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       providers: [
         ChangeNotifierProvider.value(value: _authProvider),
         ChangeNotifierProvider.value(value: _workoutProvider),
-        ChangeNotifierProvider.value(value: _mealPlanProvider),
         ChangeNotifierProvider.value(value: _userProvider),
         ChangeNotifierProvider(create: (_) => BodyMeasurementProvider()),
         ChangeNotifierProvider.value(value: _preferencesProvider),
@@ -186,13 +241,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             routeInformationProvider: _router.routeInformationProvider,
             routerDelegate: _router.routerDelegate,
             backButtonDispatcher: _backButtonDispatcher,
+            // Web en pantallas anchas (tablet/PC): la app está diseñada para
+            // el móvil, así que se centra en una columna de ancho de teléfono.
+            builder: kIsWeb ? (context, child) => _PhoneFrame(child: child) : null,
             // Siempre indicarle al sistema que nosotros manejamos el botón atrás.
             // Sin esto, Flutter envía canHandlePop=false en pantallas raíz y
             // Android cierra la app directamente sin pasar por nuestro dispatcher.
-            onNavigationNotification: (notification) {
-              SystemNavigator.setFrameworkHandlesBack(true);
-              return true;
-            },
+            onNavigationNotification: kIsWeb
+                ? null
+                : (notification) {
+                    SystemNavigator.setFrameworkHandlesBack(true);
+                    return true;
+                  },
           );
 
           if (_isLocked) {
@@ -254,5 +314,34 @@ class _DoubleBackButtonDispatcher extends RootBackButtonDispatcher {
     // Segunda pulsación dentro de 2 s — salir de la app
     SystemNavigator.pop();
     return true;
+  }
+}
+
+/// Centra la app en una columna de ancho de teléfono cuando la ventana del
+/// navegador es más ancha (tablet, PC). En el móvil no cambia nada.
+class _PhoneFrame extends StatelessWidget {
+  final Widget? child;
+  const _PhoneFrame({required this.child});
+
+  static const double _maxWidth = 520;
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    if (mq.size.width <= _maxWidth || child == null) {
+      return child ?? const SizedBox.shrink();
+    }
+    return ColoredBox(
+      color: const Color(0xFF050505),
+      child: Center(
+        child: SizedBox(
+          width: _maxWidth,
+          child: MediaQuery(
+            data: mq.copyWith(size: Size(_maxWidth, mq.size.height)),
+            child: ClipRect(child: child),
+          ),
+        ),
+      ),
+    );
   }
 }

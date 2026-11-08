@@ -1,12 +1,16 @@
 {
-    "name": "chamos_fitness_center",
-    "short_name": "chamos_fitness_center",
-    "start_url": ".",
+    "id": "/",
+    "name": "Chamos Fitness Center",
+    "short_name": "Chamos Fitness",
+    "start_url": "/",
+    "scope": "/",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#0A0A0A",
+    "theme_color": "#0A0A0A",
+    "description": "Tus rutinas, progreso y logros de Chamos Fitness Center.",
+    "lang": "es",
+    "orientation": "portrait",
+    "categories": ["health", "fitness", "lifestyle"],
     "prefer_related_applications": false,
     "icons": [
         {

@@ -12,6 +12,7 @@ import '../../workouts/providers/workout_session_provider.dart';
 import '../../../shared/widgets/animated_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/coming_soon_workout_card.dart';
+import '../../../shared/widgets/install_app_banner.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -197,6 +198,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 const SizedBox(height: 24),
+
+                // Web: invitar a instalar la app en la pantalla de inicio
+                const InstallAppBanner(),
 
                 // Banner modo offline
                 Consumer<WorkoutProvider>(
@@ -806,9 +810,9 @@ class _UserHomeContentState extends State<_UserHomeContent> {
               child: FadeInCard(
                 delay: 400,
                 child: _QuickActionCard(
-                  title: AppL10n.of(context).plansLabel,
-                  icon: Icons.restaurant_menu,
-                  onTap: () => context.push('/meal-plans'),
+                  title: AppL10n.of(context).myProgress,
+                  icon: Icons.show_chart,
+                  onTap: () => context.go('/progress'),
                 ),
               ),
             ),

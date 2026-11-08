@@ -7,6 +7,7 @@ import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/services/security_service.dart';
 import '../../../shared/services/secure_screen_service.dart';
+import '../../../shared/navigation/safe_pop.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -38,7 +39,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrGo('/login'),
         ),
       ),
       body: SafeArea(

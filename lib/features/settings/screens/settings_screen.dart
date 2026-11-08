@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -9,8 +10,11 @@ import '../providers/preferences_provider.dart';
 import '../../../shared/services/security_service.dart';
 import '../../../shared/services/notification_service.dart';
 import '../../../shared/services/data_export_service.dart';
+import '../../../shared/services/web_push_service.dart';
+import '../../../shared/widgets/install_app_banner.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/app_snackbar.dart';
+import '../../../shared/navigation/safe_pop.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -44,7 +48,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             tooltip: AppL10n.of(context).backTooltip,
-            onPressed: () => context.pop(),
+            onPressed: () => context.popOrGo('/profile'),
           ),
           title: Text(l10n.settings),
         ),
@@ -65,7 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           tooltip: AppL10n.of(context).backTooltip,
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrGo('/profile'),
         ),
         title: Text(l10n.settings),
       ),
@@ -74,13 +78,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           // Notificaciones
           _buildSectionTitle(l10n.sectionNotifications),
+          if (kIsWeb && WebPushService().support == 'ios-needs-install')
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12),
+              child: InstallAppBanner(forNotifications: true),
+            ),
           _buildSwitchTile(
             title: l10n.notifications,
             subtitle: l10n.notificationsSubtitle,
             icon: Icons.notifications_outlined,
             value: prefs.notificationsEnabled,
             onChanged: (value) async {
-              await preferencesProvider.toggleNotifications(value);
+              final ok = await preferencesProvider.toggleNotifications(value);
+              if (!ok && value && context.mounted) {
+                AppSnackbar.error(
+                  context,
+                  kIsWeb &&
+                          WebPushService().support == 'ios-needs-install'
+                      ? (l10n.isEn
+                          ? 'On iPhone, add the app to your Home Screen first.'
+                          : 'En iPhone, primero agrega la app a tu pantalla de inicio.')
+                      : l10n.notifPermissionDenied,
+                );
+              }
             },
           ),
           if (prefs.notificationsEnabled) ...[

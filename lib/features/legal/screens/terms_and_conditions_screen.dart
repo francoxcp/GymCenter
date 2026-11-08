@@ -1,7 +1,7 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
+import '../../../shared/navigation/safe_pop.dart';
 
 class TermsAndConditionsScreen extends StatelessWidget {
   const TermsAndConditionsScreen({super.key});
@@ -13,7 +13,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.popOrGo('/profile'),
         ),
         title: Text(AppL10n.of(context).termsTitle),
       ),

@@ -6,14 +6,23 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_10y.dart' as tz;
+import '../web/web_bridge.dart';
+import 'web_push_service.dart';
 
-/// Servicio centralizado para gestionar notificaciones locales
+/// Servicio centralizado para gestionar notificaciones.
+///
+/// - Android/iOS: notificaciones locales programadas
+///   (flutter_local_notifications).
+/// - Web (PWA): notificaciones inmediatas vía service worker y
+///   recordatorios programados vía Web Push desde Supabase
+///   (ver [WebPushService]).
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _notifications =
+  // Perezoso: en web el plugin nativo nunca se instancia.
+  late final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
   final SupabaseClient _supabase = Supabase.instance.client;
 
@@ -68,14 +77,20 @@ class NotificationService {
   }
 
   void _handlePayload(String payload) {
+    final route = _routeForPayload(payload);
+    if (route != null) _router?.go(route);
+  }
+
+  static String? _routeForPayload(String? payload) {
     switch (payload) {
       case 'workout_reminder':
-        _router?.go('/today-workout');
-        break;
+        return '/today-workout';
       case 'progress_report':
-        _router?.go('/progress');
-        break;
+        return '/progress';
+      case 'achievement':
+        return '/achievements';
     }
+    return null;
   }
 
   /// Inicializa el servicio de notificaciones.
@@ -83,6 +98,15 @@ class NotificationService {
   /// Si falla, deja _isInitialized = false para poder reintentar.
   Future<void> initialize() async {
     if (_isInitialized) return;
+
+    if (kIsWeb) {
+      // En web no hay plugin nativo: el service worker (web/sw.js) se
+      // registra desde gc_bridge.js. Si ya hay permiso, refrescar la
+      // suscripción push por si el navegador la rotó.
+      _isInitialized = true;
+      WebPushService().ensureSubscribed();
+      return;
+    }
 
     try {
       // Inicializar zonas horarias — latest_10y carga solo ±10 años (mucho más rápido)
@@ -159,6 +183,9 @@ class NotificationService {
 
   /// Solicita permisos de notificación (principalmente para iOS)
   Future<bool> requestPermissions() async {
+    if (kIsWeb) {
+      return WebPushService().requestPermissionAndSubscribe();
+    }
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       final result = await _notifications
           .resolvePlatformSpecificImplementation<
@@ -188,6 +215,16 @@ class NotificationService {
   }) async {
     // Garantizar inicialización antes de mostrar
     await initialize();
+
+    if (kIsWeb) {
+      await WebBridge.showNotification(
+        title: title,
+        body: body,
+        tag: payload ?? 'chamos-$id',
+        url: _routeForPayload(payload) ?? '/',
+      );
+      return;
+    }
 
     const androidDetails = AndroidNotificationDetails(
       'chamos_fitness_channel',
@@ -220,6 +257,9 @@ class NotificationService {
     required DateTime scheduledTime,
     String? payload,
   }) async {
+    // En web las notificaciones programadas las envía el servidor (Web Push)
+    if (kIsWeb) return;
+
     // Garantizar inicialización antes de programar
     await initialize();
 
@@ -278,6 +318,9 @@ class NotificationService {
     required TimeOfDay time,
     String? payload,
   }) async {
+    // En web las notificaciones programadas las envía el servidor (Web Push)
+    if (kIsWeb) return;
+
     // Garantizar inicialización antes de programar
     await initialize();
 
@@ -346,16 +389,19 @@ class NotificationService {
 
   /// Cancela una notificación específica
   Future<void> cancelNotification(int id) async {
+    if (kIsWeb) return; // El servidor respeta las preferencias del usuario
     await _notifications.cancel(id);
   }
 
   /// Cancela todas las notificaciones
   Future<void> cancelAllNotifications() async {
+    if (kIsWeb) return; // El servidor respeta notifications_enabled
     await _notifications.cancelAll();
   }
 
   /// Obtiene las notificaciones pendientes
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
+    if (kIsWeb) return [];
     return await _notifications.pendingNotificationRequests();
   }
 
@@ -372,6 +418,13 @@ class NotificationService {
     required TimeOfDay time,
     String? userId,
   }) async {
+    if (kIsWeb) {
+      // El mensaje personalizado lo arma la Edge Function al enviarlo.
+      await WebPushService().ensureSubscribed();
+      await WebPushService().syncReminder(time);
+      return;
+    }
+
     String title = '💪 Hora de entrenar';
     String body = '¡No olvides tu rutina de hoy! Tu cuerpo te lo agradecerá.';
 
@@ -435,6 +488,8 @@ class NotificationService {
 
   /// Programa reporte de progreso semanal (cada domingo a las 9 AM)
   Future<void> scheduleWeeklyProgressReport() async {
+    if (kIsWeb) return; // Lo envía el servidor los domingos (Web Push)
+
     // Garantizar inicialización antes de programar
     await initialize();
 

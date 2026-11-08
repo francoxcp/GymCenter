@@ -15,6 +15,7 @@ import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/services/storage_service.dart';
 import '../../../shared/services/secure_screen_service.dart';
+import '../../../shared/navigation/safe_pop.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -82,7 +83,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         HapticFeedback.mediumImpact();
         AppSnackbar.success(context, AppL10n.of(context).profileUpdated);
-        context.pop();
+        context.popOrGo('/profile');
       }
     } catch (e) {
       if (mounted) {
@@ -112,7 +113,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             _selectedLevel != (user?.level ?? 'Principiante');
 
         if (!hasChanges) {
-          if (context.mounted) context.pop();
+          if (context.mounted) context.popOrGo('/profile');
           return;
         }
 
@@ -138,7 +139,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         );
 
         if (shouldPop == true && context.mounted) {
-          context.pop();
+          context.popOrGo('/profile');
         }
       },
       child: Scaffold(
@@ -432,8 +433,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
 
       // Validar formato de imagen
-      final extension = image.name.split('.').last.toLowerCase();
-      if (!['jpg', 'jpeg', 'png', 'webp'].contains(extension)) {
+      // En web (iPhone/Android) el nombre del archivo puede no traer
+      // extensión: se acepta si el tipo MIME es una imagen soportada.
+      final extension = image.name.contains('.')
+          ? image.name.split('.').last.toLowerCase()
+          : '';
+      final mime = (image.mimeType ?? '').toLowerCase();
+      const allowedMimes = {'image/jpeg', 'image/png', 'image/webp'};
+      if (!['jpg', 'jpeg', 'png', 'webp'].contains(extension) &&
+          !(kIsWeb && allowedMimes.contains(mime))) {
         setState(() => _isUploadingPhoto = false);
         if (!mounted) return;
         AppSnackbar.error(context, AppL10n.of(context).unsupportedFormat);

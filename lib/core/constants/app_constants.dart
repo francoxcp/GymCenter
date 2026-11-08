@@ -23,14 +23,6 @@ class AppConstants {
 
   // Filtros
   static const String filterAll = 'Todos';
-  static const String filterAllMeals = 'TODOS';
-
-  // Categorías de planes de comida
-  static const String categoryDeficit = 'DÉFICIT';
-  static const String categoryKeto = 'KETO';
-  static const String categoryVegan = 'VEGANO';
-  static const String categoryMediterranean = 'MEDITERRÁNEA';
-  static const String categoryHyper = 'HIPER';
 
   // Tiempos de espera
   static const Duration defaultTimeout = Duration(seconds: 30);
@@ -44,7 +36,6 @@ class AppConstants {
   static const String usersTable = 'users';
   static const String workoutsTable = 'workouts';
   static const String exercisesTable = 'exercises';
-  static const String mealPlansTable = 'meal_plans';
   static const String workoutSessionsTable = 'workout_sessions';
 
   // Orden de consultas

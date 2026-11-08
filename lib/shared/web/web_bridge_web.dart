@@ -25,6 +25,8 @@ extension type _GcBridge._(JSObject _) implements JSObject {
       String userId, String userName, String displayName);
   external JSPromise<JSBoolean> passkeyVerify(String credentialId);
   external void download(String fileName, String base64Data, String mimeType);
+  external JSPromise<JSString> shareFile(
+      String fileName, String base64Data, String mimeType, String text);
 }
 
 /// Implementación web: delega en `window.gcBridge` (web/gc_bridge.js).
@@ -147,5 +149,25 @@ class WebBridge {
     String mimeType = 'application/octet-stream',
   }) {
     _bridge?.download(fileName, base64Encode(bytes), mimeType);
+  }
+
+  /// Abre la hoja de compartir del teléfono con el archivo; si no se puede,
+  /// lo descarga. Devuelve 'shared', 'downloaded', 'cancelled' o ''.
+  static Future<String> shareFile({
+    required String fileName,
+    required Uint8List bytes,
+    String mimeType = 'application/octet-stream',
+    String text = '',
+  }) async {
+    final b = _bridge;
+    if (b == null) return '';
+    try {
+      return (await b
+              .shareFile(fileName, base64Encode(bytes), mimeType, text)
+              .toDart)
+          .toDart;
+    } catch (_) {
+      return '';
+    }
   }
 }

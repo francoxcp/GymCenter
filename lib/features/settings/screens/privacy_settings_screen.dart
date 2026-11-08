@@ -83,6 +83,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
+ tooltip: 'Atrás',
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.popOrGo('/settings'),
         ),
@@ -103,7 +104,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
             ),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.shield_outlined,
                   color: AppColors.primary,
                   size: 28,
@@ -114,7 +115,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                     l10n.isEn
                         ? 'Your privacy matters. Control how your data is used within the app.'
                         : 'Tu privacidad importa. Controla cómo se usan tus datos dentro de la app.',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       color: AppColors.textSecondary,
                       height: 1.4,
@@ -216,7 +217,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
           color: AppColors.primary,
@@ -244,11 +245,11 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         secondary: Icon(icon, color: AppColors.primary, size: 22),
         title: Text(
           title,
-          style: const TextStyle(color: Colors.white, fontSize: 15),
+          style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
         ),
         value: value,
         onChanged: onChanged,
@@ -279,15 +280,15 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                      color: Colors.white,
+                  style: TextStyle(
+                      color: AppColors.textPrimary,
                       fontSize: 15,
                       fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textSecondary, fontSize: 12),
                 ),
               ],
@@ -314,13 +315,13 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         leading: Icon(icon, color: AppColors.primary, size: 22),
         title: Text(
           title,
-          style: const TextStyle(color: Colors.white, fontSize: 15),
+          style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
         ),
-        trailing: const Icon(Icons.chevron_right,
+        trailing: Icon(Icons.chevron_right,
             color: AppColors.textSecondary, size: 20),
         onTap: onTap,
       ),

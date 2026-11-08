@@ -74,20 +74,20 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       ),
       child: Column(
         children: [
-          const Icon(Icons.emoji_events, color: Colors.amber, size: 48),
+          Icon(Icons.emoji_events, color: Colors.amber, size: 48),
           const SizedBox(height: 12),
           Text(
             '${provider.totalPoints}',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 48,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
               height: 1,
             ),
           ),
           Text(
             l10n.totalPoints,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               color: AppColors.textSecondary,
             ),
@@ -98,16 +98,16 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
             children: [
               Text(
                 '${provider.unlockedCount}/${provider.totalCount}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(width: 8),
               Text(
                 l10n.unlockedLabel,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                 ),
@@ -136,7 +136,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
           padding: const EdgeInsets.symmetric(vertical: 40),
           child: Text(
             l10n.achievementsUnlockHint,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 16,
             ),
@@ -210,13 +210,13 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: unlocked ? Colors.white : AppColors.textSecondary,
+                    color: unlocked ? AppColors.textPrimary : AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   achievement.description,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,
                   ),
@@ -247,19 +247,19 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
               ),
               Text(
                 l10n.isEn ? 'pts' : 'pts',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
                   color: AppColors.textSecondary,
                 ),
               ),
               if (unlocked)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(top: 4),
                   child:
                       Icon(Icons.check_circle, color: Colors.amber, size: 20),
                 )
               else
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(top: 4),
                   child: Icon(Icons.lock_outline,
                       color: AppColors.textSecondary, size: 20),

@@ -97,15 +97,15 @@ class _WeeklyGoalCardState extends State<WeeklyGoalCard> {
             children: [
               Text(
                 isEn ? 'This week' : 'Esta semana',
-                style: const TextStyle(
-                    color: Colors.white,
+                style: TextStyle(
+                    color: AppColors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               Text(
                 planned > 0 ? '$done/$planned' : '$done',
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppColors.primary,
                     fontSize: 20,
                     fontWeight: FontWeight.bold),
@@ -138,14 +138,14 @@ class _WeeklyGoalCardState extends State<WeeklyGoalCard> {
                       ),
                     ),
                     child: trained
-                        ? const Icon(Icons.check, size: 16, color: Colors.black)
+                        ? Icon(Icons.check, size: 16, color: Colors.black)
                         : null,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     letters[i],
                     style: TextStyle(
-                      color: isToday ? Colors.white : AppColors.textSecondary,
+                      color: isToday ? AppColors.textPrimary : AppColors.textSecondary,
                       fontSize: 11,
                       fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                     ),
@@ -173,7 +173,7 @@ class _WeeklyGoalCardState extends State<WeeklyGoalCard> {
               if (_trainerName != null)
                 isEn ? 'Trainer: $_trainerName' : 'Entrenador: $_trainerName',
             ].join(' · '),
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
         ],
       ),

@@ -137,7 +137,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.error_outline,
                 color: Colors.red,
                 size: 48,
@@ -147,7 +147,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
                 _errorMessage == 'url_unavailable'
                     ? l10n.videoUrlUnavailable
                     : l10n.videoLoadError,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.red,
                   fontSize: 14,
                 ),
@@ -179,7 +179,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
                 Image.network(
                   widget.thumbnailUrl!,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Center(
+                  errorBuilder: (_, __, ___) => Center(
                     child: Icon(
                       Icons.videocam_off,
                       color: AppColors.textSecondary,
@@ -193,14 +193,14 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const CircularProgressIndicator(
+                  CircularProgressIndicator(
                     valueColor:
                         AlwaysStoppedAnimation<Color>(AppColors.primary),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     l10n.loadingVideo,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 14,
                     ),
@@ -239,7 +239,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
                     duration: const Duration(milliseconds: 200),
                     child: Container(
                       padding: const EdgeInsets.all(16),
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: Colors.black54,
                         shape: BoxShape.circle,
                       ),
@@ -247,7 +247,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
                         _controller.value.isPlaying
                             ? Icons.pause
                             : Icons.play_arrow,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         size: 48,
                       ),
                     ),
@@ -275,11 +275,11 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
                   },
                   child: Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: Colors.black54,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.fullscreen,
                       color: AppColors.primary,
                       size: 24,
@@ -296,10 +296,10 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
               child: VideoProgressIndicator(
                 _controller,
                 allowScrubbing: true,
-                colors: const VideoProgressColors(
+                colors: VideoProgressColors(
                   playedColor: AppColors.primary,
                   bufferedColor: Colors.grey,
-                  backgroundColor: Colors.white24,
+                  backgroundColor: AppColors.textPrimary.withValues(alpha: 0.24),
                 ),
                 padding: const EdgeInsets.symmetric(
                   vertical: 8,
@@ -329,8 +329,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
 
                     return Text(
                       '${_formatDuration(position)} / ${_formatDuration(duration)}',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -386,9 +386,10 @@ class VideoThumbnailWidget extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         IconButton(
-                          icon: const Icon(
+ tooltip: 'Cerrar',
+                          icon: Icon(
                             Icons.close,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             size: 32,
                           ),
                           onPressed: () => Navigator.pop(context),
@@ -414,7 +415,7 @@ class VideoThumbnailWidget extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.play_circle_outline,
               color: AppColors.primary,
               size: 48,
@@ -434,7 +435,7 @@ class VideoThumbnailWidget extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.videocam,
                       color: AppColors.primary,
                       size: 14,
@@ -442,8 +443,8 @@ class VideoThumbnailWidget extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       l10n.watchVideo,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                       ),

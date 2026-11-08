@@ -53,6 +53,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         leading: isRecovery
             ? null
             : IconButton(
+ tooltip: 'Atrás',
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => context.popOrGo('/settings'),
               ),
@@ -76,7 +77,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.lock_reset,
                       color: AppColors.primary,
                       size: 32,
@@ -88,16 +89,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         children: [
                           Text(
                             l10n.accountSecurity,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             l10n.changePasswordScreenHint,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               color: AppColors.textSecondary,
                             ),
@@ -115,10 +116,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               if (!isRecovery) ...[
                 Text(
                   l10n.currentPassword,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -128,6 +129,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   prefixIcon: Icons.lock_outline,
                   obscureText: _obscureCurrentPassword,
                   suffixIcon: IconButton(
+ tooltip: 'Ocultar contraseña',
                     icon: Icon(
                       _obscureCurrentPassword
                           ? Icons.visibility_off
@@ -147,10 +149,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               // Nueva contraseña
               Text(
                 l10n.newPassword,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -160,6 +162,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 prefixIcon: Icons.lock,
                 obscureText: _obscureNewPassword,
                 suffixIcon: IconButton(
+ tooltip: 'Ocultar contraseña',
                   icon: Icon(
                     _obscureNewPassword
                         ? Icons.visibility_off
@@ -179,10 +182,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               // Confirmar contraseña
               Text(
                 l10n.confirmNewPassword,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -192,6 +195,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 prefixIcon: Icons.lock,
                 obscureText: _obscureConfirmPassword,
                 suffixIcon: IconButton(
+ tooltip: 'Ocultar contraseña',
                   icon: Icon(
                     _obscureConfirmPassword
                         ? Icons.visibility_off
@@ -223,7 +227,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   children: [
                     Text(
                       l10n.passwordRequirements,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
@@ -258,19 +262,19 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         backgroundColor: AppColors.cardBackground,
                         title: Text(
                           l10n.forgotPassword,
-                          style: const TextStyle(color: Colors.white),
+                          style: TextStyle(color: AppColors.textPrimary),
                         ),
                         content: Text(
                           l10n.forgotPasswordInstructions,
                           style:
-                              const TextStyle(color: AppColors.textSecondary),
+                              TextStyle(color: AppColors.textSecondary),
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context),
                             child: Text(
                               l10n.understood,
-                              style: const TextStyle(color: AppColors.primary),
+                              style: TextStyle(color: AppColors.primary),
                             ),
                           ),
                         ],
@@ -279,7 +283,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   },
                   child: Text(
                     l10n.dontRememberPassword,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
                       decoration: TextDecoration.underline,
@@ -299,7 +303,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.check_circle_outline,
             size: 14,
             color: AppColors.primary,
@@ -307,7 +311,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           const SizedBox(width: 8),
           Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               color: AppColors.textSecondary,
             ),

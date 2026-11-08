@@ -50,12 +50,14 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
+ tooltip: 'Atrás',
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.popOrGo('/progress'),
         ),
         title: Text(AppL10n.of(context).bodyMeasurementsTitle),
         actions: [
           IconButton(
+ tooltip: 'Agregar',
             icon: const Icon(Icons.add),
             onPressed: () => _showAddMeasurementDialog(),
           ),
@@ -83,10 +85,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                       const SizedBox(height: 24),
                       Text(
                         AppL10n.of(context).measurementHistory,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -123,10 +125,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
         children: [
           Text(
             AppL10n.of(context).currentMeasurements,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 20),
@@ -168,7 +170,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             color: AppColors.textSecondary,
           ),
@@ -176,10 +178,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
         if (change != null)
@@ -238,22 +240,22 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
           const SizedBox(height: 4),
           Text(
             value != null ? UnitConverter.lengthValue(value, units) : '--',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
           Text(
             value != null ? UnitConverter.lengthUnit(units) : '',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               color: AppColors.primary,
             ),
           ),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 9,
               color: AppColors.textSecondary,
             ),
@@ -299,10 +301,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
             children: [
               Text(
                 timeAgo,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
               Row(
@@ -311,14 +313,14 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                     measurement.weight != null
                         ? UnitConverter.formatWeight(measurement.weight!, units)
                         : '--',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Icon(
+                  Icon(
                     Icons.chevron_right,
                     color: AppColors.textSecondary,
                     size: 20,
@@ -363,7 +365,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
               ),
               child: Text(
                 measurement.notes!,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
                   fontStyle: FontStyle.italic,
@@ -381,15 +383,15 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       children: [
         Text(
           value != null ? value.toStringAsFixed(1) : '--',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
             color: AppColors.textSecondary,
           ),
@@ -413,16 +415,16 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
             const SizedBox(height: 20),
             Text(
               AppL10n.of(context).noMeasurementsYet,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
             Text(
               AppL10n.of(context).noMeasurementsBody,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,
               ),
@@ -516,10 +518,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
               children: [
                 Text(
                   AppL10n.of(context).newMeasurement,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -565,11 +567,11 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                 const SizedBox(height: 16),
                 TextField(
                   controller: notesController,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: AppColors.textPrimary),
                   maxLines: 3,
                   decoration: InputDecoration(
                     hintText: AppL10n.of(context).notesOptional,
-                    hintStyle: const TextStyle(color: AppColors.textSecondary),
+                    hintStyle: TextStyle(color: AppColors.textSecondary),
                     filled: true,
                     fillColor: AppColors.background,
                     border: OutlineInputBorder(
@@ -591,7 +593,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           side:
-                              const BorderSide(color: AppColors.textSecondary),
+                              BorderSide(color: AppColors.textSecondary),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -599,7 +601,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                         child: Text(
                           AppL10n.of(context).cancel,
                           style:
-                              const TextStyle(color: AppColors.textSecondary),
+                              TextStyle(color: AppColors.textSecondary),
                         ),
                       ),
                     ),
@@ -718,10 +720,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                         ),
                         child: Text(
                           AppL10n.of(context).save,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                       ),
@@ -757,10 +759,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       child: TextField(
         controller: controller,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: AppColors.textPrimary),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: AppColors.textSecondary),
+          labelStyle: TextStyle(color: AppColors.textSecondary),
           prefixIcon: Icon(icon, color: AppColors.primary),
           filled: true,
           fillColor: AppColors.background,
@@ -788,10 +790,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
             child: TextField(
               controller: leftController,
               keyboardType: TextInputType.number,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: AppColors.textPrimary),
               decoration: InputDecoration(
                 labelText: leftLabel,
-                labelStyle: const TextStyle(
+                labelStyle: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 12,
                 ),
@@ -810,10 +812,10 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
             child: TextField(
               controller: rightController,
               keyboardType: TextInputType.number,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: AppColors.textPrimary),
               decoration: InputDecoration(
                 labelText: rightLabel,
-                labelStyle: const TextStyle(
+                labelStyle: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 12,
                 ),

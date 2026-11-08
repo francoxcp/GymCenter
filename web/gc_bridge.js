@@ -273,5 +273,27 @@
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 10000);
     },
+
+    // Compartir un archivo (p. ej. imagen del resumen) con la hoja nativa
+    // del teléfono. Si el navegador no soporta compartir archivos, lo
+    // descarga. Devuelve 'shared', 'downloaded' o 'cancelled'.
+    shareFile: async (fileName, base64Data, mimeType, text) => {
+      const raw = atob(base64Data);
+      const bytes = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+      const type = mimeType || 'application/octet-stream';
+      try {
+        const file = new File([bytes], fileName, { type });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], text: text || undefined });
+          return 'shared';
+        }
+      } catch (e) {
+        if (e && e.name === 'AbortError') return 'cancelled';
+        console.warn('[gcBridge] share failed', e);
+      }
+      window.gcBridge.download(fileName, base64Data, type);
+      return 'downloaded';
+    },
   };
 })();

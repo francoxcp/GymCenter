@@ -138,7 +138,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
               expand: false,
               builder: (_, scrollCtrl) {
                 return Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppColors.cardBackground,
                     borderRadius:
                         BorderRadius.vertical(top: Radius.circular(24)),
@@ -161,23 +161,23 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                           children: [
                             Text(
                               _localizedDayNames(AppL10n.of(context))[day]!,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: AppColors.textPrimary,
                               ),
                             ),
                             const Spacer(),
                             TextButton(
                               onPressed: () => Navigator.pop(ctx),
                               child: Text(AppL10n.of(context).closeLabel,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       color: AppColors.textSecondary)),
                             ),
                           ],
                         ),
                       ),
-                      const Divider(color: AppColors.surface),
+                      Divider(color: AppColors.surface),
                       // Chips de categoría
                       SizedBox(
                         height: 40,
@@ -260,7 +260,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                 child: Center(
                                   child: Text(
                                     AppL10n.of(context).noWorkoutsInCategory,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppColors.textSecondary,
                                       fontSize: 13,
                                     ),
@@ -341,11 +341,11 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
         backgroundColor: AppColors.cardBackground,
         title: Text(
           AppL10n.of(context).discardChanges,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: AppColors.textPrimary),
         ),
         content: Text(
           AppL10n.of(context).discardChangesBody,
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
@@ -356,7 +356,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
               AppL10n.of(context).discard,
-              style: const TextStyle(color: Colors.redAccent),
+              style: TextStyle(color: Colors.redAccent),
             ),
           ),
         ],
@@ -385,7 +385,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
             children: [
               Text(
                 AppL10n.of(context).assignRoutineSubtitle,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
@@ -394,10 +394,10 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
               ),
               Text(
                 widget.user.name,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
@@ -405,7 +405,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
           actions: [
             IconButton(
               tooltip: AppL10n.of(context).clearScheduleTooltip,
-              icon: const Icon(Icons.cleaning_services_outlined,
+              icon: Icon(Icons.cleaning_services_outlined,
                   color: AppColors.textSecondary),
               onPressed: _isSaving
                   ? null
@@ -416,12 +416,12 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                           backgroundColor: AppColors.cardBackground,
                           title: Text(
                             AppL10n.of(context).clearScheduleTitle,
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(color: AppColors.textPrimary),
                           ),
                           content: Text(
                             AppL10n.of(context).clearScheduleBody,
                             style:
-                                const TextStyle(color: AppColors.textSecondary),
+                                TextStyle(color: AppColors.textSecondary),
                           ),
                           actions: [
                             TextButton(
@@ -439,7 +439,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                               },
                               child: Text(
                                 AppL10n.of(context).clearLabel,
-                                style: const TextStyle(color: Colors.redAccent),
+                                style: TextStyle(color: Colors.redAccent),
                               ),
                             ),
                           ],
@@ -463,7 +463,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                       children: [
                         Text(
                           AppL10n.of(context).weeklyRoutineHeader,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: AppColors.textSecondary,
@@ -480,7 +480,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                           ),
                           child: Text(
                             AppL10n.of(context).tapDayToAssign,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               color: AppColors.primary,
                               fontWeight: FontWeight.w500,
@@ -559,7 +559,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                           borderRadius:
                                               BorderRadius.circular(10),
                                         ),
-                                        child: const Center(
+                                        child: Center(
                                           child: Icon(
                                             Icons.bedtime_outlined,
                                             color: Colors.amber,
@@ -578,9 +578,9 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                                 Text(
                                                   _localizedDayNames(AppL10n.of(
                                                       context))[day]!,
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     fontWeight: FontWeight.bold,
-                                                    color: Colors.white,
+                                                    color: AppColors.textPrimary,
                                                     fontSize: 14,
                                                   ),
                                                 ),
@@ -602,7 +602,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                                     child: Text(
                                                       AppL10n.of(context)
                                                           .modifiedBadge,
-                                                      style: const TextStyle(
+                                                      style: TextStyle(
                                                         fontSize: 10,
                                                         color:
                                                             AppColors.primary,
@@ -618,7 +618,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                             Text(
                                               AppL10n.of(context)
                                                   .restDayMessage,
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontSize: 12,
                                                 color: Colors.amber,
                                                 fontWeight: FontWeight.w500,
@@ -629,7 +629,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                               Text(
                                                 AppL10n.of(context)
                                                     .nextTrainingDay(nextDay),
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 11,
                                                   color:
                                                       AppColors.textSecondary,
@@ -683,7 +683,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                     child: Text(
                                       _localizedDayShort(
                                           AppL10n.of(context))[day]!,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.black,
@@ -696,9 +696,9 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                     Text(
                                       _localizedDayNames(
                                           AppL10n.of(context))[day]!,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                        color: AppColors.textPrimary,
                                         fontSize: 14,
                                       ),
                                     ),
@@ -715,7 +715,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                         ),
                                         child: Text(
                                           AppL10n.of(context).modifiedBadge,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 10,
                                             color: AppColors.primary,
                                             fontWeight: FontWeight.w600,
@@ -727,12 +727,12 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                                 ),
                                 subtitle: Text(
                                   workoutName,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: AppColors.primary,
                                     fontSize: 12,
                                   ),
                                 ),
-                                trailing: const Icon(
+                                trailing: Icon(
                                   Icons.edit,
                                   color: AppColors.primary,
                                   size: 22,
@@ -766,7 +766,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                     ),
                   ),
                   child: _isSaving
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 24,
                           height: 24,
                           child: CircularProgressIndicator(
@@ -776,7 +776,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                         )
                       : Text(
                           AppL10n.of(context).saveRoutine,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.black,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -813,7 +813,7 @@ class _UserInfoCard extends StatelessWidget {
             radius: 30,
             child: Text(
               user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
@@ -827,15 +827,15 @@ class _UserInfoCard extends StatelessWidget {
               children: [
                 Text(
                   user.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 Text(
                   user.email,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
                   ),
@@ -843,7 +843,7 @@ class _UserInfoCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   AppL10n.of(context).levelInfo(user.level),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     color: AppColors.primary,
                   ),
@@ -901,7 +901,7 @@ class _BottomSheetTile extends StatelessWidget {
                 title,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? AppColors.primary : Colors.white,
+                  color: isSelected ? AppColors.primary : AppColors.textPrimary,
                 ),
               ),
             ),
@@ -915,7 +915,7 @@ class _BottomSheetTile extends StatelessWidget {
                 ),
                 child: Text(
                   badge!,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     color: AppColors.primary,
                     fontWeight: FontWeight.w600,
@@ -927,13 +927,13 @@ class _BottomSheetTile extends StatelessWidget {
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.textSecondary,
             fontSize: 12,
           ),
         ),
         trailing: isSelected
-            ? const Icon(Icons.check_circle, color: AppColors.primary)
+            ? Icon(Icons.check_circle, color: AppColors.primary)
             : null,
       ),
     );

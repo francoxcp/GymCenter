@@ -75,14 +75,14 @@ class _TrainerLinkCardState extends State<TrainerLinkCard> {
               children: [
                 Text(
                   isEn ? 'Your trainer code' : 'Tu código de entrenador',
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textSecondary, fontSize: 12),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   code ?? '——',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 3,
@@ -92,7 +92,7 @@ class _TrainerLinkCardState extends State<TrainerLinkCard> {
                   isEn
                       ? 'Members enter it to join you.'
                       : 'Tus socios lo escriben para vincularse contigo.',
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textSecondary, fontSize: 11),
                 ),
               ],
@@ -100,7 +100,7 @@ class _TrainerLinkCardState extends State<TrainerLinkCard> {
           ),
           IconButton(
             tooltip: isEn ? 'Copy' : 'Copiar',
-            icon: const Icon(Icons.copy, color: AppColors.primary),
+            icon: Icon(Icons.copy, color: AppColors.primary),
             onPressed: code == null
                 ? null
                 : () {
@@ -111,7 +111,7 @@ class _TrainerLinkCardState extends State<TrainerLinkCard> {
           ),
           IconButton(
             tooltip: isEn ? 'New code' : 'Código nuevo',
-            icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
+            icon: Icon(Icons.refresh, color: AppColors.textSecondary),
             onPressed: _busy ? null : () => _regenerate(auth, isEn),
           ),
         ],
@@ -162,7 +162,7 @@ class _TrainerLinkCardState extends State<TrainerLinkCard> {
               children: [
                 Text(
                   isEn ? 'My trainer' : 'Mi entrenador',
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textSecondary, fontSize: 12),
                 ),
                 const SizedBox(height: 2),
@@ -170,8 +170,8 @@ class _TrainerLinkCardState extends State<TrainerLinkCard> {
                   linked
                       ? (_trainerName ?? '…')
                       : (isEn ? 'Not linked yet' : 'Sin vincular'),
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -185,7 +185,7 @@ class _TrainerLinkCardState extends State<TrainerLinkCard> {
               linked
                   ? (isEn ? 'Change' : 'Cambiar')
                   : (isEn ? 'Enter code' : 'Usar código'),
-              style: const TextStyle(color: AppColors.primary),
+              style: TextStyle(color: AppColors.primary),
             ),
           ),
         ],

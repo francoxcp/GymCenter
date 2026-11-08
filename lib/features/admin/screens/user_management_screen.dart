@@ -39,7 +39,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           children: [
             Text(
               AppL10n.of(context).adminPortal,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: AppColors.primary,
@@ -48,10 +48,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             ),
             Text(
               AppL10n.of(context).userManagement,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
           ],
@@ -93,7 +93,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   },
                   decoration: InputDecoration(
                     hintText: AppL10n.of(context).search,
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                       Icons.search,
                       color: AppColors.textSecondary,
                     ),
@@ -208,7 +208,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.person_off,
                 size: 64,
                 color: AppColors.textSecondary,
@@ -218,7 +218,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 userProvider.searchQuery.isEmpty && _filterRole == 'all'
                     ? AppL10n.of(context).noRegisteredUsers
                     : AppL10n.of(context).noUsersFound,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -231,7 +231,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     : _filterRole != 'all'
                         ? AppL10n.of(context).noUsersWithRole
                         : AppL10n.of(context).usersWillAppear,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 12,
                 ),
@@ -297,7 +297,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               ),
               const SizedBox(height: 20),
               ListTile(
-                leading: const Icon(Icons.insights, color: AppColors.primary),
+                leading: Icon(Icons.insights, color: AppColors.primary),
                 title: Text(AppL10n.of(context).isEn
                     ? 'Training control'
                     : 'Control de entrenamiento'),
@@ -308,7 +308,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.edit, color: Colors.blue),
+                leading: Icon(Icons.edit, color: Colors.blue),
                 title: Text(AppL10n.of(context).editUserLabel),
                 onTap: () {
                   Navigator.pop(context);
@@ -320,11 +320,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   user.role != 'admin' &&
                   (isOwner || user.trainerId == currentUserId))
                 ListTile(
-                  leading: const Icon(Icons.lock_reset, color: AppColors.primary),
+                  leading: Icon(Icons.lock_reset, color: AppColors.primary),
                   title: Text(isEn ? 'Reset password' : 'Restablecer contraseña'),
                   subtitle: Text(
                     isEn ? 'Also activates the account' : 'También activa la cuenta',
-                    style: const TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: AppColors.textSecondary),
                   ),
                   onTap: () {
                     Navigator.pop(context);
@@ -334,7 +334,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               // ── Solo el dueño gestiona roles y entrenadores ──
               if (isOwner && user.role == 'user')
                 ListTile(
-                  leading: const Icon(Icons.sports, color: AppColors.primary),
+                  leading: Icon(Icons.sports, color: AppColors.primary),
                   title: Text(isEn ? 'Assign trainer' : 'Asignar entrenador'),
                   onTap: () {
                     Navigator.pop(context);
@@ -343,7 +343,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 ),
               if (isOwner && user.id != currentUserId && user.role != 'admin')
                 ListTile(
-                  leading: const Icon(Icons.sports_gymnastics,
+                  leading: Icon(Icons.sports_gymnastics,
                       color: Colors.lightBlueAccent),
                   title: Text(user.role == 'trainer'
                       ? (isEn ? 'Remove trainer role' : 'Quitar rol de entrenador')
@@ -355,7 +355,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 ),
               if (isOwner && user.id != currentUserId)
                 ListTile(
-                  leading: const Icon(Icons.admin_panel_settings,
+                  leading: Icon(Icons.admin_panel_settings,
                       color: Colors.orange),
                   title: Text(user.role == 'admin'
                       ? (isEn ? 'Remove owner role' : 'Quitar rol de dueño')
@@ -367,9 +367,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 ),
               if (isOwner && user.id != currentUserId)
                 ListTile(
-                  leading: const Icon(Icons.delete, color: Colors.red),
+                  leading: Icon(Icons.delete, color: Colors.red),
                   title: Text(AppL10n.of(context).deleteUser,
-                      style: const TextStyle(color: Colors.red)),
+                      style: TextStyle(color: Colors.red)),
                   onTap: () {
                     Navigator.pop(context);
                     _confirmDeleteUser(user);
@@ -508,16 +508,16 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
               child: Text(
                 isEn ? 'Trainer for ${user.name}' : 'Entrenador de ${user.name}',
-                style: const TextStyle(
-                    color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.bold),
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.person_off_outlined,
+              leading: Icon(Icons.person_off_outlined,
                   color: AppColors.textSecondary),
               title: Text(isEn ? 'No trainer' : 'Sin entrenador'),
               trailing: user.trainerId == null
-                  ? const Icon(Icons.check, color: AppColors.primary)
+                  ? Icon(Icons.check, color: AppColors.primary)
                   : null,
               onTap: () => _assignTrainer(ctx, user, null),
             ),
@@ -526,7 +526,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     backgroundColor: AppColors.primary,
                     child: Text(
                       t.name.isNotEmpty ? t.name[0].toUpperCase() : '?',
-                      style: const TextStyle(color: Colors.black),
+                      style: TextStyle(color: Colors.black),
                     ),
                   ),
                   title: Text(t.name),
@@ -534,9 +534,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       t.role == 'admin'
                           ? (isEn ? 'Owner' : 'Dueño')
                           : (isEn ? 'Trainer' : 'Entrenador'),
-                      style: const TextStyle(color: AppColors.textSecondary)),
+                      style: TextStyle(color: AppColors.textSecondary)),
                   trailing: user.trainerId == t.id
-                      ? const Icon(Icons.check, color: AppColors.primary)
+                      ? Icon(Icons.check, color: AppColors.primary)
                       : null,
                   onTap: () => _assignTrainer(ctx, user, t.id),
                 )),
@@ -547,7 +547,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   isEn
                       ? 'There are no trainers yet. Use "Make trainer" on a user first.'
                       : 'Aún no hay entrenadores. Primero usa "Hacer entrenador" en un usuario.',
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
               ),
           ],
@@ -670,7 +670,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 ],
                 if (error != null) ...[
                   const SizedBox(height: 12),
-                  Text(error!, style: const TextStyle(color: AppColors.error)),
+                  Text(error!, style: TextStyle(color: AppColors.error)),
                 ],
               ],
             ),
@@ -770,12 +770,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 child: isDeleting
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                       )
                     : Text(AppL10n.of(context).deleteLabel),
@@ -846,16 +846,16 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               color: AppColors.textSecondary,
             ),
@@ -888,7 +888,7 @@ class _UserCard extends StatelessWidget {
           backgroundColor: AppColors.primary,
           child: Text(
             user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.bold,
             ),
@@ -898,9 +898,9 @@ class _UserCard extends StatelessWidget {
           children: [
             Text(
               user.name,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             if (user.role == 'trainer') ...[
@@ -913,7 +913,7 @@ class _UserCard extends StatelessWidget {
                 ),
                 child: Text(
                   AppL10n.of(context).isEn ? 'TRAINER' : 'ENTRENADOR',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
@@ -931,7 +931,7 @@ class _UserCard extends StatelessWidget {
                 ),
                 child: Text(
                   AppL10n.of(context).adminBadge,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
@@ -946,25 +946,25 @@ class _UserCard extends StatelessWidget {
           children: [
             Text(
               user.email,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
             if (trainerName != null)
               Text(
                 '${AppL10n.of(context).isEn ? 'Trainer' : 'Entrenador'}: $trainerName',
-                style: const TextStyle(fontSize: 12, color: AppColors.primary),
+                style: TextStyle(fontSize: 12, color: AppColors.primary),
               ),
             const SizedBox(height: 4),
             Text(
               AppL10n.of(context)
                   .levelAndWorkoutsInfo(user.level, user.completedWorkouts),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 color: AppColors.textSecondary,
               ),
             ),
           ],
         ),
-        trailing: const Icon(Icons.more_vert, color: AppColors.primary),
+        trailing: Icon(Icons.more_vert, color: AppColors.primary),
       ),
     );
   }

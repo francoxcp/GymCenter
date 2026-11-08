@@ -54,7 +54,7 @@ class _ResetPasswordLinkScreenState extends State<ResetPasswordLinkScreen> {
                 ? Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.link_off,
+                      Icon(Icons.link_off,
                           color: AppColors.error, size: 56),
                       const SizedBox(height: 20),
                       Text(
@@ -62,8 +62,8 @@ class _ResetPasswordLinkScreenState extends State<ResetPasswordLinkScreen> {
                             ? 'This link is invalid or has expired'
                             : 'Este enlace no es válido o ya expiró',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
@@ -74,7 +74,7 @@ class _ResetPasswordLinkScreenState extends State<ResetPasswordLinkScreen> {
                             ? 'Request a new password reset email and open the latest link.'
                             : 'Solicita un nuevo correo de recuperación y abre el enlace más reciente.',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textSecondary,
                           height: 1.4,
                         ),
@@ -95,7 +95,7 @@ class _ResetPasswordLinkScreenState extends State<ResetPasswordLinkScreen> {
                         child: Text(
                           isEn ? 'Back to login' : 'Volver al inicio de sesión',
                           style:
-                              const TextStyle(color: AppColors.textSecondary),
+                              TextStyle(color: AppColors.textSecondary),
                         ),
                       ),
                     ],
@@ -103,12 +103,12 @@ class _ResetPasswordLinkScreenState extends State<ResetPasswordLinkScreen> {
                 : Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const CircularProgressIndicator(
+                      CircularProgressIndicator(
                           color: AppColors.primary),
                       const SizedBox(height: 20),
                       Text(
                         isEn ? 'Verifying link…' : 'Verificando enlace…',
-                        style: const TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: AppColors.textSecondary),
                       ),
                     ],
                   ),

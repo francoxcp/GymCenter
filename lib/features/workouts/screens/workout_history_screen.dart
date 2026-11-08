@@ -9,6 +9,7 @@ import '../providers/workout_session_provider.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import 'package:intl/intl.dart';
 import '../../../shared/navigation/safe_pop.dart';
+import '../../social/comments_sheet.dart';
 
 class WorkoutHistoryScreen extends StatefulWidget {
   const WorkoutHistoryScreen({super.key});
@@ -59,6 +60,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
+ tooltip: 'Atrás',
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.popOrGo('/workouts'),
         ),
@@ -82,10 +84,10 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                       const SizedBox(height: 24),
                       Text(
                         AppL10n.of(context).recentSessions,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -123,10 +125,10 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
         children: [
           Text(
             AppL10n.of(context).generalSummary,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 20),
@@ -173,15 +175,15 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             color: AppColors.textSecondary,
           ),
@@ -239,7 +241,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
 
     return Text(
       dateText,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.bold,
         color: AppColors.textSecondary,
@@ -276,7 +278,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                   color: AppColors.primary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.fitness_center,
                   color: AppColors.primary,
                   size: 24,
@@ -289,15 +291,15 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                   children: [
                     Text(
                       AppL10n.of(context).completeWorkoutLabel,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     Text(
                       DateFormat('HH:mm').format(session.date),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,
                       ),
@@ -317,12 +319,12 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.check_circle,
+                      Icon(Icons.check_circle,
                           color: Colors.green, size: 16),
                       const SizedBox(width: 4),
                       Text(
                         AppL10n.of(context).completedLabel,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           color: Colors.green,
                           fontWeight: FontWeight.bold,
@@ -367,12 +369,27 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
           const SizedBox(height: 8),
           Text(
             totalSets > 0
-                ? '$doneSets/$totalSets series × ${(completionRate * 100).toInt()}% completado'
+                ? '$doneSets/$totalSets series · ${(completionRate * 100).toInt()}% completado'
                 : AppL10n.of(context)
                     .percentCompleted((completionRate * 100).toInt()),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               color: AppColors.textSecondary,
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () => showCommentsSheet(
+                context,
+                sessionId: session.id,
+                title: 'Comentarios del entreno',
+              ),
+              icon: const Icon(Icons.chat_bubble_outline, size: 18),
+              label: const Text('Comentarios'),
+              style: TextButton.styleFrom(
+                  minimumSize: const Size(48, 44),
+                  foregroundColor: AppColors.primary),
             ),
           ),
         ],
@@ -387,7 +404,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
         const SizedBox(width: 4),
         Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             color: AppColors.textSecondary,
           ),
@@ -411,16 +428,16 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
             const SizedBox(height: 20),
             Text(
               AppL10n.of(context).noHistoryYet,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
             Text(
               AppL10n.of(context).noHistoryBody,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,
               ),
@@ -441,10 +458,10 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
               ),
               child: Text(
                 AppL10n.of(context).exploreWorkouts,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ),

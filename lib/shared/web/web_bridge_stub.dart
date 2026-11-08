@@ -47,4 +47,12 @@ class WebBridge {
     required Uint8List bytes,
     String mimeType = 'application/octet-stream',
   }) {}
+
+  static Future<String> shareFile({
+    required String fileName,
+    required Uint8List bytes,
+    String mimeType = 'application/octet-stream',
+    String text = '',
+  }) async =>
+      '';
 }

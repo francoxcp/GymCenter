@@ -81,13 +81,14 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
+ tooltip: 'Atrás',
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.popOrGo('/workouts'),
         ),
         title: Text(AppL10n.of(context).workoutCalendar),
         actions: [
           if (_isLoading)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(right: 16),
               child: SizedBox(
                 width: 20,
@@ -136,26 +137,26 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
               calendarStyle: CalendarStyle(
                 outsideDaysVisible: false,
                 weekendTextStyle:
-                    const TextStyle(color: AppColors.textSecondary),
-                defaultTextStyle: const TextStyle(color: Colors.white),
+                    TextStyle(color: AppColors.textSecondary),
+                defaultTextStyle: TextStyle(color: AppColors.textPrimary),
                 todayDecoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.5),
                   shape: BoxShape.circle,
                 ),
-                selectedDecoration: const BoxDecoration(
+                selectedDecoration: BoxDecoration(
                   color: AppColors.primary,
                   shape: BoxShape.circle,
                 ),
-                markerDecoration: const BoxDecoration(
+                markerDecoration: BoxDecoration(
                   color: Colors.green,
                   shape: BoxShape.circle,
                 ),
               ),
-              headerStyle: const HeaderStyle(
+              headerStyle: HeaderStyle(
                 formatButtonVisible: false,
                 titleCentered: true,
                 titleTextStyle: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -168,7 +169,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
                   color: AppColors.primary,
                 ),
               ),
-              daysOfWeekStyle: const DaysOfWeekStyle(
+              daysOfWeekStyle: DaysOfWeekStyle(
                 weekdayStyle: TextStyle(
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.bold,
@@ -272,15 +273,15 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
             color: AppColors.textSecondary,
           ),
@@ -305,10 +306,10 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
         children: [
           Text(
             dateStr,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
@@ -384,16 +385,16 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
               children: [
                 Text(
                   event.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 if (event.isCompleted)
                   Text(
                     l10n.minutesCompletedLabel(event.durationMinutes),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
                     ),
@@ -401,7 +402,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
                 else
                   Text(
                     l10n.scheduledLabel,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
                     ),
@@ -418,7 +419,7 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
               ),
               child: Text(
                 l10n.doneLabel,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   color: Colors.green,
                   fontWeight: FontWeight.bold,

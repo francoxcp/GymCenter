@@ -19,6 +19,7 @@ import '../models/workout_progress.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/video_player_widget.dart';
 import 'workout_summary_screen.dart';
+import '../services/workout_completion.dart';
 import '../../../features/progress/providers/body_measurement_provider.dart';
 import '../../../shared/services/unsaved_changes_guard.dart';
 import '../../../shared/services/offline_cache_service.dart';
@@ -282,8 +283,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         backgroundColor: AppColors.surface,
         title: Text(
           AppL10n.of(context).incompleteWorkoutFound,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: AppColors.textPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -293,7 +294,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           children: [
             Text(
               workoutName,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.primary,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -302,7 +303,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             const SizedBox(height: 8),
             Text(
               AppL10n.of(context).startedLabel(timeAgo),
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 14,
               ),
@@ -310,7 +311,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             const SizedBox(height: 16),
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.fitness_center,
                   color: AppColors.primary,
                   size: 20,
@@ -318,8 +319,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 const SizedBox(width: 8),
                 Text(
                   AppL10n.of(context).progressLabel(progressPercent),
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -331,7 +332,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               value: progressPercent / 100,
               backgroundColor: AppColors.background,
               valueColor:
-                  const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  AlwaysStoppedAnimation<Color>(AppColors.primary),
             ),
           ],
         ),
@@ -344,7 +345,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             },
             child: Text(
               AppL10n.of(context).startFromScratch,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -504,7 +505,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.pause_circle_outline_rounded,
                 color: AppColors.primary,
                 size: 80,
@@ -512,8 +513,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               const SizedBox(height: 16),
               Text(
                 AppL10n.of(context).routineInCourseTitle,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: AppColors.textPrimary,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 2,
@@ -522,7 +523,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               const SizedBox(height: 8),
               Text(
                 AppL10n.of(context).whatDoYouWantToDo,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 14,
                 ),
@@ -530,10 +531,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               const SizedBox(height: 32),
               ElevatedButton.icon(
                 onPressed: () => Navigator.pop(ctx, 'stay'),
-                icon: const Icon(Icons.arrow_back_rounded, color: Colors.black),
+                icon: Icon(Icons.arrow_back_rounded, color: Colors.black),
                 label: Text(
                   AppL10n.of(context).continueRoutine,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -550,14 +551,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               const SizedBox(height: 16),
               TextButton.icon(
                 onPressed: () => Navigator.pop(ctx, 'save_later'),
-                icon: const Icon(
+                icon: Icon(
                   Icons.exit_to_app_rounded,
                   color: AppColors.textSecondary,
                   size: 20,
                 ),
                 label: Text(
                   AppL10n.of(context).continueLater,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -566,7 +567,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               ),
               const SizedBox(height: 12),
               Divider(
-                color: Colors.white.withValues(alpha: 0.12),
+                color: AppColors.textPrimary.withValues(alpha: 0.12),
                 indent: 48,
                 endIndent: 48,
                 height: 1,
@@ -574,14 +575,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               const SizedBox(height: 12),
               TextButton.icon(
                 onPressed: () => Navigator.pop(ctx, 'terminate'),
-                icon: const Icon(
+                icon: Icon(
                   Icons.stop_circle_outlined,
                   color: Colors.redAccent,
                   size: 20,
                 ),
                 label: Text(
                   AppL10n.of(context).endRoutine,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.redAccent,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -617,12 +618,12 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Text(
             AppL10n.of(context).endRoutineTitle,
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: AppColors.textPrimary, fontWeight: FontWeight.bold),
           ),
           content: Text(
             AppL10n.of(context).endRoutineConfirm,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
             TextButton(
@@ -633,7 +634,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               onPressed: () => Navigator.pop(ctx, true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.redAccent,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.textPrimary,
               ),
               child: Text(AppL10n.of(context).endAction),
             ),
@@ -641,10 +642,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         ),
       );
       if (confirmed == true && mounted) {
-        // Mostrar resumen con los datos parciales ya completados.
-        // _showWorkoutSummary guarda los pesos y la sesión en BD.
+        // Solo se cierra si está todo registrado; si no, se muestra qué falta.
         if (partialWorkout != null) {
-          _showWorkoutSummary(partialWorkout);
+          await _tryFinish(partialWorkout, fromExitMenu: true);
         } else {
           // Fallback: sin workout cargado, salir directamente
           final progressProvider = context.read<WorkoutProgressProvider>();
@@ -713,10 +713,160 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         curve: Curves.easeOutCubic,
       );
     } else {
-      debugPrint('Último ejercicio completado, mostrando resumen');
-      _showWorkoutSummary(workout);
+      _tryFinish(workout);
     }
   }
+
+  List<PendingExercise> _pendingFor(Workout workout) =>
+      WorkoutCompletion.pending(
+        names: workout.exercises.map((e) => e.name).toList(),
+        completed: _completedSets,
+        weights: _setWeights,
+        weightRequired:
+            workout.exercises.map((e) => !_isCardioExercise(e)).toList(),
+      );
+
+  /// Solo deja terminar con todas las series hechas y sus pesos anotados.
+  Future<void> _tryFinish(Workout workout, {bool fromExitMenu = false}) async {
+    final pending = _pendingFor(workout);
+    if (pending.isEmpty) {
+      _showWorkoutSummary(workout);
+      return;
+    }
+    HapticFeedback.mediumImpact();
+    final en = AppL10n.of(context).isEn;
+    final total = WorkoutCompletion.totalMissing(pending);
+    final plural = total == 1 ? '' : 's';
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => SafeArea(
+        child: ConstrainedBox(
+          constraints:
+              BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.75),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Semantics(
+                  header: true,
+                  child: Row(children: [
+                    Icon(Icons.playlist_add_check,
+                        color: Colors.orangeAccent, size: 28),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        en
+                            ? '$total set$plural left to log'
+                            : 'Te falta${total == 1 ? '' : 'n'} $total serie$plural por registrar',
+                        style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ]),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  en
+                      ? 'To finish, mark every set as done and log the weight you used.'
+                      : 'Para terminar, marca cada serie como hecha y anota el peso que usaste.',
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      for (final p in pending)
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          minVerticalPadding: 10,
+                          title: Text(p.name,
+                              style: TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w600)),
+                          subtitle: Text(
+                            [
+                              if (p.unfinishedSets.isNotEmpty)
+                                '${en ? 'Not done' : 'Sin hacer'}: ${p.unfinishedSets.join(', ')}',
+                              if (p.setsWithoutWeight.isNotEmpty)
+                                '${en ? 'No weight' : 'Sin peso'}: ${p.setsWithoutWeight.join(', ')}',
+                            ].join(' · '),
+                            style: TextStyle(color: Colors.orangeAccent),
+                          ),
+                          trailing: TextButton(
+                            onPressed: () =>
+                                Navigator.pop(ctx, 'go:${p.index}'),
+                            child: Text(en ? 'Go' : 'Ir'),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        Navigator.pop(ctx, 'go:${pending.first.index}'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.black,
+                      minimumSize: const Size.fromHeight(52),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text(
+                      en ? 'Complete pending sets' : 'Completar lo pendiente',
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                if (fromExitMenu) ...[
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(ctx, 'save_later'),
+                      style: TextButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48)),
+                      child: Text(en
+                          ? 'Save and continue later'
+                          : 'Guardar y continuar después'),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (!mounted) return;
+    if (choice == 'save_later') {
+      await _handleExitChoice('save_later');
+      return;
+    }
+    if (fromExitMenu) _resumeWorkout();
+    if (choice != null && choice.startsWith('go:')) {
+      final idx = int.tryParse(choice.substring(3)) ?? 0;
+      setState(() => _currentExerciseIndex = idx);
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(idx,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic);
+      }
+    }
+  }
+
 
   void _previousExercise() {
     if (_currentExerciseIndex > 0) {
@@ -1022,7 +1172,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     // Repeticiones reales de esta serie (por defecto, las planificadas)
     var repsValue = _setReps[exerciseIndex]?[setIndex] ?? exercise.reps;
 
-    void saveWeight(String rawText, void Function() closeSheet) {
+    void saveWeight(String rawText, void Function() closeSheet,
+        {bool bodyweight = false}) {
+      if (bodyweight) rawText = '';
       final inputLbs = double.tryParse(rawText.replaceAll(',', '.'));
       if (rawText.trim().isNotEmpty && inputLbs == null) {
         AppSnackbar.error(context, AppL10n.of(context).enterValidNumber);
@@ -1032,8 +1184,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         AppSnackbar.error(context, AppL10n.of(context).weightMustBePositive);
         return;
       }
-      final weight = inputLbs != null ? _toKg(inputLbs) : null;
-      final isNewPR = weight != null && (pr == null || weight > pr);
+      // 0 = peso corporal (cuenta como registrado, no como récord)
+      final double? weight =
+          bodyweight ? 0.0 : (inputLbs != null ? _toKg(inputLbs) : null);
+      final isNewPR =
+          weight != null && weight > 0 && (pr == null || weight > pr);
       setState(() {
         _setWeights[exerciseIndex] ??= {};
         _setWeights[exerciseIndex]![setIndex] = weight;
@@ -1055,7 +1210,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 const SizedBox(width: 10),
                 Text(
                   AppL10n.of(context).newPersonalRecord(_fmtWeight(weight)),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
@@ -1083,7 +1238,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             bottom: MediaQuery.of(ctx).viewInsets.bottom,
           ),
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
@@ -1109,8 +1264,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                     children: [
                       Text(
                         AppL10n.of(context).weightSetTitle(setIndex + 1),
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1167,13 +1322,13 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                     },
                     onSubmitted: (val) =>
                         saveWeight(val, () => Navigator.pop(ctx)),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
                       fontSize: 40,
                       fontWeight: FontWeight.bold,
                       letterSpacing: -1,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: '0',
                       hintStyle: TextStyle(
                         color: AppColors.textSecondary,
@@ -1210,13 +1365,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                           AppL10n.of(context).isEn
                               ? 'Reps done'
                               : 'Reps hechas',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 14,
                           ),
                         ),
                         const Spacer(),
                         IconButton(
+ tooltip: 'Restar',
                           onPressed: repsValue > 0
                               ? () => setSheetState(() => repsValue--)
                               : null,
@@ -1231,20 +1387,21 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                             style: TextStyle(
                               color: repsValue < exercise.reps
                                   ? Colors.orangeAccent
-                                  : Colors.white,
+                                  : AppColors.textPrimary,
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                         IconButton(
+ tooltip: 'Sumar',
                           onPressed: () => setSheetState(() => repsValue++),
                           icon: const Icon(Icons.add_circle_outline),
                           color: AppColors.primary,
                         ),
                         Text(
                           '/ ${exercise.reps}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 14,
                           ),
@@ -1254,6 +1411,32 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // Peso corporal (flexiones, dominadas, abdominales…)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => saveWeight('', () => Navigator.pop(ctx),
+                          bodyweight: true),
+                      icon: const Icon(Icons.accessibility_new, size: 20),
+                      label: Text(AppL10n.of(context).isEn
+                          ? 'Bodyweight (no extra load)'
+                          : 'Peso corporal (sin carga)'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textSecondary,
+                        minimumSize: const Size.fromHeight(48),
+                        side: BorderSide(
+                            color: AppColors.textSecondary
+                                .withValues(alpha: 0.4)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
 
                 // Botón Listo
                 Padding(
@@ -1404,7 +1587,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 const SizedBox(height: 3),
                 Text(
                   detail,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
                     height: 1.35,
@@ -1492,7 +1675,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         maxChildSize: 0.85,
         expand: false,
         builder: (_, scroll) => Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppColors.cardBackground,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
@@ -1516,10 +1699,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                     Expanded(
                       child: Text(
                         exerciseName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ),
@@ -1540,7 +1723,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                             const SizedBox(width: 4),
                             Text(
                               _fmtWeight(_exercisePRs[exerciseIndex]!),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.amber,
@@ -1552,13 +1735,13 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   ],
                 ),
               ),
-              const Divider(height: 24, color: AppColors.surface),
+              Divider(height: 24, color: AppColors.surface),
               Expanded(
                 child: sessions.isEmpty
                     ? Center(
                         child: Text(
                           AppL10n.of(context).noPreviousHistory,
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: AppColors.textSecondary, fontSize: 14),
                         ),
                       )
@@ -1589,7 +1772,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                                     children: [
                                       Text(
                                         date,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 13,
                                           color: AppColors.textSecondary,
                                         ),
@@ -1614,9 +1797,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                                               w != null
                                                   ? '${_fmtWeight(w)}${r != null ? ' × $r' : ''}'
                                                   : '–',
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontSize: 12,
-                                                color: Colors.white70,
+                                                color: AppColors.textPrimary.withValues(alpha: 0.7),
                                               ),
                                             ),
                                           );
@@ -1628,7 +1811,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                                 if (maxW > 0)
                                   Text(
                                     _fmtWeight(maxW),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.primary,
@@ -1657,6 +1840,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         caloriesBurned: _summaryCaloriesBurned,
         totalVolume: _summaryTotalVolume,
         completedSets: _completedSets,
+        newRecords: _newPRsThisSession.length,
       );
     }
 
@@ -1677,7 +1861,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.fitness_center_outlined,
                 size: 80,
                 color: AppColors.textSecondary,
@@ -1685,17 +1869,17 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               const SizedBox(height: 24),
               Text(
                 AppL10n.of(context).noAssignedWorkout,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
                 AppL10n.of(context).contactTrainer,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                 ),
@@ -1717,7 +1901,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         body: Center(
           child: Text(
             AppL10n.of(context).loadingWorkoutError,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: AppColors.textPrimary),
           ),
         ),
       );
@@ -1764,7 +1948,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 children: [
                   Text(
                     AppL10n.of(context).myWorkoutHeader,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: AppColors.primary,
@@ -1773,10 +1957,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   ),
                   Text(
                     workout.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -1808,7 +1992,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                       ),
                       child: Text(
                         '$totalCompletedSets/$totalSets',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
@@ -1830,7 +2014,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                     value: value,
                     backgroundColor: AppColors.surface,
                     valueColor:
-                        const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        AlwaysStoppedAnimation<Color>(AppColors.primary),
                     minHeight: 6,
                   ),
                 ),
@@ -1864,6 +2048,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                           bottom: 0,
                           child: Center(
                             child: IconButton(
+ tooltip: 'Anterior',
                               icon: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
@@ -1871,7 +2056,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                                       AppColors.surface.withValues(alpha: 0.9),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.chevron_left,
+                                child: Icon(Icons.chevron_left,
                                     color: AppColors.primary),
                               ),
                               onPressed: _previousExercise,
@@ -1885,6 +2070,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                           bottom: 0,
                           child: Center(
                             child: IconButton(
+ tooltip: 'Siguiente',
                               icon: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
@@ -1892,7 +2078,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                                       AppColors.surface.withValues(alpha: 0.9),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.chevron_right,
+                                child: Icon(Icons.chevron_right,
                                     color: AppColors.primary),
                               ),
                               onPressed: () =>
@@ -1931,7 +2117,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 builder: (context, value, child) => Text(
                   AppL10n.of(context)
                       .exerciseProgress(value, workout.exercises.length),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,
                     fontWeight: FontWeight.w600,
@@ -1949,12 +2135,12 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.check_circle,
+                      Icon(Icons.check_circle,
                           size: 16, color: AppColors.primary),
                       const SizedBox(width: 4),
                       Text(
                         AppL10n.of(context).completedLabel.toUpperCase(),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
@@ -1975,10 +2161,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             child: Text(
               exercise.name,
               key: ValueKey(exercise.name),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
@@ -1995,7 +2181,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             ),
             child: Text(
               exercise.muscleGroup.toUpperCase(),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
                 color: AppColors.primary,
@@ -2033,15 +2219,15 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.info_outline,
+                    Icon(Icons.info_outline,
                         size: 16, color: AppColors.primary),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         filtered,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           height: 1.5,
                         ),
                       ),
@@ -2077,7 +2263,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.videocam_off_outlined,
                       size: 64,
                       color: AppColors.textSecondary,
@@ -2085,7 +2271,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                     const SizedBox(height: 12),
                     Text(
                       AppL10n.of(context).videoUnavailable,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 14,
                       ),
@@ -2136,7 +2322,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 children: [
                   Text(
                     AppL10n.of(context).restingTitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
@@ -2161,7 +2347,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                       ),
                       Text(
                         AppL10n.of(context).secondsLabel,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
                         ),
@@ -2183,7 +2369,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                     },
                     child: Text(
                       AppL10n.of(context).skipRest,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w600,
                       ),
@@ -2208,10 +2394,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           // Sets Checklist con animaciones
           Text(
             AppL10n.of(context).markCompletedSets,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
@@ -2226,7 +2412,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 scale: isLastCompleted && isCompleted
                     ? _celebrationController
                     : const AlwaysStoppedAnimation(1.0),
-                child: InkWell(
+                child: Semantics(
+                  button: true,
+                  checked: isCompleted,
+                  label: 'Serie ${setIndex + 1}, '
+                      '${isCompleted ? 'hecha' : 'pendiente'}'
+                      '${_setWeights[exerciseIndex]?[setIndex] == null ? ', sin peso' : _setWeights[exerciseIndex]![setIndex] == 0 ? ', peso corporal' : ', ${_fmtWeight(_setWeights[exerciseIndex]![setIndex]!)}'}',
+                  onTapHint: isCompleted ? 'desmarcar' : 'marcar como hecha',
+                  child: InkWell(
                   onTap: () => _toggleSet(exerciseIndex, setIndex),
                   borderRadius: BorderRadius.circular(12),
                   child: AnimatedContainer(
@@ -2281,7 +2474,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color:
-                                isCompleted ? AppColors.primary : Colors.white,
+                                isCompleted ? AppColors.primary : AppColors.textPrimary,
                           ),
                         ),
                         const Spacer(),
@@ -2295,13 +2488,16 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                           isNewPR: _newPRsThisSession.contains(exerciseIndex) &&
                               _setWeights[exerciseIndex]?[setIndex] ==
                                   _exercisePRs[exerciseIndex],
+                          missing: isCompleted &&
+                              !_isCardioExercise(exercise) &&
+                              _setWeights[exerciseIndex]?[setIndex] == null,
                           onTap: () => _showWeightDialog(
                               exerciseIndex, setIndex, exercise),
                         ),
                       ],
                     ),
                   ),
-                ),
+                )),
               ),
             );
           }),
@@ -2352,16 +2548,16 @@ class _InfoCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 color: AppColors.textSecondary,
               ),
@@ -2405,7 +2601,7 @@ class _HistoryButton extends StatelessWidget {
           color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.bar_chart_rounded,
@@ -2463,6 +2659,7 @@ class _WeightChip extends StatelessWidget {
   final int reps;
   final bool isNewPR;
   final bool belowTarget;
+  final bool missing;
   final VoidCallback onTap;
 
   const _WeightChip({
@@ -2471,6 +2668,7 @@ class _WeightChip extends StatelessWidget {
     required this.onTap,
     this.isNewPR = false,
     this.belowTarget = false,
+    this.missing = false,
   });
 
   @override
@@ -2478,7 +2676,9 @@ class _WeightChip extends StatelessWidget {
     final hasWeight = weight != null;
     // weight está en kg internamente; mostrar en lbs
     final lbs = hasWeight ? weight! * 2.20462 : null;
-    final weightLabel = lbs != null
+    final weightLabel = weight == 0
+        ? 'corporal'
+        : lbs != null
         ? (lbs == lbs.roundToDouble()
             ? '${lbs.toInt()} lbs'
             : '${lbs.toStringAsFixed(1)} lbs')
@@ -2513,7 +2713,9 @@ class _WeightChip extends StatelessWidget {
                     ? Colors.amber
                     : hasWeight
                         ? AppColors.primary
-                        : AppColors.textSecondary.withValues(alpha: 0.4),
+                        : missing
+                            ? Colors.orangeAccent
+                            : AppColors.textSecondary.withValues(alpha: 0.4),
               ),
             ),
             child: Row(
@@ -2532,7 +2734,9 @@ class _WeightChip extends StatelessWidget {
                         ? Colors.amber
                         : hasWeight
                             ? AppColors.primary
-                            : AppColors.textSecondary,
+                            : missing
+                                ? Colors.orangeAccent
+                                : AppColors.textSecondary,
                   ),
                 ),
               ],

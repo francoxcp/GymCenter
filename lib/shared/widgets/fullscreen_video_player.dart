@@ -197,7 +197,7 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.error_outline,
             color: Colors.red,
             size: 64,
@@ -207,7 +207,7 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
             _errorMessage == 'url_unavailable'
                 ? l10n.videoUrlUnavailable
                 : l10n.videoLoadError,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.red,
               fontSize: 16,
             ),
@@ -232,13 +232,13 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(
+          CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
           ),
           const SizedBox(height: 16),
           Text(
             l10n.loadingVideo,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 16,
             ),
@@ -256,14 +256,15 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
           top: 16,
           left: 16,
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: Colors.black54,
               shape: BoxShape.circle,
             ),
             child: IconButton(
-              icon: const Icon(
+ tooltip: 'Cerrar',
+              icon: Icon(
                 Icons.close,
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 size: 28,
               ),
               onPressed: () => Navigator.pop(context),
@@ -287,8 +288,8 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: AppColors.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -302,13 +303,13 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
             onTap: _togglePlayPause,
             child: Container(
               padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: Colors.black54,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 size: 56,
               ),
             ),
@@ -347,23 +348,23 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
                       children: [
                         Text(
                           _formatDuration(position),
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const Text(
+                        Text(
                           ' / ',
                           style: TextStyle(
-                            color: Colors.white70,
+                            color: AppColors.textPrimary.withValues(alpha: 0.7),
                             fontSize: 14,
                           ),
                         ),
                         Text(
                           _formatDuration(duration),
-                          style: const TextStyle(
-                            color: Colors.white70,
+                          style: TextStyle(
+                            color: AppColors.textPrimary.withValues(alpha: 0.7),
                             fontSize: 14,
                           ),
                         ),
@@ -376,10 +377,10 @@ class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
                 VideoProgressIndicator(
                   _controller,
                   allowScrubbing: true,
-                  colors: const VideoProgressColors(
+                  colors: VideoProgressColors(
                     playedColor: AppColors.primary,
                     bufferedColor: Colors.grey,
-                    backgroundColor: Colors.white24,
+                    backgroundColor: AppColors.textPrimary.withValues(alpha: 0.24),
                   ),
                   padding: EdgeInsets.zero,
                 ),

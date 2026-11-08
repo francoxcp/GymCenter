@@ -172,14 +172,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 child: Image.network(
                                   currentUser!.photoUrl!,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => const Icon(
+                                  errorBuilder: (_, __, ___) => Icon(
                                     Icons.person,
                                     size: 60,
                                     color: AppColors.textSecondary,
                                   ),
                                 ),
                               )
-                            : const Icon(
+                            : Icon(
                                 Icons.person,
                                 size: 60,
                                 color: AppColors.textSecondary,
@@ -192,22 +192,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           onTap: _handleProfilePhotoChange,
                           child: Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               color: AppColors.primary,
                               shape: BoxShape.circle,
                             ),
                             child: _isUploadingPhoto
-                                ? const SizedBox(
+                                ? SizedBox(
                                     width: 20,
                                     height: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      color: Colors.white,
+                                      color: AppColors.textPrimary,
                                     ),
                                   )
-                                : const Icon(
+                                : Icon(
                                     Icons.camera_alt,
-                                    color: Colors.white,
+                                    color: AppColors.textPrimary,
                                     size: 20,
                                   ),
                           ),
@@ -221,10 +221,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 // Información personal
                 Text(
                   AppL10n.of(context).personalInfo,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -244,7 +244,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                 Text(
                   'Email: ${currentUser?.email}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,
                   ),
@@ -254,10 +254,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 // Nivel de entrenamiento
                 Text(
                   AppL10n.of(context).trainingLevelSection,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -277,13 +277,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.straighten,
+                      Icon(Icons.straighten,
                           color: AppColors.primary, size: 18),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           AppL10n.of(context).bodyMeasurementsTip,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
                           ),
@@ -298,7 +298,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 OutlinedButton(
                   onPressed: () => context.push('/change-password'),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.primary),
+                    side: BorderSide(color: AppColors.primary),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -307,11 +307,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.lock_outline, color: AppColors.primary),
+                      Icon(Icons.lock_outline, color: AppColors.primary),
                       const SizedBox(width: 8),
                       Text(
                         AppL10n.of(context).changePassword,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
@@ -370,7 +370,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? Colors.white : AppColors.textSecondary,
+                  color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),

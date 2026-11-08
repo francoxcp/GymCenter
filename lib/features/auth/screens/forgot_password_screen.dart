@@ -38,6 +38,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
+ tooltip: 'Atrás',
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.popOrGo('/login'),
         ),
@@ -51,16 +52,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               const SizedBox(height: 20),
               Text(
                 AppL10n.of(context).recoverPasswordTitle,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 16),
               Text(
                 AppL10n.of(context).recoverPasswordDesc,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                   height: 1.5,
@@ -78,15 +79,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.support_agent, color: AppColors.primary),
+                    Icon(Icons.support_agent, color: AppColors.primary),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         AppL10n.of(context).isEn
                             ? "Didn't get the email? Ask your trainer or the front desk: they can set a temporary password for you in the app."
                             : '¿No te llega el correo? Pídele a tu entrenador o en recepción: pueden ponerte una contraseña temporal desde la app.',
-                        style: const TextStyle(
-                            fontSize: 13, color: Colors.white, height: 1.4),
+                        style: TextStyle(
+                            fontSize: 13, color: AppColors.textPrimary, height: 1.4),
                       ),
                     ),
                   ],
@@ -95,10 +96,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               const SizedBox(height: 28),
               Text(
                 AppL10n.of(context).emailFieldLabel,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -111,7 +112,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               const SizedBox(height: 12),
               Text(
                 AppL10n.of(context).checkSpamHint,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
                 ),
@@ -129,7 +130,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   children: [
                     Text(
                       AppL10n.of(context).rememberedPassword,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,
                       ),
@@ -143,7 +144,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       child: Text(
                         AppL10n.of(context).signInLink,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,

@@ -127,7 +127,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           builder: (ctx) => AlertDialog(
             title: Row(
               children: [
-                const Icon(Icons.mark_email_unread_outlined,
+                Icon(Icons.mark_email_unread_outlined,
                     color: AppColors.primary),
                 const SizedBox(width: 12),
                 Text(l10n.confirmEmailTitle),
@@ -190,14 +190,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         color: AppColors.primary,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.fitness_center,
                         size: 40,
                         color: Colors.black,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'CHAMOS',
                       style: TextStyle(
                         fontSize: 24,
@@ -205,12 +205,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         color: AppColors.primary,
                       ),
                     ),
-                    const Text(
+                    Text(
                       'FITNESS CENTER',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         letterSpacing: 2,
                       ),
                     ),
@@ -222,16 +222,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               Text(
                 AppL10n.of(context).createYourAccount,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 AppL10n.of(context).registerSubtitle,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                 ),
@@ -242,7 +242,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Nombre completo
               Text(
                 AppL10n.of(context).isEn ? 'FULL NAME' : 'NOMBRE COMPLETO',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
@@ -261,7 +261,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Email Field
               Text(
                 AppL10n.of(context).emailLabelUpper,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
@@ -289,7 +289,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Password Field
               Text(
                 AppL10n.of(context).passwordLabelUpper,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
@@ -312,6 +312,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   return null;
                 },
                 suffixIcon: IconButton(
+ tooltip: 'Ocultar contraseña',
                   icon: Icon(
                     _obscurePassword ? Icons.visibility_off : Icons.visibility,
                     color: AppColors.textSecondary,
@@ -329,7 +330,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Confirm Password Field
               Text(
                 AppL10n.of(context).confirmPasswordLabelUpper,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
@@ -351,6 +352,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   return null;
                 },
                 suffixIcon: IconButton(
+ tooltip: 'Ocultar contraseña',
                   icon: Icon(
                     _obscureConfirmPassword
                         ? Icons.visibility_off
@@ -399,14 +401,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: RichText(
                       text: TextSpan(
                         text: AppL10n.of(context).iAcceptThe,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                         children: [
                           TextSpan(
                             text: AppL10n.of(context).termsOfServiceLink,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.primary,
                               decoration: TextDecoration.underline,
                             ),
@@ -414,7 +416,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           TextSpan(text: AppL10n.of(context).andThe),
                           TextSpan(
                             text: AppL10n.of(context).privacyPolicyLinkText,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.primary,
                               decoration: TextDecoration.underline,
                             ),
@@ -445,7 +447,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   children: [
                     Text(
                       AppL10n.of(context).alreadyMember,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,
                       ),
@@ -459,7 +461,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       child: Text(
                         AppL10n.of(context).signInLink,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,

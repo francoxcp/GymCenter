@@ -47,7 +47,7 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
           children: [
             Text(
               l10n.adminPortal,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: AppColors.primary,
@@ -56,10 +56,10 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
             ),
             Text(
               l10n.userAssignmentsTitle,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
           ],
@@ -82,7 +82,7 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
                   },
                   decoration: InputDecoration(
                     hintText: l10n.search,
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                       Icons.search,
                       color: AppColors.textSecondary,
                     ),
@@ -110,7 +110,7 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.info_outline,
                         color: AppColors.primary,
                         size: 20,
@@ -119,7 +119,7 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
                       Expanded(
                         child: Text(
                           AppL10n.of(context).assignHint,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.primary,
                             fontSize: 12,
                           ),
@@ -145,7 +145,7 @@ class _UserAssignmentsListScreenState extends State<UserAssignmentsListScreen> {
                         ? Center(
                             child: Text(
                               AppL10n.of(context).noUsersFound,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 14,
                               ),
@@ -206,7 +206,7 @@ class _UserAssignmentCard extends StatelessWidget {
               radius: 25,
               child: Text(
                 user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
@@ -220,16 +220,16 @@ class _UserAssignmentCard extends StatelessWidget {
                 children: [
                   Text(
                     user.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     user.email,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
                     ),
@@ -238,7 +238,7 @@ class _UserAssignmentCard extends StatelessWidget {
                   if (user.assignedWorkoutId == null)
                     Text(
                       l10n.noAssignedRoutine,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         color: AppColors.textSecondary,
                         fontStyle: FontStyle.italic,
@@ -254,7 +254,7 @@ class _UserAssignmentCard extends StatelessWidget {
                       ),
                       child: Text(
                         l10n.routineAssigned,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           color: AppColors.primary,
                           fontWeight: FontWeight.w500,
@@ -265,7 +265,7 @@ class _UserAssignmentCard extends StatelessWidget {
               ),
             ),
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
+              icon: Icon(Icons.more_vert, color: AppColors.textSecondary),
               onSelected: (value) async {
                 if (value == 'schedule') {
                   Navigator.push(
@@ -320,11 +320,11 @@ class _UserAssignmentCard extends StatelessWidget {
                     value: 'remove',
                     child: Row(
                       children: [
-                        const Icon(Icons.delete_outline,
+                        Icon(Icons.delete_outline,
                             size: 18, color: Colors.redAccent),
                         const SizedBox(width: 8),
                         Text(l10n.removeRoutine,
-                            style: const TextStyle(color: Colors.redAccent)),
+                            style: TextStyle(color: Colors.redAccent)),
                       ],
                     ),
                   ),

@@ -102,7 +102,7 @@ class _PrimaryButtonState extends State<PrimaryButton>
                       ],
                       Text(
                         widget.text,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: Colors.black,

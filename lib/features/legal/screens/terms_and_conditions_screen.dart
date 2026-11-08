@@ -12,6 +12,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
+ tooltip: 'Atrás',
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.popOrGo('/profile'),
         ),
@@ -32,7 +33,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.description, color: AppColors.primary, size: 32),
+                  Icon(Icons.description, color: AppColors.primary, size: 32),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -40,14 +41,14 @@ class TermsAndConditionsScreen extends StatelessWidget {
                       children: [
                         Text(
                           AppL10n.of(context).termsTitle,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
+                        Text(
                           'Última actualización: 11 de febrero de 2026',
                           style: TextStyle(
                             fontSize: 12,
@@ -162,7 +163,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
                 color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Text(
+              child: Text(
                 'Al continuar usando Chamos Fitness Center, usted acepta estos Términos y Condiciones en su totalidad.',
                 style: TextStyle(
                   fontSize: 14,
@@ -188,7 +189,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: AppColors.primary,
@@ -197,7 +198,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             content,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               color: AppColors.textPrimary,
               height: 1.5,

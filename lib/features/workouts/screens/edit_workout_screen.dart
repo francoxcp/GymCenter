@@ -1,4 +1,5 @@
 ﻿import 'dart:io';
+import '../widgets/exercise_library.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
@@ -118,7 +119,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
             children: [
               Text(
                 l10n.adminPortal,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
@@ -127,17 +128,18 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
               ),
               Text(
                 l10n.editRoutineTitle,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
+ tooltip: 'Eliminar',
+              icon: Icon(Icons.delete, color: Colors.red),
               onPressed: _confirmDelete,
             ),
           ],
@@ -214,7 +216,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                         children: [
                           Text(
                             l10n.exercisesSectionUpper,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textSecondary,
@@ -245,7 +247,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                             child: Text(
                               l10n.noExercisesEditHint,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: AppColors.textSecondary),
                             ),
                           ),
@@ -264,7 +266,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                           ),
                           child: Text(
                             l10n.saveChanges,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.black,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -285,9 +287,12 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                   itemBuilder: (context, index) {
                     final exercise = _exercises[index];
                     return _ExerciseCard(
-                      key: ValueKey(index),
+                      key: ObjectKey(exercise),
                       exercise: exercise,
                       dragIndex: index,
+                      onTap: () => _quickEdit(index),
+                      onDuplicate: () => setState(() => _exercises.insert(
+                          index + 1, duplicateExercise(exercise))),
                       onEdit: () => _editExercise(index),
                       onDelete: () => _removeExercise(index),
                     );
@@ -298,8 +303,21 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
     );
   }
 
-  void _addExercise() {
-    _showExerciseDialog();
+  Future<void> _addExercise() async {
+    final result = await showExerciseLibrary(context);
+    if (!mounted || result == null) return;
+    if (result.createCustom) {
+      _showExerciseDialog();
+    } else if (result.exercises.isNotEmpty) {
+      setState(() => _exercises.addAll(result.exercises));
+    }
+  }
+
+  Future<void> _quickEdit(int index) async {
+    final updated = await showQuickExerciseEditor(context, _exercises[index]);
+    if (updated != null && mounted) {
+      setState(() => _exercises[index] = updated);
+    }
   }
 
   void _editExercise(int index) {
@@ -433,11 +451,15 @@ class _ExerciseCard extends StatelessWidget {
   final int dragIndex;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback onTap;
+  final VoidCallback onDuplicate;
 
   const _ExerciseCard({
     super.key,
     required this.exercise,
     required this.dragIndex,
+    required this.onTap,
+    required this.onDuplicate,
     required this.onEdit,
     required this.onDelete,
   });
@@ -461,48 +483,62 @@ class _ExerciseCard extends StatelessWidget {
                 color: AppColors.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.fitness_center, color: AppColors.primary),
+              child: Icon(Icons.fitness_center, color: AppColors.primary),
             ),
             const SizedBox(width: 12),
             Expanded(
+              child: InkWell(
+              onTap: onTap,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     exercise.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${exercise.sets} series × ${exercise.reps} reps × ${exercise.restSeconds}s',
-                    style: const TextStyle(
+                    '${exercise.sets} series · ${exercise.reps} reps · ${exercise.restSeconds}s',
+                    style: TextStyle(
                         color: AppColors.textSecondary, fontSize: 12),
                   ),
                 ],
               ),
-            ),
-            ReorderableDelayedDragStartListener(
-              index: dragIndex,
-              child: const Padding(
-                padding: EdgeInsets.all(8),
-                child: Icon(Icons.drag_handle, color: Colors.white54),
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.edit, color: Colors.blue, size: 20),
-              onPressed: onEdit,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              tooltip: 'Duplicar',
+              icon: Icon(Icons.copy_all_outlined,
+                  color: AppColors.textPrimary.withValues(alpha: 0.54), size: 20),
+              onPressed: onDuplicate,
+            ),
+            ReorderableDragStartListener(
+              index: dragIndex,
+              child: Semantics(
+                label: 'Arrastrar para reordenar',
+                child: Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Icon(Icons.drag_indicator, color: AppColors.textPrimary.withValues(alpha: 0.7)),
+                ),
+              ),
             ),
             IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+ tooltip: 'Editar',
+              icon: Icon(Icons.edit, color: Colors.blue, size: 20),
+              onPressed: onEdit,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+            ),
+            IconButton(
+ tooltip: 'Eliminar',
+              icon: Icon(Icons.delete, color: Colors.red, size: 20),
               onPressed: onDelete,
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
             ),
           ],
         ),
@@ -833,7 +869,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
               // Video section
               Row(
                 children: [
-                  const Icon(Icons.videocam,
+                  Icon(Icons.videocam,
                       color: AppColors.primary, size: 20),
                   const SizedBox(width: 8),
                   Text(
@@ -869,7 +905,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.video_file,
+                          Icon(Icons.video_file,
                               color: AppColors.primary, size: 18),
                           const SizedBox(width: 8),
                           Expanded(
@@ -880,6 +916,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                             ),
                           ),
                           IconButton(
+ tooltip: 'Cerrar',
                             icon: const Icon(Icons.close, size: 18),
                             onPressed: () {
                               setState(() {
@@ -921,13 +958,13 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.check_circle,
+                      Icon(Icons.check_circle,
                           color: AppColors.success, size: 18),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           l10n.videoAvailable,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.success,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -935,7 +972,8 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.edit,
+ tooltip: 'Editar',
+                        icon: Icon(Icons.edit,
                             size: 18, color: Colors.blue),
                         onPressed: _pickVideo,
                       ),

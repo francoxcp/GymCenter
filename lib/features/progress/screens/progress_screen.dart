@@ -141,7 +141,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? Colors.white : AppColors.textSecondary,
+                  color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -166,7 +166,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.insights, color: AppColors.primary, size: 32),
+            Icon(Icons.insights, color: AppColors.primary, size: 32),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
@@ -174,8 +174,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 children: [
                   Text(
                     isEn ? 'Weekly training control' : 'Control semanal',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -185,7 +185,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     isEn
                         ? 'Workouts vs plan, volume and progress per exercise'
                         : 'Entrenos vs plan, volumen y progreso por ejercicio',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 12,
                     ),
@@ -193,7 +193,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.primary),
+            Icon(Icons.chevron_right, color: AppColors.primary),
           ],
         ),
       ),
@@ -222,12 +222,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.local_fire_department,
+              Icon(Icons.local_fire_department,
                   color: Colors.orange, size: 40),
               const SizedBox(width: 12),
               Text(
                 AppL10n.of(context).currentStreakLabel,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   color: AppColors.textSecondary,
                 ),
@@ -237,16 +237,16 @@ class _ProgressScreenState extends State<ProgressScreen> {
           const SizedBox(height: 12),
           Text(
             '$currentStreak',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 60,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
               height: 1,
             ),
           ),
           Text(
             AppL10n.of(context).consecutiveDaysLabel(currentStreak),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               color: AppColors.textSecondary,
             ),
@@ -262,7 +262,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       : currentStreak < 30
                           ? l10n.incredibleStreak
                           : l10n.unstoppableStreak,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 color: Colors.orange,
                 fontWeight: FontWeight.bold,
@@ -396,7 +396,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                 ),
@@ -406,10 +406,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
           ),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
           Text(
@@ -448,7 +448,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child:
-                  const Icon(Icons.emoji_events, color: Colors.amber, size: 28),
+                  Icon(Icons.emoji_events, color: Colors.amber, size: 28),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -457,10 +457,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 children: [
                   Text(
                     l10n.recentAchievementsLabel,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -468,7 +468,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     provider.totalCount > 0
                         ? '${provider.unlockedCount}/${provider.totalCount} · ${provider.totalPoints} pts'
                         : l10n.achievementsUnlockHint,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       color: AppColors.textSecondary,
                     ),
@@ -476,7 +476,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right,
+            Icon(Icons.chevron_right,
                 color: AppColors.textSecondary, size: 24),
           ],
         ),
@@ -522,10 +522,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 weightData.isEmpty
                     ? AppL10n.of(context).recentActivityLabel
                     : AppL10n.of(context).weightProgressLabel,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
               Icon(
@@ -563,7 +563,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         getTitlesWidget: (value, meta) {
                           return Text(
                             '${UnitConverter.weightValue(value, units, decimals: 0)}${UnitConverter.weightUnit(units)}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 12,
                             ),
@@ -587,7 +587,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                             final date = weightData[value.toInt()].date;
                             return Text(
                               '${date.day}/${date.month}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 11,
                               ),
@@ -791,7 +791,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                               padding: const EdgeInsets.only(top: 4),
                               child: Text(
                                 buckets[idx].key,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppColors.textSecondary,
                                   fontSize: 11,
                                 ),

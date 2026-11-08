@@ -81,7 +81,7 @@ class _FilterChipButtonState extends State<FilterChipButton>
             style: TextStyle(
               fontSize: 13,
               fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w600,
-              color: widget.isSelected ? Colors.black : Colors.white,
+              color: widget.isSelected ? Colors.black : AppColors.textPrimary,
               letterSpacing: 0.3,
             ),
           ),

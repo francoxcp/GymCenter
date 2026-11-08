@@ -295,6 +295,83 @@ class UserProvider extends ChangeNotifier {
 
   /// Asigna una contraseña temporal a un socio (y activa su cuenta si no
   /// estaba confirmada). Devuelve null si salió bien, o un código de error.
+  User? userById(String id) {
+    for (final u in _users) {
+      if (u.id == id) return u;
+    }
+    return null;
+  }
+
+  Future<void> _refreshUser(String userId) async {
+    final row = await SupabaseConfig.client
+        .from(AppConstants.usersTable)
+        .select()
+        .eq('id', userId)
+        .single();
+    final updated = User.fromJson(row);
+    final i = _users.indexWhere((u) => u.id == userId);
+    if (i >= 0) {
+      _users[i] = updated;
+    } else {
+      _users.add(updated);
+    }
+    notifyListeners();
+  }
+
+  /// Registra un pago y extiende la membresía (solo dueño, vía RPC).
+  /// Devuelve null si fue bien o un mensaje de error.
+  Future<String?> renewMembership({
+    required String userId,
+    required String plan,
+    required int months,
+    double? amount,
+  }) async {
+    try {
+      await SupabaseConfig.client.rpc('renew_membership', params: {
+        'p_user': userId,
+        'p_plan': plan,
+        'p_months': months,
+        'p_amount': amount,
+      });
+      await _refreshUser(userId);
+      return null;
+    } catch (e) {
+      debugPrint('renewMembership error: $e');
+      return 'No se pudo registrar la membresía';
+    }
+  }
+
+  /// Corrige manualmente la fecha de vencimiento (solo dueño).
+  Future<String?> setMembershipEnd(String userId, DateTime? end) async {
+    try {
+      await SupabaseConfig.client.from(AppConstants.usersTable).update({
+        'membership_end': end == null
+            ? null
+            : '${end.year}-${end.month.toString().padLeft(2, '0')}-${end.day.toString().padLeft(2, '0')}',
+      }).eq('id', userId);
+      await _refreshUser(userId);
+      return null;
+    } catch (e) {
+      debugPrint('setMembershipEnd error: $e');
+      return 'No se pudo actualizar';
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> loadMembershipPayments(
+      String userId) async {
+    try {
+      final rows = await SupabaseConfig.client
+          .from('membership_payments')
+          .select('plan, amount, period_start, period_end, created_at')
+          .eq('user_id', userId)
+          .order('created_at', ascending: false)
+          .limit(12);
+      return List<Map<String, dynamic>>.from(rows as List);
+    } catch (_) {
+      return [];
+    }
+  }
+
   Future<String?> resetMemberPassword(String userId, String password) async {
     try {
       final res = await SupabaseConfig.client.functions.invoke(

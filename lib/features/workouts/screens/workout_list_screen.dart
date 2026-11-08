@@ -94,32 +94,32 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
           backgroundColor: AppColors.surface,
           title: Text(
             AppL10n.of(ctx).workoutInProgressTitle,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: AppColors.textPrimary),
           ),
           content: Text(
             AppL10n.of(ctx).workoutInProgressBody,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, 'cancel'),
               child: Text(
                 AppL10n.of(ctx).cancel,
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, 'continue_assigned'),
               child: Text(
                 AppL10n.of(ctx).continueInProgress,
-                style: const TextStyle(color: AppColors.primary),
+                style: TextStyle(color: AppColors.primary),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, 'start_extra'),
               child: Text(
                 AppL10n.of(ctx).startThisWorkout,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: AppColors.textPrimary),
               ),
             ),
           ],
@@ -194,22 +194,22 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                     builder: (ctx) => AlertDialog(
                       backgroundColor: AppColors.surface,
                       title: Text(AppL10n.of(context).deleteWorkoutTitle,
-                          style: const TextStyle(color: Colors.white)),
+                          style: TextStyle(color: AppColors.textPrimary)),
                       content: Text(
                         AppL10n.of(context).deleteWorkoutConfirm(workout.name),
-                        style: const TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: AppColors.textSecondary),
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, false),
                           child: Text(AppL10n.of(context).cancel,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: AppColors.textSecondary)),
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, true),
                           child: Text(AppL10n.of(context).delete,
-                              style: const TextStyle(color: Colors.redAccent)),
+                              style: TextStyle(color: Colors.redAccent)),
                         ),
                       ],
                     ),
@@ -256,7 +256,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
           children: [
             Text(
               l10n.appTitleUpper,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: AppColors.primary,
@@ -265,10 +265,10 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
             ),
             Text(
               l10n.workoutListTitle,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
           ],
@@ -282,7 +282,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
               color: AppColors.primary,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.person,
               color: Colors.black,
             ),
@@ -325,13 +325,13 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                           .setSearchQuery(value),
                   decoration: InputDecoration(
                     hintText: AppL10n.of(context).searchWorkoutsHint,
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                       Icons.search,
                       color: AppColors.textSecondary,
                     ),
                     suffixIcon: _searchHasText
                         ? IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.clear,
                               color: AppColors.textSecondary,
                               size: 20,
@@ -420,12 +420,12 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                           backgroundColor: AppColors.surface,
                           title: Text(
                             l10n.endRoutineTitle,
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(color: AppColors.textPrimary),
                           ),
                           content: Text(
                             l10n.endRoutineConfirm,
                             style:
-                                const TextStyle(color: AppColors.textSecondary),
+                                TextStyle(color: AppColors.textSecondary),
                           ),
                           actions: [
                             TextButton(
@@ -436,7 +436,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                               onPressed: () => Navigator.pop(ctx, true),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.redAccent,
-                                foregroundColor: Colors.white,
+                                foregroundColor: AppColors.textPrimary,
                               ),
                               child: Text(l10n.endAction),
                             ),
@@ -497,7 +497,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
                           l10n.allRoutines,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
                             fontWeight: FontWeight.w500,
@@ -552,7 +552,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                           child: Text(
                             l10n.noRoutinesAvailable,
                             style:
-                                const TextStyle(color: AppColors.textSecondary),
+                                TextStyle(color: AppColors.textSecondary),
                           ),
                         ),
                       );
@@ -633,7 +633,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
           // No es necesario un loadWorkouts adicional aquí.
         },
         backgroundColor: AppColors.primary,
-        child: const Icon(
+        child: Icon(
           Icons.add,
           color: Colors.black,
           size: 32,
@@ -699,7 +699,7 @@ class _WorkoutCard extends StatelessWidget {
               color: AppColors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.fitness_center,
               color: AppColors.primary,
               size: 28,
@@ -712,10 +712,10 @@ class _WorkoutCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -745,11 +745,11 @@ class _WorkoutCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.verified_rounded,
+                            Icon(Icons.verified_rounded,
                                 size: 9, color: AppColors.primary),
                             const SizedBox(width: 3),
                             Text(l10n.officialBadge,
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 9,
                                     color: AppColors.primary,
                                     fontWeight: FontWeight.bold,
@@ -763,7 +763,7 @@ class _WorkoutCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.access_time,
                       size: 14,
                       color: AppColors.textSecondary,
@@ -771,13 +771,13 @@ class _WorkoutCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       '$duration min',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Icon(
+                    Icon(
                       Icons.fitness_center,
                       size: 14,
                       color: AppColors.textSecondary,
@@ -785,7 +785,7 @@ class _WorkoutCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       '$exerciseCount ejercicios',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,
                       ),
@@ -797,7 +797,7 @@ class _WorkoutCard extends StatelessWidget {
           ),
           if (onEdit != null || onDelete != null)
             PopupMenuButton<String>(
-              icon: const Icon(
+              icon: Icon(
                 Icons.more_vert,
                 color: AppColors.textSecondary,
               ),
@@ -814,12 +814,12 @@ class _WorkoutCard extends StatelessWidget {
                   value: 'edit',
                   child: Row(
                     children: [
-                      const Icon(Icons.edit,
+                      Icon(Icons.edit,
                           color: AppColors.primary, size: 20),
                       const SizedBox(width: 12),
                       Text(
                         l10n.editLabel,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: AppColors.textPrimary),
                       ),
                     ],
                   ),
@@ -828,12 +828,12 @@ class _WorkoutCard extends StatelessWidget {
                   value: 'delete',
                   child: Row(
                     children: [
-                      const Icon(Icons.delete,
+                      Icon(Icons.delete,
                           color: Colors.redAccent, size: 20),
                       const SizedBox(width: 12),
                       Text(
                         l10n.deleteLabel,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: AppColors.textPrimary),
                       ),
                     ],
                   ),
@@ -841,7 +841,7 @@ class _WorkoutCard extends StatelessWidget {
               ],
             )
           else
-            const Icon(
+            Icon(
               Icons.chevron_right,
               color: AppColors.textSecondary,
             ),
@@ -861,7 +861,7 @@ class _WorkoutCard extends StatelessWidget {
                     width: 1,
                   ),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.play_arrow_rounded,
                   color: AppColors.primary,
                   size: 24,
@@ -919,7 +919,7 @@ class _PausedWorkoutBanner extends StatelessWidget {
                     color: AppColors.primary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.pause_circle_outline_rounded,
                     color: AppColors.primary,
                     size: 24,
@@ -932,7 +932,7 @@ class _PausedWorkoutBanner extends StatelessWidget {
                     children: [
                       Text(
                         l10n.routinePausedTitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           color: AppColors.primary,
                           fontWeight: FontWeight.w700,
@@ -944,15 +944,15 @@ class _PausedWorkoutBanner extends StatelessWidget {
                         workoutName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       Text(
                         l10n.exerciseNumber(exerciseIndex + 1),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,
                         ),
@@ -986,11 +986,11 @@ class _PausedWorkoutBanner extends StatelessWidget {
           ),
           TextButton.icon(
             onPressed: onDiscard,
-            icon: const Icon(Icons.stop_circle_outlined,
+            icon: Icon(Icons.stop_circle_outlined,
                 size: 16, color: Colors.redAccent),
             label: Text(
               AppL10n.of(context).endRoutineTitle,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 color: Colors.redAccent,
                 fontWeight: FontWeight.w600,

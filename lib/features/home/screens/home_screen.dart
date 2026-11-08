@@ -15,6 +15,8 @@ import '../../../shared/widgets/coming_soon_workout_card.dart';
 import '../../../shared/widgets/install_app_banner.dart';
 import '../../../shared/services/offline_sync_queue.dart';
 import '../widgets/weekly_goal_card.dart';
+import '../widgets/trainer_comments_card.dart';
+import '../../admin/screens/memberships_screen.dart' show MyMembershipBanner;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -173,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'CHAMOS FITNESS CENTER',
                             style: TextStyle(
                               fontSize: 11,
@@ -186,10 +188,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(
                             AppL10n.of(context)
                                 .welcomeUser(currentUser.name.split(' ')[0]),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                               height: 1.2,
                             ),
                           ),
@@ -230,7 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.wifi_off_rounded,
+                          Icon(Icons.wifi_off_rounded,
                               color: Colors.orange, size: 18),
                           const SizedBox(width: 10),
                           Expanded(
@@ -241,7 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ? 'Syncing your workout…'
                                           : 'Sincronizando tu entrenamiento…')) +
                                   pendingText,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.orange,
                                 fontWeight: FontWeight.w500,
@@ -416,7 +418,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                   enableAnimation: false,
                   child: Column(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.event_available,
                         color: AppColors.primary,
                         size: 26,
@@ -424,15 +426,15 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                       const SizedBox(height: 8),
                       Text(
                         '$realActiveDays',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       Text(
                         AppL10n.of(context).activeDaysLabel,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10.5,
                           color: AppColors.textSecondary,
                         ),
@@ -452,7 +454,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                   enableAnimation: false,
                   child: Column(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.fitness_center,
                         color: AppColors.primary,
                         size: 26,
@@ -460,15 +462,15 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                       const SizedBox(height: 8),
                       Text(
                         '$realCompletedCount',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       Text(
                         AppL10n.of(context).sessionsStatLabel,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10.5,
                           color: AppColors.textSecondary,
                         ),
@@ -486,6 +488,12 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         // Meta semanal: entrenos hechos vs plan del entrenador
         const WeeklyGoalCard(),
 
+        // Comentarios recientes del entrenador
+        const TrainerCommentsCard(),
+
+        // Aviso de membresía por vencer / vencida
+        const MyMembershipBanner(),
+
         const SizedBox(height: 28),
 
         // Today's Workout
@@ -495,10 +503,10 @@ class _UserHomeContentState extends State<_UserHomeContent> {
               : _isRestDay
                   ? AppL10n.of(context).scheduledRest
                   : AppL10n.of(context).yourAssignedRoutine,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
           ),
         ),
 
@@ -522,13 +530,13 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                 child: Center(
                   child: Column(
                     children: [
-                      const CircularProgressIndicator(
+                      CircularProgressIndicator(
                         color: AppColors.primary,
                       ),
                       const SizedBox(height: 16),
                       Text(
                         AppL10n.of(context).loadingRoutines,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
                         ),
@@ -565,7 +573,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                       color: AppColors.primary.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.bedtime_outlined,
                       color: AppColors.primary,
                       size: 34,
@@ -574,10 +582,10 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                   const SizedBox(height: 16),
                   Text(
                     AppL10n.of(context).restDayTitleHome,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -587,7 +595,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                         ? AppL10n.of(context).restDayMsgWithDay(
                             _dayName(_nextSchedule!['day_of_week'] as int))
                         : AppL10n.of(context).noWorkoutToday,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
                       height: 1.5,
@@ -618,7 +626,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
               enableShadow: true,
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [AppColors.primary, Color(0xFFE6C200)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -631,7 +639,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                   children: [
                     Text(
                       assignedWorkout.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
@@ -641,24 +649,24 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        const Icon(Icons.timer,
+                        Icon(Icons.timer,
                             size: 18, color: Colors.black87),
                         const SizedBox(width: 6),
                         Text(
                           '${assignedWorkout.duration} min',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.black87,
                             fontSize: 14,
                           ),
                         ),
                         const SizedBox(width: 16),
-                        const Icon(Icons.fitness_center,
+                        Icon(Icons.fitness_center,
                             size: 18, color: Colors.black87),
                         const SizedBox(width: 6),
                         Text(
                           AppL10n.of(context).exerciseCountSimple(
                               assignedWorkout.exerciseCount),
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.black87,
                             fontSize: 14,
                           ),
@@ -721,7 +729,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.warning_amber_rounded,
                       size: 56,
                       color: Colors.orange,
@@ -729,10 +737,10 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                     const SizedBox(height: 14),
                     Text(
                       AppL10n.of(context).routineNotFound,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -740,7 +748,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                     Text(
                       AppL10n.of(context).assignedRoutineUnavailable(
                           widget.currentUser.assignedWorkoutId ?? ''),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,
                       ),
@@ -768,7 +776,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.fitness_center_outlined,
                       size: 56,
                       color: AppColors.textSecondary,
@@ -776,17 +784,17 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                     const SizedBox(height: 14),
                     Text(
                       AppL10n.of(context).noAssignedRoutineTitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 6),
                     Text(
                       AppL10n.of(context).trainerWillAssign,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,
                       ),
@@ -804,10 +812,10 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         // Quick Actions
         Text(
           AppL10n.of(context).exploreLabel,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.textPrimary,
             letterSpacing: 0.3,
           ),
         ),
@@ -872,10 +880,10 @@ class _QuickActionCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: AppColors.textPrimary,
               letterSpacing: 0.3,
             ),
           ),
@@ -942,7 +950,7 @@ class _PendingWorkoutBanner extends StatelessWidget {
                 color: Colors.black.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.play_circle_filled,
                 color: Colors.black,
                 size: 28,
@@ -955,7 +963,7 @@ class _PendingWorkoutBanner extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.notification_important,
                         size: 16,
                         color: Colors.black87,
@@ -975,7 +983,7 @@ class _PendingWorkoutBanner extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     workoutName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
@@ -987,7 +995,7 @@ class _PendingWorkoutBanner extends StatelessWidget {
                       Text(
                         AppL10n.of(context)
                             .percentCompletedSimple(progressPercent),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
@@ -1005,7 +1013,7 @@ class _PendingWorkoutBanner extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.arrow_forward_ios,
               size: 18,
               color: Colors.black87,

@@ -57,4 +57,7 @@ class WebBridge {
       '';
 
   static void openUrl(String url) {}
+
+  static Future<bool> copyText(String text) async => false;
+  static Future<String> shareText(String text) async => '';
 }

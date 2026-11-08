@@ -274,10 +274,65 @@
       setTimeout(() => URL.revokeObjectURL(url), 10000);
     },
 
+    // Copiar texto. Debe llamarse dentro del toque del usuario.
+    // 1º execCommand (síncrono: funciona en iPhone y aunque el permiso de
+    // portapapeles esté bloqueado); 2º Clipboard API.
+    // Devuelve true si se copió.
+    copyText: async (text) => {
+      let ok = false;
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        ok = document.execCommand('copy');
+        ta.remove();
+      } catch (_) { ok = false; }
+      if (ok) return true;
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    },
+
+    // Hoja de compartir del teléfono; si no existe, abre WhatsApp.
+    // Devuelve 'shared', 'cancelled' o 'whatsapp'.
+    shareText: async (text) => {
+      if (navigator.share) {
+        try {
+          await navigator.share({ text });
+          return 'shared';
+        } catch (e) {
+          if (e && e.name === 'AbortError') return 'cancelled';
+        }
+      }
+      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+      return 'whatsapp';
+    },
+
     // Abrir un enlace (p. ej. comprobante firmado) en otra pestaña
     openUrl: (url) => {
       if (typeof url === 'string' && url.startsWith('https://')) {
-        window.open(url, '_blank', 'noopener');
+        // En la PWA instalada del iPhone, window.open con noopener puede
+        // fallar en silencio: se usa un enlace real como respaldo.
+        const w = window.open(url, '_blank');
+        if (!w) {
+          const a = document.createElement('a');
+          a.href = url;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        } else {
+          try { w.opener = null; } catch (_) {}
+        }
       }
     },
 

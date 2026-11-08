@@ -26,6 +26,8 @@ extension type _GcBridge._(JSObject _) implements JSObject {
   external JSPromise<JSBoolean> passkeyVerify(String credentialId);
   external void download(String fileName, String base64Data, String mimeType);
   external void openUrl(String url);
+  external JSPromise<JSBoolean> copyText(String text);
+  external JSPromise<JSString> shareText(String text);
   external JSPromise<JSString> shareFile(
       String fileName, String base64Data, String mimeType, String text);
 }
@@ -173,4 +175,24 @@ class WebBridge {
   }
 
   static void openUrl(String url) => _bridge?.openUrl(url);
+
+  static Future<bool> copyText(String text) async {
+    final b = _bridge;
+    if (b == null) return false;
+    try {
+      return (await b.copyText(text).toDart).toDart;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<String> shareText(String text) async {
+    final b = _bridge;
+    if (b == null) return '';
+    try {
+      return (await b.shareText(text).toDart).toDart;
+    } catch (_) {
+      return '';
+    }
+  }
 }

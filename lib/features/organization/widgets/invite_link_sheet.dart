@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/services/share_helper.dart';
 import '../services/organization_service.dart';
 
 /// Muestra un enlace de invitación listo para copiar o enviar por WhatsApp.
@@ -47,6 +46,8 @@ Future<void> showInviteLinkSheet(
               ),
               child: Column(children: [
                 SelectableText(token,
+                    onTap: () =>
+                        ShareHelper.copy(ctx, token, okMessage: 'Código copiado'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         color: AppColors.textPrimary,
@@ -61,43 +62,44 @@ Future<void> showInviteLinkSheet(
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () async {
-                try {
-                  await Share.share('$shareText\n$url');
-                } catch (_) {
-                  await Clipboard.setData(ClipboardData(text: url));
-                  if (ctx.mounted) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                        const SnackBar(content: Text('Enlace copiado')));
-                  }
-                }
-              },
-              icon: const Icon(Icons.send),
-              label: const Text('Enviar por WhatsApp u otra app',
+              onPressed: () => ShareHelper.whatsapp('$shareText\n$url'),
+              icon: const Icon(Icons.chat),
+              label: const Text('Enviar por WhatsApp',
                   style: TextStyle(fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.onPrimary,
+                backgroundColor: const Color(0xFF25D366),
+                foregroundColor: Colors.black,
                 minimumSize: const Size.fromHeight(52),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
             const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: () async {
-                await Clipboard.setData(ClipboardData(text: url));
-                if (ctx.mounted) {
-                  ScaffoldMessenger.of(ctx).showSnackBar(
-                      const SnackBar(content: Text('Enlace copiado')));
-                }
-              },
-              icon: const Icon(Icons.copy),
-              label: const Text('Copiar enlace'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            Row(children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => ShareHelper.shareOther('$shareText\n$url'),
+                  icon: const Icon(Icons.ios_share),
+                  label: const Text('Otra app'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () =>
+                      ShareHelper.copy(ctx, url, okMessage: 'Enlace copiado'),
+                  icon: const Icon(Icons.copy),
+                  label: const Text('Copiar enlace'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+            ]),
           ],
         ),
       ),

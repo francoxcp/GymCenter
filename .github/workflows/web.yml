@@ -48,11 +48,34 @@ jobs:
 
       - name: Compilar web
         run: |
+          # Sin secrets (p. ej. antes de configurarlos) se compila con valores
+          # de prueba para validar la build; el despliegue se omite.
+          SUPABASE_URL="${SUPABASE_URL:-https://placeholder.supabase.co}"
+          SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY:-placeholder-anon-key}"
           flutter build web --release \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
             --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
             --dart-define=VAPID_PUBLIC_KEY="$VAPID_PUBLIC_KEY" \
             --dart-define=SENTRY_DSN="$SENTRY_DSN"
+
+      - name: Prueba de humo en Chrome (headless)
+        run: |
+          # Servidor estático con fallback SPA (rutas sin extensión → index.html)
+          cat > /tmp/serve.py <<'PY'
+          import http.server, os, sys
+          root = sys.argv[1]
+          class H(http.server.SimpleHTTPRequestHandler):
+              def __init__(self, *a, **k): super().__init__(*a, directory=root, **k)
+              def send_head(self):
+                  p = self.path.split('?')[0]
+                  if '.' not in os.path.basename(p): self.path = '/index.html'
+                  return super().send_head()
+              def log_message(self, *a): pass
+          http.server.ThreadingHTTPServer(('127.0.0.1', 8080), H).serve_forever()
+          PY
+          python3 /tmp/serve.py build/web &
+          npm install --no-save --silent puppeteer-core@23
+          node tool/web_smoke_test.mjs http://127.0.0.1:8080
 
       - uses: actions/upload-artifact@v4
         with:
@@ -68,12 +91,14 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
     steps:
       - name: Comprobar configuración de Vercel
         id: check
         run: |
-          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
-            echo "Faltan los secrets de Vercel (VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID). Se omite el despliegue."
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ] || [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "Faltan secrets (VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID, SUPABASE_URL, SUPABASE_ANON_KEY). Se omite el despliegue."
             echo "enabled=false" >> "$GITHUB_OUTPUT"
           else
             echo "enabled=true" >> "$GITHUB_OUTPUT"

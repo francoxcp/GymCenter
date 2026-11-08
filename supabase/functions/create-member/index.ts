@@ -50,6 +50,14 @@ Deno.serve(async (req) => {
   // Multi-cliente: el socio nuevo entra a la organización de quien lo crea
   const orgId = callerRow?.org_id as string | null;
   if (!orgId) return json({ error: 'no_organization' }, 403);
+  // Cliente suspendido por la plataforma: sin gestión de socios
+  const { data: orgRow } = await admin
+    .from('organizations')
+    .select('status')
+    .eq('id', orgId)
+    .maybeSingle();
+  if (orgRow?.status !== 'active') return json({ error: 'organization_suspended' }, 403);
+
 
   let body: { name?: string; email?: string; password?: string; trainer_id?: string | null };
   try {
@@ -94,10 +102,17 @@ Deno.serve(async (req) => {
   }
 
   // El trigger handle_new_user ya creó la fila en public.users
-  await admin
+  const { data: up, error: upErr } = await admin
     .from('users')
     .update({ org_id: orgId, trainer_id: trainerId })
-    .eq('id', created.user.id);
+    .eq('id', created.user.id)
+    .select('id');
+  if (upErr || !up?.length) {
+    // Sin organización la cuenta quedaría suelta: se deshace el alta
+    console.error('assign org error', upErr);
+    await admin.auth.admin.deleteUser(created.user.id);
+    return json({ error: 'create_failed' }, 500);
+  }
 
   return json({ id: created.user.id, email, name, trainer_id: trainerId });
 });

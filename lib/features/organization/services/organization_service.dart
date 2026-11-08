@@ -26,9 +26,22 @@ class OrganizationService {
   static String inviteUrl(String token) => '$appOrigin/invitacion/$token';
 
   // ── Mi organización ─────────────────────────────────────────────────────
-  static Future<Organization?> loadMine(String orgId) async {
-    final row = await _db.from('organizations').select().eq('id', orgId).maybeSingle();
-    return row == null ? null : Organization.fromJson(row);
+  /// Datos públicos de la organización; el cobro solo si soy el dueño.
+  static Future<Organization?> loadMine(String orgId, {bool withBilling = false}) async {
+    final row = await _db
+        .from('organizations')
+        .select('id, name, kind, logo_url, status')
+        .eq('id', orgId)
+        .maybeSingle();
+    if (row == null) return null;
+    final data = Map<String, dynamic>.from(row);
+    if (withBilling) {
+      try {
+        final b = await _db.rpc('get_my_org_billing');
+        if (b is List && b.isNotEmpty) data.addAll(Map<String, dynamic>.from(b.first as Map));
+      } catch (_) {}
+    }
+    return Organization.fromJson(data);
   }
 
   static Future<bool> isPlatformAdmin() async {
@@ -198,6 +211,9 @@ class OrganizationService {
     }
     if (m.contains('comment_required')) return 'Escribe el motivo del rechazo.';
     if (m.contains('not_allowed')) return 'No tienes permiso para esta acción.';
+    if (m.contains('payment_already_in_review')) {
+      return 'Ya tienes un comprobante en revisión.';
+    }
     if (m.contains('receipt')) return 'No se pudo subir el comprobante.';
     return 'Algo salió mal. Inténtalo de nuevo.';
   }

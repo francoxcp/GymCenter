@@ -67,7 +67,8 @@ class AuthProvider extends ChangeNotifier {
       final results = await Future.wait([
         orgId == null
             ? Future<Organization?>.value(null)
-            : OrganizationService.loadMine(orgId),
+            : OrganizationService.loadMine(orgId,
+                withBilling: _currentUser?.role == 'admin'),
         OrganizationService.isPlatformAdmin(),
       ]);
       _org = results[0] as Organization?;

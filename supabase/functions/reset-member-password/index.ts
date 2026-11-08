@@ -69,6 +69,14 @@ Deno.serve(async (req) => {
   if (!callerRow?.org_id || target.org_id !== callerRow.org_id) {
     return json({ error: 'not_allowed' }, 403);
   }
+  // Cliente suspendido por la plataforma: sin gestión de socios
+  const { data: orgRow } = await admin
+    .from('organizations')
+    .select('status')
+    .eq('id', callerRow.org_id)
+    .maybeSingle();
+  if (orgRow?.status !== 'active') return json({ error: 'organization_suspended' }, 403);
+
   if (role === 'trainer' && (target.role !== 'user' || target.trainer_id !== caller.user.id)) {
     return json({ error: 'not_allowed' }, 403);
   }

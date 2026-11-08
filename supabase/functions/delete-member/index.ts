@@ -57,10 +57,25 @@ Deno.serve(async (req) => {
   // Multi-cliente: solo usuarios de la misma organización
   const { data: target } = await admin
     .from('users')
-    .select('org_id')
+    .select('org_id, role')
     .eq('id', userId)
     .maybeSingle();
   if (!target || target.org_id !== callerRow.org_id) return json({ error: 'not_allowed' }, 403);
+  // Nunca borrar a otro dueño ni a un administrador de la plataforma
+  const { data: platform } = await admin
+    .from('platform_admins')
+    .select('user_id')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (target.role === 'admin' || platform) return json({ error: 'not_allowed' }, 403);
+
+  // Cliente suspendido por la plataforma: sin gestión de socios
+  const { data: orgRow } = await admin
+    .from('organizations')
+    .select('status')
+    .eq('id', callerRow.org_id)
+    .maybeSingle();
+  if (orgRow?.status !== 'active') return json({ error: 'organization_suspended' }, 403);
 
   // Los socios de un entrenador eliminado quedan sin entrenador (ON DELETE SET NULL)
   const { error } = await admin.auth.admin.deleteUser(userId);

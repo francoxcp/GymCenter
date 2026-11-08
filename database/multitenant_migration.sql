@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS public.org_payments (
   reviewed_at    TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_org_payments_org ON public.org_payments (org_id, submitted_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_org_payments_receipt ON public.org_payments (receipt_path);
 CREATE INDEX IF NOT EXISTS idx_org_payments_review
   ON public.org_payments (submitted_at) WHERE status = 'in_review';
 ALTER TABLE public.org_payments ENABLE ROW LEVEL SECURITY;
@@ -99,14 +100,23 @@ RETURNS UUID LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
   SELECT org_id FROM public.users WHERE id = auth.uid();
 $$;
 
--- ¿El usuario p_user es de mi misma organización?
+-- Organización solo si está activa: un cliente suspendido no accede a
+-- datos (sí a su organización y pagos, para poder regularizar)
+CREATE OR REPLACE FUNCTION public.my_active_org_id()
+RETURNS UUID LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT u.org_id FROM public.users u
+    JOIN public.organizations o ON o.id = u.org_id AND o.status = 'active'
+   WHERE u.id = auth.uid();
+$$;
+
+-- ¿El usuario p_user es de mi misma organización (activa)?
 CREATE OR REPLACE FUNCTION public.same_org(p_user UUID)
 RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
   SELECT EXISTS (
     SELECT 1 FROM public.users u
      WHERE u.id = p_user
        AND u.org_id IS NOT NULL
-       AND u.org_id = public.my_org_id()
+       AND u.org_id = public.my_active_org_id()
   );
 $$;
 
@@ -133,7 +143,7 @@ RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS
          SELECT 1 FROM public.workouts w
           WHERE w.id = p_workout
             AND w.org_id IS NOT NULL
-            AND w.org_id = public.my_org_id()
+            AND w.org_id = public.my_active_org_id()
             AND (
                  public.is_admin()
               OR p_created_by IS NULL
@@ -154,7 +164,8 @@ DECLARE f TEXT;
 BEGIN
   FOREACH f IN ARRAY ARRAY[
     'public.is_platform_admin()', 'public.my_org_id()', 'public.same_org(uuid)',
-    'public.owns_member(uuid)'
+    'public.owns_member(uuid)', 'public.my_active_org_id()',
+    'public.can_manage_user(uuid)', 'public.can_view_workout(uuid, uuid)'
   ] LOOP
     EXECUTE format('REVOKE ALL ON FUNCTION %s FROM PUBLIC, anon', f);
     EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO authenticated', f);
@@ -168,17 +179,18 @@ $$;
 DO $$
 DECLARE v_org UUID;
 BEGIN
-  SELECT id INTO v_org FROM public.organizations ORDER BY created_at LIMIT 1;
-  IF v_org IS NULL THEN
+  -- Solo la primera vez: después, los usuarios sin organización son
+  -- registros nuevos que esperan una invitación.
+  IF NOT EXISTS (SELECT 1 FROM public.organizations) THEN
     INSERT INTO public.organizations (name, kind, plan, paid_until, billing_status, billing_note)
     VALUES ('Chamos Fitness Center', 'gym', 'Interno', DATE '2099-12-31', 'approved',
             'Organización de la plataforma')
     RETURNING id INTO v_org;
+    UPDATE public.users SET org_id = v_org WHERE org_id IS NULL;
+    UPDATE public.workouts w
+       SET org_id = COALESCE((SELECT u.org_id FROM public.users u WHERE u.id = w.created_by), v_org)
+     WHERE w.org_id IS NULL;
   END IF;
-  UPDATE public.users SET org_id = v_org WHERE org_id IS NULL;
-  UPDATE public.workouts w
-     SET org_id = COALESCE((SELECT u.org_id FROM public.users u WHERE u.id = w.created_by), v_org)
-   WHERE w.org_id IS NULL;
   INSERT INTO public.platform_admins (user_id)
   SELECT id FROM public.users WHERE lower(email) = 'franco10perez@live.com'
   ON CONFLICT DO NOTHING;
@@ -259,6 +271,7 @@ BEGIN
     END IF;
   ELSE
     NEW.org_id := OLD.org_id;
+    NEW.created_by := OLD.created_by;
   END IF;
   RETURN NEW;
 END;
@@ -279,6 +292,8 @@ BEGIN
   SELECT id, org_id INTO v_trainer, v_org FROM public.users
    WHERE trainer_code = upper(trim(NEW.raw_user_meta_data->>'trainer_code'))
      AND role IN ('trainer', 'admin')
+     AND EXISTS (SELECT 1 FROM public.organizations o
+                  WHERE o.id = users.org_id AND o.status = 'active')
    LIMIT 1;
 
   INSERT INTO public.users (id, email, name, role, level, trainer_id, org_id)
@@ -312,10 +327,10 @@ CREATE POLICY users_delete ON public.users FOR DELETE
 DROP POLICY IF EXISTS workouts_update ON public.workouts;
 DROP POLICY IF EXISTS workouts_delete ON public.workouts;
 CREATE POLICY workouts_update ON public.workouts FOR UPDATE
-  USING (created_by = auth.uid() OR (public.is_admin() AND org_id = public.my_org_id()))
-  WITH CHECK (created_by = auth.uid() OR (public.is_admin() AND org_id = public.my_org_id()));
+  USING (created_by = auth.uid() OR (public.is_admin() AND org_id = public.my_active_org_id()))
+  WITH CHECK (created_by = auth.uid() OR (public.is_admin() AND org_id = public.my_active_org_id()));
 CREATE POLICY workouts_delete ON public.workouts FOR DELETE
-  USING (created_by = auth.uid() OR (public.is_admin() AND org_id = public.my_org_id()));
+  USING (created_by = auth.uid() OR (public.is_admin() AND org_id = public.my_active_org_id()));
 
 CREATE OR REPLACE FUNCTION public.can_edit_workout(p_workout UUID)
 RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
@@ -323,7 +338,7 @@ RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS
     SELECT 1 FROM public.workouts w
      WHERE w.id = p_workout
        AND (w.created_by = auth.uid()
-            OR (public.is_admin() AND w.org_id = public.my_org_id()))
+            OR (public.is_admin() AND w.org_id = public.my_active_org_id()))
   );
 $$;
 REVOKE ALL ON FUNCTION public.can_edit_workout(UUID) FROM PUBLIC, anon;
@@ -430,6 +445,11 @@ CREATE POLICY staff_delete_exercise_media ON storage.objects FOR DELETE TO authe
          AND (owner = auth.uid() OR public.owns_member(owner)));
 
 -- Organizaciones, invitaciones y pagos
+-- Los socios y entrenadores solo ven nombre, tipo, logo y estado; el cobro
+-- lo ve el dueño con get_my_org_billing()
+REVOKE SELECT ON public.organizations FROM anon, authenticated;
+GRANT SELECT (id, name, kind, logo_url, status) ON public.organizations TO authenticated;
+
 DROP POLICY IF EXISTS org_select ON public.organizations;
 CREATE POLICY org_select ON public.organizations FOR SELECT
   USING (id = public.my_org_id() OR public.is_platform_admin());
@@ -466,14 +486,14 @@ DECLARE
   v_my_org UUID;
 BEGIN
   IF auth.uid() IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
-  SELECT id, name, org_id INTO v_trainer FROM public.users
-   WHERE trainer_code = upper(trim(p_code)) AND role IN ('trainer', 'admin');
-  IF NOT FOUND OR v_trainer.id = auth.uid() OR v_trainer.org_id IS NULL THEN
-    RAISE EXCEPTION 'invalid_trainer_code';
-  END IF;
+  SELECT u.id, u.name, u.org_id INTO v_trainer FROM public.users u
+    JOIN public.organizations o ON o.id = u.org_id AND o.status = 'active'
+   WHERE u.trainer_code = upper(trim(p_code)) AND u.role IN ('trainer', 'admin');
   v_my_org := public.my_org_id();
-  IF v_my_org IS NOT NULL AND v_my_org <> v_trainer.org_id THEN
-    RAISE EXCEPTION 'already_in_other_org';
+  -- Mismo error en todos los casos: no permite averiguar códigos válidos
+  IF NOT FOUND OR v_trainer.id = auth.uid()
+     OR (v_my_org IS NOT NULL AND v_my_org <> v_trainer.org_id) THEN
+    RAISE EXCEPTION 'invalid_trainer_code';
   END IF;
   IF public.is_staff() AND v_my_org IS NOT NULL THEN
     RAISE EXCEPTION 'invalid_trainer_code';
@@ -540,7 +560,8 @@ BEGIN
   LOOP
     v := '';
     FOR i IN 1..10 LOOP
-      v := v || substr('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 1 + floor(random() * 32)::int, 1);
+      v := v || substr('ABCDEFGHJKLMNPQRSTUVWXYZ23456789',
+                       1 + (get_byte(extensions.gen_random_bytes(1), 0) % 32), 1);
     END LOOP;
     EXIT WHEN NOT EXISTS (SELECT 1 FROM public.invitations WHERE token = v);
   END LOOP;
@@ -649,14 +670,21 @@ BEGIN
     WHEN v_inv.role = 'trainer' AND v_me.role = 'user' THEN 'trainer'
     ELSE v_me.role END;
 
+  -- Ya es miembro con ese rol: no gasta usos ni cambia su entrenador
+  IF v_me.org_id = v_inv.org_id AND v_new_role = v_me.role THEN
+    RETURN v_org_name;
+  END IF;
+
   PERFORM set_config('app.org_link', '1', true);
   PERFORM set_config('app.invite_role', '1', true);
   PERFORM set_config('app.trainer_link', '1', true);
   UPDATE public.users
      SET org_id = v_inv.org_id,
          role = v_new_role,
-         trainer_id = CASE WHEN v_inv.role = 'user' AND v_new_role = 'user'
-                           THEN v_inv.trainer_id ELSE trainer_id END
+         trainer_id = CASE
+           WHEN v_new_role <> 'user' THEN NULL
+           WHEN v_inv.role = 'user' THEN COALESCE(trainer_id, v_inv.trainer_id)
+           ELSE trainer_id END
    WHERE id = auth.uid();
   PERFORM set_config('app.org_link', '', true);
   PERFORM set_config('app.invite_role', '', true);
@@ -679,7 +707,9 @@ BEGIN
   IF NOT public.is_admin() OR v_org IS NULL THEN
     RAISE EXCEPTION 'not_allowed' USING ERRCODE = '42501';
   END IF;
-  IF p_logo_url IS NOT NULL AND p_logo_url !~ ('/storage/v1/object/public/org-logos/' || v_org::text || '/') THEN
+  IF p_logo_url IS NOT NULL AND p_logo_url !~ (
+       '^https://[a-z0-9]+\.supabase\.co/storage/v1/object/public/org-logos/'
+       || v_org::text || '/[A-Za-z0-9._-]+$') THEN
     RAISE EXCEPTION 'invalid_logo';
   END IF;
   UPDATE public.organizations
@@ -690,6 +720,17 @@ END;
 $$;
 REVOKE ALL ON FUNCTION public.update_my_org(TEXT, TEXT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.update_my_org(TEXT, TEXT) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.get_my_org_billing()
+RETURNS TABLE(plan TEXT, monthly_fee NUMERIC, paid_until DATE,
+              billing_status TEXT, billing_note TEXT)
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT o.plan, o.monthly_fee, o.paid_until, o.billing_status, o.billing_note
+    FROM public.organizations o
+   WHERE o.id = public.my_org_id() AND public.is_admin();
+$$;
+REVOKE ALL ON FUNCTION public.get_my_org_billing() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.get_my_org_billing() TO authenticated;
 
 -- Plataforma: alta de un cliente + enlace para su dueño
 CREATE OR REPLACE FUNCTION public.platform_create_org(
@@ -774,6 +815,10 @@ BEGIN
                   WHERE bucket_id = 'payment-receipts' AND name = p_receipt_path) THEN
     RAISE EXCEPTION 'receipt_not_found';
   END IF;
+  IF EXISTS (SELECT 1 FROM public.org_payments
+              WHERE org_id = v_org AND status = 'in_review') THEN
+    RAISE EXCEPTION 'payment_already_in_review';
+  END IF;
 
   INSERT INTO public.org_payments (org_id, months, amount, receipt_path, submitted_by)
   VALUES (v_org, COALESCE(p_months, 1), p_amount, p_receipt_path, auth.uid())
@@ -836,7 +881,8 @@ BEGIN
            reviewed_by = auth.uid(), reviewed_at = now()
      WHERE id = p_payment;
     UPDATE public.organizations
-       SET billing_status = 'pending', billing_note = btrim(p_comment)
+       SET billing_status = CASE WHEN paid_until >= v_today THEN 'approved' ELSE 'pending' END,
+           billing_note = btrim(p_comment)
      WHERE id = v_pay.org_id;
   END IF;
 

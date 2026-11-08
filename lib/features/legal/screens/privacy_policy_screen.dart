@@ -29,12 +29,12 @@ class PrivacyPolicyScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                border: Border.all(color: AppColors.primaryText.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
                   Icon(Icons.privacy_tip,
-                      color: AppColors.primary, size: 32),
+                      color: AppColors.primaryText, size: 32),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -211,7 +211,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Icon(Icons.verified_user, color: AppColors.primary, size: 40),
+                  Icon(Icons.verified_user, color: AppColors.primaryText, size: 40),
                   SizedBox(height: 12),
                   Text(
                     'Su Privacidad es Nuestra Prioridad',
@@ -252,7 +252,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+              color: AppColors.primaryText,
             ),
           ),
           const SizedBox(height: 8),

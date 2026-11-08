@@ -295,7 +295,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             Text(
               workoutName,
               style: TextStyle(
-                color: AppColors.primary,
+                color: AppColors.primaryText,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -313,7 +313,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               children: [
                 Icon(
                   Icons.fitness_center,
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -507,7 +507,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             children: [
               Icon(
                 Icons.pause_circle_outline_rounded,
-                color: AppColors.primary,
+                color: AppColors.primaryText,
                 size: 80,
               ),
               const SizedBox(height: 16),
@@ -1276,7 +1276,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         _CompactRef(
                           icon: Icons.history,
                           value: _fmtWeight(lastSessionWeight),
-                          color: AppColors.primary,
+                          color: AppColors.primaryText,
                         ),
                       if (pr != null && pr != lastSessionWeight) ...[
                         const SizedBox(width: 8),
@@ -1337,18 +1337,18 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                       ),
                       suffixText: 'lbs',
                       suffixStyle: TextStyle(
-                        color: AppColors.primary,
+                        color: AppColors.primaryText,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                       border: InputBorder.none,
                       enabledBorder: UnderlineInputBorder(
                         borderSide:
-                            BorderSide(color: AppColors.primary, width: 2),
+                            BorderSide(color: AppColors.primaryText, width: 2),
                       ),
                       focusedBorder: UnderlineInputBorder(
                         borderSide:
-                            BorderSide(color: AppColors.primary, width: 2),
+                            BorderSide(color: AppColors.primaryText, width: 2),
                       ),
                     ),
                   ),
@@ -1397,7 +1397,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
  tooltip: 'Sumar',
                           onPressed: () => setSheetState(() => repsValue++),
                           icon: const Icon(Icons.add_circle_outline),
-                          color: AppColors.primary,
+                          color: AppColors.primaryText,
                         ),
                         Text(
                           '/ ${exercise.reps}',
@@ -1814,7 +1814,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                                     style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
-                                      color: AppColors.primary,
+                                      color: AppColors.primaryText,
                                     ),
                                   ),
                               ],
@@ -1951,7 +1951,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
+                      color: AppColors.primaryText,
                       letterSpacing: 1.5,
                     ),
                   ),
@@ -1988,14 +1988,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.primary),
+                        border: Border.all(color: AppColors.primaryText),
                       ),
                       child: Text(
                         '$totalCompletedSets/$totalSets',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                          color: AppColors.primaryText,
                         ),
                       ),
                     ),
@@ -2057,7 +2057,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(Icons.chevron_left,
-                                    color: AppColors.primary),
+                                    color: AppColors.primaryText),
                               ),
                               onPressed: _previousExercise,
                             ),
@@ -2079,7 +2079,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(Icons.chevron_right,
-                                    color: AppColors.primary),
+                                    color: AppColors.primaryText),
                               ),
                               onPressed: () =>
                                   _nextExercise(currentExercise, workout),
@@ -2131,19 +2131,19 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.primary),
+                    border: Border.all(color: AppColors.primaryText),
                   ),
                   child: Row(
                     children: [
                       Icon(Icons.check_circle,
-                          size: 16, color: AppColors.primary),
+                          size: 16, color: AppColors.primaryText),
                       const SizedBox(width: 4),
                       Text(
                         AppL10n.of(context).completedLabel.toUpperCase(),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                          color: AppColors.primaryText,
                           letterSpacing: 1,
                         ),
                       ),
@@ -2177,14 +2177,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.primary),
+              border: Border.all(color: AppColors.primaryText),
             ),
             child: Text(
               exercise.muscleGroup.toUpperCase(),
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+                color: AppColors.primaryText,
                 letterSpacing: 1,
               ),
             ),
@@ -2213,14 +2213,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.4),
+                    color: AppColors.primaryText.withValues(alpha: 0.4),
                   ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.info_outline,
-                        size: 16, color: AppColors.primary),
+                        size: 16, color: AppColors.primaryText),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -2316,7 +2316,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.primary, width: 2),
+                border: Border.all(color: AppColors.primaryText, width: 2),
               ),
               child: Column(
                 children: [
@@ -2325,7 +2325,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                      color: AppColors.primaryText,
                       letterSpacing: 1.5,
                     ),
                   ),
@@ -2342,7 +2342,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                           fontWeight: FontWeight.bold,
                           color: _remainingSeconds <= 3
                               ? Colors.red
-                              : AppColors.primary,
+                              : AppColors.primaryText,
                         ),
                       ),
                       Text(
@@ -2370,7 +2370,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                     child: Text(
                       AppL10n.of(context).skipRest,
                       style: TextStyle(
-                        color: AppColors.primary,
+                        color: AppColors.primaryText,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -2544,7 +2544,7 @@ class _InfoCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, color: AppColors.primary, size: 24),
+            Icon(icon, color: AppColors.primaryText, size: 24),
             const SizedBox(height: 8),
             Text(
               value,

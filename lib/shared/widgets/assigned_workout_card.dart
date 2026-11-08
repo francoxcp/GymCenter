@@ -155,7 +155,7 @@ class AssignedWorkoutCard extends StatelessWidget {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
-                        foregroundColor: AppColors.primary,
+                        foregroundColor: AppColors.primaryText,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         elevation: 0,
                         shape: RoundedRectangleBorder(

@@ -76,7 +76,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _refreshData,
-        color: AppColors.primary,
+        color: AppColors.primaryText,
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
@@ -162,11 +162,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
         decoration: BoxDecoration(
           color: AppColors.primary.withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+          border: Border.all(color: AppColors.primaryText.withValues(alpha: 0.4)),
         ),
         child: Row(
           children: [
-            Icon(Icons.insights, color: AppColors.primary, size: 32),
+            Icon(Icons.insights, color: AppColors.primaryText, size: 32),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
@@ -193,7 +193,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: AppColors.primary),
+            Icon(Icons.chevron_right, color: AppColors.primaryText),
           ],
         ),
       ),
@@ -530,7 +530,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               ),
               Icon(
                 weightData.isEmpty ? Icons.bar_chart : Icons.show_chart,
-                color: AppColors.primary,
+                color: AppColors.primaryText,
                 size: 24,
               ),
             ],
@@ -620,7 +620,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                               ))
                           .toList(),
                       isCurved: true,
-                      color: AppColors.primary,
+                      color: AppColors.primaryText,
                       barWidth: 3,
                       isStrokeCapRound: true,
                       dotData: FlDotData(
@@ -628,7 +628,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         getDotPainter: (spot, percent, barData, index) {
                           return FlDotCirclePainter(
                             radius: 4,
-                            color: AppColors.primary,
+                            color: AppColors.primaryText,
                             strokeWidth: 2,
                             strokeColor: AppColors.cardBackground,
                           );
@@ -636,7 +636,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       ),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: AppColors.primary.withValues(alpha: 0.1),
+                        color: AppColors.primaryText.withValues(alpha: 0.1),
                       ),
                     ),
                   ],
@@ -729,7 +729,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
         Row(
           children: [
             Icon(Icons.bar_chart,
-                color: AppColors.primary.withValues(alpha: 0.7), size: 16),
+                color: AppColors.primaryText.withValues(alpha: 0.7), size: 16),
             const SizedBox(width: 6),
             Text(
               AppL10n.of(context).workoutFrequencyLabel,
@@ -746,7 +746,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   : AppL10n.of(context).noData,
               style: TextStyle(
                 fontSize: 12,
-                color: AppColors.primary.withValues(alpha: 0.8),
+                color: AppColors.primaryText.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -810,7 +810,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                             toY: count.toDouble(),
                             color: count > 0
                                 ? AppColors.primary
-                                : AppColors.primary.withValues(alpha: 0.15),
+                                : AppColors.primaryText.withValues(alpha: 0.15),
                             width: groupByDay ? 20 : 14,
                             borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(4)),

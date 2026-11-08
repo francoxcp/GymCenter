@@ -29,11 +29,11 @@ class TermsAndConditionsScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                border: Border.all(color: AppColors.primaryText.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.description, color: AppColors.primary, size: 32),
+                  Icon(Icons.description, color: AppColors.primaryText, size: 32),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -192,7 +192,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+              color: AppColors.primaryText,
             ),
           ),
           const SizedBox(height: 8),

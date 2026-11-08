@@ -53,11 +53,11 @@ class _TrainerLinkCardState extends State<TrainerLinkCard> {
         decoration: BoxDecoration(
           color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+          border: Border.all(color: AppColors.primaryText.withValues(alpha: 0.35)),
         ),
         child: Row(
           children: [
-            Icon(icon, color: AppColors.primary, size: 28),
+            Icon(icon, color: AppColors.primaryText, size: 28),
             const SizedBox(width: 14),
             Expanded(child: child),
           ],
@@ -100,7 +100,7 @@ class _TrainerLinkCardState extends State<TrainerLinkCard> {
           ),
           IconButton(
             tooltip: isEn ? 'Copy' : 'Copiar',
-            icon: Icon(Icons.copy, color: AppColors.primary),
+            icon: Icon(Icons.copy, color: AppColors.primaryText),
             onPressed: code == null
                 ? null
                 : () {
@@ -185,7 +185,7 @@ class _TrainerLinkCardState extends State<TrainerLinkCard> {
               linked
                   ? (isEn ? 'Change' : 'Cambiar')
                   : (isEn ? 'Enter code' : 'Usar código'),
-              style: TextStyle(color: AppColors.primary),
+              style: TextStyle(color: AppColors.primaryText),
             ),
           ),
         ],

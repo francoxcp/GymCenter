@@ -76,7 +76,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
               ? _buildEmptyState()
               : RefreshIndicator(
                   onRefresh: _loadHistory,
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                   child: ListView(
                     padding: const EdgeInsets.all(20),
                     children: [
@@ -264,7 +264,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
         border: session.isCompleted
-            ? Border.all(color: AppColors.primary.withValues(alpha: 0.5))
+            ? Border.all(color: AppColors.primaryText.withValues(alpha: 0.5))
             : null,
       ),
       child: Column(
@@ -280,7 +280,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                 ),
                 child: Icon(
                   Icons.fitness_center,
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                   size: 24,
                 ),
               ),
@@ -361,7 +361,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
                     ? Colors.green
                     : completionRate >= 0.6
                         ? Colors.orange
-                        : AppColors.primary,
+                        : AppColors.primaryText,
               ),
               minHeight: 6,
             ),
@@ -389,7 +389,7 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
               label: const Text('Comentarios'),
               style: TextButton.styleFrom(
                   minimumSize: const Size(48, 44),
-                  foregroundColor: AppColors.primary),
+                  foregroundColor: AppColors.primaryText),
             ),
           ),
         ],

@@ -122,7 +122,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                   letterSpacing: 1.5,
                 ),
               ),
@@ -483,7 +483,7 @@ class _ExerciseCard extends StatelessWidget {
                 color: AppColors.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.fitness_center, color: AppColors.primary),
+              child: Icon(Icons.fitness_center, color: AppColors.primaryText),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -855,7 +855,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                     icon: const Icon(Icons.add, size: 16),
                     label: Text(l10n.addDescription),
                     style: TextButton.styleFrom(
-                      foregroundColor: AppColors.primary,
+                      foregroundColor: AppColors.primaryText,
                       padding: EdgeInsets.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
@@ -870,7 +870,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
               Row(
                 children: [
                   Icon(Icons.videocam,
-                      color: AppColors.primary, size: 20),
+                      color: AppColors.primaryText, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     l10n.exerciseVideoLabel,
@@ -901,12 +901,12 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppColors.primary),
+                        border: Border.all(color: AppColors.primaryText),
                       ),
                       child: Row(
                         children: [
                           Icon(Icons.video_file,
-                              color: AppColors.primary, size: 18),
+                              color: AppColors.primaryText, size: 18),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(

@@ -92,7 +92,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
-        color: AppColors.primary,
+        color: AppColors.primaryText,
         child: _loading
             ? const Center(child: CircularProgressIndicator())
             : _error
@@ -195,7 +195,7 @@ class _FeedCard extends StatelessWidget {
                             TextSpan(
                                 text: item.workoutName,
                                 style: TextStyle(
-                                    color: AppColors.primary,
+                                    color: AppColors.primaryText,
                                     fontWeight: FontWeight.w600)),
                           ]),
                           style: TextStyle(

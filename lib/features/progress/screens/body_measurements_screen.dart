@@ -75,7 +75,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                   onRefresh: () => Provider.of<BodyMeasurementProvider>(context,
                           listen: false)
                       .loadMeasurements(),
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                   backgroundColor: AppColors.cardBackground,
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -236,7 +236,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.primary, size: 18),
+          Icon(icon, color: AppColors.primaryText, size: 18),
           const SizedBox(height: 4),
           Text(
             value != null ? UnitConverter.lengthValue(value, units) : '--',
@@ -250,7 +250,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
             value != null ? UnitConverter.lengthUnit(units) : '',
             style: TextStyle(
               fontSize: 10,
-              color: AppColors.primary,
+              color: AppColors.primaryText,
             ),
           ),
           Text(
@@ -316,7 +316,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                      color: AppColors.primaryText,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -763,7 +763,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(color: AppColors.textSecondary),
-          prefixIcon: Icon(icon, color: AppColors.primary),
+          prefixIcon: Icon(icon, color: AppColors.primaryText),
           filled: true,
           fillColor: AppColors.background,
           border: OutlineInputBorder(
@@ -797,7 +797,7 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
                   color: AppColors.textSecondary,
                   fontSize: 12,
                 ),
-                prefixIcon: Icon(icon, color: AppColors.primary, size: 18),
+                prefixIcon: Icon(icon, color: AppColors.primaryText, size: 18),
                 filled: true,
                 fillColor: AppColors.background,
                 border: OutlineInputBorder(

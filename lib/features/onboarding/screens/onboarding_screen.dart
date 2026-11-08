@@ -64,7 +64,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 );
               },
               child: Text(l10n.confirm,
-                  style: TextStyle(color: AppColors.primary)),
+                  style: TextStyle(color: AppColors.primaryText)),
             ),
           ],
         ),
@@ -101,7 +101,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+        child: CircularProgressIndicator(color: AppColors.primaryText),
       ),
     );
 
@@ -239,7 +239,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Icon(
                   Icons.fitness_center,
                   size: 80,
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                 ),
                 const SizedBox(height: 28),
                 Text(
@@ -457,7 +457,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 min: 12,
                 max: 90,
                 divisions: 78,
-                activeColor: AppColors.primary,
+                activeColor: AppColors.primaryText,
                 inactiveColor: AppColors.cardBackground,
                 onChanged: (value) => setState(() {
                   _age = value.round();
@@ -591,7 +591,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 min: min,
                 max: max,
                 divisions: ((max - min) * 2).toInt(),
-                activeColor: AppColors.primary,
+                activeColor: AppColors.primaryText,
                 inactiveColor: AppColors.cardBackground,
                 onChanged: onChanged,
               ),

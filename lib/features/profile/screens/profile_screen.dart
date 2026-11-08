@@ -305,7 +305,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                  color: AppColors.primary, width: 3),
+                                  color: AppColors.primaryText, width: 3),
                               color: AppColors.background,
                             ),
                             child: currentUser.photoUrl != null
@@ -319,7 +319,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           style: TextStyle(
                                             fontSize: 38,
                                             fontWeight: FontWeight.bold,
-                                            color: AppColors.primary,
+                                            color: AppColors.primaryText,
                                           ),
                                         ),
                                       ),
@@ -331,7 +331,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       style: TextStyle(
                                         fontSize: 38,
                                         fontWeight: FontWeight.bold,
-                                        color: AppColors.primary,
+                                        color: AppColors.primaryText,
                                       ),
                                     ),
                                   ),

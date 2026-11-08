@@ -165,7 +165,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           shape: BoxShape.circle,
                           color: AppColors.cardBackground,
                           border:
-                              Border.all(color: AppColors.primary, width: 3),
+                              Border.all(color: AppColors.primaryText, width: 3),
                         ),
                         child: currentUser?.photoUrl != null
                             ? ClipOval(
@@ -272,13 +272,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     color: AppColors.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.25),
+                        color: AppColors.primaryText.withValues(alpha: 0.25),
                         width: 1),
                   ),
                   child: Row(
                     children: [
                       Icon(Icons.straighten,
-                          color: AppColors.primary, size: 18),
+                          color: AppColors.primaryText, size: 18),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -298,7 +298,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 OutlinedButton(
                   onPressed: () => context.push('/change-password'),
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: AppColors.primary),
+                    side: BorderSide(color: AppColors.primaryText),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -307,14 +307,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.lock_outline, color: AppColors.primary),
+                      Icon(Icons.lock_outline, color: AppColors.primaryText),
                       const SizedBox(width: 8),
                       Text(
                         AppL10n.of(context).changePassword,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                          color: AppColors.primaryText,
                         ),
                       ),
                     ],

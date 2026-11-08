@@ -147,13 +147,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                   letterSpacing: 2,
                 ),
               ),
               const SizedBox(height: 28),
               CircularProgressIndicator(
-                color: AppColors.primary,
+                color: AppColors.primaryText,
                 strokeWidth: 2.5,
               ),
             ],
@@ -194,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                        color: AppColors.primaryText,
                       ),
                     ),
                     Text(
@@ -220,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                            color: AppColors.primary,
+                            color: AppColors.primaryText,
                             width: 3,
                           ),
                         ),
@@ -231,7 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           AppL10n.of(context).signInTab,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: AppColors.primary,
+                            color: AppColors.primaryText,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
@@ -363,7 +363,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Text(
                     AppL10n.of(context).forgotPassword,
                     style: TextStyle(
-                      color: AppColors.primary,
+                      color: AppColors.primaryText,
                       fontSize: 14,
                     ),
                   ),
@@ -394,7 +394,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextSpan(
                         text: AppL10n.of(context).termsOfServiceLabel,
                         style: TextStyle(
-                          color: AppColors.primary,
+                          color: AppColors.primaryText,
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -402,7 +402,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextSpan(
                         text: AppL10n.of(context).privacyLabel,
                         style: TextStyle(
-                          color: AppColors.primary,
+                          color: AppColors.primaryText,
                           decoration: TextDecoration.underline,
                         ),
                       ),

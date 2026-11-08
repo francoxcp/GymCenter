@@ -106,7 +106,7 @@ class _WeeklyGoalCardState extends State<WeeklyGoalCard> {
               Text(
                 planned > 0 ? '$done/$planned' : '$done',
                 style: TextStyle(
-                    color: AppColors.primary,
+                    color: AppColors.primaryText,
                     fontSize: 20,
                     fontWeight: FontWeight.bold),
               ),
@@ -162,7 +162,7 @@ class _WeeklyGoalCardState extends State<WeeklyGoalCard> {
                 value: ratio,
                 minHeight: 6,
                 backgroundColor: AppColors.surface,
-                color: ratio >= 1 ? AppColors.success : AppColors.primary,
+                color: ratio >= 1 ? AppColors.success : AppColors.primaryText,
               ),
             ),
           ],

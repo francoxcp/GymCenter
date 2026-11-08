@@ -59,7 +59,7 @@ class _MembershipsScreenState extends State<MembershipsScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: provider.loadUsers,
-        color: AppColors.primary,
+        color: AppColors.primaryText,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16),
@@ -130,7 +130,7 @@ class _MembershipsScreenState extends State<MembershipsScreen> {
                     ),
                     trailing: isOwner
                         ? Icon(Icons.payments_outlined,
-                            color: AppColors.primary)
+                            color: AppColors.primaryText)
                         : null,
                     onTap: isOwner
                         ? () => showRenewMembershipDialog(context, u)

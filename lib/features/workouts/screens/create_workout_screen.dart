@@ -449,12 +449,12 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                             child: Row(
                               children: [
                                 Icon(Icons.add_circle_outline,
-                                    size: 16, color: AppColors.primary),
+                                    size: 16, color: AppColors.primaryText),
                                 const SizedBox(width: 8),
                                 Text(
                                   AppL10n.of(context).newCategory,
                                   style:
-                                      TextStyle(color: AppColors.primary),
+                                      TextStyle(color: AppColors.primaryText),
                                 ),
                               ],
                             ),
@@ -613,7 +613,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                         child: Text(
                           '${index + 1}',
                           style: TextStyle(
-                            color: AppColors.primary,
+                            color: AppColors.primaryText,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -970,7 +970,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.videocam, color: AppColors.primary),
+                      Icon(Icons.videocam, color: AppColors.primaryText),
                       const SizedBox(width: 8),
                       Flexible(
                         child: Text(
@@ -1001,12 +1001,12 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                           decoration: BoxDecoration(
                             color: AppColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppColors.primary),
+                            border: Border.all(color: AppColors.primaryText),
                           ),
                           child: Row(
                             children: [
                               Icon(Icons.video_file,
-                                  color: AppColors.primary),
+                                  color: AppColors.primaryText),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(

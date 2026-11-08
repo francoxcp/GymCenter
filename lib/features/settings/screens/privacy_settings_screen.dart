@@ -99,14 +99,14 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.3),
+                color: AppColors.primaryText.withValues(alpha: 0.3),
               ),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.shield_outlined,
-                  color: AppColors.primary,
+                  color: AppColors.primaryText,
                   size: 28,
                 ),
                 const SizedBox(width: 12),
@@ -220,7 +220,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: AppColors.primary,
+          color: AppColors.primaryText,
           letterSpacing: 1.5,
         ),
       ),
@@ -242,7 +242,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
       ),
       child: SwitchListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        secondary: Icon(icon, color: AppColors.primary, size: 22),
+        secondary: Icon(icon, color: AppColors.primaryText, size: 22),
         title: Text(
           title,
           style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
@@ -253,7 +253,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         ),
         value: value,
         onChanged: onChanged,
-        activeThumbColor: AppColors.primary,
+        activeThumbColor: AppColors.primaryText,
       ),
     );
   }
@@ -312,7 +312,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        leading: Icon(icon, color: AppColors.primary, size: 22),
+        leading: Icon(icon, color: AppColors.primaryText, size: 22),
         title: Text(
           title,
           style: TextStyle(color: AppColors.textPrimary, fontSize: 15),

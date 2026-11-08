@@ -108,7 +108,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: AppColors.primary,
+                color: AppColors.primaryText,
                 letterSpacing: 1.5,
               ),
             ),
@@ -127,7 +127,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _loadDashboardData,
-          color: AppColors.primary,
+          color: AppColors.primaryText,
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
@@ -245,7 +245,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           Expanded(
                             child: _StatCard(
                               icon: Icons.bolt,
-                              iconColor: AppColors.primary,
+                              iconColor: AppColors.primaryText,
                               title: l10n.sessionsStatLabelUpper,
                               value: _totalSessions.toString(),
                               change: l10n.last7Days,
@@ -292,7 +292,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const SizedBox(height: AppSpacing.md),
                 _QuickActionButton(
                   icon: Icons.dynamic_feed,
-                  iconColor: AppColors.primary,
+                  iconColor: AppColors.primaryText,
                   title: AppL10n.of(context).isEn
                       ? 'Member activity'
                       : 'Actividad de socios',

@@ -104,7 +104,7 @@ class _ResetPasswordLinkScreenState extends State<ResetPasswordLinkScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       CircularProgressIndicator(
-                          color: AppColors.primary),
+                          color: AppColors.primaryText),
                       const SizedBox(height: 20),
                       Text(
                         isEn ? 'Verifying link…' : 'Verificando enlace…',

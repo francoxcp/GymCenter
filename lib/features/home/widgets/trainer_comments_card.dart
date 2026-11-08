@@ -41,7 +41,7 @@ class _TrainerCommentsCardState extends State<TrainerCommentsCard> {
           color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(16),
           border:
-              Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+              Border.all(color: AppColors.primaryText.withValues(alpha: 0.35)),
         ),
         padding: const EdgeInsets.fromLTRB(16, 14, 8, 8),
         child: Column(
@@ -50,7 +50,7 @@ class _TrainerCommentsCardState extends State<TrainerCommentsCard> {
             Semantics(
               header: true,
               child: Row(children: [
-                Icon(Icons.chat_bubble, color: AppColors.primary, size: 18),
+                Icon(Icons.chat_bubble, color: AppColors.primaryText, size: 18),
                 SizedBox(width: 8),
                 Text('Tu entrenador te escribió',
                     style: TextStyle(

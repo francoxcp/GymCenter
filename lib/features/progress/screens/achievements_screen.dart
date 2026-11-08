@@ -38,7 +38,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _loadData,
-        color: AppColors.primary,
+        color: AppColors.primaryText,
         child: provider.isLoading && provider.allAchievements.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : ListView(

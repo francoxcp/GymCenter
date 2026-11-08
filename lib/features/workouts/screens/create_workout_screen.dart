@@ -184,7 +184,8 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => _AddExerciseDialog(
-        isAdmin: authProvider.isAdmin,
+        // Dueño y entrenadores pueden subir videos de ejercicios
+        isAdmin: authProvider.isStaff,
         onAdd: (exercise) {
           setState(() {
             _exercises.add(exercise);

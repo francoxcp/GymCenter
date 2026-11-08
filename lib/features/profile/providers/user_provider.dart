@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show FunctionException;
 import '../../auth/models/user.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../config/supabase_config.dart';
@@ -242,6 +243,53 @@ class UserProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error updating user: $e');
       rethrow;
+    }
+  }
+
+  /// El dueño asigna (o quita, con null) el entrenador de un socio.
+  Future<void> assignTrainer(String userId, String? trainerId) async {
+    await SupabaseConfig.client
+        .from(AppConstants.usersTable)
+        .update({'trainer_id': trainerId}).eq('id', userId);
+    final i = _users.indexWhere((u) => u.id == userId);
+    if (i != -1) {
+      _users[i] = _users[i].copyWith(trainerId: trainerId);
+      notifyListeners();
+    }
+  }
+
+  /// Da de alta un socio (Edge Function create-member).
+  /// Devuelve null si salió bien, o un código de error.
+  Future<String?> createMember({
+    required String name,
+    required String email,
+    required String password,
+    String? trainerId,
+  }) async {
+    try {
+      final res = await SupabaseConfig.client.functions.invoke(
+        'create-member',
+        body: {
+          'name': name.trim(),
+          'email': email.trim(),
+          'password': password,
+          if (trainerId != null) 'trainer_id': trainerId,
+        },
+      );
+      final data = res.data;
+      if (data is Map && data['error'] != null) return data['error'] as String;
+      await loadUsers();
+      return null;
+    } on FunctionException catch (e) {
+      final details = e.details;
+      if (details is Map && details['error'] is String) {
+        return details['error'] as String;
+      }
+      debugPrint('createMember error: ${e.status} ${e.details}');
+      return 'create_failed';
+    } catch (e) {
+      debugPrint('createMember error: $e');
+      return 'create_failed';
     }
   }
 

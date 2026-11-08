@@ -3,7 +3,7 @@ class User {
   final String email;
   final String name;
   final String? photoUrl;
-  final String role; // 'admin' o 'user'
+  final String role; // 'admin' (dueño) | 'trainer' (entrenador) | 'user' (socio)
   final String level; // 'Principiante', 'Intermedio', 'Avanzado'
   final int activeDays;
   final int completedWorkouts;
@@ -14,6 +14,14 @@ class User {
   final double? weightKg;  // kg
   final int? heightCm;     // centimetros
   final String? sex;       // 'male' | 'female' | 'other'
+  // Entrenador asignado (socios) y código para vincular socios (personal)
+  final String? trainerId;
+  final String? trainerCode;
+
+  bool get isAdmin => role == 'admin';
+  bool get isTrainer => role == 'trainer';
+  /// Dueño o entrenador: accede al panel de gestión.
+  bool get isStaff => isAdmin || isTrainer;
 
   User({
     required this.id,
@@ -30,6 +38,8 @@ class User {
     this.weightKg,
     this.heightCm,
     this.sex,
+    this.trainerId,
+    this.trainerCode,
   });
 
   static const _sentinel = Object();
@@ -49,6 +59,8 @@ class User {
     Object? weightKg = _sentinel,
     Object? heightCm = _sentinel,
     Object? sex = _sentinel,
+    Object? trainerId = _sentinel,
+    Object? trainerCode = _sentinel,
   }) {
     return User(
       id: id ?? this.id,
@@ -69,6 +81,10 @@ class User {
       weightKg: weightKg == _sentinel ? this.weightKg : weightKg as double?,
       heightCm: heightCm == _sentinel ? this.heightCm : heightCm as int?,
       sex: sex == _sentinel ? this.sex : sex as String?,
+      trainerId:
+          trainerId == _sentinel ? this.trainerId : trainerId as String?,
+      trainerCode:
+          trainerCode == _sentinel ? this.trainerCode : trainerCode as String?,
     );
   }
 
@@ -89,6 +105,8 @@ class User {
       weightKg: (json['weight_kg'] as num?)?.toDouble(),
       heightCm: json['height_cm'] as int?,
       sex: json['sex'] as String?,
+      trainerId: json['trainer_id'] as String?,
+      trainerCode: json['trainer_code'] as String?,
     );
   }
 
@@ -108,6 +126,8 @@ class User {
       'weight_kg': weightKg,
       'height_cm': heightCm,
       'sex': sex,
+      'trainer_id': trainerId,
+      'trainer_code': trainerCode,
     };
   }
 }

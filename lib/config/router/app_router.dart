@@ -99,10 +99,10 @@ GoRouter createAppRouter(AuthProvider authProvider) {
         return '/change-password';
       }
       // Admin siempre va al panel de administración
-      if (isAuth && authProvider.isAdmin && path == '/home') return '/admin';
+      if (isAuth && authProvider.isStaff && path == '/home') return '/admin';
       // Bloquear acceso a TODAS las rutas admin para usuarios no-admin
       // (en web cualquiera puede escribir la URL a mano).
-      if (isAuth && !authProvider.isAdmin && path.startsWith('/admin')) {
+      if (isAuth && !authProvider.isStaff && path.startsWith('/admin')) {
         return '/home';
       }
       // Primer login: redirigir a onboarding si faltan datos de fitness
@@ -150,7 +150,7 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           final location = state.uri.path;
           return _AppShell(
             currentIndex: _locationToIndex(location),
-            isAdmin: authProvider.isAdmin,
+            isAdmin: authProvider.isStaff,
             child: child,
           );
         },

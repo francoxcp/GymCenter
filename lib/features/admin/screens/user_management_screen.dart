@@ -68,6 +68,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showCreateMemberDialog,
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.black,
+        icon: const Icon(Icons.person_add_alt_1),
+        label: Text(AppL10n.of(context).isEn ? 'New member' : 'Nuevo socio'),
+      ),
       body: Consumer<UserProvider>(
         builder: (context, userProvider, child) {
           return Column(
@@ -100,7 +107,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               ),
 
               // Filters
-              Padding(
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   children: [
@@ -114,6 +122,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       label: AppL10n.of(context).filterAdmins,
                       isSelected: _filterRole == 'admin',
                       onTap: () => setState(() => _filterRole = 'admin'),
+                    ),
+                    const SizedBox(width: 8),
+                    _FilterChip(
+                      label: AppL10n.of(context).isEn ? 'Trainers' : 'Entrenadores',
+                      isSelected: _filterRole == 'trainer',
+                      onTap: () => setState(() => _filterRole = 'trainer'),
                     ),
                     const SizedBox(width: 8),
                     _FilterChip(
@@ -142,10 +156,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _StatCard(
-                        icon: Icons.admin_panel_settings,
-                        label: AppL10n.of(context).administratorsLabel,
+                        icon: Icons.sports,
+                        label: AppL10n.of(context).isEn ? 'Trainers' : 'Entrenadores',
                         value: userProvider.users
-                            .where((u) => u.role == 'admin')
+                            .where((u) => u.role == 'trainer')
                             .length
                             .toString(),
                       ),
@@ -176,6 +190,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
   Widget _buildUsersList(UserProvider userProvider) {
     List<User> users = userProvider.filteredUsers;
+    final trainerNames = {
+      for (final u in userProvider.users)
+        if (u.role == 'trainer' || u.role == 'admin') u.id: u.name,
+    };
 
     // Apply role filter
     if (_filterRole != 'all') {
@@ -243,6 +261,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         final user = users[index];
         return _UserCard(
           user: user,
+          trainerName: trainerNames[user.trainerId],
           onTap: () => _showUserOptions(user),
         );
       },
@@ -252,6 +271,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   void _showUserOptions(User user) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final currentUserId = authProvider.currentUser?.id;
+    final isOwner = authProvider.isAdmin;
+    final isEn = AppL10n.of(context).isEn;
 
     showModalBottomSheet(
       context: context,
@@ -293,19 +314,41 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   _showEditUserDialog(user);
                 },
               ),
-              if (user.id != currentUserId)
+              // ── Solo el dueño gestiona roles y entrenadores ──
+              if (isOwner && user.role == 'user')
+                ListTile(
+                  leading: const Icon(Icons.sports, color: AppColors.primary),
+                  title: Text(isEn ? 'Assign trainer' : 'Asignar entrenador'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showAssignTrainerDialog(user);
+                  },
+                ),
+              if (isOwner && user.id != currentUserId && user.role != 'admin')
+                ListTile(
+                  leading: const Icon(Icons.sports_gymnastics,
+                      color: Colors.lightBlueAccent),
+                  title: Text(user.role == 'trainer'
+                      ? (isEn ? 'Remove trainer role' : 'Quitar rol de entrenador')
+                      : (isEn ? 'Make trainer' : 'Hacer entrenador')),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _setRole(user, user.role == 'trainer' ? 'user' : 'trainer');
+                  },
+                ),
+              if (isOwner && user.id != currentUserId)
                 ListTile(
                   leading: const Icon(Icons.admin_panel_settings,
                       color: Colors.orange),
                   title: Text(user.role == 'admin'
-                      ? AppL10n.of(context).removeAdmin
-                      : AppL10n.of(context).makeAdmin),
+                      ? (isEn ? 'Remove owner role' : 'Quitar rol de dueño')
+                      : (isEn ? 'Make owner (full access)' : 'Hacer dueño (acceso total)')),
                   onTap: () {
                     Navigator.pop(context);
-                    _toggleAdminRole(user);
+                    _setRole(user, user.role == 'admin' ? 'user' : 'admin');
                   },
                 ),
-              if (user.id != currentUserId)
+              if (isOwner && user.id != currentUserId)
                 ListTile(
                   leading: const Icon(Icons.delete, color: Colors.red),
                   title: Text(AppL10n.of(context).deleteUser,
@@ -376,22 +419,44 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
   bool _isProcessing = false;
 
-  void _toggleAdminRole(User user) async {
+  Future<void> _setRole(User user, String newRole) async {
     if (_isProcessing) return;
+    final isEn = AppL10n.of(context).isEn;
+    // Dar acceso total requiere confirmación explícita
+    if (newRole == 'admin') {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: AppColors.cardBackground,
+          title: Text(isEn ? 'Give full access?' : '¿Dar acceso total?'),
+          content: Text(isEn
+              ? '${user.name} will be able to see and manage ALL members, trainers and routines, and change roles.'
+              : '${user.name} podrá ver y gestionar a TODOS los socios, entrenadores y rutinas, y cambiar roles.'),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(AppL10n.of(ctx).cancel)),
+            ElevatedButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(isEn ? 'Yes, make owner' : 'Sí, hacer dueño')),
+          ],
+        ),
+      );
+      if (ok != true) return;
+    }
+    if (!mounted) return;
     setState(() => _isProcessing = true);
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final newRole = user.role == 'admin' ? 'user' : 'admin';
-
     try {
       await userProvider.updateUser(user.id, role: newRole);
       if (mounted) {
-        final l10n = AppL10n.of(context);
+        final label = switch (newRole) {
+          'admin' => isEn ? 'owner' : 'dueño',
+          'trainer' => isEn ? 'trainer' : 'entrenador',
+          _ => isEn ? 'member' : 'socio',
+        };
         AppSnackbar.success(
-          context,
-          newRole == 'admin'
-              ? l10n.userNowAdmin(user.name)
-              : l10n.adminRemovedFrom(user.name),
-        );
+            context, isEn ? '${user.name} is now $label' : '${user.name} ahora es $label');
       }
     } catch (e) {
       if (mounted) {
@@ -401,6 +466,248 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
+  }
+
+  /// El dueño asigna (o quita) el entrenador de un socio.
+  void _showAssignTrainerDialog(User user) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final isEn = AppL10n.of(context).isEn;
+    final trainers = userProvider.users
+        .where((u) => u.role == 'trainer' || u.role == 'admin')
+        .toList();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.cardBackground,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(
+                isEn ? 'Trainer for ${user.name}' : 'Entrenador de ${user.name}',
+                style: const TextStyle(
+                    color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person_off_outlined,
+                  color: AppColors.textSecondary),
+              title: Text(isEn ? 'No trainer' : 'Sin entrenador'),
+              trailing: user.trainerId == null
+                  ? const Icon(Icons.check, color: AppColors.primary)
+                  : null,
+              onTap: () => _assignTrainer(ctx, user, null),
+            ),
+            ...trainers.map((t) => ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: AppColors.primary,
+                    child: Text(
+                      t.name.isNotEmpty ? t.name[0].toUpperCase() : '?',
+                      style: const TextStyle(color: Colors.black),
+                    ),
+                  ),
+                  title: Text(t.name),
+                  subtitle: Text(
+                      t.role == 'admin'
+                          ? (isEn ? 'Owner' : 'Dueño')
+                          : (isEn ? 'Trainer' : 'Entrenador'),
+                      style: const TextStyle(color: AppColors.textSecondary)),
+                  trailing: user.trainerId == t.id
+                      ? const Icon(Icons.check, color: AppColors.primary)
+                      : null,
+                  onTap: () => _assignTrainer(ctx, user, t.id),
+                )),
+            if (trainers.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Text(
+                  isEn
+                      ? 'There are no trainers yet. Use "Make trainer" on a user first.'
+                      : 'Aún no hay entrenadores. Primero usa "Hacer entrenador" en un usuario.',
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _assignTrainer(
+      BuildContext sheetContext, User user, String? trainerId) async {
+    Navigator.pop(sheetContext);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    try {
+      await userProvider.assignTrainer(user.id, trainerId);
+      if (mounted) {
+        AppSnackbar.success(
+            context,
+            AppL10n.of(context).isEn
+                ? 'Trainer updated'
+                : 'Entrenador actualizado');
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.error(
+            context, AppL10n.of(context).genericError(e.toString()));
+      }
+    }
+  }
+
+  /// Alta de socio por un entrenador o el dueño (Edge Function create-member).
+  void _showCreateMemberDialog() {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final isEn = AppL10n.of(context).isEn;
+    final nameCtrl = TextEditingController();
+    final emailCtrl = TextEditingController();
+    final passCtrl = TextEditingController();
+    final trainers = userProvider.users
+        .where((u) => u.role == 'trainer' || u.role == 'admin')
+        .toList();
+    String? trainerId = auth.isTrainer ? auth.currentUser?.id : null;
+    bool saving = false;
+    String? error;
+
+    String errorText(String code) {
+      switch (code) {
+        case 'email_exists':
+          return isEn ? 'That email is already registered.' : 'Ese correo ya está registrado.';
+        case 'invalid_email':
+          return isEn ? 'Invalid email.' : 'Correo no válido.';
+        case 'weak_password':
+          return isEn ? 'Password must have at least 8 characters.' : 'La contraseña debe tener al menos 8 caracteres.';
+        case 'invalid_name':
+          return isEn ? 'Enter the member name.' : 'Escribe el nombre del socio.';
+        default:
+          return isEn ? 'Could not create the member.' : 'No se pudo crear el socio.';
+      }
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          backgroundColor: AppColors.cardBackground,
+          title: Text(isEn ? 'New member' : 'Nuevo socio'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameCtrl,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    labelText: isEn ? 'Full name' : 'Nombre completo',
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: emailCtrl,
+                  keyboardType: TextInputType.emailAddress,
+                  autocorrect: false,
+                  decoration: InputDecoration(
+                    labelText: isEn ? 'Email' : 'Correo electrónico',
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: passCtrl,
+                  autocorrect: false,
+                  decoration: InputDecoration(
+                    labelText: isEn ? 'Temporary password' : 'Contraseña temporal',
+                    helperText: isEn
+                        ? 'Give it to the member; they can change it in Settings.'
+                        : 'Dásela al socio; podrá cambiarla en Configuración.',
+                    helperMaxLines: 2,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                if (auth.isAdmin) ...[
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String?>(
+                    // ignore: deprecated_member_use
+                    value: trainerId,
+                    decoration: InputDecoration(
+                      labelText: isEn ? 'Trainer' : 'Entrenador',
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: [
+                      DropdownMenuItem<String?>(
+                          value: null,
+                          child: Text(isEn ? 'No trainer' : 'Sin entrenador')),
+                      ...trainers.map((t) => DropdownMenuItem<String?>(
+                          value: t.id, child: Text(t.name))),
+                    ],
+                    onChanged: (v) => setDialogState(() => trainerId = v),
+                  ),
+                ],
+                if (error != null) ...[
+                  const SizedBox(height: 12),
+                  Text(error!, style: const TextStyle(color: AppColors.error)),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: saving ? null : () => Navigator.pop(dialogContext),
+              child: Text(AppL10n.of(dialogContext).cancel),
+            ),
+            ElevatedButton(
+              onPressed: saving
+                  ? null
+                  : () async {
+                      setDialogState(() {
+                        saving = true;
+                        error = null;
+                      });
+                      final code = await userProvider.createMember(
+                        name: nameCtrl.text,
+                        email: emailCtrl.text,
+                        password: passCtrl.text,
+                        trainerId: trainerId,
+                      );
+                      if (code == null) {
+                        if (dialogContext.mounted) Navigator.pop(dialogContext);
+                        if (mounted) {
+                          AppSnackbar.success(
+                              context,
+                              isEn
+                                  ? 'Member created. Share the email and temporary password.'
+                                  : 'Socio creado. Compártele el correo y la contraseña temporal.');
+                        }
+                      } else {
+                        setDialogState(() {
+                          saving = false;
+                          error = errorText(code);
+                        });
+                      }
+                    },
+              child: saving
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : Text(isEn ? 'Create' : 'Crear'),
+            ),
+          ],
+        ),
+      ),
+    ).then((_) {
+      nameCtrl.dispose();
+      emailCtrl.dispose();
+      passCtrl.dispose();
+    });
   }
 
   void _confirmDeleteUser(User user) {
@@ -545,10 +852,12 @@ class _StatCard extends StatelessWidget {
 class _UserCard extends StatelessWidget {
   final User user;
   final VoidCallback onTap;
+  final String? trainerName;
 
   const _UserCard({
     required this.user,
     required this.onTap,
+    this.trainerName,
   });
 
   @override
@@ -577,6 +886,24 @@ class _UserCard extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
+            if (user.role == 'trainer') ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.lightBlueAccent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  AppL10n.of(context).isEn ? 'TRAINER' : 'ENTRENADOR',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ],
             if (user.role == 'admin') ...[
               const SizedBox(width: 8),
               Container(
@@ -604,6 +931,11 @@ class _UserCard extends StatelessWidget {
               user.email,
               style: const TextStyle(color: AppColors.textSecondary),
             ),
+            if (trainerName != null)
+              Text(
+                '${AppL10n.of(context).isEn ? 'Trainer' : 'Entrenador'}: $trainerName',
+                style: const TextStyle(fontSize: 12, color: AppColors.primary),
+              ),
             const SizedBox(height: 4),
             Text(
               AppL10n.of(context)

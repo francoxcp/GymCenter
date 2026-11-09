@@ -10,6 +10,8 @@ import '../../../core/utils/app_validators.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 import '../models/workout.dart';
 import '../models/exercise.dart';
+import '../models/superset.dart';
+import '../widgets/superset_editor.dart';
 import '../providers/workout_provider.dart';
 import '../../../shared/services/storage_service.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -64,7 +66,9 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
           a.restSeconds != b.restSeconds ||
           a.muscleGroup != b.muscleGroup ||
           a.description != b.description ||
-          a.videoUrl != b.videoUrl) {
+          a.videoUrl != b.videoUrl ||
+          a.weight != b.weight ||
+          a.supersetGroup != b.supersetGroup) {
         return true;
       }
     }
@@ -252,24 +256,28 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                     ],
                   ),
                   itemCount: _exercises.length,
-                  onReorder: (oldIndex, newIndex) {
-                    setState(() {
-                      if (newIndex > oldIndex) newIndex--;
-                      final item = _exercises.removeAt(oldIndex);
-                      _exercises.insert(newIndex, item);
-                    });
-                  },
+                  onReorder: (oldIndex, newIndex) => _setExercises(
+                      moveExercise(_exercises, oldIndex, newIndex)),
                   itemBuilder: (context, index) {
                     final exercise = _exercises[index];
-                    return _ExerciseCard(
+                    return SupersetEditorItem(
                       key: ObjectKey(exercise),
-                      exercise: exercise,
-                      dragIndex: index,
-                      onTap: () => _quickEdit(index),
-                      onDuplicate: () => setState(() => _exercises.insert(
-                          index + 1, duplicateExercise(exercise))),
-                      onEdit: () => _editExercise(index),
-                      onDelete: () => _removeExercise(index),
+                      exercises: _exercises,
+                      index: index,
+                      onToggleLink: () =>
+                          _setExercises(toggleLinkWithNext(_exercises, index)),
+                      onEditGroup: () => _editSuperset(index),
+                      card: _ExerciseCard(
+                        exercise: exercise,
+                        letter: supersetSpanAt(_exercises, index)
+                            ?.labelFor(index),
+                        dragIndex: index,
+                        onTap: () => _quickEdit(index),
+                        onDuplicate: () => _setExercises(insertDuplicate(
+                            _exercises, index, duplicateExercise(exercise))),
+                        onEdit: () => _editExercise(index),
+                        onDelete: () => _removeExercise(index),
+                      ),
                     );
                   },
                 ),
@@ -291,7 +299,24 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
   Future<void> _quickEdit(int index) async {
     final updated = await showQuickExerciseEditor(context, _exercises[index]);
     if (updated != null && mounted) {
-      setState(() => _exercises[index] = updated);
+      _setExercises(replaceKeepingSuperset(_exercises, index, updated));
+    }
+  }
+
+  void _setExercises(List<Exercise> list) {
+    setState(() {
+      _exercises
+        ..clear()
+        ..addAll(list);
+    });
+  }
+
+  Future<void> _editSuperset(int index) async {
+    final e = _exercises[index];
+    final r = await showSupersetSettings(context,
+        rounds: e.sets, rest: e.restSeconds);
+    if (r != null && mounted) {
+      _setExercises(applyRoundsAndRest(_exercises, index, r.rounds, r.rest));
     }
   }
 
@@ -300,9 +325,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
   }
 
   void _removeExercise(int index) {
-    setState(() {
-      _exercises.removeAt(index);
-    });
+    _setExercises(removeExerciseAt(_exercises, index));
   }
 
   void _showExerciseDialog({Exercise? exercise, int? index}) {
@@ -312,13 +335,12 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
       builder: (context) => _ExerciseDialog(
         exercise: exercise,
         onSave: (newExercise) {
-          setState(() {
-            if (index != null) {
-              _exercises[index] = newExercise;
-            } else {
-              _exercises.add(newExercise);
-            }
-          });
+          if (index != null) {
+            _setExercises(
+                replaceKeepingSuperset(_exercises, index, newExercise));
+            return;
+          }
+          setState(() => _exercises.add(newExercise));
         },
       ),
     );
@@ -422,6 +444,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
 
 class _ExerciseCard extends StatelessWidget {
   final Exercise exercise;
+  final String? letter; // A, B, C… dentro de una superserie
   final int dragIndex;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -429,8 +452,8 @@ class _ExerciseCard extends StatelessWidget {
   final VoidCallback onDuplicate;
 
   const _ExerciseCard({
-    super.key,
     required this.exercise,
+    this.letter,
     required this.dragIndex,
     required this.onTap,
     required this.onDuplicate,
@@ -457,7 +480,14 @@ class _ExerciseCard extends StatelessWidget {
                 color: AppColors.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.fitness_center, color: AppColors.primaryText),
+              alignment: Alignment.center,
+              child: letter != null
+                  ? Text(letter!,
+                      style: TextStyle(
+                          color: AppColors.primaryText,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900))
+                  : Icon(Icons.fitness_center, color: AppColors.primaryText),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -476,7 +506,9 @@ class _ExerciseCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${exercise.sets} series · ${exercise.reps} reps · ${exercise.restSeconds}s',
+                    letter != null
+                        ? '${exercise.reps} reps'
+                        : '${exercise.sets} series · ${exercise.reps} reps · ${exercise.restSeconds}s',
                     style: TextStyle(
                         color: AppColors.textSecondary, fontSize: 12),
                   ),

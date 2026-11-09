@@ -17,6 +17,8 @@ import '../providers/workout_progress_provider.dart';
 import '../models/exercise.dart';
 import '../models/workout.dart';
 import '../models/workout_progress.dart';
+import '../models/superset.dart';
+import '../widgets/superset_editor.dart' show kSupersetRailWidth;
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/video_player_widget.dart';
 import 'workout_summary_screen.dart';
@@ -583,18 +585,43 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       final isLastExercise = exerciseIndex == _completedSets.length - 1;
       final isLastSet = setIndex == totalSets - 1;
 
-      if (!(isLastExercise && isLastSet)) {
-        final effectiveId = widget.extraWorkoutId ??
-            context.read<AuthProvider>().currentUser?.assignedWorkoutId;
-        final workout = effectiveId != null
-            ? context.read<WorkoutProvider>().getWorkoutById(effectiveId)
-            : null;
-        final restSeconds = workout?.exercises[exerciseIndex].restSeconds ?? 60;
+      final effectiveId = widget.extraWorkoutId ??
+          context.read<AuthProvider>().currentUser?.assignedWorkoutId;
+      final workout = effectiveId != null
+          ? context.read<WorkoutProvider>().getWorkoutById(effectiveId)
+          : null;
+      final restSeconds = workout?.exercises[exerciseIndex].restSeconds ?? 60;
+
+      // Superserie: A → B → (C) sin pausa; descanso al cerrar la ronda
+      final step = workout == null
+          ? null
+          : supersetStepAfterSet(workout.exercises, exerciseIndex, setIndex);
+      if (step != null) {
+        if (step.rest) _startRestTimer(restSeconds);
+        if (step.goTo != null) _guideTo(step.goTo!, from: exerciseIndex);
+      } else if (!(isLastExercise && isLastSet)) {
         _startRestTimer(restSeconds);
       }
     } else {
       HapticFeedback.lightImpact();
     }
+  }
+
+  /// Lleva al socio al siguiente ejercicio de la superserie, con una pausa
+  /// corta para que vea marcada la serie. No lo mueve si ya cambió de página.
+  void _guideTo(int index, {required int from}) {
+    Future.delayed(const Duration(milliseconds: 450), () {
+      if (!mounted || _currentExerciseIndex != from) return;
+      if (index < 0 || index >= _completedSets.length) return;
+      setState(() => _currentExerciseIndex = index);
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
+        );
+      }
+    });
   }
 
   void _saveProgressDebounced() {
@@ -2192,6 +2219,94 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     ); // PopScope
   }
 
+  /// Franja "SUPERSERIE · B de 3 · RONDA 2/4" con lo que sigue.
+  Widget _buildSupersetStrip(List<Exercise> exercises, int exerciseIndex) {
+    final span = supersetSpanAt(exercises, exerciseIndex);
+    if (span == null) return const SizedBox.shrink();
+    final done = _completedSets[exerciseIndex];
+    final rounds = done.length;
+    final pending = done.indexWhere((s) => !s);
+    final round = pending == -1 ? rounds : pending + 1;
+    final isLastOfGroup = exerciseIndex == span.end;
+    final next = isLastOfGroup
+        ? (pending == -1 || pending == rounds - 1
+            ? 'Al terminar: descanso y sigue la rutina'
+            : 'Luego: descanso ${exercises[exerciseIndex].restSeconds}s y vuelve a ${exercises[span.start].name}')
+        : 'Sin descanso, sigue: ${exercises[exerciseIndex + 1].name}';
+    final kind = switch (span.size) {
+      2 => 'SUPERSERIE',
+      3 => 'TRISERIE',
+      _ => 'CIRCUITO',
+    };
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.md),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+                color: AppColors.primary, width: kSupersetRailWidth),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '$kind · ${span.labelFor(exerciseIndex)} DE ${span.size}',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  'RONDA ',
+                  style: TextStyle(
+                    color: AppColors.primaryText,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                Text(
+                  '$round',
+                  style: TextStyle(
+                    color: AppColors.primaryText,
+                    fontSize: 24,
+                    height: 1,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                Text(
+                  '/$rounds',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              next,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildExerciseContent(Exercise exercise, int exerciseIndex, workout) {
     final completedSets = _completedSets[exerciseIndex];
     final allSetsCompleted = completedSets.every((s) => s);
@@ -2246,6 +2361,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 ),
             ],
           ),
+
+          _buildSupersetStrip(workout.exercises as List<Exercise>, exerciseIndex),
 
           const SizedBox(height: 16),
 
@@ -2511,7 +2628,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 child: Semantics(
                   button: true,
                   checked: isCompleted,
-                  label: 'Serie ${setIndex + 1}, '
+                  label: '${exercise.inSuperset ? 'Ronda' : 'Serie'} ${setIndex + 1}, '
                       '${isCompleted ? 'hecha' : 'pendiente'}'
                       '${_setWeights[exerciseIndex]?[setIndex] == null ? ', sin peso' : _setWeights[exerciseIndex]![setIndex] == 0 ? ', peso corporal' : ', ${_fmtWeight(_setWeights[exerciseIndex]![setIndex]!)}'}',
                   onTapHint: isCompleted ? 'desmarcar' : 'marcar como hecha',
@@ -2565,7 +2682,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         ),
                         const SizedBox(width: 16),
                         Text(
-                          AppL10n.of(context).setNumber(setIndex + 1),
+                          exercise.inSuperset
+                              ? AppL10n.of(context).roundNumber(setIndex + 1)
+                              : AppL10n.of(context).setNumber(setIndex + 1),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,

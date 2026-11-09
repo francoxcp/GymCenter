@@ -1066,6 +1066,7 @@ class AppL10n {
   String get markCompletedSets =>
       isEn ? 'Mark the completed sets:' : 'Marca las series completadas:';
   String setNumber(int n) => isEn ? 'Set $n' : 'Serie $n';
+  String roundNumber(int n) => isEn ? 'Round $n' : 'Ronda $n';
   String get nextExercise => isEn ? 'NEXT EXERCISE' : 'SIGUIENTE EJERCICIO';
   String get finishRoutine => isEn ? 'FINISH ROUTINE' : 'FINALIZAR RUTINA';
   String get restLabel => isEn ? 'Rest' : 'Descanso';

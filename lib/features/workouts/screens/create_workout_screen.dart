@@ -11,6 +11,8 @@ import '../../../core/utils/app_validators.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 import '../models/workout.dart';
 import '../models/exercise.dart';
+import '../models/superset.dart';
+import '../widgets/superset_editor.dart';
 import '../providers/workout_provider.dart';
 import '../../../shared/services/storage_service.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -191,7 +193,24 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   Future<void> _quickEdit(int index) async {
     final updated = await showQuickExerciseEditor(context, _exercises[index]);
     if (updated != null && mounted) {
-      setState(() => _exercises[index] = updated);
+      _setExercises(replaceKeepingSuperset(_exercises, index, updated));
+    }
+  }
+
+  void _setExercises(List<Exercise> list) {
+    setState(() {
+      _exercises
+        ..clear()
+        ..addAll(list);
+    });
+  }
+
+  Future<void> _editSuperset(int index) async {
+    final e = _exercises[index];
+    final r = await showSupersetSettings(context,
+        rounds: e.sets, rest: e.restSeconds);
+    if (r != null && mounted) {
+      _setExercises(applyRoundsAndRest(_exercises, index, r.rounds, r.rest));
     }
   }
 
@@ -213,9 +232,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   }
 
   void _removeExercise(int index) {
-    setState(() {
-      _exercises.removeAt(index);
-    });
+    _setExercises(removeExerciseAt(_exercises, index));
   }
 
   Future<void> _saveWorkout() async {
@@ -562,17 +579,19 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
               ],
             ),
             itemCount: _exercises.length,
-            onReorder: (oldIndex, newIndex) {
-              setState(() {
-                if (newIndex > oldIndex) newIndex--;
-                final item = _exercises.removeAt(oldIndex);
-                _exercises.insert(newIndex, item);
-              });
-            },
+            onReorder: (oldIndex, newIndex) =>
+                _setExercises(moveExercise(_exercises, oldIndex, newIndex)),
             itemBuilder: (context, index) {
               final exercise = _exercises[index];
-              return Card(
+              final span = supersetSpanAt(_exercises, index);
+              return SupersetEditorItem(
                 key: ObjectKey(exercise),
+                exercises: _exercises,
+                index: index,
+                onToggleLink: () =>
+                    _setExercises(toggleLinkWithNext(_exercises, index)),
+                onEditGroup: () => _editSuperset(index),
+                card: Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 color: AppColors.cardBackground,
                 child: Padding(
@@ -584,7 +603,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                         backgroundColor:
                             AppColors.primary.withValues(alpha: 0.2),
                         child: Text(
-                          '${index + 1}',
+                          span?.labelFor(index) ?? '${index + 1}',
                           style: TextStyle(
                             color: AppColors.primaryText,
                             fontWeight: FontWeight.bold,
@@ -605,7 +624,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              '${exercise.sets} series · ${exercise.reps} reps'
+                              '${span != null ? '' : '${exercise.sets} series · '}${exercise.reps} reps'
                               '${exercise.weight > 0 ? ' · ${exercise.weight.toStringAsFixed(0)} lbs' : ''}'
                               ' · toca para ajustar',
                               style: TextStyle(
@@ -619,8 +638,8 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                         tooltip: 'Duplicar',
                         icon: Icon(Icons.copy_all_outlined,
                             color: AppColors.textPrimary.withValues(alpha: 0.54)),
-                        onPressed: () => setState(() => _exercises.insert(
-                            index + 1, duplicateExercise(exercise))),
+                        onPressed: () => _setExercises(insertDuplicate(
+                            _exercises, index, duplicateExercise(exercise))),
                       ),
                       ReorderableDragStartListener(
                         index: index,
@@ -642,6 +661,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                     ],
                   ),
                 ),
+              ),
               );
             },
           ),

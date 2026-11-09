@@ -5,6 +5,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 import '../providers/workout_provider.dart';
+import '../models/superset.dart';
+import '../widgets/superset_editor.dart';
 import '../providers/workout_progress_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'edit_workout_screen.dart';
@@ -369,14 +371,49 @@ class _WorkoutDetailReadonlyScreenState
                           ...workout.exercises.asMap().entries.map((entry) {
                             final index = entry.key;
                             final exercise = entry.value;
+                            final span =
+                                supersetSpanAt(workout.exercises, index);
+                            final card = _ExerciseCard(
+                              number: index + 1,
+                              letter: span?.labelFor(index),
+                              name: exercise.name,
+                              sets: exercise.sets,
+                              reps: exercise.reps,
+                              restTime: exercise.restSeconds,
+                            );
+                            if (span == null) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: card,
+                              );
+                            }
+                            // Superserie: cabecera + riel que une los ejercicios
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: _ExerciseCard(
-                                number: index + 1,
-                                name: exercise.name,
-                                sets: exercise.sets,
-                                reps: exercise.reps,
-                                restTime: exercise.restSeconds,
+                              padding: EdgeInsets.only(
+                                  bottom: index == span.end ? 12 : 0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  if (index == span.start)
+                                    SupersetHeader(
+                                      size: span.size,
+                                      rounds: exercise.sets,
+                                      restSeconds: exercise.restSeconds,
+                                    ),
+                                  Container(
+                                    padding: EdgeInsets.only(
+                                        left: 8,
+                                        bottom: index == span.end ? 0 : 8),
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        left: BorderSide(
+                                            color: AppColors.primary,
+                                            width: kSupersetRailWidth),
+                                      ),
+                                    ),
+                                    child: card,
+                                  ),
+                                ],
                               ),
                             );
                           }),
@@ -434,6 +471,7 @@ class _WorkoutDetailReadonlyScreenState
 
 class _ExerciseCard extends StatelessWidget {
   final int number;
+  final String? letter; // A, B, C… dentro de una superserie
   final String name;
   final int sets;
   final int reps;
@@ -441,6 +479,7 @@ class _ExerciseCard extends StatelessWidget {
 
   const _ExerciseCard({
     required this.number,
+    this.letter,
     required this.name,
     required this.sets,
     required this.reps,
@@ -469,7 +508,7 @@ class _ExerciseCard extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                '$number',
+                letter ?? '$number',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -494,13 +533,17 @@ class _ExerciseCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    _buildDetail(
-                        Icons.repeat, AppL10n.of(context).setsCount(sets)),
-                    const SizedBox(width: 16),
+                    if (letter == null) ...[
+                      _buildDetail(
+                          Icons.repeat, AppL10n.of(context).setsCount(sets)),
+                      const SizedBox(width: 16),
+                    ],
                     _buildDetail(Icons.fitness_center,
                         AppL10n.of(context).repsCount(reps)),
-                    const SizedBox(width: 16),
-                    _buildDetail(Icons.timer, '${restTime}s'),
+                    if (letter == null) ...[
+                      const SizedBox(width: 16),
+                      _buildDetail(Icons.timer, '${restTime}s'),
+                    ],
                   ],
                 ),
               ],

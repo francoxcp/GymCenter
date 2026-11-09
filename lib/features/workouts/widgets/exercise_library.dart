@@ -358,11 +358,19 @@ class _QuickEditorState extends State<_QuickEditor> {
                     fontSize: 18,
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            _row('Series', '$sets', () => setState(() => sets = (sets - 1).clamp(1, 20)),
+            if (e.inSuperset)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                    'En superserie: rondas y descanso se aplican a todo el grupo',
+                    style: TextStyle(
+                        color: AppColors.textSecondary, fontSize: 13)),
+              ),
+            _row(e.inSuperset ? 'Rondas' : 'Series', '$sets', () => setState(() => sets = (sets - 1).clamp(1, 20)),
                 () => setState(() => sets = (sets + 1).clamp(1, 20))),
             _row('Reps', '$reps', () => setState(() => reps = (reps - 1).clamp(1, 200)),
                 () => setState(() => reps = (reps + 1).clamp(1, 200))),
-            _row('Descanso', '${rest}s',
+            _row(e.inSuperset ? 'Descanso por ronda' : 'Descanso', '${rest}s',
                 () => setState(() => rest = (rest - 15).clamp(0, 600)),
                 () => setState(() => rest = (rest + 15).clamp(0, 600))),
             _row(
@@ -374,17 +382,10 @@ class _QuickEditorState extends State<_QuickEditor> {
             ElevatedButton(
               onPressed: () => Navigator.pop(
                 context,
-                Exercise(
-                  id: e.id,
-                  name: e.name,
-                  description: e.description,
+                e.copyWith(
                   sets: sets,
                   reps: reps,
                   restSeconds: rest,
-                  videoUrl: e.videoUrl,
-                  thumbnailUrl: e.thumbnailUrl,
-                  muscleGroup: e.muscleGroup,
-                  difficulty: e.difficulty,
                   weight: weight,
                 ),
               ),

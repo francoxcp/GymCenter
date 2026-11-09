@@ -323,15 +323,17 @@ class AppL10n {
 
   // About dialog
   String get aboutContent => isEn
-      ? 'Version 1.0.0\n\nYour perfect companion to reach your fitness goals.\n\n© 2026 GYMLAB'
-      : 'Versión 1.0.0\n\nTu compañero perfecto para alcanzar tus metas de fitness.\n\n© 2026 GYMLAB';
+      ? 'Version 1.0.0\n\nRoutines and progress for your gym.\n\n© 2026 GYMLAB'
+      : 'Versión 1.0.0\n\nRutinas y progreso de tu gimnasio.\n\n© 2026 GYMLAB';
 
   // ── Onboarding ───────────────────────────────────────────────────────────
-  String get onboardingWelcome =>
-      isEn ? 'Welcome to GYMLAB!' : '¡Bienvenido a GYMLAB!';
+  /// Bienvenida con el nombre del gimnasio (sin género y sin relleno).
+  String onboardingWelcomeFor(String? gym) => gym == null || gym.isEmpty
+      ? (isEn ? 'You\'re in' : 'Ya estás dentro')
+      : (isEn ? 'You\'re in at $gym' : 'Ya estás en $gym');
   String get onboardingWelcomeBody => isEn
-      ? 'Your perfect companion to reach your fitness goals. Let\'s personalize your experience.'
-      : 'Tu compañero perfecto para alcanzar tus metas de fitness. Vamos a personalizar tu experiencia.';
+      ? 'Two quick steps so your trainer can set up your routines: your body and your goal.'
+      : 'Dos pasos rápidos para que tu entrenador arme bien tus rutinas: tu cuerpo y tu objetivo.';
   String get onboardingStatsTitle =>
       isEn ? 'Your personal data' : 'Tus datos personales';
   String get onboardingStatsSubtitle => isEn
@@ -1070,6 +1072,10 @@ class AppL10n {
   String get nextExercise => isEn ? 'NEXT EXERCISE' : 'SIGUIENTE EJERCICIO';
   String get finishRoutine => isEn ? 'FINISH ROUTINE' : 'FINALIZAR RUTINA';
   String get restLabel => isEn ? 'Rest' : 'Descanso';
+  String get roundsLabel => isEn ? 'Rounds' : 'Rondas';
+  String get restPerRoundLabel => isEn ? 'Rest/round' : 'Desc./ronda';
+  String get markCompletedRounds =>
+      isEn ? 'Mark completed rounds:' : 'Marca las rondas completadas:';
 
   // ── Service error/success codes ──────────────────────────────────────────
   /// Translates a service-layer error/success code into a localised message.

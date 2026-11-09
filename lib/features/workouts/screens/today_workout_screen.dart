@@ -83,6 +83,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   final Set<int> _appliedSuggestions = {};
   // Ejercicios que superaron su PR en esta sesión
   final Set<int> _newPRsThisSession = {};
+  // Encabezado de las series de cada página: el flujo guiado lo deja a la vista
+  final Map<int, GlobalKey> _setsKeys = {};
   // Pre-caché de videos: solo se lanza una vez por sesión
   bool _videosCacheStarted = false;
 
@@ -614,13 +616,23 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       if (!mounted || _currentExerciseIndex != from) return;
       if (index < 0 || index >= _completedSets.length) return;
       setState(() => _currentExerciseIndex = index);
-      if (_pageController.hasClients) {
-        _pageController.animateToPage(
-          index,
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeOutCubic,
-        );
-      }
+      if (!_pageController.hasClients) return;
+      _pageController
+          .animateToPage(
+            index,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic,
+          )
+          .then((_) {
+        // Deja las rondas a la vista (sin tener que desplazarse)
+        final ctx = _setsKeys[index]?.currentContext;
+        if (ctx != null && ctx.mounted) {
+          Scrollable.ensureVisible(ctx,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              alignment: 0.3);
+        }
+      });
     });
   }
 
@@ -2042,7 +2054,6 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     }
 
     final currentExercise = workout.exercises[_currentExerciseIndex];
-    final progress = (_currentExerciseIndex + 1) / workout.exercises.length;
 
     // Calcular sets totales completados
     int totalCompletedSets = 0;
@@ -2051,6 +2062,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       totalCompletedSets += sets.where((s) => s).length;
       totalSets += sets.length;
     }
+    // La barra avanza con las series hechas (antes, con el ejercicio en
+    // pantalla: marcaba 33 % sin haber hecho nada)
+    final progress = totalSets == 0 ? 0.0 : totalCompletedSets / totalSets;
 
     return PopScope(
       canPop: _workoutCompleted,
@@ -2464,44 +2478,20 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 thumbnailUrl: exercise.thumbnailUrl,
                 showFullscreenButton: true,
               ),
-            )
-          else
-            Container(
-              height: 220,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.videocam_off_outlined,
-                      size: 64,
-                      color: AppColors.textSecondary,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      AppL10n.of(context).videoUnavailable,
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
 
-          const SizedBox(height: 24),
+          // Sin video no se reserva espacio: las series quedan a la vista
+          if (exercise.videoUrl != null && exercise.videoUrl!.isNotEmpty)
+            const SizedBox(height: 24),
 
           // Sets Info
           Row(
             children: [
               _InfoCard(
                 icon: Icons.fitness_center,
-                label: AppL10n.of(context).setsLabel,
+                label: exercise.inSuperset
+                    ? AppL10n.of(context).roundsLabel
+                    : AppL10n.of(context).setsLabel,
                 value: exercise.sets.toString(),
               ),
               const SizedBox(width: 12),
@@ -2513,7 +2503,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               const SizedBox(width: 12),
               _InfoCard(
                 icon: Icons.timer,
-                label: AppL10n.of(context).restLabel,
+                label: exercise.inSuperset
+                    ? AppL10n.of(context).restPerRoundLabel
+                    : AppL10n.of(context).restLabel,
                 value: '${exercise.restSeconds}s',
               ),
             ],
@@ -2606,7 +2598,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
           // Sets Checklist con animaciones
           Text(
-            AppL10n.of(context).markCompletedSets,
+            key: _setsKeys.putIfAbsent(exerciseIndex, GlobalKey.new),
+            exercise.inSuperset
+                ? AppL10n.of(context).markCompletedRounds
+                : AppL10n.of(context).markCompletedSets,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,

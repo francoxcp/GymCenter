@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
 /// Estado de constancia de un socio (semáforo del entrenador).
-enum MemberLight { red, yellow, green }
+/// [fresh]: se unió hace poco y todavía no entrena (no es una alerta).
+enum MemberLight { red, yellow, green, fresh }
+
+/// Días en los que un socio sin entrenos cuenta como nuevo, no como ausente.
+const int kNewMemberDays = 7;
 
 class MemberStatus {
   final String userId;
@@ -27,7 +31,48 @@ class MemberStatus {
               lastSession!.year, lastSession!.month, lastSession!.day))
           .inDays;
 
+  /// Mismo estado con otro número de días planificados (tras asignar rutinas).
+  MemberStatus withPlanned(int planned, {DateTime? joinedAt, DateTime? now}) {
+    final n = now ?? DateTime.now();
+    return MemberStatus(
+      userId: userId,
+      plannedPerWeek: planned,
+      sessionsThisWeek: sessionsThisWeek,
+      lastSession: lastSession,
+      light: _lightFor(
+        daysSince: daysSinceLast(n),
+        planned: planned,
+        thisWeek: sessionsThisWeek,
+        today: DateTime(n.year, n.month, n.day),
+        joinedAt: joinedAt,
+        keepFresh: light == MemberLight.fresh,
+      ),
+    );
+  }
+
+  static MemberLight _lightFor({
+    required int? daysSince,
+    required int planned,
+    required int thisWeek,
+    required DateTime today,
+    DateTime? joinedAt,
+    bool keepFresh = false,
+  }) {
+    final isNew = daysSince == null &&
+        (keepFresh ||
+            (joinedAt != null &&
+                today.difference(joinedAt.toLocal()).inDays < kNewMemberDays));
+    if (isNew) return MemberLight.fresh;
+    final expectedSoFar = (planned * today.weekday / 7).floor();
+    if (daysSince == null || daysSince >= 7) return MemberLight.red;
+    if (daysSince >= 4 || (planned > 0 && thisWeek < expectedSoFar)) {
+      return MemberLight.yellow;
+    }
+    return MemberLight.green;
+  }
+
   /// Reglas del semáforo:
+  /// - Nuevo: se unió hace menos de 7 días y aún no entrena.
   /// - 🔴 nunca entrenó o lleva 7+ días sin venir.
   /// - 🟡 lleva 4+ días sin venir, o va por debajo de lo esperado según el
   ///   día de la semana (p. ej. plan de 4: el jueves debería llevar 2).
@@ -37,6 +82,7 @@ class MemberStatus {
     required int plannedPerWeek,
     required List<DateTime> sessions,
     required DateTime now,
+    DateTime? joinedAt,
   }) {
     final today = DateTime(now.year, now.month, now.day);
     final weekStart = today.subtract(Duration(days: today.weekday - 1));
@@ -51,17 +97,13 @@ class MemberStatus {
     final daysSince = last == null
         ? null
         : today.difference(DateTime(last.year, last.month, last.day)).inDays;
-    final expectedSoFar = (plannedPerWeek * today.weekday / 7).floor();
-
-    MemberLight light;
-    if (daysSince == null || daysSince >= 7) {
-      light = MemberLight.red;
-    } else if (daysSince >= 4 ||
-        (plannedPerWeek > 0 && thisWeek < expectedSoFar)) {
-      light = MemberLight.yellow;
-    } else {
-      light = MemberLight.green;
-    }
+    final light = _lightFor(
+      daysSince: daysSince,
+      planned: plannedPerWeek,
+      thisWeek: thisWeek,
+      today: today,
+      joinedAt: joinedAt,
+    );
 
     return MemberStatus(
       userId: userId,
@@ -78,4 +120,5 @@ Color memberLightColor(MemberLight l) => switch (l) {
       MemberLight.red => AppColors.error,
       MemberLight.yellow => AppColors.warning,
       MemberLight.green => AppColors.success,
+      MemberLight.fresh => AppColors.primaryText,
     };

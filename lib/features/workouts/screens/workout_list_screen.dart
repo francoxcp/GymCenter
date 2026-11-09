@@ -690,19 +690,12 @@ class _WorkoutCard extends StatelessWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
+                // Duración y ejercicios van una sola vez (en la fila de abajo)
+                if (isOfficial) ...[
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Text(
-                      '$exerciseCount ejercicios · $duration min',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (isOfficial) ...[
-                      const SizedBox(width: 7),
+                    ...[
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 5, vertical: 2),
@@ -731,6 +724,7 @@ class _WorkoutCard extends StatelessWidget {
                     ],
                   ],
                 ),
+                ],
                 const SizedBox(height: 4),
                 Row(
                   children: [

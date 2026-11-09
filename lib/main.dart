@@ -218,6 +218,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // Al quedar autenticado: aplicar una invitación pendiente (se abrió el
     // enlace antes de crear la cuenta o de iniciar sesión).
     if (!_wasAuthenticated && _authProvider.isAuthenticated) {
+      // Sin notificar: el router lo lee en esta misma vuelta y espera en
+      // /cargando en lugar de mostrar la pantalla de unirse.
+      _authProvider.markJoiningOrganization(true, notify: false);
       unawaited(_applyPendingInvite());
     }
     // Al quedar autenticado, ir a la ruta pendiente de una notificación.
@@ -232,6 +235,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   Future<void> _applyPendingInvite() async {
+    try {
+      await _acceptPendingInvite();
+    } finally {
+      _authProvider.markJoiningOrganization(false);
+    }
+  }
+
+  Future<void> _acceptPendingInvite() async {
     final pending = await OrganizationService.takePendingInvite();
     if (pending == null) return;
     try {

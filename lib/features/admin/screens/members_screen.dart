@@ -288,7 +288,9 @@ class _MemberRow extends StatelessWidget {
     final attendance = s == null
         ? ''
         : days == null
-            ? 'Nunca ha entrenado'
+            ? (s.light == MemberLight.fresh
+                ? 'Nuevo · aún no entrena'
+                : 'Nunca ha entrenado')
             : days == 0
                 ? 'Entrenó hoy'
                 : 'Hace $days días';
@@ -309,7 +311,8 @@ class _MemberRow extends StatelessWidget {
                   userId: member.id,
                   plannedPerWeek: 0,
                   sessions: const [],
-                  now: DateTime.now());
+                  now: DateTime.now(),
+                  joinedAt: member.createdAt);
           await Navigator.of(context).push(MaterialPageRoute(
               builder: (_) => MemberHubScreen(member: member, status: st)));
           onChanged();

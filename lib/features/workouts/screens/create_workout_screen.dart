@@ -34,7 +34,8 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   static const _kNoCategory = '__no_category__';
   static const _kPrefsKey = 'custom_workout_categories';
 
-  String? _selectedCategory;
+  // Por defecto 'Sin categoría': no hace falta elegir una para guardar
+  String? _selectedCategory = _kNoCategory;
   List<String> _categories = List.from(Workout.categories);
   final List<Exercise> _exercises = [];
   bool _isLoading = false;
@@ -620,7 +621,9 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                           children: [
                             Text(
                               exercise.name,
-                              maxLines: 1,
+                              // 2 líneas: dentro de una superserie la
+                              // tarjeta es más angosta
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(

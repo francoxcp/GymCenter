@@ -53,6 +53,7 @@ class MembersSnapshot {
             plannedPerWeek: plannedByUser[m.id] ?? 0,
             sessions: byUser[m.id] ?? const [],
             now: now,
+            joinedAt: m.createdAt,
           ),
       },
       trainedToday: trainedToday,

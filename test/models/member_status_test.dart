@@ -39,4 +39,49 @@ void main() {
           MemberLight.green);
     });
   });
+
+  group('Socio nuevo', () {
+    MemberStatus joined(DateTime joinedAt, {List<DateTime> sessions = const []}) =>
+        MemberStatus.compute(
+            userId: 'u',
+            plannedPerWeek: 3,
+            sessions: sessions,
+            now: now,
+            joinedAt: joinedAt);
+
+    test('se unió hace menos de 7 días y no entrena → nuevo, no rojo', () {
+      expect(joined(DateTime(2026, 11, 10)).light, MemberLight.fresh);
+    });
+
+    test('se unió hace 7+ días sin entrenar → rojo', () {
+      expect(joined(DateTime(2026, 11, 2)).light, MemberLight.red);
+    });
+
+    test('nuevo que ya entrenó → semáforo normal', () {
+      expect(joined(DateTime(2026, 11, 10), sessions: [DateTime(2026, 11, 11)]).light,
+          MemberLight.green);
+    });
+  });
+
+  group('withPlanned (tras asignar rutinas)', () {
+    test('actualiza los días planificados y conserva las sesiones', () {
+      final s = status([DateTime(2026, 11, 10)], planned: 0).withPlanned(4, now: now);
+      expect(s.plannedPerWeek, 4);
+      expect(s.sessionsThisWeek, 1);
+      // plan de 4: el jueves debería llevar 2 → atrasado
+      expect(s.light, MemberLight.yellow);
+    });
+
+    test('un socio nuevo sigue nuevo al recibir su plan', () {
+      final s = MemberStatus.compute(
+              userId: 'u',
+              plannedPerWeek: 0,
+              sessions: const [],
+              now: now,
+              joinedAt: DateTime(2026, 11, 11))
+          .withPlanned(3, now: now);
+      expect(s.light, MemberLight.fresh);
+      expect(s.plannedPerWeek, 3);
+    });
+  });
 }

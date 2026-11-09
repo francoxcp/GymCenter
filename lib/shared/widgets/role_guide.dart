@@ -19,7 +19,7 @@ class RoleGuide {
   static List<_GuideStep> _steps(NavRole r) => switch (r) {
         NavRole.member => const [
             _GuideStep(Icons.bolt, 'Tu entreno de hoy',
-                'En Hoy tienes un solo botón: empezar. La rutina del día ya está lista.'),
+                'Cuando tu entrenador te asigne rutinas, en Hoy verás la del día con un solo botón: empezar.'),
             _GuideStep(Icons.check_circle_outline, 'Registra cada serie',
                 'El peso sugerido viene puesto. Si lo hiciste igual, un toque y listo.'),
             _GuideStep(Icons.show_chart, 'Mira cuánto subes',

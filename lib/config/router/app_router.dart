@@ -93,7 +93,11 @@ GoRouter createAppRouter(AuthProvider authProvider) {
 
       // Mientras se restaura la sesión guardada: pantalla de carga con la
       // marca (antes se veía el formulario de inicio de sesión unos segundos)
+      final joining = isAuth &&
+          authProvider.needsOrganization &&
+          authProvider.isJoiningOrganization;
       if (path == '/cargando') {
+        if (joining) return null;
         if (isAuth) return DeepLinkMemory.take() ?? authProvider.initialRoute;
         return authProvider.isInitializing ? null : '/login';
       }
@@ -117,6 +121,7 @@ GoRouter createAppRouter(AuthProvider authProvider) {
         return '/change-password';
       }
       // Multi-cliente: cuenta sin gimnasio → pantalla para unirse
+      if (joining) return '/cargando';
       if (isAuth && authProvider.needsOrganization) {
         return path == '/unirme' ? null : '/unirme';
       }

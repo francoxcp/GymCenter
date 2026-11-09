@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:chamos_fitness_center/features/workouts/widgets/record_celebration.dart';
 import 'package:chamos_fitness_center/shared/widgets/install_guide_sheet.dart';
+import 'package:chamos_fitness_center/features/home/widgets/week_strip.dart';
 
 void main() {
+  test('la semana va de lunes a domingo', () {
+    expect(weekInitials, ['L', 'K', 'M', 'J', 'V', 'S', 'D']);
+  });
+
   test('cada plataforma tiene 3 pasos de instalación', () {
     for (final p in InstallPlatform.values) {
       expect(installSteps(p).length, 3);

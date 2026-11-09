@@ -187,7 +187,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             _buildSection(
               '12. Contacto',
               'Para ejercer sus derechos o preguntas sobre privacidad:\n\n'
-                  '• Email: privacy@chamosfitnesscenter.com\n'
+                  '• Contacto: tu gimnasio o entrenador, o gym-nine-sand.vercel.app\n'
                   '• Sección de Ajustes ? Privacidad\n'
                   '• Responderemos en un plazo de 30 días',
             ),

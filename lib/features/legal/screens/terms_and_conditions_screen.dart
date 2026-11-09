@@ -151,7 +151,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
             _buildSection(
               '12. Contacto',
               'Para preguntas sobre estos términos, puede contactarnos a través de:\n\n'
-                  '• Email: legal@chamos?tnessenter.com\n'
+                  '• Contacto: tu gimnasio o entrenador, o gym-nine-sand.vercel.app\n'
                   '• En la sección de Ajustes de la aplicación',
             ),
 

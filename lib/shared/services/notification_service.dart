@@ -249,67 +249,6 @@ class NotificationService {
     await _notifications.show(id, title, body, details, payload: payload);
   }
 
-  /// Programa una notificación para una hora específica
-  Future<void> scheduleNotification({
-    required int id,
-    required String title,
-    required String body,
-    required DateTime scheduledTime,
-    String? payload,
-  }) async {
-    // En web las notificaciones programadas las envía el servidor (Web Push)
-    if (kIsWeb) return;
-
-    // Garantizar inicialización antes de programar
-    await initialize();
-
-    const androidDetails = AndroidNotificationDetails(
-      'chamos_fitness_channel',
-      'GymCenter',
-      channelDescription: 'Notificaciones de GymCenter',
-      importance: Importance.high,
-      priority: Priority.high,
-      icon: '@mipmap/ic_launcher',
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    try {
-      await _notifications.zonedSchedule(
-        id,
-        title,
-        body,
-        tz.TZDateTime.from(scheduledTime, tz.local),
-        details,
-        payload: payload,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      );
-    } on PlatformException catch (e) {
-      if (e.code == 'exact_alarms_not_permitted') {
-        await _notifications.zonedSchedule(
-          id,
-          title,
-          body,
-          tz.TZDateTime.from(scheduledTime, tz.local),
-          details,
-          payload: payload,
-          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        );
-      } else {
-        rethrow;
-      }
-    }
-  }
-
   /// Programa notificaciones diarias recurrentes
   Future<void> scheduleDailyNotification({
     required int id,
@@ -399,16 +338,8 @@ class NotificationService {
     await _notifications.cancelAll();
   }
 
-  /// Obtiene las notificaciones pendientes
-  Future<List<PendingNotificationRequest>> getPendingNotifications() async {
-    if (kIsWeb) return [];
-    return await _notifications.pendingNotificationRequests();
-  }
-
   // IDs de notificaciones predefinidos
   static const int workoutReminderId = 1;
-  static const int morningReminderId = 2;
-  static const int eveningReminderId = 3;
   static const int achievementId = 100; // Base ID para logros
   static const int progressReportId = 50;
 

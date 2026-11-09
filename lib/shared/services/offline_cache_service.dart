@@ -48,12 +48,6 @@ class OfflineCacheService {
     }
   }
 
-  /// Devuelve true si hay workouts cacheados disponibles.
-  Future<bool> hasCachedWorkouts() async {
-    final value = await _storage.read(key: _workoutsKey);
-    return value != null;
-  }
-
   /// Devuelve la fecha/hora en que se guardó el caché, o null.
   Future<DateTime?> cachedAt() async {
     final str = await _storage.read(key: _cachedAtKey);

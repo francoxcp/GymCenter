@@ -14,7 +14,6 @@ void main() {
         'active_days': 5,
         'completed_workouts': 10,
         'assigned_workout_id': 'workout123',
-        'assigned_meal_plan_id': 'meal456',
       };
 
       final user = User.fromJson(json);
@@ -28,7 +27,6 @@ void main() {
       expect(user.activeDays, 5);
       expect(user.completedWorkouts, 10);
       expect(user.assignedWorkoutId, 'workout123');
-      expect(user.assignedMealPlanId, 'meal456');
     });
 
     test('fromJson handles missing optional fields with defaults', () {
@@ -49,7 +47,6 @@ void main() {
       expect(user.activeDays, 0); // default
       expect(user.completedWorkouts, 0); // default
       expect(user.assignedWorkoutId, isNull);
-      expect(user.assignedMealPlanId, isNull);
     });
 
     test('toJson converts User to JSON correctly', () {
@@ -63,7 +60,6 @@ void main() {
         activeDays: 15,
         completedWorkouts: 25,
         assignedWorkoutId: 'workout789',
-        assignedMealPlanId: 'meal012',
       );
 
       final json = user.toJson();
@@ -77,7 +73,6 @@ void main() {
       expect(json['activeDays'], 15);
       expect(json['completedWorkouts'], 25);
       expect(json['assignedWorkoutId'], 'workout789');
-      expect(json['assignedMealPlanId'], 'meal012');
     });
 
     test('identifies admin user correctly', () {
@@ -141,7 +136,6 @@ void main() {
       expect(user.activeDays, 0);
       expect(user.completedWorkouts, 0);
       expect(user.assignedWorkoutId, isNull);
-      expect(user.assignedMealPlanId, isNull);
     });
   });
 }

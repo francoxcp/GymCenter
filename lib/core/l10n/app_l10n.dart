@@ -21,7 +21,6 @@ class AppL10n {
   // ── Navegación inferior ──────────────────────────────────────────────────
   String get navPanel => isEn ? 'Home' : 'Panel';
   String get navWorkouts => isEn ? 'Workouts' : 'Rutinas';
-  String get navPlans => isEn ? 'Plans' : 'Planes';
   String get navProfile => isEn ? 'Profile' : 'Mi Perfil';
   String get navToday => isEn ? 'Today' : 'Hoy';
   String get navProgress => isEn ? 'Progress' : 'Progreso';
@@ -33,9 +32,7 @@ class AppL10n {
 
   // Secciones
   String get sectionNotifications => isEn ? 'Notifications' : 'Notificaciones';
-  String get sectionAppearance => isEn ? 'Appearance' : 'Apariencia';
   String get sectionLanguage => isEn ? 'Language' : 'Idioma';
-  String get sectionAccount => isEn ? 'Account' : 'Cuenta';
   String get sectionInformation => isEn ? 'Information' : 'Información';
 
   // Notificaciones
@@ -50,30 +47,20 @@ class AppL10n {
       : 'Recibe recordatorios antes de tu rutina';
   String get achievementAlerts =>
       isEn ? 'Achievement alerts' : 'Alertas de logros';
-  String get achievementAlertsSubtitle => isEn
-      ? 'Get notified when you earn badges'
-      : 'Notificaciones cuando ganes insignias';
   String get progressReports =>
       isEn ? 'Progress reports' : 'Reportes de progreso';
   String get progressReportsSubtitle =>
       isEn ? 'Weekly progress updates' : 'Resúmenes semanales de tu avance';
 
   // Apariencia
-  String get measurementSystem =>
-      isEn ? 'Measurement system' : 'Sistema de medidas';
   String get metric => isEn ? 'Metric' : 'Métrico';
   String get imperial => isEn ? 'Imperial' : 'Imperial';
-  String get selectMeasurementSystem =>
-      isEn ? 'Measurement System' : 'Sistema de Medidas';
-
   // Idioma
   String get appLanguage => isEn ? 'App language' : 'Idioma de la app';
   String get selectLanguage => isEn ? 'Language' : 'Idioma';
 
   // Cuenta
   String get changePassword => isEn ? 'Change password' : 'Cambiar contraseña';
-  String get changePasswordSubtitle =>
-      isEn ? 'Update your password' : 'Actualizar tu contraseña';
   String get privacy => isEn ? 'Privacy' : 'Privacidad';
   String get privacySubtitle =>
       isEn ? 'Privacy settings' : 'Configuración de privacidad';
@@ -101,8 +88,6 @@ class AppL10n {
   String get delete => isEn ? 'Delete' : 'Eliminar';
   String get edit => isEn ? 'Edit' : 'Editar';
   String get confirm => isEn ? 'Confirm' : 'Confirmar';
-  String get comingSoon => isEn ? 'Coming soon' : 'Funcionalidad próximamente';
-
   // ── Diálogos de sesión ───────────────────────────────────────────────────
   String get confirmLogoutTitle => isEn ? 'Log out?' : '¿Cerrar sesión?';
   String get confirmLogoutBody => isEn
@@ -124,33 +109,14 @@ class AppL10n {
   String get newPassword => isEn ? 'New password' : 'Nueva contraseña';
   String get confirmPassword =>
       isEn ? 'Confirm password' : 'Confirmar contraseña';
-  String get passwordHint => isEn
-      ? 'Must have at least 8 characters, one uppercase, one lowercase, one number and one special character'
-      : 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial';
-  String get passwordsDontMatch =>
-      isEn ? 'Passwords do not match' : 'Las contraseñas no coinciden';
   String get enterPassword =>
       isEn ? 'Enter your password' : 'Ingresa tu contraseña';
   String get change => isEn ? 'Change' : 'Cambiar';
   String get password => isEn ? 'Password' : 'Contraseña';
   String get notificationsEnabled =>
       isEn ? 'Notifications enabled' : 'Notificaciones activadas';
-  String get notificationsDisabled =>
-      isEn ? 'Notifications disabled' : 'Notificaciones desactivadas';
-
   // ── Home ─────────────────────────────────────────────────────────────────
-  String get controlPanel => isEn ? 'Control Panel' : 'Panel de Control';
-  String get quickActions => isEn ? 'Quick Actions' : 'Acciones Rápidas';
-  String get manageWorkouts => isEn ? 'Manage Workouts' : 'Gestionar Rutinas';
-  String get manageWorkoutsSubtitle => isEn
-      ? 'Create, edit and assign workouts'
-      : 'Crear, editar y asignar rutinas';
-  String get adminPanel => isEn ? 'Admin Panel' : 'Panel de Administración';
-  String get adminPanelSubtitle =>
-      isEn ? 'View stats and users' : 'Ver estadísticas y usuarios';
   String welcomeUser(String name) => isEn ? 'Hello, $name!' : '¡Hola, $name!';
-  String get welcomeAdmin => isEn ? 'Hello, Trainer!' : '¡Hola, Entrenador!';
-
   // ── Historial de entrenamientos ─────────────────────────────────────────
   String get workoutHistory =>
       isEn ? 'Workout History' : 'Historial de Entrenamientos';
@@ -279,9 +245,6 @@ class AppL10n {
       isEn ? 'Recent Achievements' : 'Logros Recientes';
   String get bodyMeasurementsLabel =>
       isEn ? 'Body Measurements' : 'Medidas Corporales';
-  String get bodyMeasurementsSubtitle => isEn
-      ? 'Track and follow your measurements'
-      : 'Registra y sigue tus medidas';
   String get completeWorkoutForStats => isEn
       ? 'Complete a workout to see stats'
       : 'Completa un entreno para ver estadísticas';
@@ -358,14 +321,6 @@ class AppL10n {
   // ── Detalle de rutina ────────────────────────────────────────────────────
   String get workoutLabel => isEn ? 'Workout' : 'Rutina';
   String get editLabel => isEn ? 'Edit' : 'Editar';
-  String get deleteConfirmTitle =>
-      isEn ? 'Confirm Delete' : 'Confirmar Eliminación';
-  String get continueInProgressShort =>
-      isEn ? 'Continue in progress' : 'Continuar en progreso';
-  String get startThisOne => isEn ? 'Start this one' : 'Iniciar esta';
-  String get workoutInProgressShort =>
-      isEn ? 'Workout in Progress' : 'Rutina en Progreso';
-
   // ── Calendario ───────────────────────────────────────────────────────────
   String get workoutCalendar =>
       isEn ? 'Workout Calendar' : 'Calendario de Entrenamientos';
@@ -455,8 +410,6 @@ class AppL10n {
       isEn ? 'Try another search' : 'Intenta con otra búsqueda';
   String get noUsersWithRole =>
       isEn ? 'No users with this role' : 'No hay usuarios con este rol';
-  String get noWorkoutsAvailable =>
-      isEn ? 'No workouts available' : 'No hay rutinas disponibles';
   String get noExercisesFound =>
       isEn ? 'No exercises found' : 'No se encontraron ejercicios';
   String get searchExercisesHint =>
@@ -478,13 +431,6 @@ class AppL10n {
       isEn ? 'User updated successfully' : 'Usuario actualizado correctamente';
   String get editUser => isEn ? 'Edit user' : 'Editar usuario';
   String get nameLabel => isEn ? 'Name' : 'Nombre';
-  String get removeAdmin => isEn ? 'Remove admin' : 'Quitar admin';
-  String get makeAdmin => isEn ? 'Make admin' : 'Hacer admin';
-  String userNowAdmin(String name) =>
-      isEn ? '$name is now admin' : '$name es ahora administrador';
-  String adminRemovedFrom(String name) => isEn
-      ? 'Admin permissions removed from $name'
-      : 'Permisos de admin removidos de $name';
   String get confirmDeletion =>
       isEn ? 'Confirm deletion' : 'Confirmar eliminación';
   String confirmDeleteUser(String name) => isEn
@@ -605,7 +551,6 @@ class AppL10n {
   String get filterAdmins => isEn ? 'Admins' : 'Admins';
   String get filterUsers => isEn ? 'Users' : 'Usuarios';
   String get totalUsersLabel => isEn ? 'Total users' : 'Total usuarios';
-  String get administratorsLabel => isEn ? 'Administrators' : 'Administradores';
   String get reloadUsersTooltip => isEn ? 'Reload users' : 'Recargar usuarios';
   String get usersWillAppear => isEn
       ? 'Users will appear here once they register'
@@ -631,8 +576,6 @@ class AppL10n {
   String get restDay => isEn ? 'Rest day' : 'Día de descanso';
   String get noRoutineAssigned =>
       isEn ? 'No routine assigned' : 'Sin rutina asignada';
-  String exerciseCountLabel(int count) =>
-      isEn ? '$count exercises' : '$count ejercicios';
   String get assignRoutineSubtitle =>
       isEn ? 'ASSIGN ROUTINE' : 'ASIGNAR RUTINA';
   String get clearScheduleTooltip =>
@@ -688,9 +631,6 @@ class AppL10n {
       isEn ? 'Error exporting data: $e' : 'Error al exportar datos: $e';
   String get discardChangesTitle =>
       isEn ? 'Discard changes?' : '¿Descartar cambios?';
-  String get discardPasswordBody => isEn
-      ? 'Leave without changing the password?'
-      : '¿Salir sin cambiar la contraseña?';
   String get exitLabel => isEn ? 'Exit' : 'Salir';
 
   // ── Edit profile ─────────────────────────────────────────────────────
@@ -755,11 +695,6 @@ class AppL10n {
   String get descriptionLabel => isEn ? 'Description' : 'Descripción';
   String get addDescription =>
       isEn ? '+ Add description' : '+ Agregar descripción';
-  String get descriptionHint => isEn
-      ? 'Describe the goals of this routine...'
-      : 'Describe los objetivos de esta rutina...';
-  String get enterADescription =>
-      isEn ? 'Enter a description' : 'Ingresa una descripción';
   String get levelLabel => isEn ? 'Level' : 'Nivel';
   String get categoryLabel => isEn ? 'Category' : 'Categoría';
   String get selectACategory =>
@@ -799,33 +734,6 @@ class AppL10n {
       : '¿Estás seguro de que quieres salir sin agregar este ejercicio?';
 
   // ── Notification service ─────────────────────────────────────────────
-  String get notifChannelName => 'GymCenter';
-  String get notifChannelDesc => isEn
-      ? 'GymCenter notifications'
-      : 'Notificaciones de GymCenter';
-  String get notifInactiveTitle =>
-      isEn ? 'Everything ok? 💪' : '¿Todo bien? 💪';
-  String notifInactiveBody(int daysSince) => isEn
-      ? "You haven't trained in $daysSince days. Today is a great day to get back!"
-      : 'Llevas $daysSince días sin entrenar. ¡Hoy es un buen día para retomar!';
-  String get notifFirstSessionTitle =>
-      isEn ? 'Start today! 💪' : '¡Empieza hoy! 💪';
-  String get notifFirstSessionBody => isEn
-      ? 'Ready for your first session? Your body will thank you!'
-      : '¿Listo para tu primera sesión? ¡Tu cuerpo te lo agradecerá!';
-  String get notifAchievementTitle =>
-      isEn ? '🏆 Achievement Unlocked!' : '🏆 ¡Logro Desbloqueado!';
-  String get progressReportsChannel =>
-      isEn ? 'Progress Reports' : 'Reportes de Progreso';
-  String get progressReportsChannelDesc => isEn
-      ? 'GymCenter weekly progress reports'
-      : 'Reportes semanales de progreso de GymCenter';
-  String get weeklyReportTitle =>
-      isEn ? '📊 Weekly report' : '📊 Reporte semanal';
-  String get weeklyReportBody => isEn
-      ? 'Open the app to see your summary for this week.'
-      : 'Abre la app para ver tu resumen de esta semana.';
-
   // ── Misc / duration format ───────────────────────────────────────────
   String durationMinExercises(int min, int count) =>
       isEn ? '$min min · $count exercises' : '$min min · $count ejercicios';
@@ -857,10 +765,6 @@ class AppL10n {
       : 'No se pudo conectar al servidor.\nVerifica tu conexión a internet.';
   String get userNotFoundTitle =>
       isEn ? 'User not found' : 'Usuario no encontrado';
-  String get userNotFoundMsg => isEn
-      ? 'No account exists with this email.\n\nWould you like to register?'
-      : 'No existe una cuenta con este correo electrónico.\n\n¿Quieres registrarte?';
-  String get signMeUp => isEn ? 'Sign up' : 'Registrarme';
   String get signInTab => isEn ? 'Sign in' : 'Iniciar sesión';
   String get signUpTab => isEn ? 'Sign up' : 'Registrarse';
   String get welcomeTitle => isEn ? 'Welcome' : 'Bienvenido';
@@ -872,8 +776,6 @@ class AppL10n {
   String get passwordFieldLabel => isEn ? 'Password' : 'Contraseña';
   String get passwordLabelUpper => isEn ? 'PASSWORD' : 'CONTRASEÑA';
   String get min8Chars => isEn ? 'Minimum 8 characters' : 'Mínimo 8 caracteres';
-  String get max15Chars =>
-      isEn ? 'Maximum 15 characters' : 'Máximo 15 caracteres';
   String get forgotPassword =>
       isEn ? 'Forgot your password?' : '¿Olvidaste tu contraseña?';
   String get signingIn => isEn ? 'Signing in...' : 'Ingresando...';
@@ -887,9 +789,6 @@ class AppL10n {
   String get passwordMin8 => isEn
       ? 'Password must be at least 8 characters'
       : 'La contraseña debe tener al menos 8 caracteres';
-  String get passwordMax15 => isEn
-      ? 'Password cannot be longer than 15 characters'
-      : 'La contraseña no puede tener más de 15 caracteres';
   String get passwordNeedsUppercase => isEn
       ? 'Password must have at least one uppercase letter'
       : 'La contraseña debe tener al menos una letra mayúscula';
@@ -920,8 +819,6 @@ class AppL10n {
   String get connectionError => isEn
       ? 'Connection error. Check your internet.'
       : 'Error de conexión. Verifica tu internet.';
-  String registerError(String e) =>
-      isEn ? 'Registration error: $e' : 'Error al registrar: $e';
   String get createYourAccount =>
       isEn ? 'Create your account' : 'Crea tu cuenta';
   String get registerSubtitle => isEn
@@ -987,7 +884,6 @@ class AppL10n {
   String availableInDays(int count) =>
       isEn ? 'Available in $count days' : 'Disponible en $count días';
   String get activeDaysLabel => isEn ? 'Active days' : 'Días activos';
-  String get sessionsStatLabel => isEn ? 'Sessions' : 'Sesiones';
   String get nextRoutineLabel => isEn ? 'Next routine' : 'Próxima rutina';
   String get scheduledRest => isEn ? 'Scheduled rest' : 'Descanso programado';
   String get yourAssignedRoutine =>
@@ -1003,7 +899,6 @@ class AppL10n {
       : 'Hoy no tienes entrenamiento programado.\nDescansa y recupera músculos.';
   String exerciseCountSimple(int count) =>
       isEn ? '$count exercises' : '$count ejercicios';
-  String get trainNow => isEn ? 'TRAIN NOW' : 'ENTRENAR AHORA';
   String get routineNotFound =>
       isEn ? 'Routine not found' : 'Rutina no encontrada';
   String assignedRoutineUnavailable(String id) => isEn
@@ -1014,12 +909,6 @@ class AppL10n {
   String get trainerWillAssign => isEn
       ? 'Your trainer will assign you a routine soon'
       : 'Tu entrenador te asignará una rutina pronto';
-  String get exploreLabel => isEn ? 'Explore' : 'Explorar';
-  String get routinesLabel => isEn ? 'Routines' : 'Rutinas';
-  String get plansLabel => isEn ? 'Plans' : 'Planes';
-  String agoMin(int m) => isEn ? '${m}m ago' : 'hace $m min';
-  String agoHours(int h) => isEn ? '${h}h ago' : 'hace ${h}h';
-  String agoDays(int d) => isEn ? '${d}d ago' : 'hace ${d}d';
   String get routineInProgressBanner =>
       isEn ? 'ROUTINE IN PROGRESS' : 'RUTINA EN PROGRESO';
   String percentCompletedSimple(int p) =>
@@ -1087,9 +976,6 @@ class AppL10n {
   // ── Workout summary extra ────────────────────────────────────────────
   String get achievementUnlockedTitle =>
       isEn ? 'Achievement Unlocked!' : '¡Logro Desbloqueado!';
-  String get achievementUnlockedMsg => isEn
-      ? 'You unlocked a new achievement! Keep training to unlock more.'
-      : '¡Desbloqueaste un nuevo logro! Sigue entrenando para desbloquear más.';
   String achievementUnlockedMsgCount(int count) => count == 1
       ? (isEn
           ? 'You unlocked a new achievement! Check your progress to see it.'
@@ -1178,8 +1064,6 @@ class AppL10n {
   String get retryButton => isEn ? 'Retry' : 'Reintentar';
   String get usersStatLabel => isEn ? 'USERS' : 'USUARIOS';
   String get sessionsStatLabelUpper => isEn ? 'SESSIONS' : 'SESIONES';
-  String get noSessionsThisWeek =>
-      isEn ? 'No sessions this week' : 'Sin sesiones esta semana';
   List<String> get weekdayAbbreviations => isEn
       ? ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
       : ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
@@ -1272,7 +1156,6 @@ class AppL10n {
       isEn ? 'Exercise $current of $total' : 'Ejercicio $current de $total';
   String get videoUnavailable =>
       isEn ? 'Video unavailable' : 'Video no disponible';
-  String get instructionsLabel => isEn ? 'Instructions:' : 'Instrucciones:';
   String get restingTitle => isEn ? 'RESTING' : 'DESCANSANDO';
   String get secondsLabel => isEn ? 'seconds' : 'segundos';
   String get skipRest => isEn ? 'Skip rest' : 'Saltar descanso';
@@ -1399,28 +1282,6 @@ class AppL10n {
   String get continueButton => isEn ? 'Continue' : 'Continuar';
 
   // ── Workout summary extra (batch 2) ──────────────────────────────────
-  List<String> get motivationalPhrases => isEn
-      ? [
-          'INCREDIBLE WORK!',
-          'YOU DID IT!',
-          'EXCELLENT!',
-          'UNSTOPPABLE!',
-          'BRUTAL WORKOUT!',
-          'KEEP IT UP CHAMP!',
-          'SPECTACULAR!',
-          'WHAT A MACHINE!',
-        ]
-      : [
-          '¡INCREÍBLE TRABAJO!',
-          '¡LO LOGRASTE!',
-          '¡EXCELENTE!',
-          '¡ERES IMPARABLE!',
-          '¡BRUTAL ENTRENAMIENTO!',
-          '¡SIGUE ASÍ CAMPEÓN!',
-          '¡ESPECTACULAR!',
-          '¡QUÉ MÁQUINA!',
-        ];
-
   // ── Auth extra (batch 2) ──────────────────────────────────────────────
   String get emailPlaceholder =>
       isEn ? 'example@email.com' : 'ejemplo@correo.com';
@@ -1471,14 +1332,6 @@ class AppL10n {
   String get startWorkout => isEn ? 'START WORKOUT' : 'INICIAR ENTRENAMIENTO';
 
   // ── Misc ──────────────────────────────────────────────────────────────
-  String get watchVideo => isEn ? 'Watch video' : 'Ver video';
-
   // ── Weight log dialog ─────────────────────────────────────────────────
   String get lastSessionWeight => isEn ? 'Last session' : 'Última sesión';
-  String get personalRecord => isEn ? 'Personal record' : 'Récord personal';
-  String get coachSuggestion =>
-      isEn ? 'Coach suggestion' : 'Sugerencia del coach';
-  String get addWeight => isEn ? 'Add weight' : 'Agregar peso';
-  String get enterWeightHint =>
-      isEn ? 'Enter weight in lbs' : 'Escribe el peso en lbs';
 }

@@ -102,7 +102,7 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
 
-  // Fuentes de Google (google_fonts): cambian muy poco → caché primero
+  // Fuentes de respaldo que Flutter web baja de Google: caché primero
   if (url.hostname === 'fonts.gstatic.com' || url.hostname === 'fonts.googleapis.com') {
     event.respondWith(cacheFirst(req, FONT_CACHE));
     return;

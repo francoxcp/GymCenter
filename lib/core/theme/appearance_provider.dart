@@ -22,10 +22,6 @@ class AppearanceProvider extends ChangeNotifier {
   bool get light => _light;
   double get textScale => _textScale;
 
-  /// Cambia cada vez que hay que reconstruir la app (cambio de paleta).
-  int _revision = 0;
-  int get revision => _revision;
-
   Future<void> load() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -41,7 +37,6 @@ class AppearanceProvider extends ChangeNotifier {
     final p = _light && signedIn ? AppPalette.light : AppPalette.dark;
     if (identical(AppColors.palette, p)) return false;
     AppColors.usePalette(p);
-    _revision++;
     return true;
   }
 

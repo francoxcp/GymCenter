@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -184,54 +183,3 @@ class MyMembershipBanner extends StatelessWidget {
   }
 }
 
-/// Alerta en el panel del dueño: membresías por vencer y vencidas.
-class MembershipsAlertCard extends StatelessWidget {
-  const MembershipsAlertCard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final isOwner = context.watch<AuthProvider>().currentUser?.isAdmin ?? false;
-    if (!isOwner) return const SizedBox.shrink();
-    final members =
-        context.watch<UserProvider>().users.where((u) => u.role == 'user');
-    final expiring = members
-        .where((u) => u.membershipStatus == MembershipStatus.expiring)
-        .length;
-    final expired = members
-        .where((u) => u.membershipStatus == MembershipStatus.expired)
-        .length;
-    if (expiring == 0 && expired == 0) return const SizedBox.shrink();
-    final color = expired > 0
-        ? membershipColor(MembershipStatus.expired)
-        : membershipColor(MembershipStatus.expiring);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Material(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: () => GoRouter.of(context).push('/admin/memberships'),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(children: [
-              Icon(Icons.warning_amber_rounded, color: color),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  [
-                    if (expiring > 0)
-                      '$expiring por vencer esta semana',
-                    if (expired > 0) '$expired vencida${expired == 1 ? '' : 's'}',
-                  ].join(' · '),
-                  style: TextStyle(color: color, fontWeight: FontWeight.w600),
-                ),
-              ),
-              Icon(Icons.chevron_right, color: color),
-            ]),
-          ),
-        ),
-      ),
-    );
-  }
-}

@@ -17,11 +17,6 @@ class WorkoutProgressProvider with ChangeNotifier {
   String? _completedWorkoutIdToday;
   String? get completedWorkoutIdToday => _completedWorkoutIdToday;
 
-  void clearTodayCompletion() {
-    _completedWorkoutIdToday = null;
-    notifyListeners();
-  }
-
   // Cargar progreso del usuario actual
   Future<void> loadProgress(String userId) async {
     _isLoading = true;
@@ -159,16 +154,7 @@ class WorkoutProgressProvider with ChangeNotifier {
   }
 
   // Limpiar progreso sin notificar (para uso interno)
-  void clearProgress() {
-    _currentProgress = null;
-    notifyListeners();
-  }
-
   // Verificar si el progreso pertenece a un workout específico
-  bool isProgressForWorkout(String workoutId) {
-    return _currentProgress?.workoutId == workoutId && hasProgress;
-  }
-
   // Completar workout y guardarlo en workout_sessions
   Future<void> completeWorkout({
     required String userId,

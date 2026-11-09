@@ -7,7 +7,6 @@ import '../../../shared/widgets/app_snackbar.dart';
 import '../../auth/models/user.dart';
 import '../../profile/providers/user_provider.dart';
 import '../models/member_status.dart';
-import '../widgets/members_status_section.dart';
 import '../widgets/membership_card.dart';
 import 'assign_plans_screen.dart';
 import '../widgets/member_tools.dart';
@@ -27,7 +26,7 @@ class MemberHubScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isEn = AppL10n.of(context).isEn;
-    final color = MembersStatusSectionState.colorOf(status.light);
+    final color = memberLightColor(status.light);
     final days = status.daysSinceLast(DateTime.now());
     final lightLabel = switch (status.light) {
       MemberLight.red => isEn ? 'Not coming' : 'Sin venir',

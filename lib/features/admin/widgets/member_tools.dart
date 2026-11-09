@@ -11,8 +11,10 @@ import '../../profile/providers/user_provider.dart';
 import '../../workouts/models/workout.dart';
 import '../../workouts/providers/workout_provider.dart';
 
-const dayShort = ['L', 'K', 'M', 'J', 'V', 'S'];
-const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const dayShort = ['L', 'K', 'M', 'J', 'V', 'S', 'D'];
+const dayNames = [
+  'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'
+];
 
 Future<T?> _sheet<T>(BuildContext context, Widget Function(BuildContext) b) =>
     showModalBottomSheet<T>(
@@ -42,7 +44,7 @@ Future<void> showQuickAssignSheet(BuildContext context, User member) async {
   final workouts = context.read<WorkoutProvider>().workouts;
   final userProvider = context.read<UserProvider>();
   final now = DateTime.now().weekday;
-  var day = now >= 1 && now <= 6 ? now : 1;
+  var day = now;
   String? goal;
   final goals = {
     for (final w in workouts)
@@ -68,7 +70,7 @@ Future<void> showQuickAssignSheet(BuildContext context, User member) async {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  for (var d = 1; d <= 6; d++)
+                  for (var d = 1; d <= 7; d++)
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.all(4),

@@ -319,13 +319,15 @@ class PreferencesProvider with ChangeNotifier {
       await notificationService.cancelAllNotifications();
     }
 
+    // Un solo interruptor: al activar avisos también queda activo el
+    // recordatorio diario de entreno (los mensajes del entrenador llegan
+    // siempre que los avisos estén activos).
     final updated = _preferences!.copyWith(
       notificationsEnabled: enabled,
+      workoutReminders: enabled ? true : _preferences!.workoutReminders,
     );
 
     final ok = await updatePreferences(updated);
-    // Al reactivar notificaciones, volver a programar el recordatorio diario
-    // si ya estaba activado (antes quedaba cancelado hasta reiniciar la app).
     if (ok && enabled && updated.workoutReminders) {
       await notificationService.scheduleWorkoutReminder(
         time: _workoutReminderTime,
@@ -333,49 +335,6 @@ class PreferencesProvider with ChangeNotifier {
       );
     }
     return ok;
-  }
-
-  /// Alternar recordatorios de entrenamiento
-  Future<bool> toggleWorkoutReminders(bool enabled, {TimeOfDay? time}) async {
-    if (_preferences == null) return false;
-
-    final notificationService = NotificationService();
-
-    if (enabled && _preferences!.notificationsEnabled) {
-      final reminderTime = time ?? _workoutReminderTime;
-      await notificationService.scheduleWorkoutReminder(
-        time: reminderTime,
-        userId: _supabase.auth.currentUser?.id,
-      );
-    } else {
-      await notificationService.cancelWorkoutReminder();
-    }
-
-    final updated = _preferences!.copyWith(
-      workoutReminders: enabled,
-    );
-
-    return await updatePreferences(updated);
-  }
-
-  /// Alternar reportes de progreso
-  Future<bool> toggleProgressReports(bool enabled) async {
-    if (_preferences == null) return false;
-
-    final notificationService = NotificationService();
-
-    if (enabled && _preferences!.notificationsEnabled) {
-      // Programar la notificación semanal del domingo
-      await notificationService.scheduleWeeklyProgressReport();
-    } else {
-      await notificationService.cancelWeeklyProgressReport();
-    }
-
-    final updated = _preferences!.copyWith(
-      progressReports: enabled,
-    );
-
-    return await updatePreferences(updated);
   }
 
   /// Cambiar idioma

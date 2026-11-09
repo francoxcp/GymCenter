@@ -37,21 +37,12 @@ class AppL10n {
 
   // Notificaciones
   String get notifications => isEn ? 'Notifications' : 'Notificaciones';
-  String get notificationsSubtitle => isEn
-      ? 'Enable/disable all notifications'
-      : 'Activar/desactivar todas las notificaciones';
   String get workoutReminders =>
       isEn ? 'Workout reminders' : 'Recordatorios de entrenamiento';
-  String get workoutRemindersSubtitle => isEn
-      ? 'Get reminded before your workout'
-      : 'Recibe recordatorios antes de tu rutina';
   String get achievementAlerts =>
       isEn ? 'Achievement alerts' : 'Alertas de logros';
   String get progressReports =>
       isEn ? 'Progress reports' : 'Reportes de progreso';
-  String get progressReportsSubtitle =>
-      isEn ? 'Weekly progress updates' : 'Resúmenes semanales de tu avance';
-
   // Apariencia
   String get metric => isEn ? 'Metric' : 'Métrico';
   String get imperial => isEn ? 'Imperial' : 'Imperial';
@@ -564,12 +555,14 @@ class AppL10n {
   String get thursdayFull => isEn ? 'Thursday' : 'Jueves';
   String get fridayFull => isEn ? 'Friday' : 'Viernes';
   String get saturdayFull => isEn ? 'Saturday' : 'Sábado';
+  String get sundayFull => isEn ? 'Sunday' : 'Domingo';
   String get monShort => isEn ? 'MO' : 'LU';
   String get tueShort => isEn ? 'TU' : 'MA';
   String get wedShort => isEn ? 'WE' : 'MI';
   String get thuShort => isEn ? 'TH' : 'JU';
   String get friShort => isEn ? 'FR' : 'VI';
   String get satShort => isEn ? 'SA' : 'SÁ';
+  String get sunShort => isEn ? 'SU' : 'DO';
   String get restDay => isEn ? 'Rest day' : 'Día de descanso';
   String get noRoutineAssigned =>
       isEn ? 'No routine assigned' : 'Sin rutina asignada';

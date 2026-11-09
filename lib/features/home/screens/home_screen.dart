@@ -16,6 +16,7 @@ import '../../../shared/widgets/install_app_banner.dart';
 import '../../../shared/services/offline_sync_queue.dart';
 import '../widgets/weekly_goal_card.dart';
 import '../widgets/streak_row.dart';
+import '../widgets/week_strip.dart';
 import '../widgets/trainer_comments_card.dart';
 import '../../admin/screens/memberships_screen.dart' show MyMembershipBanner;
 
@@ -727,18 +728,9 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         // Aviso de membresía por vencer / vencida
         const MyMembershipBanner(),
 
-        const SizedBox(height: 28),
-
-        const SizedBox(height: 8),
-        Center(
-          child: TextButton.icon(
-            onPressed: () => context.push('/workouts'),
-            icon: const Icon(Icons.list_alt, size: 18),
-            label: Text(AppL10n.of(context).isEn
-                ? 'All my routines'
-                : 'Ver todas mis rutinas'),
-          ),
-        ),
+        const SizedBox(height: 20),
+        // Semana: cada inicial muestra la rutina de ese día
+        const WeekStrip(),
       ],
     );
   }

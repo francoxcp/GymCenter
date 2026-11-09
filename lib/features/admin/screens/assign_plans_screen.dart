@@ -32,6 +32,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
         4: l10n.thursdayFull,
         5: l10n.fridayFull,
         6: l10n.saturdayFull,
+        7: l10n.sundayFull,
       };
 
   Map<int, String> _localizedDayShort(AppL10n l10n) => {
@@ -41,6 +42,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
         4: l10n.thuShort,
         5: l10n.friShort,
         6: l10n.satShort,
+        7: l10n.sunShort,
       };
 
   @override
@@ -83,7 +85,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
           : await userProvider.getWeekWorkouts(widget.user.id);
       if (mounted) {
         setState(() {
-          for (int day = 1; day <= 6; day++) {
+          for (int day = 1; day <= 7; day++) {
             _schedule[day] = weekMap[day];
           }
           _originalSchedule = Map.from(_schedule);
@@ -102,7 +104,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
   /// rutina asignada en el horario actual. Wrappea si es necesario.
   String? _nextTrainingDayLabel(int fromDay) {
     final dayNames = _localizedDayNames(AppL10n.of(context));
-    for (int d = fromDay + 1; d <= 6; d++) {
+    for (int d = fromDay + 1; d <= 7; d++) {
       if (_schedule[d] != null) return dayNames[d];
     }
     for (int d = 1; d < fromDay; d++) {
@@ -303,7 +305,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
     try {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-      for (int day = 1; day <= 6; day++) {
+      for (int day = 1; day <= 7; day++) {
         final original = _originalSchedule[day];
         final current = _schedule[day];
         if (original == current) continue;
@@ -432,7 +434,7 @@ class _AssignPlansScreenState extends State<AssignPlansScreen> {
                               onPressed: () {
                                 Navigator.pop(ctx);
                                 setState(() {
-                                  for (int d = 1; d <= 6; d++) {
+                                  for (int d = 1; d <= 7; d++) {
                                     _schedule[d] = null;
                                   }
                                 });

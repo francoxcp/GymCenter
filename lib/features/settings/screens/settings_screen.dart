@@ -86,7 +86,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           _buildSwitchTile(
             title: l10n.notifications,
-            subtitle: l10n.notificationsSubtitle,
+            subtitle: l10n.isEn
+                ? 'Workout reminder and messages from your trainer'
+                : 'Recordatorio de entreno y mensajes de tu entrenador',
             icon: Icons.notifications_outlined,
             value: prefs.notificationsEnabled,
             onChanged: (value) async {
@@ -105,16 +107,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           if (prefs.notificationsEnabled) ...[
-            _buildSwitchTile(
-              title: l10n.workoutReminders,
-              subtitle: l10n.workoutRemindersSubtitle,
-              icon: Icons.alarm,
-              value: prefs.workoutReminders,
-              onChanged: (value) async {
-                await preferencesProvider.toggleWorkoutReminders(value);
-              },
-            ),
-            if (prefs.workoutReminders) ...[
+            ...[
               _buildOptionTile(
                 title: l10n.reminderTime,
                 subtitle: () {
@@ -217,16 +210,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
               children: [
                 if (prefs.notificationsEnabled) ...[
-          _buildSwitchTile(
-              title: l10n.progressReports,
-              subtitle: l10n.progressReportsSubtitle,
-              icon: Icons.bar_chart,
-              value: prefs.progressReports,
-              onChanged: (value) async {
-                await preferencesProvider.toggleProgressReports(value);
-              },
-            ),
-            const SizedBox(height: 8),
             _buildOptionTile(
               title: l10n.testNotification,
               subtitle: l10n.testNotificationSubtitle,

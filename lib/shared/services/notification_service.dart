@@ -326,12 +326,6 @@ class NotificationService {
     }
   }
 
-  /// Cancela una notificación específica
-  Future<void> cancelNotification(int id) async {
-    if (kIsWeb) return; // El servidor respeta las preferencias del usuario
-    await _notifications.cancel(id);
-  }
-
   /// Cancela todas las notificaciones
   Future<void> cancelAllNotifications() async {
     if (kIsWeb) return; // El servidor respeta notifications_enabled
@@ -341,8 +335,6 @@ class NotificationService {
   // IDs de notificaciones predefinidos
   static const int workoutReminderId = 1;
   static const int achievementId = 100; // Base ID para logros
-  static const int progressReportId = 50;
-
   /// Programa recordatorio de entrenamiento.
   /// Si se pasa [userId], personaliza el mensaje según los días sin entrenar.
   Future<void> scheduleWorkoutReminder({
@@ -399,11 +391,6 @@ class NotificationService {
     );
   }
 
-  /// Cancela recordatorio de entrenamiento
-  Future<void> cancelWorkoutReminder() async {
-    await cancelNotification(workoutReminderId);
-  }
-
   /// Muestra notificación de logro desbloqueado
   Future<void> showAchievementNotification({
     required String achievementName,
@@ -417,59 +404,4 @@ class NotificationService {
     );
   }
 
-  /// Programa reporte de progreso semanal (cada domingo a las 9 AM)
-  Future<void> scheduleWeeklyProgressReport() async {
-    if (kIsWeb) return; // Lo envía el servidor los domingos (Web Push)
-
-    // Garantizar inicialización antes de programar
-    await initialize();
-
-    // Calcular el próximo domingo
-    final now = DateTime.now();
-    final daysUntilSunday = (DateTime.sunday - now.weekday) % 7;
-    final nextSunday = DateTime(
-      now.year,
-      now.month,
-      now.day + (daysUntilSunday == 0 ? 7 : daysUntilSunday),
-      9,
-      0,
-    );
-
-    const androidDetails = AndroidNotificationDetails(
-      'chamos_progress_channel',
-      'Reportes de Progreso',
-      channelDescription:
-          'Reportes semanales de progreso de GymCenter',
-      importance: Importance.defaultImportance,
-      priority: Priority.defaultPriority,
-      icon: '@mipmap/ic_launcher',
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: false,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _notifications.zonedSchedule(
-      progressReportId,
-      '📊 Reporte semanal',
-      'Abre la app para ver tu resumen de esta semana.',
-      tz.TZDateTime.from(nextSunday, tz.local),
-      details,
-      payload: 'progress_report',
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
-    );
-  }
-
-  /// Cancela reporte semanal
-  Future<void> cancelWeeklyProgressReport() async {
-    await cancelNotification(progressReportId);
-  }
 }

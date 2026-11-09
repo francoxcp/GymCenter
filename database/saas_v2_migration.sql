@@ -63,13 +63,12 @@ BEGIN
     v_org := NULL;
   END IF;
 
-  INSERT INTO public.users (id, email, name, role, level, trainer_id, org_id)
+  INSERT INTO public.users (id, email, name, role, trainer_id, org_id)
   VALUES (
     NEW.id,
     NEW.email,
     COALESCE(NULLIF(trim(NEW.raw_user_meta_data->>'name'), ''), 'Usuario Nuevo'),
     'user',
-    'Principiante',
     v_trainer,
     v_org
   )

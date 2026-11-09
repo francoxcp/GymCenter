@@ -11,7 +11,9 @@ import 'my_organization_screen.dart' show billingColor, fmtDay;
 
 /// /platform — súper admin: clientes, comprobantes por revisar y altas.
 class PlatformScreen extends StatefulWidget {
-  const PlatformScreen({super.key});
+  /// Cliente a abrir directamente (aviso "Comprobante por revisar").
+  final String? openOrgId;
+  const PlatformScreen({super.key, this.openOrgId});
 
   @override
   State<PlatformScreen> createState() => _PlatformScreenState();
@@ -22,11 +24,28 @@ class _PlatformScreenState extends State<PlatformScreen> {
   PlatformStats? _stats;
   bool _loading = true;
   String? _error;
+  OrgFilter _filter = OrgFilter.all;
+  String? _pendingOpen;
 
   @override
   void initState() {
     super.initState();
+    _pendingOpen = widget.openOrgId;
     _load();
+  }
+
+  void _openPending() {
+    final id = _pendingOpen;
+    if (id == null) return;
+    _pendingOpen = null;
+    final match = _orgs.where((o) => o.org.id == id);
+    if (match.isEmpty) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => PlatformOrgScreen(summary: match.first)));
+      _load();
+    });
   }
 
   Future<void> _load() async {
@@ -44,6 +63,7 @@ class _PlatformScreenState extends State<PlatformScreen> {
           _orgs = r[0] as List<OrgSummary>;
           _stats = r[1] as PlatformStats?;
         });
+        _openPending();
       }
     } catch (e) {
       if (mounted) setState(() => _error = OrganizationService.friendlyError(e));
@@ -205,8 +225,43 @@ class _PlatformScreenState extends State<PlatformScreen> {
                         'pendientes',
                         color: billingColor(BillingState.pending)),
                   ]),
-                  const SizedBox(height: 20),
-                  for (final o in _orgs) _orgTile(o),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 44,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        for (final f in OrgFilter.values)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ChoiceChip(
+                              showCheckmark: false,
+                              selected: _filter == f,
+                              selectedColor: AppColors.primary,
+                              labelStyle: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: _filter == f
+                                      ? AppColors.onPrimary
+                                      : AppColors.textPrimary),
+                              label: Text(
+                                  '${f.label}  ${_orgs.where((o) => f.matches(o, DateTime.now())).length}'),
+                              onSelected: (_) => setState(() => _filter = f),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  for (final o in _orgs.where((o) => _filter.matches(o, DateTime.now())))
+                    _orgTile(o),
+                  if (_orgs.isNotEmpty &&
+                      !_orgs.any((o) => _filter.matches(o, DateTime.now())))
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text('Ningún cliente en "${_filter.label}".',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: AppColors.textSecondary)),
+                    ),
                 ],
               ),
       ),
@@ -327,6 +382,8 @@ class _PlatformScreenState extends State<PlatformScreen> {
                         : '${Billing.label(st)}'
                             '${s.org.paidUntil != null ? ' · hasta ${fmtDay(s.org.paidUntil!)}' : ''}',
                     style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 13)),
+                Text(activityLabel(s),
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
               ]),
             ),
             if (s.pendingReviews > 0)
@@ -347,6 +404,19 @@ class _PlatformScreenState extends State<PlatformScreen> {
       ),
     );
   }
+}
+
+/// "Último entreno hace 3 días · 42 entrenos en 30 días".
+String activityLabel(OrgSummary s, {DateTime? now}) {
+  final d = s.daysSinceActivity(now ?? DateTime.now());
+  final last = d == null
+      ? 'Sin entrenos aún'
+      : d == 0
+          ? 'Entrenaron hoy'
+          : d == 1
+              ? 'Último entreno ayer'
+              : 'Último entreno hace $d días';
+  return '$last · ${s.sessions30d} en 30 días';
 }
 
 /// Acceso para pruebas al formato de dinero.
@@ -548,6 +618,51 @@ class _PlatformOrgScreenState extends State<PlatformOrgScreen> {
     }
   }
 
+  Widget _history(OrgSummary s) {
+    final approved = _payments.where((p) => p.status == 'approved').toList();
+    Widget cell(String v, String l) => Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(v,
+                style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900)),
+            Text(l, style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+          ]),
+        );
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(
+            s.createdAt == null
+                ? 'HISTORIAL'
+                : 'CLIENTE DESDE ${fmtDay(s.createdAt!).toUpperCase()}',
+            style: TextStyle(
+                color: AppColors.textSecondary,
+                letterSpacing: 1.2,
+                fontSize: 12,
+                fontWeight: FontWeight.w800)),
+        const SizedBox(height: 10),
+        Row(children: [
+          cell('${s.members}', 'socios'),
+          cell('${s.sessions30d}', 'entrenos 30 d'),
+          cell('${approved.length}', 'pagos aprobados'),
+        ]),
+        const SizedBox(height: 8),
+        Text(activityLabel(s).split(' · ').first,
+            style: TextStyle(
+                color: (s.daysSinceActivity(DateTime.now()) ?? 999) >= 14
+                    ? billingColor(BillingState.pending)
+                    : AppColors.textSecondary,
+                fontWeight: FontWeight.w600)),
+      ]),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = widget.summary;
@@ -589,6 +704,8 @@ class _PlatformOrgScreenState extends State<PlatformOrgScreen> {
                       : billingColor(BillingState.pending)),
             ),
           ]),
+          const SizedBox(height: 20),
+          _history(s),
           const SizedBox(height: 24),
           Semantics(
             header: true,

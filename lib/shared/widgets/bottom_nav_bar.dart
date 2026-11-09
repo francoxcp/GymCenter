@@ -4,15 +4,18 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/l10n/app_l10n.dart';
 import '../../features/settings/providers/preferences_provider.dart';
+import '../navigation/role_tabs.dart';
 
 class BottomNavBar extends StatefulWidget {
   final int currentIndex;
   final Function(int) onTap;
+  final List<NavTabSpec> tabs;
 
   const BottomNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
+    required this.tabs,
   });
 
   @override
@@ -45,24 +48,13 @@ class _BottomNavBarState extends State<BottomNavBar> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(
-                icon: Icons.grid_view_outlined,
-                activeIcon: Icons.grid_view,
-                label: l10n.navPanel,
-                index: 0,
-              ),
-              _buildNavItem(
-                icon: Icons.fitness_center_outlined,
-                activeIcon: Icons.fitness_center,
-                label: l10n.navWorkouts,
-                index: 1,
-              ),
-              _buildNavItem(
-                icon: Icons.person_outline,
-                activeIcon: Icons.person,
-                label: l10n.navProfile,
-                index: 2,
-              ),
+              for (var i = 0; i < widget.tabs.length; i++)
+                _buildNavItem(
+                  icon: widget.tabs[i].icon,
+                  activeIcon: widget.tabs[i].activeIcon,
+                  label: widget.tabs[i].label(l10n),
+                  index: i,
+                ),
             ],
           ),
         ),
@@ -135,13 +127,16 @@ class _BottomNavBarState extends State<BottomNavBar> {
                 AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 200),
                   style: TextStyle(
-                    fontSize: isSelected ? 11.5 : 11,
+                    fontSize: widget.tabs.length > 4
+                        ? (isSelected ? 10.5 : 10)
+                        : (isSelected ? 11.5 : 11),
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isSelected
                         ? AppColors.primaryText
                         : AppColors.textSecondary,
                   ),
-                  child: Text(label),
+                  child: Text(label,
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
               ],
             ),

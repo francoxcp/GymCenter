@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/app_snackbar.dart';
+import '../../auth/models/user.dart';
 import '../../auth/providers/auth_provider.dart';
 
 /// Tarjeta del vínculo entrenador ↔ socio.
@@ -21,6 +22,7 @@ class TrainerLinkCard extends StatefulWidget {
 
 class _TrainerLinkCardState extends State<TrainerLinkCard> {
   String? _trainerName;
+  String? _trainerPhone;
   String? _loadedFor;
   bool _busy = false;
 
@@ -30,10 +32,16 @@ class _TrainerLinkCardState extends State<TrainerLinkCard> {
     _loadedFor = tid;
     if (tid == null) {
       _trainerName = null;
+      _trainerPhone = null;
       return;
     }
-    auth.loadTrainerName().then((n) {
-      if (mounted) setState(() => _trainerName = n);
+    auth.loadTrainerContact().then((c) {
+      if (mounted) {
+        setState(() {
+          _trainerName = c.name;
+          _trainerPhone = c.phone;
+        });
+      }
     });
   }
 
@@ -159,6 +167,9 @@ class _TrainerLinkCardState extends State<TrainerLinkCard> {
   }
 
   Widget _buildMember(AuthProvider auth, bool linked, bool isEn) {
+    final me = auth.currentUser;
+    final hasMembership = me?.membershipEnd != null;
+    final phone = _trainerPhone ?? '';
     return _shell(
       icon: Icons.sports,
       child: Row(
@@ -167,6 +178,20 @@ class _TrainerLinkCardState extends State<TrainerLinkCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (hasMembership) ...[
+                  Text(
+                    '${me!.membershipPlan ?? (isEn ? 'Membership' : 'Membresía')} · '
+                    '${Membership.label(me.membershipEnd)}',
+                    style: TextStyle(
+                      color: me.membershipStatus == MembershipStatus.active
+                          ? AppColors.textSecondary
+                          : AppColors.warning,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 Text(
                   isEn ? 'My trainer' : 'Mi entrenador',
                   style: TextStyle(
@@ -186,6 +211,13 @@ class _TrainerLinkCardState extends State<TrainerLinkCard> {
               ],
             ),
           ),
+          if (linked && phone.isNotEmpty)
+            IconButton(
+              tooltip: isEn ? 'WhatsApp my trainer' : 'Escribir por WhatsApp',
+              icon: Icon(Icons.chat_outlined, color: AppColors.primaryText),
+              onPressed: () => ShareHelper.whatsappTo(phone,
+                  'Hola ${(_trainerName ?? '').split(' ').first}, '),
+            ),
           TextButton(
             onPressed: _busy ? null : () => _askCode(auth, isEn),
             child: Text(

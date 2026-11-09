@@ -49,6 +49,20 @@ class ShareHelper {
     }
   }
 
+  /// Abre el chat de WhatsApp con un número concreto (solo dígitos; si no
+  /// trae código de país se asume el de Costa Rica, 506).
+  static void whatsappTo(String phone, [String text = '']) {
+    var digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.length == 8) digits = '506$digits';
+    final q = text.isEmpty ? '' : '?text=${Uri.encodeComponent(text)}';
+    final url = 'https://wa.me/$digits$q';
+    if (kIsWeb) {
+      WebBridge.openUrl(url);
+    } else {
+      Share.share(text.isEmpty ? '+$digits' : text);
+    }
+  }
+
   /// Hoja de compartir del teléfono (WhatsApp, Telegram, SMS, correo…).
   /// Si el navegador no la tiene, abre WhatsApp.
   static Future<void> shareOther(String text) async {

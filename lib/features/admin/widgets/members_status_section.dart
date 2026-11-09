@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../config/supabase_config.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/models/user.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/user_provider.dart';
 import '../models/member_status.dart';
+import '../services/member_status_service.dart';
 import '../screens/member_hub_screen.dart';
 
 /// "Mis socios" con semáforo de constancia (panel del entrenador/dueño).
@@ -41,35 +41,7 @@ class MembersStatusSectionState extends State<MembersStatusSection> {
           .users
           .where((u) => u.role == 'user')
           .toList();
-      final since = DateTime.now().subtract(const Duration(days: 35));
-      final results = await Future.wait([
-        SupabaseConfig.client
-            .from('workout_sessions')
-            .select('user_id, completed_at')
-            .gte('completed_at', since.toUtc().toIso8601String()),
-        SupabaseConfig.client.from('user_workout_schedule').select('user_id'),
-      ]);
-      final sessionsByUser = <String, List<DateTime>>{};
-      for (final r in results[0] as List) {
-        final d = DateTime.tryParse(r['completed_at'] as String? ?? '');
-        if (d == null) continue;
-        sessionsByUser.putIfAbsent(r['user_id'] as String, () => []).add(d);
-      }
-      final plannedByUser = <String, int>{};
-      for (final r in results[1] as List) {
-        final id = r['user_id'] as String;
-        plannedByUser[id] = (plannedByUser[id] ?? 0) + 1;
-      }
-      final now = DateTime.now();
-      final map = {
-        for (final u in users)
-          u.id: MemberStatus.compute(
-            userId: u.id,
-            plannedPerWeek: plannedByUser[u.id] ?? 0,
-            sessions: sessionsByUser[u.id] ?? const [],
-            now: now,
-          ),
-      };
+      final map = (await MemberStatusService.load(users)).status;
       if (!mounted) return;
       setState(() {
         _status = map;

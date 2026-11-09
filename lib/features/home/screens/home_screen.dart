@@ -15,6 +15,7 @@ import '../../../shared/widgets/coming_soon_workout_card.dart';
 import '../../../shared/widgets/install_app_banner.dart';
 import '../../../shared/services/offline_sync_queue.dart';
 import '../widgets/weekly_goal_card.dart';
+import '../widgets/streak_row.dart';
 import '../widgets/trainer_comments_card.dart';
 import '../../admin/screens/memberships_screen.dart' show MyMembershipBanner;
 
@@ -390,114 +391,11 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         : null;
     final todayCompleted = _isTodayCompleted(sessionProvider);
 
-    // Calcular stats reales desde sesiones cargadas (más precisos que los campos BD)
     final realSessions = sessionProvider.sessions;
-    final realCompletedCount = realSessions.isNotEmpty
-        ? realSessions.length
-        : widget.currentUser.completedWorkouts;
-    final realActiveDays = realSessions.isNotEmpty
-        ? realSessions
-            .map((s) {
-              final d = s.date.toLocal();
-              return DateTime(d.year, d.month, d.day);
-            })
-            .toSet()
-            .length
-        : widget.currentUser.activeDays;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // User Stats - Optimized spacing and added animations
-        Row(
-          children: [
-            Expanded(
-              child: FadeInCard(
-                delay: 0,
-                child: AnimatedCard(
-                  padding: const EdgeInsets.all(14),
-                  onTap: null,
-                  enableAnimation: false,
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.event_available,
-                        color: AppColors.primaryText,
-                        size: 26,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '$realActiveDays',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        AppL10n.of(context).activeDaysLabel,
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: FadeInCard(
-                delay: 100,
-                child: AnimatedCard(
-                  padding: const EdgeInsets.all(14),
-                  onTap: null,
-                  enableAnimation: false,
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.fitness_center,
-                        color: AppColors.primaryText,
-                        size: 26,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '$realCompletedCount',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        AppL10n.of(context).sessionsStatLabel,
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 16),
-
-        // Meta semanal: entrenos hechos vs plan del entrenador
-        const WeeklyGoalCard(),
-
-        // Comentarios recientes del entrenador
-        const TrainerCommentsCard(),
-
-        // Aviso de membresía por vencer / vencida
-        const MyMembershipBanner(),
-
-        const SizedBox(height: 28),
-
         // Today's Workout
         Text(
           todayCompleted
@@ -628,11 +526,7 @@ class _UserHomeContentState extends State<_UserHomeContent> {
               enableShadow: true,
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.primary, Color(0xFFE6C200)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.all(18),
@@ -640,12 +534,22 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
+                      AppL10n.of(context).isEn ? 'TODAY' : 'HOY TOCA',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black54,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
                       assignedWorkout.name,
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.bold,
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
                         color: Colors.black,
-                        letterSpacing: 0.3,
+                        height: 1.1,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -686,8 +590,8 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           foregroundColor: AppColors.primaryText,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          elevation: 2,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -698,9 +602,11 @@ class _UserHomeContentState extends State<_UserHomeContent> {
                             const Icon(Icons.play_arrow, size: 22),
                             const SizedBox(width: 8),
                             Text(
-                              AppL10n.of(context).trainNow,
+                              AppL10n.of(context).isEn
+                                  ? "START TODAY'S WORKOUT"
+                                  : 'EMPEZAR ENTRENO DE HOY',
                               style: const TextStyle(
-                                fontSize: 15,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 1.2,
                               ),
@@ -809,45 +715,29 @@ class _UserHomeContentState extends State<_UserHomeContent> {
           ),
         ],
 
+        const SizedBox(height: 16),
+        StreakRow(sessions: realSessions.map((x) => x.date).toList()),
+        const SizedBox(height: 12),
+        // Meta semanal: entrenos hechos vs plan del entrenador
+        const WeeklyGoalCard(),
+
+        // Comentarios recientes del entrenador
+        const TrainerCommentsCard(),
+
+        // Aviso de membresía por vencer / vencida
+        const MyMembershipBanner(),
+
         const SizedBox(height: 28),
 
-        // Quick Actions
-        Text(
-          AppL10n.of(context).exploreLabel,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-            letterSpacing: 0.3,
+        const SizedBox(height: 8),
+        Center(
+          child: TextButton.icon(
+            onPressed: () => context.push('/workouts'),
+            icon: const Icon(Icons.list_alt, size: 18),
+            label: Text(AppL10n.of(context).isEn
+                ? 'All my routines'
+                : 'Ver todas mis rutinas'),
           ),
-        ),
-
-        const SizedBox(height: 16),
-
-        Row(
-          children: [
-            Expanded(
-              child: FadeInCard(
-                delay: 300,
-                child: _QuickActionCard(
-                  title: AppL10n.of(context).routinesLabel,
-                  icon: Icons.fitness_center,
-                  onTap: () => context.push('/workouts'),
-                ),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: FadeInCard(
-                delay: 400,
-                child: _QuickActionCard(
-                  title: AppL10n.of(context).myProgress,
-                  icon: Icons.show_chart,
-                  onTap: () => context.go('/progress'),
-                ),
-              ),
-            ),
-          ],
         ),
       ],
     );
@@ -855,46 +745,6 @@ class _UserHomeContentState extends State<_UserHomeContent> {
 }
 
 // Banner de Workout Pendiente
-class _QuickActionCard extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _QuickActionCard({
-    required this.title,
-    required this.icon,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedCard(
-      padding: const EdgeInsets.all(20),
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      enableAnimation: true,
-      enableShadow: false,
-      child: Column(
-        children: [
-          Icon(icon, size: 36, color: AppColors.primaryText),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-              letterSpacing: 0.3,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _PendingWorkoutBanner extends StatelessWidget {
   final String workoutName;
   final dynamic progress;

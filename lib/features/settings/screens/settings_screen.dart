@@ -164,7 +164,70 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
             ],
-            _buildSwitchTile(
+          ],
+          const SizedBox(height: 24),
+
+          // Apariencia y accesibilidad
+          _buildSectionTitle(l10n.isEn ? 'Appearance' : 'Apariencia'),
+          Consumer<AppearanceProvider>(
+            builder: (context, look, _) => Column(children: [
+              _buildSwitchTile(
+                title: l10n.isEn ? 'Light mode' : 'Modo claro',
+                subtitle: l10n.isEn
+                    ? 'Easier to read outdoors or in bright light'
+                    : 'Más fácil de leer al aire libre o con mucha luz',
+                icon: Icons.light_mode_outlined,
+                value: look.light,
+                onChanged: (v) => look.setLight(v),
+              ),
+              _buildOptionTile(
+                title: l10n.isEn ? 'Text size' : 'Tamaño del texto',
+                subtitle:
+                    AppearanceProvider.scales[look.textScale] ?? 'Normal',
+                icon: Icons.text_fields,
+                onTap: () => _showTextScaleSelector(look),
+              ),
+            ]),
+          ),
+          const SizedBox(height: 24),
+
+          // Cuenta
+          _buildSectionTitle(l10n.sectionAccount),
+          _buildOptionTile(
+            title: l10n.changePassword,
+            subtitle: l10n.changePasswordSubtitle,
+            icon: Icons.lock_outline,
+            onTap: () => _showChangePasswordDialog(l10n),
+          ),
+          const SizedBox(height: 24),
+
+          // Cerrar sesión
+          _buildDangerButton(
+            l10n.logout,
+            Icons.logout,
+            () => _confirmLogout(authProvider, l10n),
+          ),
+          const SizedBox(height: 24),
+          // Avanzado: lo que casi nunca se toca
+          Theme(
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: EdgeInsets.zero,
+              iconColor: AppColors.textSecondary,
+              collapsedIconColor: AppColors.textSecondary,
+              title: Text(l10n.isEn ? 'Advanced' : 'Avanzado',
+                  style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w700)),
+              subtitle: Text(
+                  l10n.isEn
+                      ? 'Language, privacy, your data, legal'
+                      : 'Idioma, privacidad, tus datos, legal',
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+              children: [
+                if (prefs.notificationsEnabled) ...[
+          _buildSwitchTile(
               title: l10n.progressReports,
               subtitle: l10n.progressReportsSubtitle,
               icon: Icons.bar_chart,
@@ -198,33 +261,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }
               },
             ),
-          ],
-          const SizedBox(height: 24),
-
-          // Apariencia y accesibilidad
-          _buildSectionTitle(l10n.isEn ? 'Appearance' : 'Apariencia'),
-          Consumer<AppearanceProvider>(
-            builder: (context, look, _) => Column(children: [
-              _buildSwitchTile(
-                title: l10n.isEn ? 'Light mode' : 'Modo claro',
-                subtitle: l10n.isEn
-                    ? 'Easier to read outdoors or in bright light'
-                    : 'Más fácil de leer al aire libre o con mucha luz',
-                icon: Icons.light_mode_outlined,
-                value: look.light,
-                onChanged: (v) => look.setLight(v),
-              ),
-              _buildOptionTile(
-                title: l10n.isEn ? 'Text size' : 'Tamaño del texto',
-                subtitle:
-                    AppearanceProvider.scales[look.textScale] ?? 'Normal',
-                icon: Icons.text_fields,
-                onTap: () => _showTextScaleSelector(look),
-              ),
-            ]),
-          ),
-          const SizedBox(height: 24),
-
+  
+                ],
           // Idioma
           _buildSectionTitle(l10n.sectionLanguage),
           _buildOptionTile(
@@ -236,14 +274,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
 
-          // Cuenta
-          _buildSectionTitle(l10n.sectionAccount),
-          _buildOptionTile(
-            title: l10n.changePassword,
-            subtitle: l10n.changePasswordSubtitle,
-            icon: Icons.lock_outline,
-            onTap: () => _showChangePasswordDialog(l10n),
-          ),
           _buildOptionTile(
             title: l10n.privacy,
             subtitle: l10n.privacySubtitle,
@@ -256,8 +286,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.download_outlined,
             onTap: () => _exportUserData(),
           ),
-          const SizedBox(height: 24),
-
           // Información
           _buildSectionTitle(l10n.sectionInformation),
           _buildOptionTile(
@@ -280,20 +308,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
 
-          // Cerrar sesión
-          _buildDangerButton(
-            l10n.logout,
-            Icons.logout,
-            () => _confirmLogout(authProvider, l10n),
-          ),
-          const SizedBox(height: 12),
-
           // Eliminar cuenta
           _buildDangerButton(
             l10n.deleteAccount,
             Icons.delete_forever,
             () => _confirmDeleteAccount(l10n),
             isDestructive: true,
+          ),
+              ],
+            ),
           ),
           const SizedBox(height: 40),
         ],

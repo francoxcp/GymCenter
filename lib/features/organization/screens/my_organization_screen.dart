@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/navigation/safe_pop.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/organization.dart';
@@ -348,11 +347,9 @@ class _MyOrganizationScreenState extends State<MyOrganizationScreen> {
     final org = context.watch<AuthProvider>().organization;
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'Atrás',
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.popOrGo('/admin'),
-        ),
+        // Es una pestaña: sin flecha de volver (salvo si se abrió encima de
+        // otra pantalla, p. ej. desde el aviso de cliente suspendido).
+        automaticallyImplyLeading: Navigator.of(context).canPop(),
         title: Text(org?.isIndependent == true ? 'Mi negocio' : 'Mi gimnasio'),
       ),
       body: org == null

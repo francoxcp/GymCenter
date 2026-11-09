@@ -129,9 +129,15 @@ class OrgSummary {
   final int members;
   final int pendingReviews;
   final bool inTrial;
+  final DateTime? createdAt;
+  final DateTime? lastActivity;
+  final int sessions30d;
 
   const OrgSummary({
     this.inTrial = false,
+    this.createdAt,
+    this.lastActivity,
+    this.sessions30d = 0,
     required this.org,
     required this.ownerName,
     required this.ownerEmail,
@@ -148,7 +154,42 @@ class OrgSummary {
         members: (j['members'] as num?)?.toInt() ?? 0,
         pendingReviews: (j['pending_reviews'] as num?)?.toInt() ?? 0,
         inTrial: j['in_trial'] as bool? ?? false,
+        createdAt: DateTime.tryParse(j['created_at'] as String? ?? '')?.toLocal(),
+        lastActivity:
+            DateTime.tryParse(j['last_activity'] as String? ?? '')?.toLocal(),
+        sessions30d: (j['sessions_30d'] as num?)?.toInt() ?? 0,
       );
+
+  /// Días desde el último entreno de cualquier socio (null = nunca).
+  int? daysSinceActivity(DateTime now) => lastActivity == null
+      ? null
+      : DateTime(now.year, now.month, now.day)
+          .difference(DateTime(
+              lastActivity!.year, lastActivity!.month, lastActivity!.day))
+          .inDays;
+}
+
+/// Filtros de la lista de clientes de la plataforma.
+enum OrgFilter { all, review, pending, trial, suspended, inactive }
+
+extension OrgFilterX on OrgFilter {
+  String get label => switch (this) {
+        OrgFilter.all => 'Todos',
+        OrgFilter.review => 'Por revisar',
+        OrgFilter.pending => 'Pago pendiente',
+        OrgFilter.trial => 'En prueba',
+        OrgFilter.suspended => 'Suspendidos',
+        OrgFilter.inactive => 'Sin uso 14 días',
+      };
+
+  bool matches(OrgSummary s, DateTime now) => switch (this) {
+        OrgFilter.all => true,
+        OrgFilter.review => s.pendingReviews > 0,
+        OrgFilter.pending => Billing.state(s.org) == BillingState.pending,
+        OrgFilter.trial => s.inTrial,
+        OrgFilter.suspended => s.org.isSuspended,
+        OrgFilter.inactive => (s.daysSinceActivity(now) ?? 999) >= 14,
+      };
 }
 
 /// Datos públicos de una invitación (antes de iniciar sesión).

@@ -507,9 +507,6 @@ class AppL10n {
       isEn ? 'Enter a valid number' : 'Ingresa un número válido';
   String get weightMustBePositive =>
       isEn ? 'Weight must be greater than 0' : 'El peso debe ser mayor a 0';
-  String newPersonalRecord(String w) =>
-      isEn ? 'New personal record! $w' : '¡Nuevo récord personal! $w';
-
   // ── Body measurements ──────────────────────────────────────────────────
   String get enterAtLeastOneMeasure =>
       isEn ? 'Enter at least one measurement' : 'Ingresa al menos una medida';

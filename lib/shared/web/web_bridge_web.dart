@@ -8,6 +8,7 @@ external _GcBridge? get _bridge;
 extension type _GcBridge._(JSObject _) implements JSObject {
   external bool isIOS();
   external bool isStandalone();
+  external bool isInAppBrowser();
   external String timeZone();
   external bool canPromptInstall();
   external JSPromise<JSBoolean> promptInstall();
@@ -39,6 +40,14 @@ class WebBridge {
   static bool get isAvailable => _bridge != null;
   static bool get isIOS => _bridge?.isIOS() ?? false;
   static bool get isStandalone => _bridge?.isStandalone() ?? false;
+  static bool get isInAppBrowser {
+    // Un gc_bridge.js viejo en caché puede no tener esta función.
+    try {
+      return _bridge?.isInAppBrowser() ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
   static String get timeZone => _bridge?.timeZone() ?? 'UTC';
 
   static bool get canPromptInstall => _bridge?.canPromptInstall() ?? false;

@@ -35,6 +35,10 @@
     /iPad|iPhone|iPod/.test(ua) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
+  // Navegadores dentro de otras apps (Instagram, Facebook, TikTok…): desde
+  // ahí no se puede instalar, hay que abrir el enlace en Safari/Chrome.
+  const inAppBrowser = /FBAN|FBAV|Instagram|Line\/|TikTok|musical_ly|Snapchat|; wv\)/i.test(ua);
+
   function isStandalone() {
     return (
       window.matchMedia('(display-mode: standalone)').matches ||
@@ -88,6 +92,7 @@
     // Plataforma
     isIOS: () => isIOS,
     isStandalone: () => isStandalone(),
+    isInAppBrowser: () => inAppBrowser,
     timeZone: () => {
       try {
         return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';

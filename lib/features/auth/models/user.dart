@@ -60,6 +60,9 @@ class User {
   final String? membershipPlan;
   final DateTime? membershipStart;
   final DateTime? membershipEnd;
+  /// Teléfono para WhatsApp (opcional).
+  final String? phone;
+  final DateTime? createdAt;
 
   MembershipStatus get membershipStatus => Membership.status(membershipEnd);
 
@@ -89,6 +92,8 @@ class User {
     this.membershipPlan,
     this.membershipStart,
     this.membershipEnd,
+    this.phone,
+    this.createdAt,
   });
 
   static DateTime? _date(dynamic v) =>
@@ -120,6 +125,7 @@ class User {
     Object? membershipPlan = _sentinel,
     Object? membershipStart = _sentinel,
     Object? membershipEnd = _sentinel,
+    Object? phone = _sentinel,
   }) {
     return User(
       id: id ?? this.id,
@@ -154,6 +160,8 @@ class User {
       membershipEnd: membershipEnd == _sentinel
           ? this.membershipEnd
           : membershipEnd as DateTime?,
+      phone: phone == _sentinel ? this.phone : phone as String?,
+      createdAt: createdAt,
     );
   }
 
@@ -180,6 +188,8 @@ class User {
       membershipPlan: json['membership_plan'] as String?,
       membershipStart: _date(json['membership_start']),
       membershipEnd: _date(json['membership_end']),
+      phone: json['phone'] as String?,
+      createdAt: _date(json['created_at']),
     );
   }
 
@@ -205,6 +215,7 @@ class User {
       'membership_plan': membershipPlan,
       'membership_start': _dateStr(membershipStart),
       'membership_end': _dateStr(membershipEnd),
+      'phone': phone,
     };
   }
 }

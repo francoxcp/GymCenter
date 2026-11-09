@@ -1160,7 +1160,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     final adminWeight = exercise.weight > 0 ? exercise.weight : null;
 
     // Pre-rellenar: peso ya ingresado en esta sesión > último de esta serie > vacío
-    final suggestion = currentWeight ?? lastSessionWeight;
+    final suggestion = currentWeight ??
+        lastSessionWeight ??
+        _autoWeightFor(exerciseIndex, setIndex);
     final suggestionLbs = suggestion != null ? _toLbs(suggestion) : null;
     final suggestionText = suggestionLbs != null
         ? (suggestionLbs == suggestionLbs.roundToDouble()
@@ -2480,6 +2482,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         const Spacer(),
                         _WeightChip(
                           weight: _setWeights[exerciseIndex]?[setIndex],
+                          suggested: isCompleted ||
+                                  _isCardioExercise(exercise) ||
+                                  _setWeights[exerciseIndex]?[setIndex] != null
+                              ? null
+                              : _autoWeightFor(exerciseIndex, setIndex),
                           reps: _setReps[exerciseIndex]?[setIndex] ??
                               exercise.reps,
                           belowTarget: (_setReps[exerciseIndex]?[setIndex] ??
@@ -2656,6 +2663,8 @@ class _CompactRef extends StatelessWidget {
 
 class _WeightChip extends StatelessWidget {
   final double? weight;
+  /// Peso sugerido (kg) que se usará al marcar la serie con un toque.
+  final double? suggested;
   final int reps;
   final bool isNewPR;
   final bool belowTarget;
@@ -2664,6 +2673,7 @@ class _WeightChip extends StatelessWidget {
 
   const _WeightChip({
     required this.weight,
+    this.suggested,
     required this.reps,
     required this.onTap,
     this.isNewPR = false,
@@ -2674,9 +2684,10 @@ class _WeightChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasWeight = weight != null;
+    final shown = weight ?? suggested;
     // weight está en kg internamente; mostrar en lbs
-    final lbs = hasWeight ? weight! * 2.20462 : null;
-    final weightLabel = weight == 0
+    final lbs = shown != null ? shown * 2.20462 : null;
+    final weightLabel = shown == 0
         ? 'corporal'
         : lbs != null
         ? (lbs == lbs.roundToDouble()

@@ -23,6 +23,10 @@ class AppL10n {
   String get navWorkouts => isEn ? 'Workouts' : 'Rutinas';
   String get navPlans => isEn ? 'Plans' : 'Planes';
   String get navProfile => isEn ? 'Profile' : 'Mi Perfil';
+  String get navToday => isEn ? 'Today' : 'Hoy';
+  String get navProgress => isEn ? 'Progress' : 'Progreso';
+  String get navMembers => isEn ? 'Members' : 'Socios';
+  String get navGym => isEn ? 'Gym' : 'Gimnasio';
 
   // ── Configuración ────────────────────────────────────────────────────────
   String get settings => isEn ? 'Settings' : 'Configuración';

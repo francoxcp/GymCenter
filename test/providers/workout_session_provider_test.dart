@@ -115,7 +115,10 @@ void main() {
     });
 
     test('handles duplicate sessions on same day', () {
-      final now = DateTime.now();
+      // Mediodía de hoy: "hace 2 horas" sigue siendo hoy aunque la prueba
+      // corra justo después de medianoche (antes fallaba a las 00:07).
+      final t = DateTime.now();
+      final now = DateTime(t.year, t.month, t.day, 12);
       provider.sessions.addAll([
         _session(date: now),
         _session(

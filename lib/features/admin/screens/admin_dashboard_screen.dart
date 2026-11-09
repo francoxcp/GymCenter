@@ -1,5 +1,4 @@
 ﻿import 'package:flutter/material.dart';
-import 'memberships_screen.dart' show MembershipsAlertCard;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -10,7 +9,9 @@ import '../../organization/widgets/org_billing_banner.dart';
 import '../../profile/providers/user_provider.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../profile/widgets/trainer_link_card.dart';
-import '../widgets/members_status_section.dart';
+import '../widgets/weekly_summary_card.dart';
+import '../../organization/widgets/invite_flow.dart';
+import '../../../shared/widgets/top_actions.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -25,7 +26,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   List<int> _dailySessions = [0, 0, 0, 0, 0, 0, 0];
   bool _isLoading = true;
   bool _hasError = false;
-  final _membersKey = GlobalKey<MembersStatusSectionState>();
+  int _weekSessions = 0;
 
   @override
   void initState() {
@@ -76,16 +77,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         }
       }
 
+      final today = DateTime(now.year, now.month, now.day);
+      final weekStart = today.subtract(Duration(days: today.weekday - 1));
+      final weekSessions = sessions.where((r) {
+        final d = DateTime.tryParse(r['completed_at'] ?? '')?.toLocal();
+        return d != null && !d.isBefore(weekStart);
+      }).length;
+
       if (!mounted) return;
       setState(() {
+        _weekSessions = weekSessions;
         _totalUsers = totalUsers;
         _totalSessions = sessions.length;
         _dailySessions = dailyCounts;
         _isLoading = false;
         _hasError = false;
       });
-      // La lista de socios ya está cargada: calcular el semáforo
-      _membersKey.currentState?.reload();
     } catch (e) {
       debugPrint('Error loading dashboard data: $e');
       if (!mounted) return;
@@ -139,7 +146,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         )),
           ]);
         }),
-        actions: const [],
+        actions: const [TopActions(), SizedBox(width: 4)],
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -173,14 +180,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
                 // Suscripción del negocio (pago pendiente / en revisión)
                 const OrgBillingBanner(),
-                // Membresías por vencer / vencidas (solo dueño)
-                const MembershipsAlertCard(),
                 // Código para que los socios se vinculen con este entrenador
                 const TrainerLinkCard(),
-                const SizedBox(height: AppSpacing.xl),
-                // Mis socios con semáforo de constancia (lo primero que mira
-                // un entrenador al abrir la app)
-                MembersStatusSection(key: _membersKey),
+                const SizedBox(height: AppSpacing.lg),
+                WeeklySummaryCard(
+                  sessions: _weekSessions,
+                  loading: _isLoading,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: FilledButton.icon(
+                    onPressed: () => startInviteFlow(context),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.onPrimary,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(Icons.qr_code_2),
+                    label: const Text('Invitar',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w800, fontSize: 16)),
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.xl),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -318,17 +342,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                 ],
-                if (context.read<AuthProvider>().isAdmin) ...[
-                  _QuickActionButton(
-                    icon: Icons.store_mall_directory_outlined,
-                    iconColor: AppColors.primaryText,
-                    title: context.read<AuthProvider>().isIndependent
-                        ? 'Mi negocio: marca, pagos e invitaciones'
-                        : 'Mi gimnasio: marca, pagos e invitaciones',
-                    onTap: () => context.push('/admin/organization'),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                ],
                 _QuickActionButton(
                   icon: Icons.dynamic_feed,
                   iconColor: AppColors.primaryText,
@@ -336,22 +349,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ? 'Member activity'
                       : 'Actividad de socios',
                   onTap: () => context.push('/admin/activity'),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                _QuickActionButton(
-                  icon: Icons.card_membership,
-                  iconColor: Colors.purpleAccent,
-                  title: AppL10n.of(context).isEn
-                      ? 'Memberships'
-                      : 'Membresías y vencimientos',
-                  onTap: () => context.push('/admin/memberships'),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                _QuickActionButton(
-                  icon: Icons.people,
-                  iconColor: Colors.blue,
-                  title: AppL10n.of(context).userManagement,
-                  onTap: () => context.push('/admin/users'),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 _QuickActionButton(

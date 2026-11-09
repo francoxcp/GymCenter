@@ -37,31 +37,18 @@ import '../../features/legal/screens/privacy_policy_screen.dart';
 import '../../features/settings/screens/privacy_settings_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../shared/widgets/bottom_nav_bar.dart';
+import '../../shared/navigation/role_tabs.dart';
+import '../../shared/widgets/role_guide.dart';
+import '../../features/notifications/notifications_screen.dart';
+import '../../features/admin/screens/members_screen.dart';
+import '../../features/admin/screens/trainer_today_screen.dart';
 import '../../shared/services/unsaved_changes_guard.dart';
 
-int _locationToIndex(String location) {
-  if (location.startsWith('/workouts') ||
-      location.startsWith('/workout-detail') ||
-      location.startsWith('/today-workout') ||
-      location.startsWith('/workout-history') ||
-      location.startsWith('/workout-calendar')) {
-    return 1;
-  }
-
-  if (location.startsWith('/progress') ||
-      location.startsWith('/training-control') ||
-      location.startsWith('/body-measurements') ||
-      location.startsWith('/achievements') ||
-      location.startsWith('/settings') ||
-      location.startsWith('/privacy-settings') ||
-      location.startsWith('/profile') ||
-      location.startsWith('/edit-profile') ||
-      location.startsWith('/personal-records')) {
-    return 2;
-  }
-
-  return 0;
-}
+NavRole navRoleOf(AuthProvider auth) => auth.isAdmin
+    ? NavRole.owner
+    : auth.isTrainer
+        ? NavRole.trainer
+        : NavRole.member;
 
 /// Enlace profundo pendiente: en web se puede abrir directamente /workouts,
 /// /admin/organization, /platform (también desde una notificación). Mientras
@@ -186,11 +173,8 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       ),
       GoRoute(
         path: '/platform',
-        builder: (context, state) => const PlatformScreen(),
-      ),
-      GoRoute(
-        path: '/admin/organization',
-        builder: (context, state) => const MyOrganizationScreen(),
+        builder: (context, state) =>
+            PlatformScreen(openOrgId: state.uri.queryParameters['org']),
       ),
       GoRoute(
         path: '/register',
@@ -220,14 +204,7 @@ GoRouter createAppRouter(AuthProvider authProvider) {
 
       ShellRoute(
         builder: (context, state, child) {
-          final authProvider =
-              Provider.of<AuthProvider>(context, listen: false);
-          final location = state.uri.path;
-          return _AppShell(
-            currentIndex: _locationToIndex(location),
-            isAdmin: authProvider.isStaff,
-            child: child,
-          );
+          return _AppShell(location: state.uri.path, child: child);
         },
         routes: [
           // Main routes
@@ -316,10 +293,29 @@ GoRouter createAppRouter(AuthProvider authProvider) {
             builder: (context, state) => const PrivacyPolicyScreen(),
           ),
 
+          GoRoute(
+            path: '/notificaciones',
+            builder: (context, state) => const NotificationsScreen(),
+          ),
+
           // Admin routes
           GoRoute(
             path: '/admin',
             builder: (context, state) => const AdminDashboardScreen(),
+          ),
+          GoRoute(
+            path: '/admin/organization',
+            builder: (context, state) => const MyOrganizationScreen(),
+          ),
+          GoRoute(
+            path: '/admin/members',
+            builder: (context, state) => MembersScreen(
+              initialFilter: state.uri.queryParameters['f'],
+            ),
+          ),
+          GoRoute(
+            path: '/admin/today',
+            builder: (context, state) => const TrainerTodayScreen(),
           ),
           GoRoute(
             path: '/admin/memberships',
@@ -356,39 +352,33 @@ GoRouter createAppRouter(AuthProvider authProvider) {
 
 class _AppShell extends StatefulWidget {
   final Widget child;
-  final int currentIndex;
-  final bool isAdmin;
+  final String location;
 
-  const _AppShell({
-    required this.child,
-    required this.currentIndex,
-    required this.isAdmin,
-  });
+  const _AppShell({required this.child, required this.location});
 
   @override
   State<_AppShell> createState() => _AppShellState();
 }
 
 class _AppShellState extends State<_AppShell> {
-  late int _previousIndex;
+  int _previousIndex = 0;
+  int _currentIndex = 0;
+  bool _guideChecked = false;
 
   @override
-  void initState() {
-    super.initState();
-    _previousIndex = widget.currentIndex;
-  }
-
-  @override
-  void didUpdateWidget(_AppShell oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.currentIndex != widget.currentIndex) {
-      _previousIndex = oldWidget.currentIndex;
-    }
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_guideChecked) return;
+    _guideChecked = true;
+    final role = navRoleOf(Provider.of<AuthProvider>(context, listen: false));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) RoleGuide.maybeShow(context, role);
+    });
   }
 
   Widget _buildTransition(Widget child, Animation<double> animation) {
-    final isForward = widget.currentIndex >= _previousIndex;
-    final isIncoming = child.key == ValueKey(widget.currentIndex);
+    final isForward = _currentIndex >= _previousIndex;
+    final isIncoming = child.key == ValueKey(_currentIndex);
     final Offset beginOffset;
     if (isIncoming) {
       beginOffset =
@@ -407,33 +397,35 @@ class _AppShellState extends State<_AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final tabs = tabsFor(navRoleOf(auth));
+    final index = tabIndexFor(tabs, widget.location);
+    if (index != _currentIndex) {
+      _previousIndex = _currentIndex;
+      _currentIndex = index;
+    }
+    // Cliente suspendido: solo puede ver la pantalla de pago, sin pestañas.
+    final hideNav = auth.isOrgSuspended && !auth.isPlatformAdmin;
     return Scaffold(
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 280),
         transitionBuilder: _buildTransition,
         child: KeyedSubtree(
-          key: ValueKey(widget.currentIndex),
+          key: ValueKey(_currentIndex),
           child: widget.child,
         ),
       ),
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: widget.currentIndex,
-        onTap: (index) async {
-          if (!await UnsavedChangesGuard.canNavigate()) return;
-          if (!context.mounted) return;
-          switch (index) {
-            case 0:
-              context.go(widget.isAdmin ? '/admin' : '/home');
-              break;
-            case 1:
-              context.go('/workouts');
-              break;
-            case 2:
-              context.go('/profile');
-              break;
-          }
-        },
-      ),
+      bottomNavigationBar: hideNav
+          ? null
+          : BottomNavBar(
+              tabs: tabs,
+              currentIndex: _currentIndex,
+              onTap: (i) async {
+                if (!await UnsavedChangesGuard.canNavigate()) return;
+                if (!context.mounted) return;
+                context.go(tabs[i].path);
+              },
+            ),
     );
   }
 }

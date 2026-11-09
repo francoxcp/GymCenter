@@ -24,9 +24,16 @@ class EditProfileScreen extends StatefulWidget {
   State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
+/// Vacío o 7–20 dígitos/espacios con + opcional (igual que el CHECK de la BD).
+bool validPhone(String? v) {
+  final t = (v ?? '').trim();
+  return t.isEmpty || RegExp(r'^\+?[0-9][0-9 ]{6,19}$').hasMatch(t);
+}
+
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
 
   String _selectedLevel = 'Principiante';
   bool _isLoading = false;
@@ -45,6 +52,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     if (user != null) {
       _nameController.text = user.name;
+      _phoneController.text = user.phone ?? '';
       _selectedLevel = user.level;
     }
   }
@@ -53,6 +61,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void dispose() {
     SecureScreenService.disable();
     _nameController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -73,9 +82,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return;
       }
 
+      final phone = _phoneController.text.trim();
       await SupabaseConfig.client.from('users').update({
         'name': name,
         'level': _selectedLevel,
+        'phone': phone.isEmpty ? null : phone,
       }).eq('id', userId);
 
       await authProvider.refreshUser();
@@ -110,6 +121,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         final user = authProvider.currentUser;
         final hasChanges = _nameController.text != (user?.name ?? '') ||
+            _phoneController.text.trim() != (user?.phone ?? '') ||
             _selectedLevel != (user?.level ?? 'Principiante');
 
         if (!hasChanges) {
@@ -239,6 +251,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     }
                     return null;
                   },
+                ),
+                const SizedBox(height: 12),
+                CustomTextField(
+                  controller: _phoneController,
+                  hintText: AppL10n.of(context).isEn
+                      ? 'WhatsApp (optional)'
+                      : 'WhatsApp (opcional)',
+                  prefixIcon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                  validator: (v) => validPhone(v)
+                      ? null
+                      : (AppL10n.of(context).isEn
+                          ? 'Digits only, e.g. 8888 8888'
+                          : 'Solo números, ej.: 8888 8888'),
                 ),
                 const SizedBox(height: 16),
 

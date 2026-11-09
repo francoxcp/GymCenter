@@ -10,6 +10,8 @@ import '../models/member_status.dart';
 import '../widgets/members_status_section.dart';
 import '../widgets/membership_card.dart';
 import 'assign_plans_screen.dart';
+import '../widgets/member_tools.dart';
+import '../../../shared/services/share_helper.dart';
 
 /// Ficha del socio: todo lo que el entrenador necesita en un solo lugar.
 /// - Estado (semáforo, última sesión, semana vs plan)
@@ -120,12 +122,41 @@ class MemberHubScreen extends StatelessWidget {
           MembershipCard(memberId: member.id),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Text(member.email,
-                style: TextStyle(color: AppColors.textSecondary)),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(member.email,
+                      style: TextStyle(color: AppColors.textSecondary)),
+                ),
+                if ((member.phone ?? '').isNotEmpty)
+                  TextButton.icon(
+                    onPressed: () => ShareHelper.whatsappTo(member.phone!,
+                        'Hola ${member.name.split(' ').first}, '),
+                    icon: const Icon(Icons.chat_outlined, size: 18),
+                    label: const Text('WhatsApp'),
+                  ),
+              ],
+            ),
+          ),
+          action(
+            icon: Icons.bolt,
+            title: isEn ? 'Quick assign' : 'Asignación rápida',
+            subtitle: isEn
+                ? 'One day, one routine, filtered by goal'
+                : 'Un día y una rutina, filtrando por objetivo',
+            onTap: () => showQuickAssignSheet(context, member),
+          ),
+          action(
+            icon: Icons.content_copy,
+            title: isEn ? 'Copy another member\'s plan' : 'Copiar plan de otro socio',
+            subtitle: isEn
+                ? 'Reuse a full week that already works'
+                : 'Reutiliza una semana completa que ya funciona',
+            onTap: () => showCopyPlanSheet(context, member),
           ),
           action(
             icon: Icons.calendar_month,
-            title: isEn ? 'Assign routines' : 'Asignar rutinas',
+            title: isEn ? 'Full week' : 'Semana completa',
             subtitle: isEn
                 ? 'Choose the routine for each day of the week'
                 : 'Elige la rutina de cada día de la semana',
@@ -149,6 +180,8 @@ class MemberHubScreen extends StatelessWidget {
                 : 'Pon una contraseña temporal (también activa la cuenta)',
             onTap: () => showResetPasswordDialog(context, member),
           ),
+          const SizedBox(height: 6),
+          MemberNotesSection(memberId: member.id),
         ],
       ),
     );

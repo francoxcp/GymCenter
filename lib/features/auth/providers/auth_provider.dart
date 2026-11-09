@@ -93,8 +93,13 @@ class AuthProvider extends ChangeNotifier {
   bool get isInitializing => _isInitializing;
   bool get isPasswordRecovery => _isPasswordRecovery;
   bool get pendingEmailConfirmation => _pendingEmailConfirmation;
-  String get initialRoute =>
-      isStaff ? AppConstants.adminRoute : AppConstants.homeRoute;
+  /// Inicio según el rol: el dueño ve el panel, el entrenador su "Hoy"
+  /// (quién entrenó y quién falta) y el socio su entreno del día.
+  String get initialRoute => isAdmin
+      ? AppConstants.adminRoute
+      : isTrainer
+          ? '/admin/today'
+          : AppConstants.homeRoute;
 
   /// true cuando el usuario autenticado aún no ha completado el onboarding
   /// de datos de fitness (edad, peso y sexo son los campos mínimos).
@@ -489,6 +494,22 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Nombre del entrenador del socio actual (o null).
+  /// Nombre y teléfono (WhatsApp) del entrenador del socio.
+  Future<({String? name, String? phone})> loadTrainerContact() async {
+    final trainerId = _currentUser?.trainerId;
+    if (trainerId == null) return (name: null, phone: null);
+    try {
+      final row = await SupabaseConfig.client
+          .from('users')
+          .select('name, phone')
+          .eq('id', trainerId)
+          .maybeSingle();
+      return (name: row?['name'] as String?, phone: row?['phone'] as String?);
+    } catch (_) {
+      return (name: await loadTrainerName(), phone: null);
+    }
+  }
+
   Future<String?> loadTrainerName() async {
     final trainerId = _currentUser?.trainerId;
     if (trainerId == null) return null;

@@ -11,6 +11,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../workouts/providers/workout_session_provider.dart';
 import '../providers/body_measurement_provider.dart';
 import '../providers/achievements_provider.dart';
+import '../../home/widgets/streak_row.dart' show weeklyStreak;
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -21,6 +22,7 @@ class ProgressScreen extends StatefulWidget {
 
 class _ProgressScreenState extends State<ProgressScreen> {
   String _selectedPeriod = 'Semana';
+  bool _showMore = false;
 
   @override
   void initState() {
@@ -80,31 +82,93 @@ class _ProgressScreenState extends State<ProgressScreen> {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            // Período selector
-            _buildPeriodSelector(),
-            const SizedBox(height: 24),
-
-            // Control semanal y progresión por ejercicio
-            _buildTrainingControlCard(),
+            // Lo esencial: 3 números y un gráfico
+            _buildKeyNumbers(),
             const SizedBox(height: 20),
+            _buildSessionsFrequencyChart(30),
+            const SizedBox(height: 16),
+            Center(
+              child: TextButton.icon(
+                onPressed: () => setState(() => _showMore = !_showMore),
+                icon: Icon(_showMore ? Icons.expand_less : Icons.expand_more),
+                label: Text(_showMore
+                    ? (l10n.isEn ? 'Show less' : 'Ver menos')
+                    : (l10n.isEn
+                        ? 'More: per exercise, body, achievements'
+                        : 'Ver más: por ejercicio, cuerpo, logros')),
+              ),
+            ),
+            if (_showMore) ...[
+              const SizedBox(height: 8),
+              // Período selector
+              _buildPeriodSelector(),
+              const SizedBox(height: 24),
 
-            // Racha actual
-            _buildStreakCard(),
-            const SizedBox(height: 20),
+              // Control semanal y progresión por ejercicio
+              _buildTrainingControlCard(),
+              const SizedBox(height: 20),
 
-            // Estadísticas generales
-            _buildStatsGrid(),
-            const SizedBox(height: 20),
+              // Racha actual
+              _buildStreakCard(),
+              const SizedBox(height: 20),
 
-            // Logros
-            _buildAchievementsCard(),
-            const SizedBox(height: 24),
+              // Estadísticas generales
+              _buildStatsGrid(),
+              const SizedBox(height: 20),
 
-            // Gráfico de peso (placeholder)
-            _buildWeightChart(),
+              // Logros
+              _buildAchievementsCard(),
+              const SizedBox(height: 24),
+
+              // Gráfico de peso
+              _buildWeightChart(),
+            ],
           ],
         ),
       ),
+    );
+  }
+
+  /// Entrenos del mes, semanas seguidas y horas del mes.
+  Widget _buildKeyNumbers() {
+    final sessions = Provider.of<WorkoutSessionProvider>(context).sessions;
+    final now = DateTime.now();
+    final month = sessions.where((x) {
+      final d = x.date.toLocal();
+      return d.year == now.year && d.month == now.month;
+    }).toList();
+    final minutes = month.fold<int>(0, (a, x) => a + x.durationMinutes);
+    final streak = weeklyStreak(sessions.map((x) => x.date).toList(), now);
+    Widget num(String v, String l, {bool accent = false}) => Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(v,
+                  style: TextStyle(
+                      color: accent
+                          ? AppColors.primaryText
+                          : AppColors.textPrimary,
+                      fontSize: 44,
+                      fontWeight: FontWeight.w900,
+                      height: 1,
+                      fontFeatures: const [FontFeature.tabularFigures()])),
+              const SizedBox(height: 4),
+              Text(l,
+                  style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                      height: 1.25)),
+            ],
+          ),
+        );
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        num('${month.length}', 'entrenos\neste mes', accent: true),
+        num('$streak', streak == 1 ? 'semana\nseguida' : 'semanas\nseguidas'),
+        num((minutes / 60).toStringAsFixed(minutes >= 600 ? 0 : 1),
+            'horas\neste mes'),
+      ],
     );
   }
 

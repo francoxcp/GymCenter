@@ -12,6 +12,8 @@ Future<void> showInviteLinkSheet(
   required String title,
   required String hint,
   required String shareText,
+  /// Si se conoce el WhatsApp de quien recibe, se abre su chat directo.
+  String? phone,
 }) {
   final url = OrganizationService.inviteUrl(token);
   return showModalBottomSheet(
@@ -95,7 +97,9 @@ Future<void> showInviteLinkSheet(
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () => ShareHelper.whatsapp('$shareText\n$url'),
+              onPressed: () => (phone ?? '').trim().isNotEmpty
+                  ? ShareHelper.whatsappTo(phone!, '$shareText\n$url')
+                  : ShareHelper.whatsapp('$shareText\n$url'),
               icon: const Icon(Icons.chat),
               label: const Text('Enviar por WhatsApp',
                   style: TextStyle(fontWeight: FontWeight.bold)),

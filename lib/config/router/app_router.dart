@@ -188,11 +188,6 @@ GoRouter createAppRouter(AuthProvider authProvider) {
             TrainerChatScreen(memberId: state.pathParameters['memberId']!),
       ),
       GoRoute(
-        path: '/platform',
-        builder: (context, state) =>
-            PlatformScreen(openOrgId: state.uri.queryParameters['org']),
-      ),
-      GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
       ),
@@ -223,6 +218,12 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           return _AppShell(location: state.uri.path, child: child);
         },
         routes: [
+          // Administrador de GYMLAB: clientes (con barra inferior)
+          GoRoute(
+            path: '/platform',
+            builder: (context, state) =>
+                PlatformScreen(openOrgId: state.uri.queryParameters['org']),
+          ),
           // Main routes
           GoRoute(
             path: '/home',
@@ -430,7 +431,8 @@ class _AppShellState extends State<_AppShell> {
       ChatService.startListening(
           userId: me.id, asTrainer: role != NavRole.member);
     }
-    final tabs = tabsFor(role, hasTrainer: hasTrainer);
+    final tabs = tabsFor(role,
+        hasTrainer: hasTrainer, isPlatformAdmin: auth.isPlatformAdmin);
     final index = tabIndexFor(tabs, widget.location);
     if (index != _currentIndex) {
       _previousIndex = _currentIndex;

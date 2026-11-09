@@ -333,15 +333,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                if (context.read<AuthProvider>().isPlatformAdmin) ...[
-                  _QuickActionButton(
-                    icon: Icons.storefront_outlined,
-                    iconColor: AppColors.primaryText,
-                    title: 'Clientes de la plataforma',
-                    onTap: () => context.push('/platform'),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                ],
+                // Clientes de la plataforma: pestaña propia en la barra inferior
                 _QuickActionButton(
                   icon: Icons.dynamic_feed,
                   iconColor: AppColors.primaryText,

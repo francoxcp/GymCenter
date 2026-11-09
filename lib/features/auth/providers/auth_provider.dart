@@ -106,7 +106,9 @@ class AuthProvider extends ChangeNotifier {
   bool get pendingEmailConfirmation => _pendingEmailConfirmation;
   /// Inicio según el rol: el dueño ve el panel, el entrenador su "Hoy"
   /// (quién entrenó y quién falta) y el socio su entreno del día.
-  String get initialRoute => isAdmin
+  String get initialRoute => isPlatformAdmin
+      ? '/platform'
+      : isAdmin
       ? AppConstants.adminRoute
       : isTrainer
           ? '/admin/today'

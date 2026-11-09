@@ -10,6 +10,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../organization/widgets/invite_flow.dart';
 import '../../profile/providers/user_provider.dart';
 import '../../social/activity_service.dart';
+import '../../chat/chat_service.dart';
 import '../../social/comments_sheet.dart';
 import '../models/member_status.dart';
 import '../services/member_status_service.dart';
@@ -73,14 +74,40 @@ class _TrainerTodayScreenState extends State<TrainerTodayScreen> {
     }
   }
 
+  /// Socio que entrena conmigo → la respuesta va a nuestro chat (con la
+  /// referencia al entreno). Si no es mío, queda como comentario del entreno.
+  bool _isMine(FeedItem f) {
+    final me = context.read<AuthProvider>().currentUser?.id;
+    final members = context.read<UserProvider>().users.where((u) => u.id == f.userId);
+    return me != null && members.isNotEmpty && members.first.trainerId == me;
+  }
+
   Future<void> _reply(FeedItem f, String text) async {
     try {
-      await ActivityService.addComment(f.sessionId, text);
+      if (_isMine(f)) {
+        await ChatService.send(
+          memberId: f.userId,
+          trainerId: context.read<AuthProvider>().currentUser!.id,
+          body: text,
+          sessionId: f.sessionId,
+        );
+      } else {
+        await ActivityService.addComment(f.sessionId, text);
+      }
       if (!mounted) return;
       setState(() => _replied.add(f.sessionId));
       ShareHelper.showToast(context, 'Enviado a ${f.userName.split(' ').first}');
     } catch (_) {
       if (mounted) ShareHelper.showToast(context, 'No se pudo enviar');
+    }
+  }
+
+  void _openConversation(FeedItem f) {
+    if (_isMine(f)) {
+      context.push('/chats/${f.userId}');
+    } else {
+      showCommentsSheet(context,
+          sessionId: f.sessionId, title: f.userName, showQuickReplies: true);
     }
   }
 
@@ -170,10 +197,7 @@ class _TrainerTodayScreenState extends State<TrainerTodayScreen> {
                     item: f,
                     replied: _replied.contains(f.sessionId),
                     onReply: (t) => _reply(f, t),
-                    onMore: () => showCommentsSheet(context,
-                        sessionId: f.sessionId,
-                        title: f.userName,
-                        showQuickReplies: true),
+                    onMore: () => _openConversation(f),
                     onOpen: byId[f.userId] == null
                         ? null
                         : () => _openMember(byId[f.userId]!),

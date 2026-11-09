@@ -169,8 +169,10 @@ class OrganizationService {
   }
 
   /// Devuelve el nombre de la organización a la que se unió.
-  static Future<String> acceptInvitation(String token) async {
-    final r = await _db.rpc('accept_invitation', params: {'p_token': token});
+  /// [asMember]: con un enlace de entrenador, unirse como socio.
+  static Future<String> acceptInvitation(String token, {bool asMember = false}) async {
+    final r = await _db.rpc('accept_invitation',
+        params: {'p_token': token, 'p_as_member': asMember});
     return r as String;
   }
 
@@ -179,9 +181,13 @@ class OrganizationService {
   /// Guarda el código mientras la persona crea su cuenta o inicia sesión.
   static const _kPendingInviteOrg = 'pending_invitation_org';
 
-  static Future<void> savePendingInvite(String token, {String? orgName}) async {
+  static const _kPendingAsMember = 'pending_invitation_as_member';
+
+  static Future<void> savePendingInvite(String token,
+      {String? orgName, bool asMember = false}) async {
     final p = await SharedPreferences.getInstance();
     await p.setString(_kPendingInvite, token.toUpperCase());
+    await p.setBool(_kPendingAsMember, asMember);
     if (orgName != null) await p.setString(_kPendingInviteOrg, orgName);
   }
 
@@ -191,12 +197,14 @@ class OrganizationService {
     return p.getString(_kPendingInvite) == null ? null : p.getString(_kPendingInviteOrg);
   }
 
-  static Future<String?> takePendingInvite() async {
+  static Future<({String token, bool asMember})?> takePendingInvite() async {
     final p = await SharedPreferences.getInstance();
     final t = p.getString(_kPendingInvite);
+    final asMember = p.getBool(_kPendingAsMember) ?? false;
     if (t != null) await p.remove(_kPendingInvite);
     await p.remove(_kPendingInviteOrg);
-    return t;
+    await p.remove(_kPendingAsMember);
+    return t == null ? null : (token: t, asMember: asMember);
   }
 
   // ── Plataforma (súper admin) ────────────────────────────────────────────

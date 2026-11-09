@@ -232,10 +232,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   Future<void> _applyPendingInvite() async {
-    final token = await OrganizationService.takePendingInvite();
-    if (token == null) return;
+    final pending = await OrganizationService.takePendingInvite();
+    if (pending == null) return;
     try {
-      final orgName = await OrganizationService.acceptInvitation(token);
+      final orgName = await OrganizationService.acceptInvitation(pending.token,
+          asMember: pending.asMember);
       await _authProvider.refreshUser();
       _router.go(_authProvider.initialRoute);
       _scaffoldMessengerKey.currentState?.showSnackBar(

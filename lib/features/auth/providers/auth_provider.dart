@@ -10,6 +10,7 @@ import '../../../config/supabase_config.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/services/offline_cache_service.dart';
 import '../../../shared/services/web_push_service.dart';
+import '../../chat/chat_service.dart';
 import '../../../shared/services/offline_sync_queue.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -407,6 +408,7 @@ class AuthProvider extends ChangeNotifier {
       // Quitar la suscripción push de este navegador antes de cerrar sesión
       // (con la sesión aún activa para que RLS permita borrarla).
       await WebPushService().unsubscribe();
+      ChatService.stopListening();
       await SupabaseConfig.auth.signOut();
       await _clearSessionData();
     } catch (e) {

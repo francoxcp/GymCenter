@@ -134,25 +134,4 @@ class ActivityService {
     await SupabaseConfig.client.from('session_comments').delete().eq('id', id);
   }
 
-  /// Comentarios recientes de otros (entrenador/dueño) en los entrenos del
-  /// socio actual. Para la tarjeta de Inicio.
-  static Future<List<SessionComment>> recentCommentsForMe(
-      {int days = 14}) async {
-    final me = SupabaseConfig.client.auth.currentUser?.id;
-    if (me == null) return [];
-    final since = DateTime.now().subtract(Duration(days: days)).toUtc();
-    final rows = await SupabaseConfig.client
-        .from('session_comments')
-        .select('id, session_id, author_id, body, created_at, '
-            'users(name), '
-            'workout_sessions!inner(user_id)')
-        .eq('workout_sessions.user_id', me)
-        .neq('author_id', me)
-        .gte('created_at', since.toIso8601String())
-        .order('created_at', ascending: false)
-        .limit(3);
-    return (rows as List)
-        .map((r) => SessionComment.fromJson(r as Map<String, dynamic>))
-        .toList();
-  }
 }

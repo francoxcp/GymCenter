@@ -402,3 +402,66 @@ class _MemberNotesSectionState extends State<MemberNotesSection> {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cambiar rol socio ↔ entrenador (solo el dueño)
+// ─────────────────────────────────────────────────────────────────────────────
+Future<void> showRoleChangeSheet(BuildContext context, User person) async {
+  final toTrainer = person.role == 'user';
+  final first = person.name.split(' ').first;
+  final ok = await _sheet<bool>(
+    context,
+    (ctx) => Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _title(toTrainer ? '¿$first será entrenador?' : '¿$first será socio?'),
+          const SizedBox(height: 8),
+          Text(
+              toTrainer
+                  ? 'Verá a los socios que le asignes y podrá crear rutinas. Deja de tener entrenador propio.'
+                  : 'Deja de ver socios. Verá solo sus rutinas, su semana y su perfil. Sus socios quedan sin entrenador.',
+              style: TextStyle(color: AppColors.textSecondary, height: 1.4)),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
+              ),
+              child: Text(toTrainer ? 'Cambiar a entrenador' : 'Cambiar a socio',
+                  style: const TextStyle(fontWeight: FontWeight.w800)),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+        ],
+      ),
+    ),
+  );
+  if (ok != true || !context.mounted) return;
+  try {
+    final up = context.read<UserProvider>();
+    if (!toTrainer) {
+      // Sus socios quedan sin entrenador (el dueño los reasigna)
+      for (final m in up.users.where((u) => u.trainerId == person.id).toList()) {
+        await up.assignTrainer(m.id, null);
+      }
+    }
+    await up.updateUser(person.id, role: toTrainer ? 'trainer' : 'user');
+    if (context.mounted) {
+      AppSnackbar.success(context,
+          toTrainer ? '$first ahora es entrenador' : '$first ahora es socio');
+      if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+    }
+  } catch (_) {
+    if (context.mounted) AppSnackbar.error(context, 'No se pudo cambiar el rol');
+  }
+}

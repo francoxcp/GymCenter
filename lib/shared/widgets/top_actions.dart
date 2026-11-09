@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/admin/screens/member_hub_screen.dart';
 import '../../features/admin/services/member_status_service.dart';
+import '../../features/admin/widgets/member_tools.dart' show showRoleChangeSheet;
 import '../../features/auth/models/user.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/notifications/notifications_service.dart';
@@ -169,7 +170,9 @@ class AppSearchDelegate extends SearchDelegate<void> {
       title: Text(u.name, style: TextStyle(color: AppColors.textPrimary)),
       subtitle: Text(role, style: TextStyle(color: AppColors.textSecondary)),
       onTap: u.role != 'user'
-          ? null
+          ? (u.role == 'trainer' && context.read<AuthProvider>().isAdmin
+              ? () => showRoleChangeSheet(context, u)
+              : null)
           : () async {
               final nav = Navigator.of(context);
               final snap = await MemberStatusService.load([u]);

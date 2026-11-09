@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../features/chat/chat_service.dart';
 import '../../core/l10n/app_l10n.dart';
 
 /// Rol desde el punto de vista de la navegación.
@@ -15,12 +17,16 @@ class NavTabSpec {
   /// prefijo más largo, así /admin/members no cae en /admin).
   final List<String> prefixes;
 
+  /// Contador opcional sobre el ícono (mensajes sin leer).
+  final ValueListenable<int>? badge;
+
   const NavTabSpec({
     required this.path,
     required this.icon,
     required this.activeIcon,
     required this.label,
     required this.prefixes,
+    this.badge,
   });
 }
 
@@ -71,6 +77,24 @@ final _workoutsTab = NavTabSpec(
   prefixes: const [..._workoutPrefixes, '/admin/create-workout'],
 );
 
+final _memberChatTab = NavTabSpec(
+  path: '/chat',
+  icon: Icons.chat_bubble_outline,
+  activeIcon: Icons.chat_bubble,
+  label: (_) => 'Chat',
+  prefixes: const ['/chat'],
+  badge: ChatService.unread,
+);
+
+final _trainerChatsTab = NavTabSpec(
+  path: '/chats',
+  icon: Icons.chat_bubble_outline,
+  activeIcon: Icons.chat_bubble,
+  label: (_) => 'Chats',
+  prefixes: const ['/chats'],
+  badge: ChatService.unread,
+);
+
 final List<NavTabSpec> memberTabs = [
   NavTabSpec(
     path: '/home',
@@ -104,6 +128,7 @@ final List<NavTabSpec> trainerTabs = [
     prefixes: const ['/admin/today', '/admin/activity', '/admin'],
   ),
   _membersTab,
+  _trainerChatsTab,
   _workoutsTab,
   _profileTab,
 ];
@@ -128,8 +153,17 @@ final List<NavTabSpec> ownerTabs = [
   _profileTab,
 ];
 
-List<NavTabSpec> tabsFor(NavRole role) => switch (role) {
-      NavRole.member => memberTabs,
+/// Socio con entrenador: Hoy · Progreso · Chat · Perfil.
+final List<NavTabSpec> memberWithTrainerTabs = [
+  memberTabs[0],
+  memberTabs[1],
+  _memberChatTab,
+  memberTabs[2],
+];
+
+List<NavTabSpec> tabsFor(NavRole role, {bool hasTrainer = false}) =>
+    switch (role) {
+      NavRole.member => hasTrainer ? memberWithTrainerTabs : memberTabs,
       NavRole.trainer => trainerTabs,
       NavRole.owner => ownerTabs,
     };

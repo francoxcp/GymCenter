@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/top_actions.dart';
 import '../../auth/models/user.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../chat/chat_service.dart';
 import '../../organization/widgets/invite_flow.dart';
 import '../../profile/providers/user_provider.dart';
 import '../models/member_status.dart';
@@ -149,6 +150,24 @@ class _MembersScreenState extends State<MembersScreen> {
                           ]),
                         ),
                       ),
+                      // Dueño que también entrena socios: acceso a sus chats
+                      if (isOwner &&
+                          members.any((u) => u.trainerId == auth.currentUser?.id))
+                        ValueListenableBuilder<int>(
+                          valueListenable: ChatService.unread,
+                          builder: (_, n, __) => IconButton(
+                            tooltip: 'Chats',
+                            onPressed: () => context.push('/chats'),
+                            icon: Badge(
+                              isLabelVisible: n > 0,
+                              label: Text(n > 9 ? '9+' : '$n'),
+                              backgroundColor: AppColors.primary,
+                              textColor: AppColors.onPrimary,
+                              child: Icon(Icons.chat_bubble_outline,
+                                  color: AppColors.textPrimary),
+                            ),
+                          ),
+                        ),
                       const TopActions(),
                       PopupMenuButton<String>(
                         tooltip: 'Más',

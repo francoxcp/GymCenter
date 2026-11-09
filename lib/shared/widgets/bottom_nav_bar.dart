@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -54,6 +55,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
                   activeIcon: widget.tabs[i].activeIcon,
                   label: widget.tabs[i].label(l10n),
                   index: i,
+                  badge: widget.tabs[i].badge,
                 ),
             ],
           ),
@@ -67,6 +69,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     required IconData activeIcon,
     required String label,
     required int index,
+    ValueListenable<int>? badge,
   }) {
     final isSelected = widget.currentIndex == index;
 
@@ -111,15 +114,27 @@ class _BottomNavBarState extends State<BottomNavBar> {
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeOut,
                   builder: (context, scale, child) {
+                    final iconW = Icon(
+                      isSelected ? activeIcon : icon,
+                      color: isSelected
+                          ? AppColors.primaryText
+                          : AppColors.textSecondary,
+                      size: 24,
+                    );
                     return Transform.scale(
                       scale: scale,
-                      child: Icon(
-                        isSelected ? activeIcon : icon,
-                        color: isSelected
-                            ? AppColors.primaryText
-                            : AppColors.textSecondary,
-                        size: 24,
-                      ),
+                      child: badge == null
+                          ? iconW
+                          : ValueListenableBuilder<int>(
+                              valueListenable: badge,
+                              builder: (_, n, __) => Badge(
+                                isLabelVisible: n > 0,
+                                label: Text(n > 9 ? '9+' : '$n'),
+                                backgroundColor: AppColors.primary,
+                                textColor: AppColors.onPrimary,
+                                child: iconW,
+                              ),
+                            ),
                     );
                   },
                 ),

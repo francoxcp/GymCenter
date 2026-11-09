@@ -1,10 +1,10 @@
 @echo off
 REM Script de optimización y build para producción
-REM Chamos Fitness Center
+REM GYMLAB
 
 echo ====================================
 echo  OPTIMIZACION Y BUILD PRODUCCION
-echo  Chamos Fitness Center
+echo  GYMLAB
 echo ====================================
 echo.
 

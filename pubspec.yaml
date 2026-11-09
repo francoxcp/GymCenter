@@ -1,5 +1,5 @@
 name: chamos_fitness_center
-description: App de gimnasio Chamos Fitness Center (web/PWA, iOS y Android)
+description: GYMLAB — rutinas y gestión para gimnasios y entrenadores (web/PWA, iOS y Android)
 publish_to: 'none'
 version: 1.0.0+1
 

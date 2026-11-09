@@ -1,7 +1,7 @@
 /// Constantes utilizadas en toda la aplicación
 class AppConstants {
   // Configuración
-  static const String appName = 'GymCenter';
+  static const String appName = 'GYMLAB';
   static const String appVersion = '1.0.0';
 
   // Rutas

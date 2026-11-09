@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import '../../auth/models/user.dart' show kGoals;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -35,7 +36,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
 
-  String _selectedLevel = 'Principiante';
+  String? _goal;
   bool _isLoading = false;
   bool _isUploadingPhoto = false;
 
@@ -53,7 +54,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (user != null) {
       _nameController.text = user.name;
       _phoneController.text = user.phone ?? '';
-      _selectedLevel = user.level;
+      _goal = user.goal;
     }
   }
 
@@ -85,7 +86,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final phone = _phoneController.text.trim();
       await SupabaseConfig.client.from('users').update({
         'name': name,
-        'level': _selectedLevel,
+        'goal': _goal,
         'phone': phone.isEmpty ? null : phone,
       }).eq('id', userId);
 
@@ -122,7 +123,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         final user = authProvider.currentUser;
         final hasChanges = _nameController.text != (user?.name ?? '') ||
             _phoneController.text.trim() != (user?.phone ?? '') ||
-            _selectedLevel != (user?.level ?? 'Principiante');
+            _goal != user?.goal;
 
         if (!hasChanges) {
           if (context.mounted) context.popOrGo('/profile');
@@ -277,9 +278,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Nivel de entrenamiento
+                // Objetivo (lo ve el entrenador)
                 Text(
-                  AppL10n.of(context).trainingLevelSection,
+                  AppL10n.of(context).isEn ? 'Your goal' : 'Tu objetivo',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -288,7 +289,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                _buildLevelSelector(),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final g in kGoals)
+                      ChoiceChip(
+                        label: Text(g),
+                        selected: _goal == g,
+                        showCheckmark: false,
+                        selectedColor: AppColors.primary,
+                        labelStyle: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: _goal == g
+                                ? AppColors.onPrimary
+                                : AppColors.textPrimary),
+                        onSelected: (_) => setState(() => _goal = g),
+                      ),
+                  ],
+                ),
                 const SizedBox(height: 16),
 
                 // Tip: medidas corporales disponibles en sección aparte
@@ -359,51 +378,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildLevelSelector() {
-    final levels = [
-      {'name': 'Principiante', 'color': AppColors.badgePrincipiante},
-      {'name': 'Intermedio', 'color': AppColors.badgeIntermedio},
-      {'name': 'Avanzado', 'color': AppColors.badgeAvanzado},
-    ];
-
-    return Row(
-      children: levels.map((level) {
-        final isSelected = _selectedLevel == level['name'];
-        return Expanded(
-          child: GestureDetector(
-            onTap: () =>
-                setState(() => _selectedLevel = level['name'] as String),
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? (level['color'] as Color).withValues(alpha: 0.2)
-                    : AppColors.cardBackground,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isSelected
-                      ? (level['color'] as Color)
-                      : Colors.transparent,
-                  width: 2,
-                ),
-              ),
-              child: Text(
-                level['name'] as String,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 

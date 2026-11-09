@@ -1,374 +1,257 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../shared/services/secure_screen_service.dart';
 import 'package:provider/provider.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../core/l10n/app_l10n.dart';
-import '../../../core/utils/unit_converter.dart';
-import '../../settings/providers/preferences_provider.dart';
-import '../providers/body_measurement_provider.dart';
-import '../models/body_measurement.dart';
-import '../../../shared/widgets/primary_button.dart';
-import '../../../shared/widgets/shimmer_loading.dart';
-import '../../../shared/widgets/app_snackbar.dart';
-import '../../../shared/navigation/safe_pop.dart';
 
-class BodyMeasurementsScreen extends StatefulWidget {
-  const BodyMeasurementsScreen({super.key});
+import '../../../core/theme/app_theme.dart';
+import '../../../shared/navigation/safe_pop.dart';
+import '../../../shared/widgets/app_snackbar.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../models/body_measurement.dart';
+import '../providers/body_measurement_provider.dart';
+
+const _months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+String fmtDate(DateTime d) => '${d.day} ${_months[d.month - 1]} ${d.year}';
+String fmtNum(double v) => v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
+
+/// Medidas corporales. Sin [memberId] son las propias; el entrenador la abre
+/// con el id de su socio y también puede registrar.
+class BodyMeasurementsScreen extends StatelessWidget {
+  final String? memberId;
+  final String? memberName;
+  const BodyMeasurementsScreen({super.key, this.memberId, this.memberName});
 
   @override
-  State<BodyMeasurementsScreen> createState() => _BodyMeasurementsScreenState();
+  Widget build(BuildContext context) {
+    if (memberId == null) return _Body(memberName: null);
+    return ChangeNotifierProvider(
+      create: (_) => BodyMeasurementProvider(memberId: memberId),
+      child: _Body(memberName: memberName),
+    );
+  }
 }
 
-class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
+class _Body extends StatefulWidget {
+  final String? memberName;
+  const _Body({required this.memberName});
+
+  @override
+  State<_Body> createState() => _BodyState();
+}
+
+class _BodyState extends State<_Body> {
   @override
   void initState() {
     super.initState();
-    SecureScreenService.enable();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<BodyMeasurementProvider>(context, listen: false)
-          .loadMeasurements();
-    });
-  }
-
-  @override
-  void dispose() {
-    SecureScreenService.disable();
-    super.dispose();
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => context.read<BodyMeasurementProvider>().loadMeasurements());
   }
 
   @override
   Widget build(BuildContext context) {
-    final measurementProvider = Provider.of<BodyMeasurementProvider>(context);
-    final measurements = measurementProvider.measurements;
-    final prefsProvider =
-        Provider.of<PreferencesProvider>(context, listen: false);
-    final units =
-        (prefsProvider.preferences?.language == 'en') ? 'imperial' : 'metric';
-
+    final p = context.watch<BodyMeasurementProvider>();
+    final list = p.measurements;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: AppColors.background,
         leading: IconButton(
- tooltip: 'Atrás',
+          tooltip: 'Volver',
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.popOrGo('/progress'),
         ),
-        title: Text(AppL10n.of(context).bodyMeasurementsTitle),
-        actions: [
-          IconButton(
- tooltip: 'Agregar',
-            icon: const Icon(Icons.add),
-            onPressed: () => _showAddMeasurementDialog(),
-          ),
-        ],
-      ),
-      body: measurementProvider.isLoading
-          ? ListView.builder(
-              padding: const EdgeInsets.all(20),
-              itemCount: 6,
-              itemBuilder: (context, index) => const ShimmerCard(height: 140),
-            )
-          : measurements.isEmpty
-              ? _buildEmptyState()
-              : RefreshIndicator(
-                  onRefresh: () => Provider.of<BodyMeasurementProvider>(context,
-                          listen: false)
-                      .loadMeasurements(),
-                  color: AppColors.primaryText,
-                  backgroundColor: AppColors.cardBackground,
-                  child: ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(20),
-                    children: [
-                      _buildCurrentStats(measurements, units),
-                      const SizedBox(height: 24),
-                      Text(
-                        AppL10n.of(context).measurementHistory,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ...measurements
-                          .map((m) => _buildMeasurementCard(m, units)),
-                    ],
-                  ),
-                ),
-    );
-  }
-
-  Widget _buildCurrentStats(List<BodyMeasurement> measurements, String units) {
-    if (measurements.isEmpty) return const SizedBox();
-
-    final latest = measurements.first;
-    final oldest = measurements.last;
-
-    final weightChange = (latest.weight ?? 0) - (oldest.weight ?? 0);
-    final waistChange = (latest.waist ?? 0) - (oldest.waist ?? 0);
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary.withValues(alpha: 0.2),
-            AppColors.cardBackground,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Medidas', style: TextStyle(fontWeight: FontWeight.w900)),
+            if (widget.memberName != null)
+              Text(widget.memberName!,
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppL10n.of(context).currentMeasurements,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatColumn(
-                AppL10n.of(context).weightLabel,
-                latest.weight != null
-                    ? UnitConverter.formatWeight(latest.weight!, units)
-                    : '--',
-                weightChange != 0
-                    ? UnitConverter.formatWeightChange(weightChange, units)
-                    : null,
-                weightChange < 0 ? Colors.green : Colors.red,
-              ),
-              _buildStatColumn(
-                AppL10n.of(context).waistLabel,
-                latest.waist != null
-                    ? UnitConverter.formatLength(latest.waist!, units)
-                    : '--',
-                waistChange != 0
-                    ? UnitConverter.formatLengthChange(waistChange, units)
-                    : null,
-                waistChange < 0 ? Colors.green : Colors.red,
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildMeasurementGrid(latest, units),
-        ],
+      floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'add-measure',
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
+        onPressed: () => showMeasurementForm(context, p),
+        icon: const Icon(Icons.straighten),
+        label: const Text('Registrar', style: TextStyle(fontWeight: FontWeight.w800)),
       ),
-    );
-  }
-
-  Widget _buildStatColumn(
-      String label, String value, String? change, Color? changeColor) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        if (change != null)
-          Text(
-            change,
-            style: TextStyle(
-              fontSize: 12,
-              color: changeColor,
-              fontWeight: FontWeight.bold,
+      body: p.isLoading && list.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: p.loadMeasurements,
+              child: list.isEmpty
+                  ? ListView(children: [_Empty(onAdd: () => showMeasurementForm(context, p))])
+                  : ListView(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
+                      children: [
+                        _WeightHero(provider: p),
+                        const SizedBox(height: 24),
+                        _sectionTitle('ÚLTIMAS MEDIDAS'),
+                        const SizedBox(height: 8),
+                        _LatestGrid(provider: p),
+                        const SizedBox(height: 24),
+                        _sectionTitle('HISTORIAL'),
+                        for (final m in list) _HistoryRow(m: m, provider: p),
+                      ],
+                    ),
             ),
+    );
+  }
+}
+
+Widget _sectionTitle(String t) => Text(t,
+    style: TextStyle(
+        color: AppColors.textSecondary,
+        fontSize: 12,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1.2));
+
+class _Empty extends StatelessWidget {
+  final VoidCallback onAdd;
+  const _Empty({required this.onAdd});
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.fromLTRB(32, 80, 32, 32),
+        child: Column(children: [
+          Icon(Icons.straighten, size: 48, color: AppColors.primaryText),
+          const SizedBox(height: 16),
+          Text('Sin medidas todavía',
+              style: TextStyle(
+                  color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.w900)),
+          const SizedBox(height: 8),
+          Text('La primera es la más importante: con ella se nota el cambio. '
+              'Solo llena las que tengas, ninguna es obligatoria.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textSecondary, height: 1.4)),
+          const SizedBox(height: 20),
+          FilledButton(
+            onPressed: onAdd,
+            style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary, foregroundColor: AppColors.onPrimary),
+            child: const Text('Registrar la primera', style: TextStyle(fontWeight: FontWeight.w800)),
           ),
-      ],
-    );
-  }
+        ]),
+      );
+}
 
-  Widget _buildMeasurementGrid(BodyMeasurement measurement, String units) {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 3,
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 0.82,
-      children: [
-        _buildMeasurementTile(AppL10n.of(context).chestLabel, measurement.chest,
-            Icons.fitness_center, units),
-        _buildMeasurementTile(AppL10n.of(context).leftBicep,
-            measurement.effectiveBicepsLeft, Icons.sports_gymnastics, units),
-        _buildMeasurementTile(AppL10n.of(context).rightBicep,
-            measurement.effectiveBicepsRight, Icons.sports_gymnastics, units),
-        _buildMeasurementTile(AppL10n.of(context).leftThigh,
-            measurement.effectiveThighLeft, Icons.directions_run, units),
-        _buildMeasurementTile(AppL10n.of(context).rightThigh,
-            measurement.effectiveThighRight, Icons.directions_run, units),
-        _buildMeasurementTile(AppL10n.of(context).hipLabel, measurement.hips,
-            Icons.accessibility_new, units),
-        _buildMeasurementTile(AppL10n.of(context).heightLabel,
-            measurement.height, Icons.height, units),
-      ],
-    );
-  }
+class _Delta extends StatelessWidget {
+  final double? change;
+  final MeasureField field;
+  final String suffix;
+  const _Delta({required this.change, required this.field, this.suffix = ''});
 
-  Widget _buildMeasurementTile(
-      String label, double? value, IconData icon, String units) {
+  @override
+  Widget build(BuildContext context) {
+    final c = change;
+    if (c == null || c.abs() < 0.05) {
+      return Text(c == null ? '' : 'igual$suffix',
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 12));
+    }
+    final good = field.lowerIsBetter ? c < 0 : null;
+    final color = good == null
+        ? AppColors.textSecondary
+        : good
+            ? AppColors.success
+            : AppColors.warning;
+    return Text('${c > 0 ? '+' : '−'}${fmtNum(c.abs())} ${field.unit}$suffix',
+        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w700));
+  }
+}
+
+class _WeightHero extends StatelessWidget {
+  final BodyMeasurementProvider provider;
+  const _WeightHero({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    final w = provider.latestOf(MeasureField.weight);
+    final points = [
+      for (final m in provider.measurements.reversed)
+        if (m.weight != null) (m.date, m.weight!)
+    ];
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: AppColors.primaryText, size: 18),
-          const SizedBox(height: 4),
-          Text(
-            value != null ? UnitConverter.lengthValue(value, units) : '--',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          Text(
-            value != null ? UnitConverter.lengthUnit(units) : '',
-            style: TextStyle(
-              fontSize: 10,
-              color: AppColors.primaryText,
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 9,
-              color: AppColors.textSecondary,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMeasurementCard(BodyMeasurement measurement, String units) {
-    final date = measurement.date;
-    final dateStr = '${date.day}/${date.month}/${date.year}';
-    final now = DateTime.now();
-    final difference = now.difference(measurement.date).inDays;
-
-    final l10n = AppL10n.of(context);
-    String timeAgo;
-    if (difference == 0) {
-      timeAgo = l10n.todayLabel;
-    } else if (difference == 1) {
-      timeAgo = l10n.yesterdayLabel;
-    } else if (difference < 30) {
-      timeAgo = l10n.daysAgo(difference);
-    } else {
-      timeAgo = dateStr;
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _sectionTitle('PESO'),
+          const SizedBox(height: 6),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                timeAgo,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              Row(
-                children: [
-                  Text(
-                    measurement.weight != null
-                        ? UnitConverter.formatWeight(measurement.weight!, units)
-                        : '--',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              Text(w == null ? '—' : fmtNum(w),
+                  style: TextStyle(
                       color: AppColors.primaryText,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.chevron_right,
-                    color: AppColors.textSecondary,
-                    size: 20,
-                  ),
+                      fontSize: 52,
+                      fontWeight: FontWeight.w900,
+                      height: 1,
+                      fontFeatures: const [FontFeature.tabularFigures()])),
+              const SizedBox(width: 6),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text('kg',
+                    style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700)),
+              ),
+              const Spacer(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  _Delta(
+                      change: provider.changeOf(MeasureField.weight),
+                      field: MeasureField.weight,
+                      suffix: ' vs anterior'),
+                  _Delta(
+                      change: provider.totalChangeOf(MeasureField.weight),
+                      field: MeasureField.weight,
+                      suffix: ' desde el inicio'),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildSmallMeasurement(l10n.chestLabel, measurement.chest),
-              _buildSmallMeasurement(l10n.waistLabel, measurement.waist),
-              _buildSmallMeasurement(l10n.hipLabel, measurement.hips),
-              _buildSmallMeasurement(
-                  l10n.leftBicepShort, measurement.effectiveBicepsLeft),
-              _buildSmallMeasurement(
-                  l10n.rightBicepShort, measurement.effectiveBicepsRight),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildSmallMeasurement(
-                  l10n.leftThighShort, measurement.effectiveThighLeft),
-              _buildSmallMeasurement(
-                  l10n.rightThighShort, measurement.effectiveThighRight),
-              const SizedBox(width: 40),
-              const SizedBox(width: 40),
-              const SizedBox(width: 40),
-            ],
-          ),
-          if (measurement.notes != null && measurement.notes!.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                measurement.notes!,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                  fontStyle: FontStyle.italic,
+          if (points.length >= 2) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 90,
+              child: LineChart(
+                LineChartData(
+                  gridData: const FlGridData(show: false),
+                  titlesData: const FlTitlesData(show: false),
+                  borderData: FlBorderData(show: false),
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipItems: (spots) => [
+                        for (final s in spots)
+                          LineTooltipItem(
+                              '${fmtNum(s.y)} kg\n${fmtDate(points[s.x.toInt()].$1)}',
+                              TextStyle(color: AppColors.textPrimary, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: [
+                        for (var i = 0; i < points.length; i++)
+                          FlSpot(i.toDouble(), points[i].$2)
+                      ],
+                      isCurved: true,
+                      preventCurveOverShooting: true,
+                      color: AppColors.primary,
+                      barWidth: 3,
+                      dotData: const FlDotData(show: true),
+                      belowBarData: BarAreaData(
+                          show: true, color: AppColors.primary.withValues(alpha: 0.12)),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -377,458 +260,318 @@ class _BodyMeasurementsScreenState extends State<BodyMeasurementsScreen> {
       ),
     );
   }
+}
 
-  Widget _buildSmallMeasurement(String label, double? value) {
-    return Column(
+class _LatestGrid extends StatelessWidget {
+  final BodyMeasurementProvider provider;
+  const _LatestGrid({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    final fields = MeasureField.values
+        .where((f) => f != MeasureField.weight && provider.latestOf(f) != null)
+        .toList();
+    if (fields.isEmpty) {
+      return Text('Solo hay peso registrado. Agrega cintura, cadera o brazos en la próxima.',
+          style: TextStyle(color: AppColors.textSecondary));
+    }
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
       children: [
-        Text(
-          value != null ? value.toStringAsFixed(1) : '--',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            color: AppColors.textSecondary,
-          ),
-        ),
+        for (final f in fields)
+          LayoutBuilder(builder: (context, _) {
+            final width = (MediaQuery.of(context).size.width - 40 - 8) / 2;
+            return Container(
+              width: width,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.cardBackground,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(f.label,
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                  const SizedBox(height: 2),
+                  Text.rich(TextSpan(children: [
+                    TextSpan(
+                        text: fmtNum(provider.latestOf(f)!),
+                        style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900)),
+                    TextSpan(
+                        text: ' ${f.unit}',
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                  ])),
+                  _Delta(change: provider.changeOf(f), field: f),
+                ],
+              ),
+            );
+          }),
       ],
     );
   }
+}
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.straighten,
-              size: 100,
-              color: AppColors.textSecondary.withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              AppL10n.of(context).noMeasurementsYet,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              AppL10n.of(context).noMeasurementsBody,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 30),
-            PrimaryButton(
-              text: AppL10n.of(context).addFirstMeasurement,
-              onPressed: () => _showAddMeasurementDialog(),
-              width: 220,
-            ),
-          ],
-        ),
-      ),
+class _HistoryRow extends StatelessWidget {
+  final BodyMeasurement m;
+  final BodyMeasurementProvider provider;
+  const _HistoryRow({required this.m, required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    final me = context.read<AuthProvider>().currentUser?.id;
+    final count = MeasureField.values.where((f) => m.valueOf(f) != null).length;
+    final by = m.recordedBy == null || m.recordedBy == m.userId
+        ? (m.userId == me ? 'Tú' : 'El socio')
+        : (m.recordedBy == me ? 'Tú' : 'Tu entrenador');
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      onTap: () => showMeasurementForm(context, provider, existing: m),
+      title: Text(fmtDate(m.date),
+          style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w700)),
+      subtitle: Text(
+          '${m.weight != null ? '${fmtNum(m.weight!)} kg · ' : ''}$count ${count == 1 ? 'medida' : 'medidas'} · $by',
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+      trailing: Icon(Icons.edit_outlined, color: AppColors.textSecondary, size: 20),
     );
   }
+}
 
-  void _showAddMeasurementDialog() {
-    final weightController = TextEditingController();
-    final heightController = TextEditingController();
-    final chestController = TextEditingController();
-    final waistController = TextEditingController();
-    final hipsController = TextEditingController();
-    final bicepsLeftController = TextEditingController();
-    final bicepsRightController = TextEditingController();
-    final thighLeftController = TextEditingController();
-    final thighRightController = TextEditingController();
-    final notesController = TextEditingController();
+/// Formulario por grupos (Cuerpo, Tronco, Brazos, Piernas). Ninguna medida
+/// es obligatoria; el valor anterior aparece de guía.
+Future<void> showMeasurementForm(
+  BuildContext context,
+  BodyMeasurementProvider provider, {
+  BodyMeasurement? existing,
+}) async {
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: AppColors.surface,
+    shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+    builder: (ctx) => _MeasurementForm(provider: provider, existing: existing),
+  );
+}
 
-    bool hasContent() {
-      return weightController.text.isNotEmpty ||
-          heightController.text.isNotEmpty ||
-          chestController.text.isNotEmpty ||
-          waistController.text.isNotEmpty ||
-          hipsController.text.isNotEmpty ||
-          bicepsLeftController.text.isNotEmpty ||
-          bicepsRightController.text.isNotEmpty ||
-          thighLeftController.text.isNotEmpty ||
-          thighRightController.text.isNotEmpty ||
-          notesController.text.isNotEmpty;
+class _MeasurementForm extends StatefulWidget {
+  final BodyMeasurementProvider provider;
+  final BodyMeasurement? existing;
+  const _MeasurementForm({required this.provider, this.existing});
+
+  @override
+  State<_MeasurementForm> createState() => _MeasurementFormState();
+}
+
+class _MeasurementFormState extends State<_MeasurementForm> {
+  late final Map<MeasureField, TextEditingController> _c = {
+    for (final f in MeasureField.values)
+      f: TextEditingController(
+          text: widget.existing?.valueOf(f) == null ? '' : fmtNum(widget.existing!.valueOf(f)!))
+  };
+  late final _notes = TextEditingController(text: widget.existing?.notes ?? '');
+  late DateTime _date = widget.existing?.date ?? DateTime.now();
+  final _form = GlobalKey<FormState>();
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    for (final c in _c.values) {
+      c.dispose();
     }
+    _notes.dispose();
+    super.dispose();
+  }
 
-    Future<bool> confirmDiscard(BuildContext ctx) async {
-      if (!hasContent()) return true;
-      final shouldPop = await showDialog<bool>(
-        context: ctx,
-        builder: (context) {
-          final l10n = AppL10n.of(context);
-          return AlertDialog(
-            title: Text(l10n.discardMeasurementsTitle),
-            content: Text(
-              l10n.discardMeasurementsBody,
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: Text(l10n.discardLabel),
-              ),
-            ],
-          );
-        },
-      );
-      return shouldPop == true;
+  double? _parse(String s) => double.tryParse(s.trim().replaceAll(',', '.'));
+
+  Future<void> _save() async {
+    if (!(_form.currentState?.validate() ?? false)) return;
+    final values = {for (final e in _c.entries) e.key: _parse(e.value.text)};
+    if (values.values.every((v) => v == null)) {
+      AppSnackbar.error(context, 'Anota al menos una medida');
+      return;
     }
+    setState(() => _saving = true);
+    final m = BodyMeasurement.fromValues(
+      id: widget.existing?.id ?? '',
+      userId: widget.existing?.userId ?? '',
+      date: _date,
+      values: values,
+      notes: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
+      recordedBy: widget.existing?.recordedBy,
+    );
+    final ok = await widget.provider.saveMeasurement(m);
+    if (!mounted) return;
+    setState(() => _saving = false);
+    if (ok) {
+      HapticFeedback.mediumImpact();
+      Navigator.pop(context);
+      AppSnackbar.success(context, 'Medidas guardadas');
+    } else {
+      AppSnackbar.error(context, widget.provider.error ?? 'No se pudo guardar');
+    }
+  }
 
-    showDialog(
+  Future<void> _delete() async {
+    final e = widget.existing;
+    if (e == null) return;
+    final ok = await showDialog<bool>(
       context: context,
-      barrierDismissible: false,
-      builder: (context) => PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (didPop, _) async {
-          if (didPop) return;
-          if (await confirmDiscard(context)) {
-            if (context.mounted) Navigator.of(context).pop();
-          }
-        },
-        child: Dialog(
-          backgroundColor: AppColors.cardBackground,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+      builder: (d) => AlertDialog(
+        title: const Text('¿Borrar esta medición?'),
+        content: Text('${fmtDate(e.date)}. No se puede deshacer.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(d, false), child: const Text('Cancelar')),
+          TextButton(
+              onPressed: () => Navigator.pop(d, true),
+              child: Text('Borrar', style: TextStyle(color: AppColors.error))),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final done = await widget.provider.deleteMeasurement(e.id);
+    if (mounted && done) Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: SafeArea(
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.88,
+          child: Form(
+            key: _form,
             child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  AppL10n.of(context).newMeasurement,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _buildMeasurementField(AppL10n.of(context).weightUnit('kg'),
-                    weightController, Icons.monitor_weight),
-                _buildMeasurementField(AppL10n.of(context).heightUnit('cm'),
-                    heightController, Icons.height),
-                _buildMeasurementField(
-                    AppL10n.of(context)
-                        .measureUnit(AppL10n.of(context).chestLabel, 'cm'),
-                    chestController,
-                    Icons.fitness_center),
-                _buildMeasurementField(
-                    AppL10n.of(context)
-                        .measureUnit(AppL10n.of(context).waistLabel, 'cm'),
-                    waistController,
-                    Icons.straighten),
-                _buildMeasurementField(
-                    AppL10n.of(context)
-                        .measureUnit(AppL10n.of(context).hipLabel, 'cm'),
-                    hipsController,
-                    Icons.accessibility_new),
-                // Bíceps lado a lado
-                _buildPairedFields(
-                  AppL10n.of(context)
-                      .measureUnit(AppL10n.of(context).leftBicepFull, 'cm'),
-                  bicepsLeftController,
-                  AppL10n.of(context)
-                      .measureUnit(AppL10n.of(context).rightBicepFull, 'cm'),
-                  bicepsRightController,
-                  Icons.sports_gymnastics,
-                ),
-                // Muslos lado a lado
-                _buildPairedFields(
-                  AppL10n.of(context)
-                      .measureUnit(AppL10n.of(context).leftThighFull, 'cm'),
-                  thighLeftController,
-                  AppL10n.of(context)
-                      .measureUnit(AppL10n.of(context).rightThighFull, 'cm'),
-                  thighRightController,
-                  Icons.directions_run,
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: notesController,
-                  style: TextStyle(color: AppColors.textPrimary),
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    hintText: AppL10n.of(context).notesOptional,
-                    hintStyle: TextStyle(color: AppColors.textSecondary),
-                    filled: true,
-                    fillColor: AppColors.background,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 8, 0),
+                  child: Row(children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: () async {
-                          if (await confirmDiscard(context)) {
-                            if (context.mounted) Navigator.of(context).pop();
-                          }
-                        },
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side:
-                              BorderSide(color: AppColors.textSecondary),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          AppL10n.of(context).cancel,
-                          style:
-                              TextStyle(color: AppColors.textSecondary),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          // Validar que al menos un campo numérico tenga valor
-                          final controllers = [
-                            weightController,
-                            heightController,
-                            chestController,
-                            waistController,
-                            hipsController,
-                            bicepsLeftController,
-                            bicepsRightController,
-                            thighLeftController,
-                            thighRightController,
-                          ];
-                          final hasAnyValue = controllers.any(
-                            (c) => c.text.trim().isNotEmpty,
-                          );
-                          if (!hasAnyValue) {
-                            AppSnackbar.error(context,
-                                AppL10n.of(context).enterAtLeastOneMeasure);
-                            return;
-                          }
-                          // Validar que los valores sean numéricos positivos
-                          for (final c in controllers) {
-                            if (c.text.trim().isNotEmpty) {
-                              final val = double.tryParse(c.text.trim());
-                              if (val == null || val <= 0) {
-                                AppSnackbar.error(context,
-                                    AppL10n.of(context).valuesMustBePositive);
-                                return;
-                              }
-                            }
-                          }
-
-                          // Validar rangos máximos razonables
-                          final maxRanges = <TextEditingController, double>{
-                            weightController: 300,
-                            heightController: 250,
-                            chestController: 200,
-                            waistController: 200,
-                            hipsController: 200,
-                            bicepsLeftController: 80,
-                            bicepsRightController: 80,
-                            thighLeftController: 120,
-                            thighRightController: 120,
-                          };
-                          for (final entry in maxRanges.entries) {
-                            final text = entry.key.text.trim();
-                            if (text.isNotEmpty) {
-                              final val = double.tryParse(text);
-                              if (val != null && val > entry.value) {
-                                AppSnackbar.error(
-                                    context,
-                                    AppL10n.of(context)
-                                        .valueTooHigh(entry.value.toInt()));
-                                return;
-                              }
-                            }
-                          }
-
-                          final measurementProvider =
-                              Provider.of<BodyMeasurementProvider>(
-                            context,
-                            listen: false,
-                          );
-
-                          // Crear nueva medida
-                          final newMeasurement = BodyMeasurement(
-                            id: '',
-                            userId: '',
-                            date: DateTime.now(),
-                            weight: double.tryParse(weightController.text),
-                            height: double.tryParse(heightController.text),
-                            chest: double.tryParse(chestController.text),
-                            waist: double.tryParse(waistController.text),
-                            hips: double.tryParse(hipsController.text),
-                            bicepsLeft:
-                                double.tryParse(bicepsLeftController.text),
-                            bicepsRight:
-                                double.tryParse(bicepsRightController.text),
-                            thighLeft:
-                                double.tryParse(thighLeftController.text),
-                            thighRight:
-                                double.tryParse(thighRightController.text),
-                            notes: notesController.text.isEmpty
-                                ? null
-                                : notesController.text,
-                          );
-
-                          final success = await measurementProvider
-                              .addMeasurement(newMeasurement);
-
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                            if (success) {
-                              HapticFeedback.mediumImpact();
-                              AppSnackbar.success(
-                                  context, AppL10n.of(context).measureSaved);
-                            } else {
-                              AppSnackbar.error(context,
-                                  AppL10n.of(context).errorSavingMeasure);
-                            }
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          AppL10n.of(context).save,
+                      child: Text(widget.existing == null ? 'Registrar medidas' : 'Corregir medidas',
                           style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
+                              color: AppColors.textPrimary,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900)),
+                    ),
+                    if (widget.existing != null)
+                      IconButton(
+                          tooltip: 'Borrar',
+                          onPressed: _delete,
+                          icon: Icon(Icons.delete_outline, color: AppColors.error)),
+                    IconButton(
+                        tooltip: 'Cerrar',
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close)),
+                  ]),
+                ),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+                    children: [
+                      TextButton.icon(
+                        style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                        onPressed: () async {
+                          final d = await showDatePicker(
+                            context: context,
+                            initialDate: _date,
+                            firstDate: DateTime(2020),
+                            lastDate: DateTime.now(),
+                          );
+                          if (d != null) setState(() => _date = d);
+                        },
+                        icon: const Icon(Icons.event, size: 18),
+                        label: Text(fmtDate(_date)),
+                      ),
+                      Text('Llena solo las que tengas. En gris, la medida anterior.',
+                          style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                      for (final g in MeasureField.groups) ...[
+                        const SizedBox(height: 16),
+                        _sectionTitle(g.toUpperCase()),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: [
+                            for (final f in MeasureField.values.where((f) => f.group == g))
+                              SizedBox(
+                                width: (MediaQuery.of(context).size.width - 40 - 10) / 2,
+                                child: TextFormField(
+                                  controller: _c[f],
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))
+                                  ],
+                                  decoration: InputDecoration(
+                                    labelText: f.label,
+                                    suffixText: f.unit,
+                                    hintText: widget.provider.latestOf(f) == null
+                                        ? null
+                                        : fmtNum(widget.provider.latestOf(f)!),
+                                    isDense: true,
+                                    filled: true,
+                                    fillColor: AppColors.inputFill,
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide.none),
+                                  ),
+                                  validator: (s) {
+                                    if (s == null || s.trim().isEmpty) return null;
+                                    final v = _parse(s);
+                                    if (v == null) return 'Número inválido';
+                                    if (v < f.min || v > f.max) {
+                                      return 'Entre ${fmtNum(f.min)} y ${fmtNum(f.max)}';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _notes,
+                        maxLines: 2,
+                        decoration: InputDecoration(
+                          labelText: 'Notas (opcional)',
+                          filled: true,
+                          fillColor: AppColors.inputFill,
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none),
                         ),
                       ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: FilledButton(
+                      onPressed: _saving ? null : _save,
+                      style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: AppColors.onPrimary),
+                      child: _saving
+                          ? const SizedBox(
+                              width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Text('Guardar', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
           ),
         ),
-      ),
-    ).then((_) {
-      weightController.dispose();
-      heightController.dispose();
-      chestController.dispose();
-      waistController.dispose();
-      hipsController.dispose();
-      bicepsLeftController.dispose();
-      bicepsRightController.dispose();
-      thighLeftController.dispose();
-      thighRightController.dispose();
-      notesController.dispose();
-    });
-  }
-
-  Widget _buildMeasurementField(
-    String label,
-    TextEditingController controller,
-    IconData icon,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextField(
-        controller: controller,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        style: TextStyle(color: AppColors.textPrimary),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(color: AppColors.textSecondary),
-          prefixIcon: Icon(icon, color: AppColors.primaryText),
-          filled: true,
-          fillColor: AppColors.background,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPairedFields(
-    String leftLabel,
-    TextEditingController leftController,
-    String rightLabel,
-    TextEditingController rightController,
-    IconData icon,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: leftController,
-              keyboardType: TextInputType.number,
-              style: TextStyle(color: AppColors.textPrimary),
-              decoration: InputDecoration(
-                labelText: leftLabel,
-                labelStyle: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                ),
-                prefixIcon: Icon(icon, color: AppColors.primaryText, size: 18),
-                filled: true,
-                fillColor: AppColors.background,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              controller: rightController,
-              keyboardType: TextInputType.number,
-              style: TextStyle(color: AppColors.textPrimary),
-              decoration: InputDecoration(
-                labelText: rightLabel,
-                labelStyle: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                ),
-                filled: true,
-                fillColor: AppColors.background,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

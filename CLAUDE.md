@@ -1,4 +1,4 @@
-# GymCenter — Chamos Fitness Center
+# GYMLAB
 
 App de gestión de rutinas para gimnasio. **Flutter Web PWA** (se usa desde el móvil, iPhone y Android) publicada en Vercel, con backend **Supabase** (plan gratuito, sin SMTP propio). Android/iOS nativos existen pero no son prioridad.
 
@@ -31,7 +31,7 @@ App de gestión de rutinas para gimnasio. **Flutter Web PWA** (se usa desde el m
 
 ## Diseño (que no parezca hecho con IA)
 Antes de crear o rediseñar UI, escribir en 3–5 líneas la **dirección visual** (concepto, paleta, tipografía, ritmo, un detalle memorable) y seguirla. Aplica a esta app y a cualquier web nueva.
-- Identidad GymCenter: gimnasio de barrio, energía y disciplina. Tema oscuro con **un solo color de acento** fuerte; números grandes para pesos, series y progreso, tratados como protagonistas.
+- Identidad GYMLAB (plataforma; cada gimnasio o entrenador usa su propio nombre y logo con sus socios): gimnasio de barrio, energía y disciplina. Tema oscuro con **un solo color de acento** fuerte; números grandes para pesos, series y progreso, tratados como protagonistas.
 - Prohibido por defecto: Inter/Roboto genéricas, degradados morado-azul, tarjetas idénticas con sombra suave y esquinas de 16 px en todo, iconos decorativos sin función, emojis como iconos, textos de relleno ("Bienvenido a tu viaje fitness").
 - Sí: jerarquía clara con escala tipográfica marcada, espaciado consistente (múltiplos de 4/8), contraste AA, microinteracciones con propósito (registrar una serie debe sentirse satisfactorio), estados vacíos con personalidad.
 - Reutilizar el tema de `lib/core/`; si falta un token (color, radio, espaciado), agregarlo ahí, no hardcodearlo.

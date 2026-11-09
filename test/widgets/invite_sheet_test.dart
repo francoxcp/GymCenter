@@ -43,7 +43,7 @@ void main() {
 
   testWidgets('pantalla de carga con la marca', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: SplashScreen()));
-    expect(find.text('GYMCENTER'), findsOneWidget);
+    expect(find.text('GYMLAB'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
   });
 }

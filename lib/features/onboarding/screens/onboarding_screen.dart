@@ -19,7 +19,6 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  String _selectedLevel = 'Principiante';
   double _weight = 70.0;
   double _height = 170.0;
   int _age = 25;
@@ -35,7 +34,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _nextPage() {
     // Cuando el usuario sale de la página de stats sin modificar, confirmar
-    if (_currentPage == 2 && !_statsModified) {
+    if (_currentPage == 1 && !_statsModified) {
       final l10n = AppL10n.of(context);
       showDialog(
         context: context,
@@ -72,7 +71,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       return;
     }
 
-    if (_currentPage < 3) {
+    if (_currentPage < 2) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -113,13 +112,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           weightKg: _weight,
           heightCm: _height.round(),
           sex: _sex,
-          level: _selectedLevel,
+          goal: _goal,
         );
       }
 
       // Guardar preferencias locales (goal, etc.)
       final onboardingData = {
-        'level': _selectedLevel,
         'weight': _weight,
         'height': _height,
         'age': _age,
@@ -155,11 +153,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: List.generate(
-                  4,
+                  3,
                   (index) => Expanded(
                     child: Container(
                       height: 4,
-                      margin: EdgeInsets.only(right: index < 3 ? 8 : 0),
+                      margin: EdgeInsets.only(right: index < 2 ? 8 : 0),
                       decoration: BoxDecoration(
                         color: index <= _currentPage
                             ? AppColors.primary
@@ -184,7 +182,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 },
                 children: [
                   _buildWelcomePage(),
-                  _buildLevelPage(),
                   _buildStatsPage(),
                   _buildGoalPage(),
                 ],
@@ -210,7 +207,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       const Spacer(),
                       PrimaryButton(
-                        text: _currentPage == 3 ? l10n.start : l10n.next,
+                        text: _currentPage == 2 ? l10n.start : l10n.next,
                         onPressed: _nextPage,
                         width: 150,
                       ),
@@ -264,118 +261,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLevelPage() {
-    final l10n = AppL10n.of(context);
-    return LayoutBuilder(
-      builder: (context, constraints) => SingleChildScrollView(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  l10n.onboardingLevelTitle,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                _buildLevelOption(
-                  'Principiante',
-                  l10n.beginnerDesc,
-                  Icons.trending_up,
-                  AppColors.badgePrincipiante,
-                  l10n.beginner,
-                ),
-                const SizedBox(height: 12),
-                _buildLevelOption(
-                  'Intermedio',
-                  l10n.intermediateDesc,
-                  Icons.fitness_center,
-                  AppColors.badgeIntermedio,
-                  l10n.intermediate,
-                ),
-                const SizedBox(height: 12),
-                _buildLevelOption(
-                  'Avanzado',
-                  l10n.advancedDesc,
-                  Icons.emoji_events,
-                  AppColors.badgeAvanzado,
-                  l10n.advanced,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLevelOption(String level, String description, IconData icon,
-      Color color, String displayLabel) {
-    final isSelected = _selectedLevel == level;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedLevel = level;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.2) : AppColors.cardBackground,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? color : Colors.transparent,
-            width: 2,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 28),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    displayLabel,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  Text(
-                    description,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (isSelected) Icon(Icons.check_circle, color: color, size: 28),
-          ],
         ),
       ),
     );

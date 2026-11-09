@@ -1,6 +1,6 @@
 ---
 name: ux-auditor
-description: Audita la experiencia de una pantalla o flujo de GymCenter (código o capturas) y propone mejoras priorizadas. No edita código.
+description: Audita la experiencia de una pantalla o flujo de GYMLAB (código o capturas) y propone mejoras priorizadas. No edita código.
 tools: Read, Grep, Glob
 model: sonnet
 ---

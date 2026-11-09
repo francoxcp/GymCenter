@@ -1,5 +1,5 @@
 -- =============================================================
--- POLÍTICA DE RETENCIÓN DE DATOS — Chamos Fitness Center
+-- POLÍTICA DE RETENCIÓN DE DATOS — GYMLAB
 -- Ejecutar una sola vez en el SQL Editor de Supabase.
 -- Requiere que pg_cron esté habilitado (Extensions → pg_cron).
 -- =============================================================

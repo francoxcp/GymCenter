@@ -228,8 +228,8 @@ class NotificationService {
 
     const androidDetails = AndroidNotificationDetails(
       'chamos_fitness_channel',
-      'GymCenter',
-      channelDescription: 'Notificaciones de GymCenter',
+      'GYMLAB',
+      channelDescription: 'Notificaciones de GYMLAB',
       importance: Importance.high,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',
@@ -265,8 +265,8 @@ class NotificationService {
 
     const androidDetails = AndroidNotificationDetails(
       'chamos_fitness_channel',
-      'GymCenter',
-      channelDescription: 'Notificaciones de GymCenter',
+      'GYMLAB',
+      channelDescription: 'Notificaciones de GYMLAB',
       importance: Importance.high,
       priority: Priority.high,
       icon: '@mipmap/ic_launcher',

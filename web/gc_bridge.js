@@ -211,7 +211,7 @@
         const cred = await navigator.credentials.create({
           publicKey: {
             challenge: randomChallenge(),
-            rp: { name: 'Chamos Fitness Center', id: window.location.hostname },
+            rp: { name: 'GYMLAB', id: window.location.hostname },
             user: {
               id: new TextEncoder().encode(userId).slice(0, 64),
               name: userName || 'usuario',

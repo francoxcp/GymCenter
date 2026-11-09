@@ -38,7 +38,7 @@ class _BiometricLockScreenState extends State<BiometricLockScreen> {
     });
 
     final success = await BiometricService().authenticate(
-      reason: 'Desbloquea para acceder a GymCenter',
+      reason: 'Desbloquea para acceder a GYMLAB',
     );
 
     if (!mounted) return;
@@ -71,7 +71,7 @@ class _BiometricLockScreenState extends State<BiometricLockScreen> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'GymCenter',
+                  'GYMLAB',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,

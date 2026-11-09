@@ -66,7 +66,7 @@ Future<void> showInstallGuide(BuildContext context) async {
             Text(
                 platform == InstallPlatform.inApp
                     ? 'Ábrela en tu navegador'
-                    : 'Instala GymCenter',
+                    : 'Instala GYMLAB',
                 style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 24,

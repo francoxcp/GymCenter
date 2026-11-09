@@ -17,6 +17,7 @@ import '../../../shared/services/offline_sync_queue.dart';
 import '../widgets/weekly_goal_card.dart';
 import '../widgets/streak_row.dart';
 import '../widgets/week_strip.dart';
+import '../widgets/upcoming_routines.dart';
 import '../../admin/screens/memberships_screen.dart' show MyMembershipBanner;
 
 class HomeScreen extends StatefulWidget {
@@ -178,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(
                             (context.watch<AuthProvider>().organization?.name ??
-                                    'GymCenter')
+                                    'GYMLAB')
                                 .toUpperCase(),
                             style: TextStyle(
                               fontSize: 11,
@@ -715,7 +716,10 @@ class _UserHomeContentState extends State<_UserHomeContent> {
           ),
         ],
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
+        // Mañana y los días siguientes
+        const UpcomingRoutines(),
+        const SizedBox(height: 20),
         StreakRow(sessions: realSessions.map((x) => x.date).toList()),
         const SizedBox(height: 12),
         // Meta semanal: entrenos hechos vs plan del entrenador

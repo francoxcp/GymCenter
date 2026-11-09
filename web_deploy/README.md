@@ -1,6 +1,6 @@
 # 🌐 Archivos HTML para GitHub Pages
 
-Este directorio contiene las páginas web estáticas de **Privacy Policy** y **Terms & Conditions** para Chamos Fitness Center.
+Este directorio contiene las páginas web estáticas de **Privacy Policy** y **Terms & Conditions** para GYMLAB.
 
 ## 📄 Archivos
 
@@ -190,5 +190,5 @@ Si tienes problemas:
 ---
 
 **Última actualización:** 11 de febrero de 2026  
-**Mantenido por:** Chamos Fitness Center  
+**Mantenido por:** GYMLAB  
 **Versión:** 1.0.0

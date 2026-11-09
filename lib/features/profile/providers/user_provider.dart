@@ -136,7 +136,6 @@ class UserProvider extends ChangeNotifier {
     String userId, {
     int? activeDays,
     int? completedWorkouts,
-    String? level,
   }) async {
     try {
       final Map<String, dynamic> updates = {};
@@ -144,8 +143,6 @@ class UserProvider extends ChangeNotifier {
       if (completedWorkouts != null) {
         updates['completed_workouts'] = completedWorkouts;
       }
-      if (level != null) updates['level'] = level;
-
       if (updates.isEmpty) return;
 
       await SupabaseConfig.client
@@ -159,7 +156,6 @@ class UserProvider extends ChangeNotifier {
         _users[userIndex] = _users[userIndex].copyWith(
           activeDays: activeDays,
           completedWorkouts: completedWorkouts,
-          level: level,
         );
         notifyListeners();
       }

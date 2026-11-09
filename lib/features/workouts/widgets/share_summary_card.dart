@@ -24,7 +24,7 @@ class ShareSummaryData {
   final String? brandLogo;
 
   const ShareSummaryData({
-    this.brandName = 'GymCenter',
+    this.brandName = 'GYMLAB',
     this.brandLogo,
     required this.workoutName,
     required this.memberName,

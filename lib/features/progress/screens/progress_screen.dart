@@ -12,6 +12,7 @@ import '../../workouts/providers/workout_session_provider.dart';
 import '../providers/body_measurement_provider.dart';
 import '../providers/achievements_provider.dart';
 import '../../home/widgets/streak_row.dart' show weeklyStreak;
+import '../widgets/sessions_time_section.dart';
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -86,6 +87,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
             _buildKeyNumbers(),
             const SizedBox(height: 20),
             _buildSessionsFrequencyChart(30),
+            const SizedBox(height: 16),
+            // Cuánto duró cada entreno y cuánto quemó
+            const SessionsTimeSection(),
             const SizedBox(height: 16),
             Center(
               child: TextButton.icon(

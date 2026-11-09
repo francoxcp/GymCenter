@@ -1,6 +1,6 @@
 @echo off
 echo ============================================
-echo Chamos Fitness Center - Setup
+echo GYMLAB - Setup
 echo ============================================
 echo.
 

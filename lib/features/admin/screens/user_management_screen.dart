@@ -967,8 +967,7 @@ class _UserCard extends StatelessWidget {
               ),
             const SizedBox(height: 4),
             Text(
-              AppL10n.of(context)
-                  .levelAndWorkoutsInfo(user.level, user.completedWorkouts),
+              '${user.completedWorkouts} entrenos${user.goal == null ? '' : ' · ${user.goal}'}',
               style: TextStyle(
                 fontSize: 12,
                 color: AppColors.textSecondary,

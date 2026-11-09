@@ -67,7 +67,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
             _buildSection(
               'Introducción',
-              'En GymCenter, respetamos su privacidad y nos comprometemos a proteger '
+              'En GYMLAB, respetamos su privacidad y nos comprometemos a proteger '
                   'sus datos personales. Esta política explica cómo recopilamos, usamos y protegemos '
                   'su información cuando utiliza nuestra aplicación.',
             ),

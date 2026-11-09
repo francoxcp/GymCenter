@@ -27,7 +27,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _nameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  String _selectedLevel = 'Principiante';
   bool _isSaving = false;
   bool _isUploadingPhoto = false;
   bool _hasChanges = false;
@@ -43,14 +42,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = Provider.of<AuthProvider>(context, listen: false).currentUser;
     if (user != null) {
       _nameController.text = user.name;
-      _selectedLevel = user.level;
     }
   }
 
   void _onFieldChanged() {
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    final changed = _nameController.text.trim() != auth.currentUser?.name ||
-        _selectedLevel != auth.currentUser?.level;
+    final changed = _nameController.text.trim() != auth.currentUser?.name;
     if (changed != _hasChanges) setState(() => _hasChanges = changed);
   }
 
@@ -83,7 +80,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       await SupabaseConfig.client.from('users').update({
         'name': _nameController.text.trim(),
-        'level': _selectedLevel,
       }).eq('id', userId);
 
       await authProvider.refreshUser();
@@ -181,76 +177,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } finally {
       if (mounted) setState(() => _isUploadingPhoto = false);
     }
-  }
-
-  Widget _buildLevelSelector() {
-    final levels = [
-      {'name': 'Principiante', 'color': AppColors.badgePrincipiante},
-      {'name': 'Intermedio', 'color': AppColors.badgeIntermedio},
-      {'name': 'Avanzado', 'color': AppColors.badgeAvanzado},
-    ];
-
-    return Row(
-      children: levels.map((level) {
-        final isSelected = _selectedLevel == level['name'];
-        final col = level['color'] as Color;
-        return Expanded(
-          child: GestureDetector(
-            onTap: () {
-              setState(() => _selectedLevel = level['name'] as String);
-              _onFieldChanged();
-            },
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 3),
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: isSelected ? col.withValues(alpha: 0.2) : AppColors.background,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: isSelected ? col : Colors.transparent,
-                  width: 1.5,
-                ),
-              ),
-              child: Text(
-                AppL10n.of(context).levelDisplay(level['name'] as String),
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  /// Compact read-only level badge for users without assigned routine.
-  Widget _buildLevelBadge() {
-    final colors = {
-      'Principiante': AppColors.badgePrincipiante,
-      'Intermedio': AppColors.badgeIntermedio,
-      'Avanzado': AppColors.badgeAvanzado,
-    };
-    final col = colors[_selectedLevel] ?? AppColors.badgeIntermedio;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      decoration: BoxDecoration(
-        color: col.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: col.withValues(alpha: 0.5)),
-      ),
-      child: Text(
-        AppL10n.of(context).levelDisplay(_selectedLevel),
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: col,
-        ),
-      ),
-    );
   }
 
   @override
@@ -394,31 +320,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
 
                       const SizedBox(height: 20),
-
-                      // Selector de nivel
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            AppL10n.of(context).trainingLevel,
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: AppColors.textSecondary.withValues(alpha: 0.8),
-                              letterSpacing: 1,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          // If no routine, show compact badge inline
-                          if (currentUser.assignedWorkoutId == null) ...[
-                            const SizedBox(width: 8),
-                            _buildLevelBadge(),
-                          ],
-                        ],
-                      ),
-                      if (currentUser.assignedWorkoutId != null) ...[
-                        const SizedBox(height: 8),
-                        _buildLevelSelector(),
-                      ],
 
                       const SizedBox(height: 20),
 

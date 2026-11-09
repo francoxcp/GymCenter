@@ -35,13 +35,17 @@ class Membership {
   }
 }
 
+/// Objetivos que se eligen al registrarse (mismos textos que la BD).
+const kGoals = ['Perder peso', 'Ganar músculo', 'Mantener peso', 'Mejorar salud'];
+
 class User {
   final String id;
   final String email;
   final String name;
   final String? photoUrl;
   final String role; // 'admin' (dueño) | 'trainer' (entrenador) | 'user' (socio)
-  final String level; // 'Principiante', 'Intermedio', 'Avanzado'
+  /// Objetivo que eligió al registrarse (Perder peso, Ganar músculo…).
+  final String? goal;
   final int activeDays;
   final int completedWorkouts;
   final String? assignedWorkoutId;
@@ -76,7 +80,7 @@ class User {
     required this.name,
     this.photoUrl,
     required this.role,
-    this.level = 'Principiante',
+    this.goal,
     this.activeDays = 0,
     this.completedWorkouts = 0,
     this.assignedWorkoutId,
@@ -109,7 +113,7 @@ class User {
     String? name,
     String? photoUrl,
     String? role,
-    String? level,
+    Object? goal = _sentinel,
     int? activeDays,
     int? completedWorkouts,
     Object? assignedWorkoutId = _sentinel,
@@ -130,7 +134,7 @@ class User {
       name: name ?? this.name,
       photoUrl: photoUrl ?? this.photoUrl,
       role: role ?? this.role,
-      level: level ?? this.level,
+      goal: goal == _sentinel ? this.goal : goal as String?,
       activeDays: activeDays ?? this.activeDays,
       completedWorkouts: completedWorkouts ?? this.completedWorkouts,
       assignedWorkoutId: assignedWorkoutId == _sentinel
@@ -166,7 +170,7 @@ class User {
       name: json['name'],
       photoUrl: json['photo_url'] ?? json['photoUrl'],
       role: json['role'] ?? 'user',
-      level: json['level'] ?? 'Principiante',
+      goal: json['goal'] as String?,
       activeDays: json['active_days'] ?? json['activeDays'] ?? 0,
       completedWorkouts:
           json['completed_workouts'] ?? json['completedWorkouts'] ?? 0,
@@ -193,7 +197,7 @@ class User {
       'name': name,
       'photoUrl': photoUrl,
       'role': role,
-      'level': level,
+      'goal': goal,
       'activeDays': activeDays,
       'completedWorkouts': completedWorkouts,
       'assignedWorkoutId': assignedWorkoutId,

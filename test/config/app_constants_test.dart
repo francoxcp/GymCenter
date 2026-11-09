@@ -5,7 +5,7 @@ void main() {
   group('AppConstants Tests', () {
     group('App Info', () {
       test('has correct app name', () {
-        expect(AppConstants.appName, 'GymCenter');
+        expect(AppConstants.appName, 'GYMLAB');
       });
 
       test('has correct app version', () {

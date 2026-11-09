@@ -1,6 +1,6 @@
 -- ============================================
 -- TABLAS PRINCIPALES - SUPABASE
--- Chamos Fitness Center
+-- GYMLAB
 -- ============================================
 -- Ejecutar ANTES de las políticas RLS
 

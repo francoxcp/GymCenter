@@ -66,12 +66,12 @@ class TermsAndConditionsScreen extends StatelessWidget {
 
             _buildSection(
               '1. Aceptación de los Términos',
-              'Al acceder y utilizar la aplicación GymCenter, usted acepta estar sujeto a estos Términos y Condiciones. Si no está de acuerdo con alguna parte de estos términos, no debe utilizar nuestra aplicación.',
+              'Al acceder y utilizar la aplicación GYMLAB, usted acepta estar sujeto a estos Términos y Condiciones. Si no está de acuerdo con alguna parte de estos términos, no debe utilizar nuestra aplicación.',
             ),
 
             _buildSection(
               '2. Uso del Servicio',
-              'GymCenter es una plataforma de fitness que proporciona:\n\n'
+              'GYMLAB es una plataforma de fitness que proporciona:\n\n'
                   '• Rutinas de entrenamiento personalizadas\n'
                   '• Planes de alimentaci?n\n'
                   '• Seguimiento de progreso físico\n'
@@ -121,7 +121,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
 
             _buildSection(
               '8. Limitación de Responsabilidad',
-              'GymCenter no será responsable de:\n\n'
+              'GYMLAB no será responsable de:\n\n'
                   '• Lesiones o daños derivados del uso de los programas de entrenamiento\n'
                   '• Pérdida de datos debido a fallas técnicas\n'
                   '• Interrupción del servicio por mantenimiento\n'
@@ -139,7 +139,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
             _buildSection(
               '10. Propiedad Intelectual',
               'Todo el contenido de la aplicación (rutinas, planes, diseño, logotipos) '
-                  'es propiedad de GymCenter y está protegido por leyes de derechos de autor.',
+                  'es propiedad de GYMLAB y está protegido por leyes de derechos de autor.',
             ),
 
             _buildSection(
@@ -164,7 +164,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                'Al continuar usando GymCenter, usted acepta estos Términos y Condiciones en su totalidad.',
+                'Al continuar usando GYMLAB, usted acepta estos Términos y Condiciones en su totalidad.',
                 style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,

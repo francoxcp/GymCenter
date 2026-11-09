@@ -1,5 +1,5 @@
 # ============================================
-# CHAMOS FITNESS CENTER - PROGUARD RULES
+# GYMLAB - PROGUARD RULES
 # ============================================
 # Reglas de ofuscación y optimización para Release
 # ============================================

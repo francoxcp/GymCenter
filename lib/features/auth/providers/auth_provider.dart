@@ -452,7 +452,7 @@ class AuthProvider extends ChangeNotifier {
     required double weightKg,
     required int heightCm,
     required String sex,
-    required String level,
+    String? goal,
   }) async {
     if (_currentUser == null) return;
     try {
@@ -461,7 +461,7 @@ class AuthProvider extends ChangeNotifier {
         'weight_kg': weightKg,
         'height_cm': heightCm,
         'sex': sex,
-        'level': level,
+        if (goal != null) 'goal': goal,
       }).eq('id', _currentUser!.id);
 
       _currentUser = _currentUser!.copyWith(
@@ -469,7 +469,7 @@ class AuthProvider extends ChangeNotifier {
         weightKg: weightKg,
         heightCm: heightCm,
         sex: sex,
-        level: level,
+        goal: goal ?? _currentUser!.goal,
       );
       notifyListeners();
     } catch (e) {

@@ -7,6 +7,8 @@
 --
 -- Requiere multitenant_migration.sql, saas_v2_migration.sql y
 -- ux_feed_membership_migration.sql (push_outbox). Idempotente.
+-- Ejecutar SIEMPRE después de saas_v2_migration.sql (reemplaza la firma de
+-- accept_invitation; si se re-ejecuta saas_v2, volver a correr esta).
 -- =====================================================================
 BEGIN;
 
@@ -39,6 +41,10 @@ BEGIN
     RAISE EXCEPTION 'already_in_other_org';
   END IF;
 
+  -- "Soy socio" solo vale con enlaces de entrenador (no con el del dueño)
+  IF COALESCE(p_as_member, false) AND v_inv.role <> 'trainer' THEN
+    RAISE EXCEPTION 'invalid_invitation';
+  END IF;
   v_role := CASE WHEN COALESCE(p_as_member, false) THEN 'user' ELSE v_inv.role END;
   v_new_role := CASE
     WHEN v_role = 'admin' THEN 'admin'
@@ -69,10 +75,8 @@ BEGIN
   PERFORM set_config('app.invite_role', '', true);
   PERFORM set_config('app.trainer_link', '', true);
 
-  -- Un enlace de entrenador usado "como socio" no se gasta
-  IF v_role = v_inv.role THEN
-    UPDATE public.invitations SET uses = uses + 1 WHERE id = v_inv.id;
-  END IF;
+  -- Se gasta siempre (también si lo usó "como socio")
+  UPDATE public.invitations SET uses = uses + 1 WHERE id = v_inv.id;
   RETURN v_org_name;
 END;
 $$;
@@ -107,32 +111,28 @@ RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS
        SELECT 1 FROM public.users m
          JOIN public.users t ON t.id = m.trainer_id
         WHERE m.id = p_member AND m.trainer_id = p_trainer
-          AND m.org_id IS NOT NULL AND m.org_id = t.org_id);
+          AND m.org_id IS NOT NULL AND m.org_id = t.org_id
+          AND m.org_id = public.my_active_org_id());
 $$;
 REVOKE ALL ON FUNCTION public.can_chat(UUID, UUID) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.can_chat(UUID, UUID) TO authenticated;
 
 ALTER TABLE public.direct_messages ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON public.direct_messages FROM anon;
-REVOKE UPDATE, DELETE ON public.direct_messages FROM authenticated;
+-- Solo leer e insertar; id, created_at y read_at los pone el servidor
+REVOKE ALL ON public.direct_messages FROM anon, authenticated;
+GRANT SELECT ON public.direct_messages TO authenticated;
+GRANT INSERT (member_id, trainer_id, sender_id, body, session_id)
+  ON public.direct_messages TO authenticated;
 DROP POLICY IF EXISTS dm_select ON public.direct_messages;
 DROP POLICY IF EXISTS dm_insert ON public.direct_messages;
 CREATE POLICY dm_select ON public.direct_messages FOR SELECT TO authenticated
   USING (public.can_chat(member_id, trainer_id));
 CREATE POLICY dm_insert ON public.direct_messages FOR INSERT TO authenticated
   WITH CHECK (sender_id = auth.uid() AND read_at IS NULL
-              AND public.can_chat(member_id, trainer_id));
-
--- Tiempo real (respeta RLS)
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime')
-     AND NOT EXISTS (SELECT 1 FROM pg_publication_tables
-                      WHERE pubname = 'supabase_realtime'
-                        AND schemaname = 'public' AND tablename = 'direct_messages') THEN
-    ALTER PUBLICATION supabase_realtime ADD TABLE public.direct_messages;
-  END IF;
-END $$;
+              AND public.can_chat(member_id, trainer_id)
+              AND (session_id IS NULL OR EXISTS (
+                    SELECT 1 FROM public.workout_sessions ws
+                     WHERE ws.id = session_id AND ws.user_id = member_id)));
 
 -- ---------------------------------------------------------------------
 -- 3. Funciones del chat
@@ -153,7 +153,7 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
        WHERE d.member_id = m.id AND d.trainer_id = auth.uid()
        ORDER BY d.created_at DESC LIMIT 1) l ON true
    WHERE m.trainer_id = auth.uid() AND m.role = 'user'
-     AND m.org_id = public.my_org_id()
+     AND m.org_id = public.my_active_org_id()
    ORDER BY 7 DESC, l.created_at DESC NULLS LAST, m.name;
 $$;
 REVOKE ALL ON FUNCTION public.my_chats() FROM PUBLIC, anon;
@@ -203,13 +203,15 @@ BEGIN
   END IF;
   SELECT name INTO v_from FROM public.users WHERE id = NEW.sender_id;
   INSERT INTO public.push_outbox (user_id, title, body, url, tag)
-  VALUES (v_to, 'Mensaje de ' || COALESCE(split_part(v_from, ' ', 1), 'tu entrenador'),
+  VALUES (v_to, 'Mensaje de ' || COALESCE(NULLIF(split_part(v_from, ' ', 1), ''),
+            CASE WHEN v_to = NEW.member_id THEN 'tu entrenador' ELSE 'tu socio' END),
           left(NEW.body, 140),
           CASE WHEN v_to = NEW.member_id THEN '/chat' ELSE '/chats/' || NEW.member_id END,
           'chat');
   RETURN NEW;
 END;
 $$;
+REVOKE ALL ON FUNCTION public.notify_direct_message() FROM PUBLIC, anon, authenticated;
 DROP TRIGGER IF EXISTS trg_notify_direct_message ON public.direct_messages;
 CREATE TRIGGER trg_notify_direct_message
   AFTER INSERT ON public.direct_messages
@@ -232,5 +234,17 @@ SELECT s.user_id, m.trainer_id, c.author_id, c.body, c.session_id, c.created_at,
                     WHERE d.sender_id = c.author_id AND d.created_at = c.created_at
                       AND d.body = c.body);
 ALTER TABLE public.direct_messages ENABLE TRIGGER trg_notify_direct_message;
+
+-- ---------------------------------------------------------------------
+-- 6. Tiempo real (respeta RLS)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime')
+     AND NOT EXISTS (SELECT 1 FROM pg_publication_tables
+                      WHERE pubname = 'supabase_realtime'
+                        AND schemaname = 'public' AND tablename = 'direct_messages') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.direct_messages;
+  END IF;
+END $$;
 
 COMMIT;

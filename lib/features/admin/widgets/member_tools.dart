@@ -133,7 +133,6 @@ Future<void> showQuickAssignSheet(BuildContext context, User member) async {
                               [
                                 if (w.category != null) w.category!,
                                 '${w.exerciseCount} ejercicios',
-                                w.level,
                               ].join(' · '),
                               style:
                                   TextStyle(color: AppColors.textSecondary)),

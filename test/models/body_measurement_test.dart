@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/features/progress/models/body_measurement.dart';
-import 'package:chamos_fitness_center/features/workouts/services/calorie_estimator.dart';
+import 'package:gymlab/features/progress/models/body_measurement.dart';
+import 'package:gymlab/features/workouts/services/calorie_estimator.dart';
 
 void main() {
   group('BodyMeasurement', () {

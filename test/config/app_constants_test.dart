@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/core/constants/app_constants.dart';
+import 'package:gymlab/core/constants/app_constants.dart';
 
 void main() {
   group('AppConstants Tests', () {
@@ -32,11 +32,6 @@ void main() {
     });
 
     group('Training Levels', () {
-      test('has all training levels', () {
-        expect(AppConstants.beginnerLevel, 'Principiante');
-        expect(AppConstants.intermediateLevel, 'Intermedio');
-        expect(AppConstants.advancedLevel, 'Avanzado');
-      });
     });
 
     group('Filters', () {

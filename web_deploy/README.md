@@ -14,7 +14,7 @@ Este directorio contiene las páginas web estáticas de **Privacy Policy** y **T
 ```bash
 # Opción A: Crear repo desde GitHub.com
 1. Ve a https://github.com/new
-2. Nombre: chamos-privacy (o el que prefieras)
+2. Nombre: gymlab-privacy (o el que prefieras)
 3. Público ✅
 4. Create repository
 
@@ -23,7 +23,7 @@ git init
 git add .
 git commit -m "Add privacy and terms pages"
 git branch -M main
-git remote add origin https://github.com/TU_USUARIO/chamos-privacy.git
+git remote add origin https://github.com/TU_USUARIO/gymlab-privacy.git
 git push -u origin main
 ```
 
@@ -40,8 +40,8 @@ git push -u origin main
 Tus páginas estarán disponibles en:
 
 ```
-https://TU_USUARIO.github.io/chamos-privacy/privacy.html
-https://TU_USUARIO.github.io/chamos-privacy/terms.html
+https://TU_USUARIO.github.io/gymlab-privacy/privacy.html
+https://TU_USUARIO.github.io/gymlab-privacy/terms.html
 ```
 
 ## 🔧 Actualizar URLs en la App
@@ -65,8 +65,8 @@ Después de publicar, actualiza estas URLs en tu código:
 Al subir a las tiendas, usa estas URLs:
 
 ```
-Privacy Policy: https://TU_USUARIO.github.io/chamos-privacy/privacy.html
-Terms of Service: https://TU_USUARIO.github.io/chamos-privacy/terms.html
+Privacy Policy: https://TU_USUARIO.github.io/gymlab-privacy/privacy.html
+Terms of Service: https://TU_USUARIO.github.io/gymlab-privacy/terms.html
 ```
 
 ## ✅ Checklist de Publicación

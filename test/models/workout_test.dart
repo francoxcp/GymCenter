@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/features/workouts/models/workout.dart';
-import 'package:chamos_fitness_center/features/workouts/models/exercise.dart';
+import 'package:gymlab/features/workouts/models/workout.dart';
+import 'package:gymlab/features/workouts/models/exercise.dart';
 
 void main() {
   group('Workout Model Tests', () {
@@ -9,7 +9,6 @@ void main() {
         'id': 'workout123',
         'name': 'Día de Pecho',
         'description': 'Rutina completa para pecho',
-        'level': 'Intermedio',
         'duration': 45,
         'exerciseCount': 5,
         'imageUrl': 'https://example.com/workout.jpg',
@@ -20,7 +19,6 @@ void main() {
       expect(workout.id, 'workout123');
       expect(workout.name, 'Día de Pecho');
       expect(workout.description, 'Rutina completa para pecho');
-      expect(workout.level, 'Intermedio');
       expect(workout.duration, 45);
       expect(workout.exerciseCount, 5);
       expect(workout.imageUrl, 'https://example.com/workout.jpg');
@@ -32,7 +30,6 @@ void main() {
         id: 'workout456',
         name: 'Día de Piernas',
         description: 'Rutina intensa de piernas',
-        level: 'Avanzado',
         duration: 60,
         exerciseCount: 6,
         imageUrl: 'https://example.com/legs.jpg',
@@ -44,7 +41,6 @@ void main() {
       expect(json['id'], 'workout456');
       expect(json['name'], 'Día de Piernas');
       expect(json['description'], 'Rutina intensa de piernas');
-      expect(json['level'], 'Avanzado');
       expect(json['duration'], 60);
       expect(json['exerciseCount'], 6);
       expect(json['imageUrl'], 'https://example.com/legs.jpg');
@@ -71,7 +67,6 @@ void main() {
       final workout = Workout(
         id: 'workout789',
         name: 'Rutina de Pecho',
-        level: 'Principiante',
         duration: 30,
         exerciseCount: 2,
         imageUrl: '',
@@ -88,7 +83,6 @@ void main() {
       final json = {
         'id': 'workout999',
         'name': 'Rutina Simple',
-        'level': 'beginner',
         'duration': 20,
         'exerciseCount': 0,
       };
@@ -98,7 +92,6 @@ void main() {
       expect(workout.id, 'workout999');
       expect(workout.name, 'Rutina Simple');
       expect(workout.description, isNull);
-      expect(workout.level, 'beginner');
       expect(workout.duration, 20);
       expect(workout.exerciseCount, 0);
       expect(workout.imageUrl, ''); // Default value
@@ -128,7 +121,6 @@ void main() {
       final workout = Workout(
         id: 'workout111',
         name: 'Rutina Completa',
-        level: 'Intermedio',
         duration: 45,
         exerciseCount: exercises.length,
         imageUrl: '',

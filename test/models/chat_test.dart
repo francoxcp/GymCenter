@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/features/chat/chat_service.dart';
-import 'package:chamos_fitness_center/features/chat/chat_thread.dart';
-import 'package:chamos_fitness_center/shared/navigation/role_tabs.dart';
+import 'package:gymlab/features/chat/chat_service.dart';
+import 'package:gymlab/features/chat/chat_thread.dart';
+import 'package:gymlab/shared/navigation/role_tabs.dart';
 
 ChatMessage _m(String id, String body, int minute,
         {String sender = 'm', SendState state = SendState.sent}) =>

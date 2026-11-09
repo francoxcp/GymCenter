@@ -1,5 +1,5 @@
-import 'package:chamos_fitness_center/features/organization/widgets/invite_link_sheet.dart';
-import 'package:chamos_fitness_center/shared/widgets/splash_screen.dart';
+import 'package:gymlab/features/organization/widgets/invite_link_sheet.dart';
+import 'package:gymlab/shared/widgets/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_flutter/qr_flutter.dart';

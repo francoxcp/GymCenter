@@ -1,17 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/features/admin/models/member_status.dart';
-import 'package:chamos_fitness_center/features/admin/screens/members_screen.dart';
-import 'package:chamos_fitness_center/features/admin/services/member_status_service.dart';
-import 'package:chamos_fitness_center/features/admin/widgets/weekly_summary_card.dart';
-import 'package:chamos_fitness_center/features/auth/models/user.dart';
-import 'package:chamos_fitness_center/features/home/widgets/streak_row.dart';
-import 'package:chamos_fitness_center/features/notifications/notifications_screen.dart';
-import 'package:chamos_fitness_center/features/notifications/notifications_service.dart';
-import 'package:chamos_fitness_center/features/organization/models/organization.dart';
-import 'package:chamos_fitness_center/features/organization/screens/platform_screen.dart';
-import 'package:chamos_fitness_center/features/profile/screens/edit_profile_screen.dart';
-import 'package:chamos_fitness_center/shared/navigation/role_tabs.dart';
-import 'package:chamos_fitness_center/shared/widgets/top_actions.dart';
+import 'package:gymlab/features/admin/models/member_status.dart';
+import 'package:gymlab/features/admin/screens/members_screen.dart';
+import 'package:gymlab/features/admin/services/member_status_service.dart';
+import 'package:gymlab/features/admin/widgets/weekly_summary_card.dart';
+import 'package:gymlab/features/auth/models/user.dart';
+import 'package:gymlab/features/home/widgets/streak_row.dart';
+import 'package:gymlab/features/notifications/notifications_screen.dart';
+import 'package:gymlab/features/notifications/notifications_service.dart';
+import 'package:gymlab/features/organization/models/organization.dart';
+import 'package:gymlab/features/organization/screens/platform_screen.dart';
+import 'package:gymlab/features/profile/screens/edit_profile_screen.dart';
+import 'package:gymlab/shared/navigation/role_tabs.dart';
+import 'package:gymlab/shared/widgets/top_actions.dart';
 
 User _u(String id,
         {String role = 'user',

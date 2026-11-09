@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/shared/services/data_export_service.dart';
+import 'package:gymlab/shared/services/data_export_service.dart';
 
 String hex(List<int> b) =>
     b.map((x) => x.toRadixString(16).padLeft(2, '0')).join();

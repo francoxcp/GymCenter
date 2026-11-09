@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/features/workouts/widgets/record_celebration.dart';
-import 'package:chamos_fitness_center/shared/widgets/install_guide_sheet.dart';
-import 'package:chamos_fitness_center/features/home/widgets/week_strip.dart';
+import 'package:gymlab/features/workouts/widgets/record_celebration.dart';
+import 'package:gymlab/shared/widgets/install_guide_sheet.dart';
+import 'package:gymlab/features/home/widgets/week_strip.dart';
 
 void main() {
   test('la semana va de lunes a domingo', () {

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/features/progress/providers/achievements_provider.dart';
+import 'package:gymlab/features/progress/providers/achievements_provider.dart';
 
 /// Tests for AchievementsProvider pure logic.
 /// We replicate methods here because the provider accesses

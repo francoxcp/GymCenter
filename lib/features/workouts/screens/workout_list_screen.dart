@@ -166,7 +166,6 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
           title: workout.name,
           duration: workout.duration,
           exerciseCount: workout.exerciseCount,
-          level: workout.level,
           isOfficial: isOfficial,
           onEdit: canManage
               ? () async {
@@ -365,26 +364,14 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
                       isSelected: workoutProvider.selectedFilter == 'Todos',
                       onTap: () => workoutProvider.setFilter('Todos'),
                     ),
-                    const SizedBox(width: 8),
-                    FilterChipButton(
-                      label: l10n.beginner,
-                      isSelected:
-                          workoutProvider.selectedFilter == 'Principiante',
-                      onTap: () => workoutProvider.setFilter('Principiante'),
-                    ),
-                    const SizedBox(width: 8),
-                    FilterChipButton(
-                      label: l10n.intermediate,
-                      isSelected:
-                          workoutProvider.selectedFilter == 'Intermedio',
-                      onTap: () => workoutProvider.setFilter('Intermedio'),
-                    ),
-                    const SizedBox(width: 8),
-                    FilterChipButton(
-                      label: l10n.advanced,
-                      isSelected: workoutProvider.selectedFilter == 'Avanzado',
-                      onTap: () => workoutProvider.setFilter('Avanzado'),
-                    ),
+                    for (final c in workoutProvider.categoriesInUse) ...[
+                      const SizedBox(width: 8),
+                      FilterChipButton(
+                        label: c,
+                        isSelected: workoutProvider.selectedFilter == c,
+                        onTap: () => workoutProvider.setFilter(c),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -647,7 +634,6 @@ class _WorkoutCard extends StatelessWidget {
   final String title;
   final int duration;
   final int exerciseCount;
-  final String level;
   final bool isOfficial;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
@@ -657,25 +643,11 @@ class _WorkoutCard extends StatelessWidget {
     required this.title,
     required this.duration,
     required this.exerciseCount,
-    required this.level,
     this.isOfficial = false,
     this.onEdit,
     this.onDelete,
     this.onPlay,
   });
-
-  Color _getLevelColor() {
-    switch (level) {
-      case 'Principiante':
-        return AppColors.badgePrincipiante;
-      case 'Intermedio':
-        return AppColors.badgeIntermedio;
-      case 'Avanzado':
-        return AppColors.badgeAvanzado;
-      default:
-        return AppColors.primaryText;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -722,11 +694,10 @@ class _WorkoutCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      level.toUpperCase(),
+                      '$exerciseCount ejercicios · $duration min',
                       style: TextStyle(
                         fontSize: 11,
-                        color: _getLevelColor(),
-                        letterSpacing: 0.5,
+                        color: AppColors.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

@@ -80,7 +80,7 @@ class DataExportService {
     // Web: descargar el archivo directamente desde el navegador
     if (kIsWeb) {
       WebBridge.download(
-        fileName: 'chamos_fitness_$timestamp.enc',
+        fileName: 'gymlab_$timestamp.enc',
         bytes: encryptedBytes,
       );
       return;
@@ -88,7 +88,7 @@ class DataExportService {
 
     // Guardar el archivo cifrado en el directorio temporal
     final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/chamos_fitness_$timestamp.enc');
+    final file = File('${dir.path}/gymlab_$timestamp.enc');
     await file.writeAsBytes(encryptedBytes);
 
     // Compartir el archivo cifrado

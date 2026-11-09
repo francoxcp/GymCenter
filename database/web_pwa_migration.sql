@@ -182,13 +182,13 @@ REVOKE ALL ON FUNCTION public.trigger_send_push() FROM PUBLIC, anon, authenticat
 
 DO $$
 BEGIN
-  PERFORM cron.unschedule('chamos-send-push');
+  PERFORM cron.unschedule('gymlab-send-push');
 EXCEPTION WHEN OTHERS THEN
   NULL; -- no existía
 END;
 $$;
 
-SELECT cron.schedule('chamos-send-push', '*/15 * * * *', $$SELECT public.trigger_send_push();$$);
+SELECT cron.schedule('gymlab-send-push', '*/15 * * * *', $$SELECT public.trigger_send_push();$$);
 
 -- ----------------------------------------------------------------------------
 -- 6. ÚLTIMO PASO: indica la URL de tu proyecto (no es secreta).

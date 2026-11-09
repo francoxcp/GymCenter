@@ -17,9 +17,6 @@ class AppConstants {
   static const String userRole = 'user';
 
   // Niveles de entrenamiento
-  static const String beginnerLevel = 'Principiante';
-  static const String intermediateLevel = 'Intermedio';
-  static const String advancedLevel = 'Avanzado';
 
   // Filtros
   static const String filterAll = 'Todos';

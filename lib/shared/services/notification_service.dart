@@ -220,14 +220,14 @@ class NotificationService {
       await WebBridge.showNotification(
         title: title,
         body: body,
-        tag: payload ?? 'chamos-$id',
+        tag: payload ?? 'gymlab-$id',
         url: _routeForPayload(payload) ?? '/',
       );
       return;
     }
 
     const androidDetails = AndroidNotificationDetails(
-      'chamos_fitness_channel',
+      'gymlab_channel',
       'GYMLAB',
       channelDescription: 'Notificaciones de GYMLAB',
       importance: Importance.high,
@@ -264,7 +264,7 @@ class NotificationService {
     await initialize();
 
     const androidDetails = AndroidNotificationDetails(
-      'chamos_fitness_channel',
+      'gymlab_channel',
       'GYMLAB',
       channelDescription: 'Notificaciones de GYMLAB',
       importance: Importance.high,

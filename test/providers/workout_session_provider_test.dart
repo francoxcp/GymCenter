@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/features/workouts/providers/workout_session_provider.dart';
-import 'package:chamos_fitness_center/features/workouts/models/workout_session.dart';
+import 'package:gymlab/features/workouts/providers/workout_session_provider.dart';
+import 'package:gymlab/features/workouts/models/workout_session.dart';
 
 WorkoutSession _session({
   required DateTime date,

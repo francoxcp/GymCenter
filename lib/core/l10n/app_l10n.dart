@@ -356,9 +356,6 @@ class AppL10n {
   String get back => isEn ? 'Back' : 'Atrás';
   String get start => isEn ? 'Start' : 'Comenzar';
   String get next => isEn ? 'Next' : 'Siguiente';
-  String get beginner => isEn ? 'Beginner' : 'Principiante';
-  String get intermediate => isEn ? 'Intermediate' : 'Intermedio';
-  String get advanced => isEn ? 'Advanced' : 'Avanzado';
   // ── Admin ────────────────────────────────────────────────────────────────
   String get noWorkoutsInCategory => isEn
       ? 'No workouts in this category'
@@ -616,7 +613,6 @@ class AppL10n {
   String get descriptionLabel => isEn ? 'Description' : 'Descripción';
   String get addDescription =>
       isEn ? '+ Add description' : '+ Agregar descripción';
-  String get levelLabel => isEn ? 'Level' : 'Nivel';
   String get categoryLabel => isEn ? 'Category' : 'Categoría';
   String get selectACategory =>
       isEn ? 'Select a category' : 'Selecciona una categoría';
@@ -753,7 +749,7 @@ class AppL10n {
   String get andThe => isEn ? ' and the ' : ' y la ';
   String get privacyPolicyLinkText =>
       isEn ? 'Privacy Policy' : 'Política de Privacidad';
-  String get ofChamosFitness =>
+  String get ofBrand =>
       isEn ? ' of GYMLAB.' : ' de GYMLAB.';
   String get signUpButton => isEn ? 'SIGN UP' : 'REGISTRARSE';
   String get alreadyMember =>
@@ -1059,19 +1055,6 @@ class AppL10n {
   String get settingsTooltip => isEn ? 'Settings' : 'Ajustes';
 
   // ── Level display (DB keys → labels) ─────────────────────────────────
-  String levelDisplay(String dbKey) {
-    switch (dbKey) {
-      case 'Principiante':
-        return beginner;
-      case 'Intermedio':
-        return intermediate;
-      case 'Avanzado':
-        return advanced;
-      default:
-        return dbKey;
-    }
-  }
-
   // ── Today workout extra (batch 2) ──────────────────────────────────────
   String exerciseProgress(int current, int total) =>
       isEn ? 'Exercise $current of $total' : 'Ejercicio $current de $total';

@@ -77,7 +77,7 @@ class _ShareSheetState extends State<_ShareSheet> {
     try {
       final png = await _capture();
       if (png == null) return;
-      const name = 'chamos-entreno.png';
+      const name = 'gymlab-entreno.png';
       final text = 'Entreno completado en ${widget.data.brandName}';
       if (kIsWeb) {
         final r = await WebBridge.shareFile(

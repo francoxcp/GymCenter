@@ -1,6 +1,6 @@
-import 'package:chamos_fitness_center/config/router/app_router.dart';
-import 'package:chamos_fitness_center/features/organization/models/organization.dart';
-import 'package:chamos_fitness_center/features/organization/screens/platform_screen.dart';
+import 'package:gymlab/config/router/app_router.dart';
+import 'package:gymlab/features/organization/models/organization.dart';
+import 'package:gymlab/features/organization/screens/platform_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

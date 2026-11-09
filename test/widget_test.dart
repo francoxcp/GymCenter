@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/core/theme/app_theme.dart';
-import 'package:chamos_fitness_center/shared/widgets/primary_button.dart';
+import 'package:gymlab/core/theme/app_theme.dart';
+import 'package:gymlab/shared/widgets/primary_button.dart';
 
 void main() {
   group('Widget Tests', () {
@@ -87,7 +87,7 @@ void main() {
     });
 
     test('AppColors should use correct color values', () {
-      expect(AppColors.primary.toARGB32(), 0xFFFFEB00); // Yellow Chamos
+      expect(AppColors.primary.toARGB32(), 0xFFFFEB00); // Amarillo GYMLAB
       expect(AppColors.background.toARGB32(), 0xFF0A0A0A); // Black
       expect(AppColors.surface.toARGB32(), 0xFF1A1A1A); // Dark gray
       expect(AppColors.cardBackground.toARGB32(), 0xFF1E1E1E); // Lighter dark gray

@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 class SecureScreenService {
   SecureScreenService._();
 
-  static const _channel = MethodChannel('com.chamosfitness.app/security');
+  static const _channel = MethodChannel('com.gymlab.app/security');
 
   static bool get _isAndroid =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;

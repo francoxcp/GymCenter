@@ -276,7 +276,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         builder: (context, prefsProvider, _) {
           final app = MaterialApp.router(
             scaffoldMessengerKey: _scaffoldMessengerKey,
-            title: 'GymCenter',
+            title: 'GYMLAB',
             debugShowCheckedModeBanner: false,
             theme: buildAppTheme(),
             locale: prefsProvider.appLocale,

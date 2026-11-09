@@ -27,6 +27,7 @@ import '../../../shared/services/offline_cache_service.dart';
 import '../../../shared/services/offline_sync_queue.dart';
 import '../services/progression_engine.dart';
 import '../widgets/record_celebration.dart';
+import '../services/calorie_estimator.dart';
 
 class TodayWorkoutScreen extends StatefulWidget {
   /// Si se pasa, se ejecuta esta rutina en lugar de la asignada (modo extra).
@@ -1067,41 +1068,16 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
     // -- Datos del usuario ------------------------------------------------------
     final authUser = context.read<AuthProvider>().currentUser;
-    final age = authUser?.age ?? 30;
-    final sex = authUser?.sex ?? 'male';
-    // Altura: perfil de usuario ? medidas corporales ? default 170 cm
-    final heightCm = (authUser?.heightCm ??
-            context
-                .read<BodyMeasurementProvider>()
-                .latestMeasurement
-                ?.height
-                ?.round() ??
-            170)
-        .toDouble();
-
-    // -- BMR (Harris-Benedict revisado) ----------------------------------------
-    // Hombre:  13.397·kg + 4.799·cm - 5.677·años + 88.362
-    // Mujer:   9.247·kg  + 3.098·cm - 4.330·años + 447.593
-    final double bmr = sex == 'female'
-        ? 9.247 * weightKg + 3.098 * heightCm - 4.330 * age + 447.593
-        : 13.397 * weightKg + 4.799 * heightCm - 5.677 * age + 88.362;
-
-    // -- Detección de ejercicios cardio ----------------------------------------
     final exercises = workout.exercises;
-    int cardioCount = 0;
-    for (final ex in exercises) {
-      if (_isCardioExercise(ex)) cardioCount++;
-    }
-
-    // MET promedio: fuerza pura = 5, cardio puro = 9
-    final cardioRatio =
-        exercises.isNotEmpty ? cardioCount / exercises.length : 0.0;
-    final avgMet = 5.0 + (cardioRatio * 4.0);
-
-    // -- FÓrmula: kcal = BMR/1440 × min × MET ----------------------------------
-    // (BMR/1440 es el gasto calórico por minuto en reposo)
-    final calories = (bmr / 1440.0) * durationMinutes * avgMet;
-    return calories.round();
+    final cardio = exercises.where(_isCardioExercise).length;
+    return CalorieEstimator.estimate(
+      minutes: durationMinutes,
+      weightKg: weightKg,
+      heightCm: authUser?.heightCm?.toDouble(),
+      age: authUser?.age,
+      sex: authUser?.sex,
+      cardioRatio: exercises.isEmpty ? 0 : cardio / exercises.length,
+    );
   }
 
   /// Detecta si un ejercicio es cardiovascular usando múltiples señales:

@@ -174,7 +174,7 @@ END;
 $$;
 
 -- ---------------------------------------------------------------------
--- 3. Datos actuales → organización "Chamos Fitness Center"
+-- 3. Datos actuales → organización "GYMLAB"
 -- ---------------------------------------------------------------------
 DO $$
 DECLARE v_org UUID;
@@ -183,7 +183,7 @@ BEGIN
   -- registros nuevos que esperan una invitación.
   IF NOT EXISTS (SELECT 1 FROM public.organizations) THEN
     INSERT INTO public.organizations (name, kind, plan, paid_until, billing_status, billing_note)
-    VALUES ('Chamos Fitness Center', 'gym', 'Interno', DATE '2099-12-31', 'approved',
+    VALUES ('GYMLAB', 'gym', 'Interno', DATE '2099-12-31', 'approved',
             'Organización de la plataforma')
     RETURNING id INTO v_org;
     UPDATE public.users SET org_id = v_org WHERE org_id IS NULL;
@@ -296,13 +296,12 @@ BEGIN
                   WHERE o.id = users.org_id AND o.status = 'active')
    LIMIT 1;
 
-  INSERT INTO public.users (id, email, name, role, level, trainer_id, org_id)
+  INSERT INTO public.users (id, email, name, role, trainer_id, org_id)
   VALUES (
     NEW.id,
     NEW.email,
     COALESCE(NULLIF(trim(NEW.raw_user_meta_data->>'name'), ''), 'Usuario Nuevo'),
     'user',
-    'Principiante',
     v_trainer,
     v_org
   )

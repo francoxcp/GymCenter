@@ -205,7 +205,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'GYMCENTER',
+                      'GYMLAB',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -443,7 +443,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               decoration: TextDecoration.underline,
                             ),
                           ),
-                          TextSpan(text: AppL10n.of(context).ofChamosFitness),
+                          TextSpan(text: AppL10n.of(context).ofBrand),
                         ],
                       ),
                     ),

@@ -37,7 +37,7 @@ class AppPalette {
 
   static const dark = AppPalette(
     brightness: Brightness.dark,
-    primary: Color(0xFFFFEB00), // Amarillo Chamos
+    primary: Color(0xFFFFEB00), // Amarillo GYMLAB
     primaryText: Color(0xFFFFEB00),
     onPrimary: Color(0xFF000000),
     background: Color(0xFF0A0A0A),
@@ -94,9 +94,6 @@ class AppColors {
   static Color get warning => _p.warning;
 
   // Badges de nivel
-  static Color get badgePrincipiante => _p.primary;
-  static const Color badgeIntermedio = Color(0xFFFF9800);
-  static const Color badgeAvanzado = Color(0xFFE91E63);
 }
 
 /// Tema de Material construido con la paleta activa.

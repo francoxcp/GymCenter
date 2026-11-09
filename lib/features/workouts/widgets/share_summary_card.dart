@@ -24,7 +24,7 @@ class ShareSummaryData {
   final String? brandLogo;
 
   const ShareSummaryData({
-    this.brandName = 'GymCenter',
+    this.brandName = 'GYMLAB',
     this.brandLogo,
     required this.workoutName,
     required this.memberName,
@@ -77,7 +77,7 @@ class _ShareSheetState extends State<_ShareSheet> {
     try {
       final png = await _capture();
       if (png == null) return;
-      const name = 'chamos-entreno.png';
+      const name = 'gymlab-entreno.png';
       final text = 'Entreno completado en ${widget.data.brandName}';
       if (kIsWeb) {
         final r = await WebBridge.shareFile(

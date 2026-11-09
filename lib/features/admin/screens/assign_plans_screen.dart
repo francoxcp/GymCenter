@@ -844,7 +844,7 @@ class _UserInfoCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  AppL10n.of(context).levelInfo(user.level),
+                  user.goal == null ? 'Sin objetivo' : 'Objetivo: ${user.goal}',
                   style: TextStyle(
                     fontSize: 12,
                     color: AppColors.primaryText,

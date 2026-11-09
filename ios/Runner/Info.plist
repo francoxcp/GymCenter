@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Chamos Fitness</string>
+	<string>GYMLAB</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Chamos Fitness Center</string>
+	<string>GYMLAB</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -65,10 +65,10 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.chamosfitness.chamos-fitness-center</string>
+			<string>com.gymlab.app</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>io.supabase.chamosfitness</string>
+				<string>gymlab</string>
 			</array>
 		</dict>
 	</array>

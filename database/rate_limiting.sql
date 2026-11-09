@@ -1,6 +1,6 @@
 -- ============================================
 -- RATE LIMITING & ACCOUNT LOCKOUT (SERVER-SIDE)
--- Chamos Fitness Center
+-- GYMLAB
 -- ============================================
 -- Ejecutar en Supabase SQL Editor.
 -- Agrega protección contra brute force a nivel de servidor.

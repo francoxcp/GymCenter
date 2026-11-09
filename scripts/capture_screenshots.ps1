@@ -1,5 +1,5 @@
 # ============================================================================
-# SCRIPT DE CAPTURA DE SCREENSHOTS - Chamos Fitness Center
+# SCRIPT DE CAPTURA DE SCREENSHOTS - GYMLAB
 # ============================================================================
 # Automatiza la captura de screenshots para Google Play Store y Apple App Store
 # 
@@ -211,7 +211,7 @@ function Generate-ReadMe {
     $readmePath = Join-Path $SCREENSHOTS_DIR "README.md"
     
     $content = @"
-# 📸 Screenshots - Chamos Fitness Center
+# 📸 Screenshots - GYMLAB
 
 **Fecha de captura:** $(Get-Date -Format "dd/MM/yyyy HH:mm")  
 **Versión de la app:** 1.0.0
@@ -364,7 +364,7 @@ function Show-Summary {
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║                                                           ║" -ForegroundColor Cyan
-Write-Host "║     📸 CHAMOS FITNESS CENTER - SCREENSHOT CAPTURE 📸      ║" -ForegroundColor Yellow
+Write-Host "║     📸 GYMLAB - SCREENSHOT CAPTURE 📸      ║" -ForegroundColor Yellow
 Write-Host "║                                                           ║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""

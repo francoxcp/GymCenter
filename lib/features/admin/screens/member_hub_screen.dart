@@ -11,6 +11,7 @@ import '../models/member_status.dart';
 import '../widgets/membership_card.dart';
 import 'assign_plans_screen.dart';
 import '../widgets/member_tools.dart';
+import '../../progress/screens/body_measurements_screen.dart';
 import '../../../shared/services/share_helper.dart';
 
 /// Ficha del socio: todo lo que el entrenador necesita en un solo lugar.
@@ -119,6 +120,8 @@ class MemberHubScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
+          MemberStartCard(member: member),
+          const SizedBox(height: 12),
           MembershipCard(memberId: member.id),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -148,6 +151,17 @@ class MemberHubScreen extends StatelessWidget {
                   : 'Chat privado con este socio',
               onTap: () => context.push('/chats/${member.id}'),
             ),
+          action(
+            icon: Icons.straighten,
+            title: isEn ? 'Body measurements' : 'Medidas corporales',
+            subtitle: isEn
+                ? 'See progress and record new ones'
+                : 'Ver su evolución y registrar nuevas',
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => BodyMeasurementsScreen(
+                  memberId: member.id, memberName: member.name),
+            )),
+          ),
           action(
             icon: Icons.bolt,
             title: isEn ? 'Quick assign' : 'Asignación rápida',

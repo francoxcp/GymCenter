@@ -133,7 +133,6 @@ Future<void> showQuickAssignSheet(BuildContext context, User member) async {
                               [
                                 if (w.category != null) w.category!,
                                 '${w.exerciseCount} ejercicios',
-                                w.level,
                               ].join(' · '),
                               style:
                                   TextStyle(color: AppColors.textSecondary)),
@@ -464,4 +463,86 @@ Future<void> showRoleChangeSheet(BuildContext context, User person) async {
   } catch (_) {
     if (context.mounted) AppSnackbar.error(context, 'No se pudo cambiar el rol');
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Ficha inicial: lo que el socio respondió al registrarse
+// ─────────────────────────────────────────────────────────────────────────────
+class MemberStartCard extends StatelessWidget {
+  final User member;
+  const MemberStartCard({super.key, required this.member});
+
+  @override
+  Widget build(BuildContext context) {
+    final m = member;
+    final sex = switch (m.sex) {
+      'male' => 'Hombre',
+      'female' => 'Mujer',
+      'other' => 'Otro',
+      _ => null,
+    };
+    final cells = <(String, String?)>[
+      ('Edad', m.age == null ? null : '${m.age}'),
+      ('Peso', m.weightKg == null ? null : '${_n(m.weightKg!)} kg'),
+      ('Altura', m.heightCm == null ? null : '${m.heightCm} cm'),
+      ('Género', sex),
+    ];
+    final empty = cells.every((c) => c.$2 == null) && m.goal == null;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('FICHA INICIAL',
+              style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2)),
+          const SizedBox(height: 10),
+          if (empty)
+            Text('Todavía no completó sus datos al registrarse.',
+                style: TextStyle(color: AppColors.textSecondary))
+          else ...[
+            Row(
+              children: [
+                for (final c in cells)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(c.$2 ?? '—',
+                            style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900)),
+                        Text(c.$1,
+                            style: TextStyle(
+                                color: AppColors.textSecondary, fontSize: 11)),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(children: [
+              Icon(Icons.flag_outlined, size: 18, color: AppColors.primaryText),
+              const SizedBox(width: 6),
+              Text(m.goal ?? 'Sin objetivo',
+                  style: TextStyle(
+                      color: AppColors.textPrimary, fontWeight: FontWeight.w700)),
+            ]),
+          ],
+        ],
+      ),
+    );
+  }
+
+  static String _n(double v) =>
+      v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
 }

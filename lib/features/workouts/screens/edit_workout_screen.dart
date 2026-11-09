@@ -29,7 +29,6 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
   final _descriptionController = TextEditingController();
   final _durationController = TextEditingController();
 
-  String _selectedLevel = 'Principiante';
   final List<Exercise> _exercises = [];
   bool _isLoading = false;
 
@@ -39,7 +38,6 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
     _nameController.text = widget.workout.name;
     _descriptionController.text = widget.workout.description ?? '';
     _durationController.text = widget.workout.duration.toString();
-    _selectedLevel = widget.workout.level;
     _exercises.addAll(widget.workout.exercises);
   }
 
@@ -56,7 +54,6 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
     if (_durationController.text != widget.workout.duration.toString()) {
       return true;
     }
-    if (_selectedLevel != widget.workout.level) return true;
     if (_exercises.length != widget.workout.exercises.length) return true;
     for (int i = 0; i < _exercises.length; i++) {
       final a = _exercises[i];
@@ -188,28 +185,6 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        initialValue: _selectedLevel,
-                        decoration: InputDecoration(
-                          labelText: l10n.levelLabel,
-                          border: const OutlineInputBorder(),
-                        ),
-                        items: [
-                          DropdownMenuItem(
-                              value: 'Principiante',
-                              child: Text(l10n.beginner)),
-                          DropdownMenuItem(
-                              value: 'Intermedio',
-                              child: Text(l10n.intermediate)),
-                          DropdownMenuItem(
-                              value: 'Avanzado', child: Text(l10n.advanced)),
-                        ],
-                        onChanged: (value) {
-                          if (value != null) {
-                            setState(() => _selectedLevel = value);
-                          }
-                        },
-                      ),
                       const SizedBox(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -364,7 +339,6 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
       name: _nameController.text,
       duration: int.tryParse(_durationController.text) ?? 30,
       exerciseCount: _exercises.length,
-      level: _selectedLevel,
       imageUrl: widget.workout.imageUrl,
       description: _descriptionController.text,
       exercises: _exercises,

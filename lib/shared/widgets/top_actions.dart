@@ -186,7 +186,7 @@ class AppSearchDelegate extends SearchDelegate<void> {
   Widget _workoutTile(BuildContext context, Workout w) => ListTile(
         leading: Icon(Icons.fitness_center, color: AppColors.primaryText),
         title: Text(w.name, style: TextStyle(color: AppColors.textPrimary)),
-        subtitle: Text('${w.exerciseCount} ejercicios · ${w.level}',
+        subtitle: Text('${w.exerciseCount} ejercicios${w.category == null ? '' : ' · ${w.category}'}',
             style: TextStyle(color: AppColors.textSecondary)),
         onTap: () {
           final router = GoRouter.of(context);

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/features/auth/models/user.dart';
+import 'package:gymlab/features/auth/models/user.dart';
 
 void main() {
   group('User Model Tests', () {
@@ -10,7 +10,7 @@ void main() {
         'name': 'Test User',
         'photo_url': 'https://example.com/photo.jpg',
         'role': 'user',
-        'level': 'Intermedio',
+        'goal': 'Ganar músculo',
         'active_days': 5,
         'completed_workouts': 10,
         'assigned_workout_id': 'workout123',
@@ -23,7 +23,7 @@ void main() {
       expect(user.name, 'Test User');
       expect(user.photoUrl, 'https://example.com/photo.jpg');
       expect(user.role, 'user');
-      expect(user.level, 'Intermedio');
+      expect(user.goal, 'Ganar músculo');
       expect(user.activeDays, 5);
       expect(user.completedWorkouts, 10);
       expect(user.assignedWorkoutId, 'workout123');
@@ -43,7 +43,7 @@ void main() {
       expect(user.email, 'test@example.com');
       expect(user.name, 'Test User');
       expect(user.photoUrl, isNull);
-      expect(user.level, 'Principiante'); // default
+      expect(user.goal, isNull); // default
       expect(user.activeDays, 0); // default
       expect(user.completedWorkouts, 0); // default
       expect(user.assignedWorkoutId, isNull);
@@ -56,7 +56,7 @@ void main() {
         name: 'Test User',
         photoUrl: 'https://example.com/photo.jpg',
         role: 'admin',
-        level: 'Avanzado',
+        goal: 'Perder peso',
         activeDays: 15,
         completedWorkouts: 25,
         assignedWorkoutId: 'workout789',
@@ -69,7 +69,7 @@ void main() {
       expect(json['name'], 'Test User');
       expect(json['photoUrl'], 'https://example.com/photo.jpg');
       expect(json['role'], 'admin');
-      expect(json['level'], 'Avanzado');
+      expect(json['goal'], 'Perder peso');
       expect(json['activeDays'], 15);
       expect(json['completedWorkouts'], 25);
       expect(json['assignedWorkoutId'], 'workout789');
@@ -100,13 +100,13 @@ void main() {
         email: 'test@example.com',
         name: 'Test User',
         role: 'user',
-        level: 'Principiante',
+        goal: 'Perder peso',
         activeDays: 0,
         completedWorkouts: 0,
       );
 
       final updatedUser = user.copyWith(
-        level: 'Intermedio',
+        goal: 'Mejorar salud',
         activeDays: 5,
         completedWorkouts: 10,
       );
@@ -114,7 +114,7 @@ void main() {
       expect(updatedUser.id, '1');
       expect(updatedUser.email, 'test@example.com');
       expect(updatedUser.name, 'Test User');
-      expect(updatedUser.level, 'Intermedio');
+      expect(updatedUser.goal, 'Mejorar salud');
       expect(updatedUser.activeDays, 5);
       expect(updatedUser.completedWorkouts, 10);
     });
@@ -132,7 +132,7 @@ void main() {
       expect(user.name, 'Test User');
       expect(user.role, 'user');
       expect(user.photoUrl, isNull);
-      expect(user.level, 'Principiante');
+      expect(user.goal, isNull);
       expect(user.activeDays, 0);
       expect(user.completedWorkouts, 0);
       expect(user.assignedWorkoutId, isNull);

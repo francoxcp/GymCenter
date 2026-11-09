@@ -557,7 +557,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Icon(Icons.fitness_center,
                 color: AppColors.primaryText, size: 32),
             const SizedBox(width: 12),
-            Text(l10n.chamosFitness,
+            Text(l10n.appBrand,
                 style: TextStyle(color: AppColors.textPrimary)),
           ],
         ),

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/features/workouts/services/workout_completion.dart';
+import 'package:gymlab/features/workouts/services/workout_completion.dart';
 
 void main() {
   group('WorkoutCompletion.pending', () {

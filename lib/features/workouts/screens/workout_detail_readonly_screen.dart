@@ -94,19 +94,6 @@ class _WorkoutDetailReadonlyScreenState
     }
   }
 
-  Color _getLevelColor(String level) {
-    switch (level.toLowerCase()) {
-      case 'principiante':
-        return AppColors.badgePrincipiante;
-      case 'intermedio':
-        return AppColors.badgeIntermedio;
-      case 'avanzado':
-        return AppColors.badgeAvanzado;
-      default:
-        return AppColors.primaryText;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final workoutProvider = Provider.of<WorkoutProvider>(context);
@@ -331,26 +318,6 @@ class _WorkoutDetailReadonlyScreenState
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _getLevelColor(workout.level),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            l10n.levelDisplay(workout.level).toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                        ),
                         const SizedBox(height: 20),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -364,11 +331,6 @@ class _WorkoutDetailReadonlyScreenState
                               l10n.exercisesLabel,
                               '${workout.exerciseCount}',
                               Icons.fitness_center,
-                            ),
-                            _buildInfoCard(
-                              l10n.levelLabel,
-                              l10n.levelDisplay(workout.level),
-                              Icons.trending_up,
                             ),
                           ],
                         ),

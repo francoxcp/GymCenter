@@ -3,5 +3,5 @@
 class Brand {
   Brand._();
 
-  static const platformName = 'GymCenter';
+  static const platformName = 'GYMLAB';
 }

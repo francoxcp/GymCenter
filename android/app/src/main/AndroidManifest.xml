@@ -28,7 +28,7 @@
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
     
     <application
-        android:label="Chamos Fitness"
+        android:label="GYMLAB"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="false"
@@ -68,7 +68,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data 
-                    android:scheme="chamosfitnessapp"
+                    android:scheme="gymlab"
                     android:host="reset-password" />
             </intent-filter>
         </activity>

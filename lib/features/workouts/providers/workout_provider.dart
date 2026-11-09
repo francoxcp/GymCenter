@@ -66,7 +66,6 @@ class WorkoutProvider extends ChangeNotifier {
         name: json['name'],
         duration: json['duration'],
         exerciseCount: json['exercise_count'] ?? json['exerciseCount'] ?? 0,
-        level: json['level'] ?? 'Principiante',
         imageUrl: json['image_url'] ?? json['imageUrl'] ?? '',
         description: json['description'],
         createdBy: json['created_by'] ?? json['createdBy'],
@@ -149,7 +148,6 @@ class WorkoutProvider extends ChangeNotifier {
             name: w.name,
             duration: w.duration,
             exerciseCount: w.exerciseCount,
-            level: w.level,
             imageUrl: w.imageUrl,
             description: w.description,
             createdBy: w.createdBy,
@@ -234,7 +232,6 @@ class WorkoutProvider extends ChangeNotifier {
         name: w.name,
         duration: w.duration,
         exerciseCount: w.exerciseCount,
-        level: w.level,
         imageUrl: w.imageUrl,
         description: w.description,
         createdBy: w.createdBy,
@@ -270,6 +267,15 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
+  /// Categorías (objetivos) que tienen al menos una rutina, para filtrar.
+  List<String> get categoriesInUse {
+    final set = {
+      for (final w in _workouts)
+        if ((w.category ?? '').isNotEmpty) w.category!
+    };
+    return set.toList()..sort();
+  }
+
   void setFilter(String filter) {
     _selectedFilter = filter;
     notifyListeners();
@@ -283,7 +289,7 @@ class WorkoutProvider extends ChangeNotifier {
   List<Workout> get filteredWorkouts {
     var list = _selectedFilter == 'Todos'
         ? _workouts
-        : _workouts.where((w) => w.level == _selectedFilter).toList();
+        : _workouts.where((w) => w.category == _selectedFilter).toList();
     if (_searchQuery.isNotEmpty) {
       list = list
           .where((w) => w.name.toLowerCase().contains(_searchQuery))
@@ -304,7 +310,6 @@ class WorkoutProvider extends ChangeNotifier {
             'name': workout.name,
             'duration': workout.duration,
             'exercise_count': workout.exercises.length,
-            'level': workout.level,
             'image_url': workout.imageUrl,
             'description': workout.description,
             'created_by': userId,
@@ -355,7 +360,6 @@ class WorkoutProvider extends ChangeNotifier {
         name: workout.name,
         duration: workout.duration,
         exerciseCount: freshExercises.length,
-        level: workout.level,
         imageUrl: workout.imageUrl,
         description: workout.description,
         createdBy: userId,
@@ -400,7 +404,6 @@ class WorkoutProvider extends ChangeNotifier {
         'name': workout.name,
         'duration': workout.duration,
         'exercise_count': workout.exercises.length,
-        'level': workout.level,
         'image_url': workout.imageUrl,
         'description': workout.description,
       }).eq('id', workoutId);
@@ -457,7 +460,6 @@ class WorkoutProvider extends ChangeNotifier {
           name: workout.name,
           duration: workout.duration,
           exerciseCount: freshExercises.length,
-          level: workout.level,
           imageUrl: workout.imageUrl,
           description: workout.description,
           createdBy: w.createdBy,

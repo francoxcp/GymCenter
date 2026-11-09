@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Script de configuración para macOS
-# Chamos Fitness Center - iOS Setup
+# GYMLAB - iOS Setup
 
-echo "🏋️ Chamos Fitness Center - iOS Setup Script"
+echo "🏋️ GYMLAB - iOS Setup Script"
 echo "=============================================="
 echo ""
 

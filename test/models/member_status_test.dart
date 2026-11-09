@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/features/admin/models/member_status.dart';
+import 'package:gymlab/features/admin/models/member_status.dart';
 
 void main() {
   // Jueves 12 de noviembre de 2026 (weekday = 4)

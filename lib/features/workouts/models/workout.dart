@@ -5,7 +5,6 @@ class Workout {
   final String name;
   final int duration; // en minutos
   final int exerciseCount;
-  final String level; // Principiante, Intermedio, Avanzado
   final String imageUrl;
   final String? description;
   final String? createdBy; // ID del usuario que creó la rutina (null = admin)
@@ -25,7 +24,6 @@ class Workout {
     required this.name,
     required this.duration,
     required this.exerciseCount,
-    required this.level,
     required this.imageUrl,
     this.description,
     this.createdBy,
@@ -39,7 +37,6 @@ class Workout {
       name: json['name'],
       duration: json['duration'],
       exerciseCount: json['exercise_count'] ?? json['exerciseCount'] ?? 0,
-      level: json['level'] ?? 'Principiante',
       imageUrl: json['image_url'] ?? json['imageUrl'] ?? '',
       description: json['description'],
       createdBy: json['created_by'] ?? json['createdBy'],
@@ -59,7 +56,6 @@ class Workout {
       'name': name,
       'duration': duration,
       'exerciseCount': exerciseCount,
-      'level': level,
       'imageUrl': imageUrl,
       'createdBy': createdBy,
       'category': category,

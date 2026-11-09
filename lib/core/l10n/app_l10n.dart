@@ -270,8 +270,6 @@ class AppL10n {
   String errorSavingMsg(String e) =>
       isEn ? 'Error saving: $e' : 'Error al guardar: $e';
   String get photoUpdated => isEn ? 'Photo updated' : 'Foto actualizada';
-  String get trainingLevel =>
-      isEn ? 'TRAINING LEVEL' : 'NIVEL DE ENTRENAMIENTO';
   String get saveChanges => isEn ? 'Save Changes' : 'Guardar Cambios';
   String get workoutHistoryMenu =>
       isEn ? 'Workout history' : 'Historial de entrenamientos';
@@ -317,20 +315,6 @@ class AppL10n {
       isEn ? 'Workout Calendar' : 'Calendario de Entrenamientos';
 
   // ── Medidas corporales ───────────────────────────────────────────────────
-  String get bodyMeasurementsTitle =>
-      isEn ? 'Body Measurements' : 'Medidas Corporales';
-  String get currentMeasurements =>
-      isEn ? 'Current Measurements' : 'Medidas Actuales';
-  String get measurementHistory => isEn ? 'History' : 'Historial';
-  String get noMeasurementsYet =>
-      isEn ? 'No measurements recorded' : 'Sin medidas registradas';
-  String get noMeasurementsBody => isEn
-      ? 'Start recording your measurements\nto track your progress'
-      : 'Comienza a registrar tus medidas\npara hacer seguimiento de tu progreso';
-  String get addFirstMeasurement =>
-      isEn ? 'Add first measurement' : 'Añadir primera medida';
-  String get newMeasurement => isEn ? 'New Measurement' : 'Nueva Medida';
-
   // ── Legal ────────────────────────────────────────────────────────────────
   String get termsTitle =>
       isEn ? 'Terms and Conditions' : 'Términos y Condiciones';
@@ -339,17 +323,15 @@ class AppL10n {
 
   // About dialog
   String get aboutContent => isEn
-      ? 'Version 1.0.0\n\nYour perfect companion to reach your fitness goals.\n\n© 2026 GymCenter'
-      : 'Versión 1.0.0\n\nTu compañero perfecto para alcanzar tus metas de fitness.\n\n© 2026 GymCenter';
+      ? 'Version 1.0.0\n\nYour perfect companion to reach your fitness goals.\n\n© 2026 GYMLAB'
+      : 'Versión 1.0.0\n\nTu compañero perfecto para alcanzar tus metas de fitness.\n\n© 2026 GYMLAB';
 
   // ── Onboarding ───────────────────────────────────────────────────────────
   String get onboardingWelcome =>
-      isEn ? 'Welcome to GymCenter!' : '¡Bienvenido a GymCenter!';
+      isEn ? 'Welcome to GYMLAB!' : '¡Bienvenido a GYMLAB!';
   String get onboardingWelcomeBody => isEn
       ? 'Your perfect companion to reach your fitness goals. Let\'s personalize your experience.'
       : 'Tu compañero perfecto para alcanzar tus metas de fitness. Vamos a personalizar tu experiencia.';
-  String get onboardingLevelTitle =>
-      isEn ? 'What is your fitness level?' : '¿Cuál es tu nivel de fitness?';
   String get onboardingStatsTitle =>
       isEn ? 'Your personal data' : 'Tus datos personales';
   String get onboardingStatsSubtitle => isEn
@@ -374,16 +356,6 @@ class AppL10n {
   String get back => isEn ? 'Back' : 'Atrás';
   String get start => isEn ? 'Start' : 'Comenzar';
   String get next => isEn ? 'Next' : 'Siguiente';
-  String get beginner => isEn ? 'Beginner' : 'Principiante';
-  String get beginnerDesc =>
-      isEn ? 'New to training' : 'Nuevo en el entrenamiento';
-  String get intermediate => isEn ? 'Intermediate' : 'Intermedio';
-  String get intermediateDesc =>
-      isEn ? 'I train regularly' : 'Entreno regularmente';
-  String get advanced => isEn ? 'Advanced' : 'Avanzado';
-  String get advancedDesc =>
-      isEn ? 'Experienced athlete' : 'Atleta experimentado';
-
   // ── Admin ────────────────────────────────────────────────────────────────
   String get noWorkoutsInCategory => isEn
       ? 'No workouts in this category'
@@ -499,18 +471,6 @@ class AppL10n {
   String get weightMustBePositive =>
       isEn ? 'Weight must be greater than 0' : 'El peso debe ser mayor a 0';
   // ── Body measurements ──────────────────────────────────────────────────
-  String get enterAtLeastOneMeasure =>
-      isEn ? 'Enter at least one measurement' : 'Ingresa al menos una medida';
-  String get valuesMustBePositive => isEn
-      ? 'Values must be positive numbers'
-      : 'Los valores deben ser números positivos';
-  String valueTooHigh(int max) =>
-      isEn ? 'Value too high (max: $max)' : 'Valor demasiado alto (máx: $max)';
-  String get measureSaved =>
-      isEn ? 'Measurement saved' : 'Medida guardada correctamente';
-  String get errorSavingMeasure =>
-      isEn ? 'Error saving measurement' : 'Error al guardar medida';
-
   // ── Change password ────────────────────────────────────────────────────
   String get passwordChanged => isEn
       ? 'Password changed successfully ✅'
@@ -544,10 +504,6 @@ class AppL10n {
       ? 'Users will appear here once they register'
       : 'Los usuarios aparecerán aquí cuando se registren';
   String get reloadLabel => isEn ? 'Reload' : 'Recargar';
-  String levelAndWorkoutsInfo(String level, int workouts) => isEn
-      ? 'Level: $level · $workouts workouts'
-      : 'Nivel: $level · $workouts entrenamientos';
-
   // ── Assign plans ─────────────────────────────────────────────────────
   String get mondayFull => isEn ? 'Monday' : 'Lunes';
   String get tuesdayFull => isEn ? 'Tuesday' : 'Martes';
@@ -584,7 +540,6 @@ class AppL10n {
       isEn ? 'Next training: $day' : 'Próximo entreno: $day';
   String get modifiedBadge => isEn ? 'modified' : 'modificado';
   String get saveRoutine => isEn ? 'Save routine' : 'Guardar rutina';
-  String levelInfo(String level) => isEn ? 'Level: $level' : 'Nivel: $level';
   String get closeLabel => isEn ? 'Close' : 'Cerrar';
 
   // ── Settings extra ───────────────────────────────────────────────────
@@ -614,7 +569,7 @@ class AppL10n {
   String get exportMyDataSubtitle => isEn
       ? 'Download all your information in JSON format'
       : 'Descarga toda tu información en formato JSON';
-  String get chamosFitness => 'GymCenter';
+  String get appBrand => 'GYMLAB';
   String get preparingExport =>
       isEn ? 'Preparing export...' : 'Preparando exportación...';
   String errorExportingData(String e) =>
@@ -630,40 +585,13 @@ class AppL10n {
       : '¿Estás seguro de que quieres salir sin guardar los cambios?';
   String get personalInfo =>
       isEn ? 'Personal information' : 'Información personal';
-  String get trainingLevelSection =>
-      isEn ? 'Training level' : 'Nivel de entrenamiento';
   String get bodyMeasurementsTip => isEn
       ? 'Record your weight, height, and measurements in the "Body Measurements" section.'
       : 'Registra tu peso, altura y medidas en la sección "Medidas Corporales".';
 
   // ── Body measurements extra ──────────────────────────────────────────
-  String get chestLabel => isEn ? 'Chest' : 'Pecho';
-  String get waistLabel => isEn ? 'Waist' : 'Cintura';
-  String get hipLabel => isEn ? 'Hip' : 'Cadera';
-  String get leftBicep => isEn ? 'Left Bicep' : 'Bícep Izq.';
-  String get rightBicep => isEn ? 'Right Bicep' : 'Bícep Der.';
-  String get leftThigh => isEn ? 'Left Thigh' : 'Muslo Izq.';
-  String get rightThigh => isEn ? 'Right Thigh' : 'Muslo Der.';
-  String get leftBicepFull => isEn ? 'Left Bicep' : 'Bícep Izquierdo';
-  String get rightBicepFull => isEn ? 'Right Bicep' : 'Bícep Derecho';
-  String get leftThighFull => isEn ? 'Left Thigh' : 'Muslo Izquierdo';
-  String get rightThighFull => isEn ? 'Right Thigh' : 'Muslo Derecho';
-  String daysAgo(int days) => isEn ? '$days days ago' : 'Hace $days días';
-  String get leftBicepShort => isEn ? 'L.Bic' : 'B.Izq';
-  String get rightBicepShort => isEn ? 'R.Bic' : 'B.Der';
-  String get leftThighShort => isEn ? 'L.Thi' : 'M.Izq';
-  String get rightThighShort => isEn ? 'R.Thi' : 'M.Der';
-  String get discardMeasurementsTitle =>
-      isEn ? 'Discard measurements?' : '¿Descartar medidas?';
-  String get discardMeasurementsBody => isEn
-      ? 'Are you sure you want to leave without saving the measurements?'
-      : '¿Estás seguro de que quieres salir sin guardar las medidas?';
   String get discardLabel => isEn ? 'Discard' : 'Descartar';
   String weightUnit(String unit) => isEn ? 'Weight ($unit)' : 'Peso ($unit)';
-  String heightUnit(String unit) => isEn ? 'Height ($unit)' : 'Altura ($unit)';
-  String measureUnit(String label, String unit) => '$label ($unit)';
-  String get notesOptional => isEn ? 'Notes (optional)' : 'Notas (opcional)';
-
   // ── Create workout ───────────────────────────────────────────────────
   String get newCategory => isEn ? 'New category' : 'Nueva categoría';
   String get categoryHint => isEn
@@ -685,7 +613,6 @@ class AppL10n {
   String get descriptionLabel => isEn ? 'Description' : 'Descripción';
   String get addDescription =>
       isEn ? '+ Add description' : '+ Agregar descripción';
-  String get levelLabel => isEn ? 'Level' : 'Nivel';
   String get categoryLabel => isEn ? 'Category' : 'Categoría';
   String get selectACategory =>
       isEn ? 'Select a category' : 'Selecciona una categoría';
@@ -822,8 +749,8 @@ class AppL10n {
   String get andThe => isEn ? ' and the ' : ' y la ';
   String get privacyPolicyLinkText =>
       isEn ? 'Privacy Policy' : 'Política de Privacidad';
-  String get ofChamosFitness =>
-      isEn ? ' of GymCenter.' : ' de GymCenter.';
+  String get ofBrand =>
+      isEn ? ' of GYMLAB.' : ' de GYMLAB.';
   String get signUpButton => isEn ? 'SIGN UP' : 'REGISTRARSE';
   String get alreadyMember =>
       isEn ? 'Already a member? ' : '¿Ya eres miembro? ';
@@ -1128,19 +1055,6 @@ class AppL10n {
   String get settingsTooltip => isEn ? 'Settings' : 'Ajustes';
 
   // ── Level display (DB keys → labels) ─────────────────────────────────
-  String levelDisplay(String dbKey) {
-    switch (dbKey) {
-      case 'Principiante':
-        return beginner;
-      case 'Intermedio':
-        return intermediate;
-      case 'Avanzado':
-        return advanced;
-      default:
-        return dbKey;
-    }
-  }
-
   // ── Today workout extra (batch 2) ──────────────────────────────────────
   String exerciseProgress(int current, int total) =>
       isEn ? 'Exercise $current of $total' : 'Ejercicio $current de $total';
@@ -1265,7 +1179,7 @@ class AppL10n {
       : 'No hay conexión a internet. Conéctate para eliminar la rutina.';
 
   // ── Workout list extra (batch 2) ──────────────────────────────────────
-  String get appTitleUpper => 'GYMCENTER';
+  String get appTitleUpper => 'GYMLAB';
   String get officialBadge => isEn ? 'OFFICIAL' : 'OFICIAL';
   String get routinePausedTitle => isEn ? 'ROUTINE PAUSED' : 'RUTINA EN PAUSA';
   String exerciseNumber(int n) => isEn ? 'Exercise $n' : 'Ejercicio $n';

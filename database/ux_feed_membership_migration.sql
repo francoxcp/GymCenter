@@ -293,9 +293,9 @@ BEGIN
   PERFORM cron.schedule('push-outbox-cleanup', '30 9 * * 0',
     'SELECT public.cleanup_push_outbox();');
   -- Comentarios y avisos llegan en ≤ 5 min (antes cada 15)
-  PERFORM cron.unschedule('chamos-send-push')
-    WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'chamos-send-push');
-  PERFORM cron.schedule('chamos-send-push', '*/5 * * * *',
+  PERFORM cron.unschedule('gymlab-send-push')
+    WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'gymlab-send-push');
+  PERFORM cron.schedule('gymlab-send-push', '*/5 * * * *',
     'SELECT public.trigger_send_push();');
 END;
 $$;

@@ -1,4 +1,4 @@
-// Service worker de Chamos Fitness Center (PWA).
+// Service worker de GYMLAB (PWA).
 // - Modo sin conexión: guarda la app (HTML, JS, motor gráfico, íconos y
 //   fuentes) para que abra aunque no haya internet en el gimnasio.
 //   Estrategia "red primero": con conexión siempre carga la última versión
@@ -6,8 +6,8 @@
 // - Recibe notificaciones Web Push enviadas por la Edge Function de Supabase.
 // - Al tocar una notificación, enfoca la app y navega a la ruta indicada.
 
-const CACHE = 'chamos-app-v2';
-const FONT_CACHE = 'chamos-fonts-v1';
+const CACHE = 'gymlab-app-v3';
+const FONT_CACHE = 'gymlab-fonts-v1';
 const NETWORK_TIMEOUT_MS = 4000;
 
 // Núcleo mínimo para abrir la app sin conexión (el resto se guarda al usarse)
@@ -131,7 +131,7 @@ self.addEventListener('push', (event) => {
   } catch (_) {
     payload = { body: event.data ? event.data.text() : '' };
   }
-  const title = payload.title || 'Chamos Fitness Center';
+  const title = payload.title || 'GYMLAB';
   const options = {
     body: payload.body || '',
     tag: payload.tag || undefined,

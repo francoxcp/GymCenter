@@ -616,7 +616,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                                       .read<AuthProvider>()
                                       .organization
                                       ?.name ??
-                                  'GymCenter',
+                                  'GYMLAB',
                               brandLogo: context
                                   .read<AuthProvider>()
                                   .organization

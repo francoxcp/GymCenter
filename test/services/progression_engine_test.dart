@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/features/workouts/services/progression_engine.dart';
+import 'package:gymlab/features/workouts/services/progression_engine.dart';
 
 double lbs(double v) => v / kKgToLbs;
 

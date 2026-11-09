@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/core/constants/app_constants.dart';
+import 'package:gymlab/core/constants/app_constants.dart';
 
 void main() {
   group('AppConstants Tests', () {
     group('App Info', () {
       test('has correct app name', () {
-        expect(AppConstants.appName, 'GymCenter');
+        expect(AppConstants.appName, 'GYMLAB');
       });
 
       test('has correct app version', () {
@@ -32,11 +32,6 @@ void main() {
     });
 
     group('Training Levels', () {
-      test('has all training levels', () {
-        expect(AppConstants.beginnerLevel, 'Principiante');
-        expect(AppConstants.intermediateLevel, 'Intermedio');
-        expect(AppConstants.advancedLevel, 'Avanzado');
-      });
     });
 
     group('Filters', () {

@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../core/utils/app_validators.dart';
 import '../../../shared/widgets/app_snackbar.dart';
@@ -33,7 +32,6 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   static const _kNoCategory = '__no_category__';
   static const _kPrefsKey = 'custom_workout_categories';
 
-  String _selectedLevel = AppConstants.beginnerLevel;
   String? _selectedCategory;
   List<String> _categories = List.from(Workout.categories);
   final List<Exercise> _exercises = [];
@@ -255,7 +253,6 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
         id: '',
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
-        level: _selectedLevel,
         category: _selectedCategory == _kNoCategory ? null : _selectedCategory,
         duration: estimatedDuration,
         exerciseCount: _exercises.length,
@@ -396,30 +393,6 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                 ),
 
                 const SizedBox(height: 16),
-
-                // Nivel
-                DropdownButtonFormField<String>(
-                  initialValue: _selectedLevel,
-                  decoration: InputDecoration(
-                    labelText: AppL10n.of(context).levelLabel,
-                    border: const OutlineInputBorder(),
-                  ),
-                  items: const [
-                    AppConstants.beginnerLevel,
-                    AppConstants.intermediateLevel,
-                    AppConstants.advancedLevel,
-                  ]
-                      .map((level) => DropdownMenuItem(
-                            value: level,
-                            child: Text(level),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => _selectedLevel = value);
-                    }
-                  },
-                ),
 
                 const SizedBox(height: 16),
 

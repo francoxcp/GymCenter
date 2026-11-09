@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chamos_fitness_center/features/auth/models/user.dart';
+import 'package:gymlab/features/auth/models/user.dart';
 
 void main() {
   final today = DateTime(2026, 11, 8, 15, 30);

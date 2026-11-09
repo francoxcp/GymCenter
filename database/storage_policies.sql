@@ -1,6 +1,6 @@
 -- ============================================
 -- POLÍTICAS DE SEGURIDAD PARA SUPABASE STORAGE
--- Chamos Fitness Center
+-- GYMLAB
 -- ============================================
 -- Ejecutar DESPUÉS de supabase_rls_policies.sql
 

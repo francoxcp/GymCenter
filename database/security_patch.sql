@@ -1,6 +1,6 @@
 -- ============================================
 -- PARCHE DE SEGURIDAD: RLS + ROLE PROTECTION
--- Chamos Fitness Center
+-- GYMLAB
 -- ============================================
 -- Ejecutar en Supabase SQL Editor INMEDIATAMENTE.
 -- Corrige: tablas sin RLS, escalación de rol a admin,

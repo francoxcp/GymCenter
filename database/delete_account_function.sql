@@ -1,6 +1,6 @@
 -- ============================================
 -- FUNCIÓN PARA ELIMINAR CUENTA DE USUARIO
--- Chamos Fitness Center
+-- GYMLAB
 -- ============================================
 -- Ejecutar DESPUÉS de todas las otras configuraciones
 

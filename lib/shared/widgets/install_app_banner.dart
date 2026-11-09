@@ -93,7 +93,7 @@ class _InstallAppBannerState extends State<InstallAppBanner> {
 
     final title = widget.forNotifications
         ? (isEn ? 'Install the app to get notifications' : 'Instala la app para recibir notificaciones')
-        : (isEn ? 'Install GymCenter' : 'Instala GymCenter');
+        : (isEn ? 'Install GYMLAB' : 'Instala GYMLAB');
 
     final body = inApp
         ? (isEn

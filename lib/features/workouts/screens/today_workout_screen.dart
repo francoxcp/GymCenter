@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 import 'dart:async';
+import 'dart:convert';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/workout_provider.dart';
@@ -25,6 +26,7 @@ import '../../../shared/services/unsaved_changes_guard.dart';
 import '../../../shared/services/offline_cache_service.dart';
 import '../../../shared/services/offline_sync_queue.dart';
 import '../services/progression_engine.dart';
+import '../widgets/record_celebration.dart';
 
 class TodayWorkoutScreen extends StatefulWidget {
   /// Si se pasa, se ejecuta esta rutina en lugar de la asignada (modo extra).
@@ -195,6 +197,68 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   Future<void> _clearTimerLocally() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_timerKey());
+    await prefs.remove(_setsKey());
+  }
+
+  // ── Pesos y repeticiones de la sesión en curso (para retomar) ──────────
+  String _setsKey() => _timerKey().replaceFirst('workout_timer_', 'workout_sets_');
+
+  /// Valores de esta sesión recuperados al retomar; se aplican encima de los
+  /// pesos de la sesión anterior aunque esos lleguen después.
+  Map<int, Map<int, double?>> _resumedWeights = {};
+  Map<int, Map<int, int>> _resumedReps = {};
+
+  Future<void> _saveSetsLocally() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+        _setsKey(),
+        jsonEncode({
+          'day': DateTime.now().toIso8601String().substring(0, 10),
+          'w': {
+            for (final e in _setWeights.entries)
+              '${e.key}': {for (final x in e.value.entries) '${x.key}': x.value}
+          },
+          'r': {
+            for (final e in _setReps.entries)
+              '${e.key}': {for (final x in e.value.entries) '${x.key}': x.value}
+          },
+        }));
+  }
+
+  Future<void> _loadSetsLocally() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_setsKey());
+    if (raw == null) return;
+    try {
+      final j = jsonDecode(raw) as Map<String, dynamic>;
+      if (j['day'] != DateTime.now().toIso8601String().substring(0, 10)) return;
+      _resumedWeights = {
+        for (final e in (j['w'] as Map).entries)
+          int.parse(e.key as String): {
+            for (final x in (e.value as Map).entries)
+              int.parse(x.key as String): (x.value as num?)?.toDouble()
+          }
+      };
+      _resumedReps = {
+        for (final e in (j['r'] as Map).entries)
+          int.parse(e.key as String): {
+            for (final x in (e.value as Map).entries)
+              int.parse(x.key as String): (x.value as num).toInt()
+          }
+      };
+      if (mounted) setState(_applyResumedSets);
+    } catch (_) {}
+  }
+
+  void _applyResumedSets() {
+    for (final e in _resumedWeights.entries) {
+      _setWeights[e.key] ??= {};
+      _setWeights[e.key]!.addAll(e.value);
+    }
+    for (final e in _resumedReps.entries) {
+      _setReps[e.key] ??= {};
+      _setReps[e.key]!.addAll(e.value);
+    }
   }
 
   /// Pre-descarga todos los videos de la rutina en background.
@@ -261,8 +325,24 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           debugPrint('??? Progreso del día anterior detectado, eliminando...');
           await progressProvider.deleteProgress();
           debugPrint('? Progreso anterior eliminado');
+        } else if (progress.timeSinceUpdate.inHours < 3) {
+          // Lo dejó hace poco: seguir directo donde quedó, sin preguntar
+          _restoreProgress(progress);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(
+                  'Sigues en el ejercicio ${progress.exerciseIndex + 1} de ${workout.exercises.length}'),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'Empezar de cero',
+                textColor: AppColors.primary,
+                onPressed: _startOver,
+              ),
+            ));
+          }
         } else {
-          // El progreso es del mismo día, mostrar diálogo
+          // Del mismo día pero hace horas: preguntar
           _showRestoreDialog(progress, workout.name);
         }
       } else {
@@ -365,6 +445,23 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     );
   }
 
+  void _startOver() {
+    context.read<WorkoutProgressProvider>().deleteProgress();
+    _clearTimerLocally();
+    _resumedWeights = {};
+    _resumedReps = {};
+    setState(() {
+      _completedSets = [
+        for (final row in _completedSets) List<bool>.filled(row.length, false)
+      ];
+      _setReps.clear();
+      _currentExerciseIndex = 0;
+      _accumulatedSeconds = 0;
+      _resumeTime = DateTime.now();
+    });
+    if (_pageController.hasClients) _pageController.jumpToPage(0);
+  }
+
   void _restoreProgress(progress) {
     setState(() {
       _completedSets = progress.completedSets;
@@ -379,6 +476,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       _resumeTime = DateTime.now();
       _isPaused = false;
     });
+    // Pesos y repeticiones que ya había anotado hoy
+    _loadSetsLocally();
     // También cargar timer local (SharedPrefs) en paralelo
     _loadTimerLocally().then((_) {
       // Si SharedPrefs tiene un valor mayor, usarlo
@@ -452,6 +551,27 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     // Auto-guardar progreso (con debounce de 2 segundos)
     _saveProgressDebounced();
 
+    // Récord con el peso sugerido (la progresión subió el peso)
+    final prevPr = _exercisePRs[exerciseIndex];
+    if (!isCompleted &&
+        autoWeight != null &&
+        autoWeight > 0 &&
+        prevPr != null &&
+        autoWeight > prevPr) {
+      final alreadyCelebrated = _newPRsThisSession.contains(exerciseIndex);
+      _exercisePRs[exerciseIndex] = autoWeight;
+      _newPRsThisSession.add(exerciseIndex);
+      final name = _exerciseNameAt(exerciseIndex);
+      if (!alreadyCelebrated && name != null) {
+        showRecordCelebration(
+          context,
+          exerciseName: name,
+          weightLabel: _fmtWeight(autoWeight),
+          previousLabel: _fmtWeight(prevPr),
+        );
+      }
+    }
+
     if (!isCompleted) {
       HapticFeedback.heavyImpact();
       _celebrationController.forward(from: 0);
@@ -480,6 +600,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     _saveDebouncer?.cancel();
     _saveDebouncer = Timer(const Duration(seconds: 2), () {
       _saveProgressToDatabase();
+      _saveSetsLocally();
     });
   }
 
@@ -1076,6 +1197,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         }
         setState(() {
           _setWeights = weights;
+          _applyResumedSets();
           _lastSessionWeights = lastSession;
           _exercisePRs = prs;
           _historyByExercise = history;
@@ -1191,6 +1313,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           bodyweight ? 0.0 : (inputLbs != null ? _toKg(inputLbs) : null);
       final isNewPR =
           weight != null && weight > 0 && (pr == null || weight > pr);
+      final alreadyCelebrated = _newPRsThisSession.contains(exerciseIndex);
       setState(() {
         _setWeights[exerciseIndex] ??= {};
         _setWeights[exerciseIndex]![setIndex] = weight;
@@ -1202,29 +1325,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         }
       });
       closeSheet();
-      if (isNewPR) {
-        HapticFeedback.heavyImpact();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.emoji_events, color: Color(0xFFFFB800), size: 21),
-                const SizedBox(width: 10),
-                Text(
-                  AppL10n.of(context).newPersonalRecord(_fmtWeight(weight)),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.amber,
-            duration: const Duration(seconds: 3),
-            behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
+      // Se celebra solo si supera una marca anterior (la primera vez que
+      // registra un ejercicio no es "récord") y una vez por ejercicio.
+      if (isNewPR && pr != null && !alreadyCelebrated) {
+        showRecordCelebration(
+          context,
+          exerciseName: exercise.name,
+          weightLabel: _fmtWeight(weight),
+          previousLabel: _fmtWeight(pr),
         );
       }
     }
@@ -1476,6 +1584,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
   /// Peso (kg) para una serie marcada sin peso anotado, o null si no hay
   /// ninguna referencia (ejercicio nuevo sin peso del entrenador).
+  String? _exerciseNameAt(int exerciseIndex) {
+    final id = widget.extraWorkoutId ??
+        context.read<AuthProvider>().currentUser?.assignedWorkoutId;
+    final w = id != null ? context.read<WorkoutProvider>().getWorkoutById(id) : null;
+    if (w == null || exerciseIndex >= w.exercises.length) return null;
+    return w.exercises[exerciseIndex].name;
+  }
+
   double? _autoWeightFor(int exerciseIndex, int setIndex) {
     // 1. Serie anterior de este ejercicio en la sesión actual
     for (var i = setIndex - 1; i >= 0; i--) {
@@ -2242,12 +2358,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           // Video del ejercicio
           if (exercise.videoUrl != null && exercise.videoUrl!.isNotEmpty)
             Container(
-              constraints: const BoxConstraints(
-                maxHeight: 400, // MÁximo para videos muy largos
-              ),
+              // Corto y en bucle, sin sonido: se ve la técnica sin tocar
+              // nada. "Ver en grande" lo abre a pantalla completa.
+              constraints: const BoxConstraints(maxHeight: 260),
               child: VideoPlayerWidget(
                 videoUrl: exercise.videoUrl!,
-                autoPlay: false,
+                // Solo se reproduce el del ejercicio en pantalla
+                autoPlay: exerciseIndex == _currentExerciseIndex,
+                muted: true,
                 looping: true,
                 exerciseName: exercise.name,
                 thumbnailUrl: exercise.thumbnailUrl,

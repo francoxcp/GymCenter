@@ -1,4 +1,6 @@
 ﻿import 'package:flutter/material.dart';
+import '../../../shared/web/web_bridge.dart';
+import '../../../shared/widgets/install_guide_sheet.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -445,6 +447,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onTap: () => context.push('/personal-records'),
                 ),
                 const SizedBox(height: 10),
+                if (kIsWeb && !WebBridge.isStandalone) ...[
+                  _MenuItem(
+                    icon: Icons.install_mobile,
+                    title: 'Instalar la app',
+                    onTap: () => showInstallGuide(context),
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 _MenuItem(
                   icon: Icons.history,
                   title: AppL10n.of(context).workoutHistoryMenu,

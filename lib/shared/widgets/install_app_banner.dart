@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../web/web_bridge.dart';
+import 'install_guide_sheet.dart';
 
 /// Tarjeta que invita a instalar la PWA en la pantalla de inicio.
 ///
@@ -25,7 +26,8 @@ class InstallAppBanner extends StatefulWidget {
 }
 
 class _InstallAppBannerState extends State<InstallAppBanner> {
-  static const _kDismissed = 'install_banner_dismissed_v1';
+  // Al cerrarlo vuelve a aparecer a los 14 días (no se pierde para siempre).
+  static const _kSnoozed = 'install_banner_snoozed_until';
   bool _dismissed = true; // oculto hasta comprobar preferencias
   bool _canPrompt = false;
   Timer? _recheck;
@@ -54,13 +56,19 @@ class _InstallAppBannerState extends State<InstallAppBanner> {
     }
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
-    setState(() => _dismissed = prefs.getBool(_kDismissed) ?? false);
+    final until = prefs.getInt(_kSnoozed) ?? 0;
+    setState(() =>
+        _dismissed = DateTime.now().millisecondsSinceEpoch < until);
   }
 
   Future<void> _dismiss() async {
     setState(() => _dismissed = true);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kDismissed, true);
+    await prefs.setInt(
+        _kSnoozed,
+        DateTime.now()
+            .add(const Duration(days: 14))
+            .millisecondsSinceEpoch);
   }
 
   Future<void> _install() async {
@@ -80,21 +88,21 @@ class _InstallAppBannerState extends State<InstallAppBanner> {
   Widget build(BuildContext context) {
     if (!_eligible || _dismissed) return const SizedBox.shrink();
     final isIOS = WebBridge.isIOS;
-    // En Android sin el evento de instalación no hay nada útil que mostrar
-    // (salvo en ajustes de notificaciones).
-    if (!isIOS && !_canPrompt && !widget.forNotifications) {
-      return const SizedBox.shrink();
-    }
+    final inApp = WebBridge.isInAppBrowser;
     final isEn = AppL10n.of(context).isEn;
 
     final title = widget.forNotifications
         ? (isEn ? 'Install the app to get notifications' : 'Instala la app para recibir notificaciones')
         : (isEn ? 'Install GymCenter' : 'Instala GymCenter');
 
-    final body = isIOS
+    final body = inApp
         ? (isEn
-            ? 'In Safari tap Share, then "Add to Home Screen". It opens full screen like a normal app.'
-            : 'En Safari toca Compartir y luego "Agregar a pantalla de inicio". Se abrirá a pantalla completa como una app normal.')
+            ? 'Open this link in Safari or Chrome to install it.'
+            : 'Abre este enlace en Safari o Chrome para instalarla.')
+        : isIOS
+        ? (isEn
+            ? 'Three taps and it opens full screen like a normal app.'
+            : 'Son tres toques y abre a pantalla completa como una app normal.')
         : (isEn
             ? 'Add it to your home screen for quick, full-screen access.'
             : 'Agrégala a tu pantalla de inicio para abrirla rápido y a pantalla completa.');
@@ -144,12 +152,14 @@ class _InstallAppBannerState extends State<InstallAppBanner> {
                     height: 1.4,
                   ),
                 ),
-                if (!isIOS && _canPrompt) ...[
+                ...[
                   const SizedBox(height: 10),
                   SizedBox(
                     height: 36,
                     child: ElevatedButton(
-                      onPressed: _install,
+                      onPressed: (!isIOS && !inApp && _canPrompt)
+                          ? _install
+                          : () => showInstallGuide(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.black,
@@ -157,7 +167,9 @@ class _InstallAppBannerState extends State<InstallAppBanner> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: Text(isEn ? 'Install' : 'Instalar'),
+                      child: Text((!isIOS && !inApp && _canPrompt)
+                          ? (isEn ? 'Install' : 'Instalar')
+                          : (isEn ? 'Show me how' : 'Ver cómo')),
                     ),
                   ),
                 ],

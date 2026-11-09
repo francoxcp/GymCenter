@@ -7,6 +7,7 @@ class WebBridge {
   static bool get isAvailable => false;
   static bool get isIOS => false;
   static bool get isStandalone => false;
+  static bool get isInAppBrowser => false;
   static String get timeZone => 'UTC';
 
   static bool get canPromptInstall => false;

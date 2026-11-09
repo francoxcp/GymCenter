@@ -16,6 +16,9 @@ class VideoPlayerWidget extends StatefulWidget {
   final String? thumbnailUrl;
   final bool showFullscreenButton;
 
+  /// Sin sonido (necesario para que el navegador lo reproduzca solo).
+  final bool muted;
+
   const VideoPlayerWidget({
     super.key,
     required this.videoUrl,
@@ -25,6 +28,7 @@ class VideoPlayerWidget extends StatefulWidget {
     this.exerciseName,
     this.thumbnailUrl,
     this.showFullscreenButton = true,
+    this.muted = false,
   });
 
   @override
@@ -86,6 +90,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       _controller.setLooping(widget.looping);
 
       await _controller.initialize();
+      if (widget.muted) await _controller.setVolume(0);
 
       if (!mounted) return;
       setState(() {
@@ -109,6 +114,28 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant VideoPlayerWidget old) {
+    super.didUpdateWidget(old);
+    if (!_isInitialized || old.autoPlay == widget.autoPlay) return;
+    widget.autoPlay ? _controller.play() : _controller.pause();
+  }
+
+  Future<void> _openBig() async {
+    final wasPlaying = _controller.value.isPlaying;
+    final at = _controller.value.position;
+    _controller.pause();
+    await Navigator.of(context).push(MaterialPageRoute(
+      fullscreenDialog: true,
+      builder: (_) => FullscreenVideoPlayer(
+        videoUrl: widget.videoUrl,
+        exerciseName: widget.exerciseName ?? 'Video',
+        startAt: at,
+      ),
+    ));
+    if (mounted && wasPlaying) _controller.play();
   }
 
   void _togglePlayPause() {
@@ -256,33 +283,32 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
               ),
             ),
 
-            // Botón de pantalla completa
+            // Ver en grande
             if (widget.showFullscreenButton)
               Positioned(
                 top: 8,
                 right: 8,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => FullscreenVideoPlayer(
-                          videoUrl: widget.videoUrl,
-                          exerciseName: widget.exerciseName ?? 'Video',
-                        ),
+                child: Material(
+                  color: Colors.black54,
+                  shape: const StadiumBorder(),
+                  child: InkWell(
+                    customBorder: const StadiumBorder(),
+                    onTap: _openBig,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 8, 14, 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.open_in_full,
+                              color: AppColors.primary, size: 18),
+                          const SizedBox(width: 6),
+                          const Text('Ver en grande',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700)),
+                        ],
                       ),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black54,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.fullscreen,
-                      color: AppColors.primaryText,
-                      size: 24,
                     ),
                   ),
                 ),

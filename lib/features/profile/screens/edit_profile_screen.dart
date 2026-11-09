@@ -27,7 +27,7 @@ class EditProfileScreen extends StatefulWidget {
 /// Vacío o 7–20 dígitos/espacios con + opcional (igual que el CHECK de la BD).
 bool validPhone(String? v) {
   final t = (v ?? '').trim();
-  return t.isEmpty || RegExp(r'^\+?[0-9 ]{7,20}$').hasMatch(t);
+  return t.isEmpty || RegExp(r'^\+?[0-9][0-9 ]{6,19}$').hasMatch(t);
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {

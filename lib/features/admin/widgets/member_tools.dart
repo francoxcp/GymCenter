@@ -228,7 +228,7 @@ Future<void> showCopyPlanSheet(BuildContext context, User member) async {
 // ─────────────────────────────────────────────────────────────────────────────
 class MemberNote {
   final String id;
-  final String authorId;
+  final String? authorId;
   final String body;
   final DateTime createdAt;
   const MemberNote(this.id, this.authorId, this.body, this.createdAt);
@@ -272,7 +272,7 @@ class _MemberNotesSectionState extends State<MemberNotesSection> {
       setState(() {
         _notes = [
           for (final r in rows as List)
-            MemberNote(r['id'] as String, r['author_id'] as String,
+            MemberNote(r['id'] as String, r['author_id'] as String?,
                 r['body'] as String, DateTime.parse(r['created_at']).toLocal()),
         ];
         _loading = false;

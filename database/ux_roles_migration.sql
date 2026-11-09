@@ -53,22 +53,24 @@ GRANT EXECUTE ON FUNCTION public.mark_my_notifications_read() TO authenticated;
 CREATE TABLE IF NOT EXISTS public.member_notes (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   member_id  UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-  author_id  UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  -- Si se elimina al entrenador la nota se conserva para el gimnasio
+  author_id  UUID REFERENCES public.users(id) ON DELETE SET NULL,
   body       TEXT NOT NULL CHECK (char_length(btrim(body)) BETWEEN 1 AND 1000),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_member_notes_member
   ON public.member_notes (member_id, created_at DESC);
 ALTER TABLE public.member_notes ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.member_notes FROM anon;
 
 DROP POLICY IF EXISTS mn_select ON public.member_notes;
 DROP POLICY IF EXISTS mn_insert ON public.member_notes;
 DROP POLICY IF EXISTS mn_delete ON public.member_notes;
-CREATE POLICY mn_select ON public.member_notes FOR SELECT
+CREATE POLICY mn_select ON public.member_notes FOR SELECT TO authenticated
   USING (public.can_manage_user(member_id));
-CREATE POLICY mn_insert ON public.member_notes FOR INSERT
+CREATE POLICY mn_insert ON public.member_notes FOR INSERT TO authenticated
   WITH CHECK (author_id = auth.uid() AND public.can_manage_user(member_id));
-CREATE POLICY mn_delete ON public.member_notes FOR DELETE
+CREATE POLICY mn_delete ON public.member_notes FOR DELETE TO authenticated
   USING (author_id = auth.uid() OR public.owns_member(member_id));
 
 -- ---------------------------------------------------------------------
@@ -76,7 +78,7 @@ CREATE POLICY mn_delete ON public.member_notes FOR DELETE
 -- ---------------------------------------------------------------------
 ALTER TABLE public.users
   ADD COLUMN IF NOT EXISTS phone TEXT
-    CHECK (phone IS NULL OR phone ~ '^\+?[0-9 ]{7,20}$');
+    CHECK (phone IS NULL OR phone ~ '^\+?[0-9][0-9 ]{6,19}$');
 
 -- ---------------------------------------------------------------------
 -- 4. Copiar el plan semanal de un socio a otro
@@ -86,7 +88,8 @@ RETURNS INT LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE n INT;
 BEGIN
   IF p_from = p_to OR NOT public.can_manage_user(p_from)
-     OR NOT public.can_manage_user(p_to) THEN
+     OR NOT public.can_manage_user(p_to)
+     OR NOT EXISTS (SELECT 1 FROM public.users WHERE id = p_to AND role = 'user') THEN
     RAISE EXCEPTION 'not_allowed' USING ERRCODE = '42501';
   END IF;
   DELETE FROM public.user_workout_schedule WHERE user_id = p_to;

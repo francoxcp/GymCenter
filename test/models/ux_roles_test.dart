@@ -43,7 +43,8 @@ void main() {
       expect(tabIndexFor(trainerTabs, '/admin'), 0);
       expect(tabIndexFor(trainerTabs, '/admin/members'), 1);
       expect(tabIndexFor(trainerTabs, '/admin/user-progress/1'), 1);
-      expect(tabIndexFor(trainerTabs, '/admin/create-workout'), 2);
+      expect(tabIndexFor(trainerTabs, '/admin/create-workout'), 3);
+      expect(tabIndexFor(trainerTabs, '/chats'), 2);
     });
 
     test('dueño: Gimnasio y Panel por prefijo más largo', () {

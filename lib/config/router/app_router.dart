@@ -40,6 +40,8 @@ import '../../shared/widgets/bottom_nav_bar.dart';
 import '../../shared/navigation/role_tabs.dart';
 import '../../shared/widgets/role_guide.dart';
 import '../../features/notifications/notifications_screen.dart';
+import '../../features/chat/chat_screens.dart';
+import '../../features/chat/chat_service.dart';
 import '../../features/admin/screens/members_screen.dart';
 import '../../features/admin/screens/trainer_today_screen.dart';
 import '../../shared/services/unsaved_changes_guard.dart';
@@ -142,6 +144,10 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       if (isAuth && !authProvider.isStaff && path.startsWith('/admin')) {
         return '/home';
       }
+      // La lista de chats es del entrenador; el socio tiene uno solo
+      if (isAuth && !authProvider.isStaff && path.startsWith('/chats')) {
+        return '/chat';
+      }
       // Primer login: redirigir a onboarding si faltan datos de fitness
       if (isAuth && authProvider.needsOnboarding && path != '/onboarding') {
         return '/onboarding';
@@ -170,6 +176,11 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       GoRoute(
         path: '/suspendido',
         builder: (context, state) => const SuspendedOrganizationScreen(),
+      ),
+      GoRoute(
+        path: '/chats/:memberId',
+        builder: (context, state) =>
+            TrainerChatScreen(memberId: state.pathParameters['memberId']!),
       ),
       GoRoute(
         path: '/platform',
@@ -297,6 +308,14 @@ GoRouter createAppRouter(AuthProvider authProvider) {
             path: '/notificaciones',
             builder: (context, state) => const NotificationsScreen(),
           ),
+          GoRoute(
+            path: '/chat',
+            builder: (context, state) => const MemberChatScreen(),
+          ),
+          GoRoute(
+            path: '/chats',
+            builder: (context, state) => const TrainerChatsScreen(),
+          ),
 
           // Admin routes
           GoRoute(
@@ -398,7 +417,15 @@ class _AppShellState extends State<_AppShell> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    final tabs = tabsFor(navRoleOf(auth));
+    final me = auth.currentUser;
+    final role = navRoleOf(auth);
+    final hasTrainer = me?.trainerId != null;
+    if (me != null && (role != NavRole.member || hasTrainer)) {
+      // Mantiene el contador de mensajes sin leer (idempotente)
+      ChatService.startListening(
+          userId: me.id, asTrainer: role != NavRole.member);
+    }
+    final tabs = tabsFor(role, hasTrainer: hasTrainer);
     final index = tabIndexFor(tabs, widget.location);
     if (index != _currentIndex) {
       _previousIndex = _currentIndex;

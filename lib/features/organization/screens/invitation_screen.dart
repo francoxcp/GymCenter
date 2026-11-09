@@ -41,8 +41,12 @@ class _InvitationScreenState extends State<InvitationScreen> {
     }
   }
 
+  /// Con enlace de entrenador, la persona puede elegir entrar como socio.
+  bool _asMember = false;
+
   Future<void> _continueWithoutSession(String route) async {
-    await OrganizationService.savePendingInvite(widget.token, orgName: _info?.orgName);
+    await OrganizationService.savePendingInvite(widget.token,
+        orgName: _info?.orgName, asMember: _asMember);
     if (mounted) context.go(route);
   }
 
@@ -52,7 +56,8 @@ class _InvitationScreenState extends State<InvitationScreen> {
       _error = null;
     });
     try {
-      await OrganizationService.acceptInvitation(widget.token);
+      await OrganizationService.acceptInvitation(widget.token,
+          asMember: _asMember);
       if (!mounted) return;
       final auth = context.read<AuthProvider>();
       await auth.refreshUser();
@@ -102,15 +107,44 @@ class _InvitationScreenState extends State<InvitationScreen> {
                                     fontSize: 34,
                                     height: 1.1,
                                     fontWeight: FontWeight.w900)),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 16),
+                            Text('ENTRAS COMO',
+                                style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    letterSpacing: 2,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700)),
                             Text(
-                              'Entrarás como ${info.roleLabel}. '
-                              '${info.role == 'user' ? 'Tu entrenador verá tus rutinas y tu progreso.' : 'Podrás gestionar socios y rutinas.'}',
+                                (_asMember || info.role == 'user'
+                                        ? 'Socio'
+                                        : info.roleLabel)
+                                    .toUpperCase(),
+                                style: TextStyle(
+                                    color: AppColors.primaryText,
+                                    fontSize: 30,
+                                    height: 1.1,
+                                    fontWeight: FontWeight.w900)),
+                            const SizedBox(height: 6),
+                            Text(
+                              _asMember || info.role == 'user'
+                                  ? 'Verás tus rutinas, lo que te toca cada día y tu progreso.'
+                                  : 'Verás y gestionarás socios y rutinas del gimnasio.',
                               style: TextStyle(
                                   color: AppColors.textSecondary,
                                   fontSize: 16,
                                   height: 1.4),
                             ),
+                            if (info.role == 'trainer' && !alreadyHere && !otherOrg)
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: TextButton(
+                                  onPressed: () =>
+                                      setState(() => _asMember = !_asMember),
+                                  child: Text(_asMember
+                                      ? 'Soy entrenador'
+                                      : 'Soy socio, no entrenador'),
+                                ),
+                              ),
                             const SizedBox(height: 32),
                             if (_error != null) ...[
                               Text(_error!,

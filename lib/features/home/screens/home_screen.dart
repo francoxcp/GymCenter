@@ -17,7 +17,6 @@ import '../../../shared/services/offline_sync_queue.dart';
 import '../widgets/weekly_goal_card.dart';
 import '../widgets/streak_row.dart';
 import '../widgets/week_strip.dart';
-import '../widgets/trainer_comments_card.dart';
 import '../../admin/screens/memberships_screen.dart' show MyMembershipBanner;
 
 class HomeScreen extends StatefulWidget {
@@ -722,8 +721,6 @@ class _UserHomeContentState extends State<_UserHomeContent> {
         // Meta semanal: entrenos hechos vs plan del entrenador
         const WeeklyGoalCard(),
 
-        // Comentarios recientes del entrenador
-        const TrainerCommentsCard(),
 
         // Aviso de membresía por vencer / vencida
         const MyMembershipBanner(),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../auth/providers/auth_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_l10n.dart';
@@ -137,6 +138,16 @@ class MemberHubScreen extends StatelessWidget {
               ],
             ),
           ),
+          if (member.trainerId != null &&
+              member.trainerId == context.read<AuthProvider>().currentUser?.id)
+            action(
+              icon: Icons.chat_bubble_outline,
+              title: isEn ? 'Message' : 'Mensaje',
+              subtitle: isEn
+                  ? 'Private chat with this member'
+                  : 'Chat privado con este socio',
+              onTap: () => context.push('/chats/${member.id}'),
+            ),
           action(
             icon: Icons.bolt,
             title: isEn ? 'Quick assign' : 'Asignación rápida',
@@ -181,6 +192,16 @@ class MemberHubScreen extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           MemberNotesSection(memberId: member.id),
+          if (context.read<AuthProvider>().isAdmin) ...[
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton.icon(
+                onPressed: () => showRoleChangeSheet(context, member),
+                icon: const Icon(Icons.swap_horiz),
+                label: Text(isEn ? 'Make trainer' : 'Cambiar a entrenador'),
+              ),
+            ),
+          ],
         ],
       ),
     );

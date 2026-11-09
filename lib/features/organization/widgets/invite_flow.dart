@@ -36,18 +36,20 @@ Future<void> startInviteFlow(BuildContext context) async {
                       fontSize: 22,
                       fontWeight: FontWeight.w900)),
               const SizedBox(height: 16),
+              // Socio es lo normal: botón grande. Entrenador, discreto.
               _RoleOption(
                 icon: Icons.person_add_alt_1,
                 title: 'Socio',
-                body: 'Un enlace para todos tus socios, sirve 30 días.',
+                body: 'Un enlace para todos tus socios. Verán sus rutinas y su progreso.',
                 onTap: () => Navigator.pop(ctx, 'user'),
               ),
-              const SizedBox(height: 8),
-              _RoleOption(
-                icon: Icons.sports,
-                title: 'Entrenador',
-                body: 'Enlace personal de un solo uso, vence en 7 días.',
-                onTap: () => Navigator.pop(ctx, 'trainer'),
+              const SizedBox(height: 12),
+              Center(
+                child: TextButton.icon(
+                  onPressed: () => Navigator.pop(ctx, 'trainer'),
+                  icon: const Icon(Icons.sports, size: 18),
+                  label: const Text('Invitar a un entrenador'),
+                ),
               ),
             ],
           ),
@@ -72,7 +74,7 @@ Future<void> startInviteFlow(BuildContext context) async {
       token: token,
       title: trainer ? 'Invitar entrenador' : 'Enlace para socios',
       hint: trainer
-          ? 'Sirve para una sola persona y vence en 7 días.'
+          ? 'Este enlace da acceso a tus socios. Úsalo solo con entrenadores. Una persona, vence en 7 días.'
           : 'Mándalo por WhatsApp o muestra el QR en recepción.',
       shareText: trainer
           ? 'Te invito a ser entrenador en ${org.name}. Crea tu cuenta aquí:'

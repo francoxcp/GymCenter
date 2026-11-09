@@ -1,3 +1,7 @@
+import 'package:flutter/material.dart';
+
+import '../../../core/theme/app_theme.dart';
+
 /// Estado de constancia de un socio (semáforo del entrenador).
 enum MemberLight { red, yellow, green }
 
@@ -68,3 +72,10 @@ class MemberStatus {
     );
   }
 }
+
+/// Color del semáforo.
+Color memberLightColor(MemberLight l) => switch (l) {
+      MemberLight.red => AppColors.error,
+      MemberLight.yellow => AppColors.warning,
+      MemberLight.green => AppColors.success,
+    };

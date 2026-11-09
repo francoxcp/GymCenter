@@ -83,32 +83,6 @@ class BodyMeasurementProvider with ChangeNotifier {
     }
   }
 
-  /// Eliminar medida
-  Future<bool> deleteMeasurement(String measurementId) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      await _supabase
-          .from('body_measurements')
-          .delete()
-          .eq('id', measurementId);
-
-      _measurements.removeWhere((m) => m.id == measurementId);
-
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _error = 'Error al eliminar medida: $e';
-      debugPrint(_error);
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-  }
-
   /// Obtener cambio de peso (kg) desde la última medida
   double? getWeightChange() {
     if (_measurements.length < 2) return null;

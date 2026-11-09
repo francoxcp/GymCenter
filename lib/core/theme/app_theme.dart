@@ -78,7 +78,6 @@ class AppColors {
 
   static AppPalette _p = AppPalette.dark;
   static AppPalette get palette => _p;
-  static bool get isLight => _p.brightness == Brightness.light;
   static void usePalette(AppPalette p) => _p = p;
 
   static Color get primary => _p.primary;
@@ -212,4 +211,3 @@ ThemeData buildAppTheme() {
   );
 }
 
-class AppTheme {}

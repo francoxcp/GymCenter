@@ -23,24 +23,6 @@ class UserProvider extends ChangeNotifier {
     _authProvider = authProvider;
   }
 
-  Future<void> loadCurrentUser() async {
-    try {
-      final currentUserId = SupabaseConfig.client.auth.currentUser?.id;
-      if (currentUserId == null) return;
-
-      final response = await SupabaseConfig.client
-          .from(AppConstants.usersTable)
-          .select()
-          .eq('id', currentUserId)
-          .single();
-
-      _currentUser = User.fromJson(response);
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Error loading current user: $e');
-    }
-  }
-
   Future<void> loadUsers() async {
     try {
       _isLoading = true;
@@ -75,31 +57,6 @@ class UserProvider extends ChangeNotifier {
       return user.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           user.email.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
-  }
-
-  Future<void> assignWorkout(String userId, String workoutId) async {
-    try {
-      await SupabaseConfig.client
-          .from(AppConstants.usersTable)
-          .update({'assigned_workout_id': workoutId}).eq('id', userId);
-
-      // Actualizar localmente
-      final userIndex = _users.indexWhere((u) => u.id == userId);
-      if (userIndex != -1) {
-        _users[userIndex] = _users[userIndex].copyWith(
-          assignedWorkoutId: workoutId,
-        );
-        notifyListeners();
-      }
-
-      // Actualizar AuthProvider si es el usuario actual
-      if (_authProvider?.currentUser?.id == userId) {
-        await _authProvider!.refreshUser();
-      }
-    } catch (e) {
-      debugPrint('Error assigning workout: $e');
-      rethrow;
-    }
   }
 
   /// Asigna una rutina a un día específico (delete + insert)
@@ -209,14 +166,6 @@ class UserProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error updating user stats: $e');
       rethrow;
-    }
-  }
-
-  User? getUserById(String userId) {
-    try {
-      return _users.firstWhere((u) => u.id == userId);
-    } catch (e) {
-      return null;
     }
   }
 
@@ -393,19 +342,6 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> toggleUserStatus(String userId, bool isActive) async {
-    try {
-      await SupabaseConfig.client
-          .from('users')
-          .update({'is_active': isActive}).eq('id', userId);
-
-      await loadUsers();
-    } catch (e) {
-      debugPrint('Error toggling user status: $e');
-      rethrow;
-    }
-  }
-
   /// Elimina por completo a un usuario (cuenta de acceso + perfil + datos)
   /// mediante la Edge Function delete-member. Antes solo se borraba el
   /// perfil y la persona podía seguir iniciando sesión.
@@ -430,21 +366,6 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  /// Obtiene la rutina asignada para el usuario en el día actual
-  Future<String?> getTodayWorkoutId(String userId) async {
-    final now = DateTime.now();
-    // Lunes=1, ..., Sábado=6
-    final today = now.weekday;
-    if (today < 1 || today > 6) return null; // Solo lunes a sábado
-    final response = await SupabaseConfig.client
-        .from('user_workout_schedule')
-        .select('workout_id')
-        .eq('user_id', userId)
-        .eq('day_of_week', today)
-        .maybeSingle();
-    return response != null ? response['workout_id'] as String? : null;
-  }
-
   /// Obtiene todas las rutinas asignadas para la semana
   Future<Map<int, String>> getWeekWorkouts(String userId) async {
     final response = await SupabaseConfig.client
@@ -463,7 +384,6 @@ class UserProvider extends ChangeNotifier {
     // Limpiar campos en tabla users
     await SupabaseConfig.client.from(AppConstants.usersTable).update({
       'assigned_workout_id': null,
-      'assigned_meal_plan_id': null,
     }).eq('id', userId);
     // Eliminar asignaciones de rutina por día
     await SupabaseConfig.client
@@ -476,7 +396,6 @@ class UserProvider extends ChangeNotifier {
     if (idx != -1) {
       _users[idx] = _users[idx].copyWith(
         assignedWorkoutId: null,
-        assignedMealPlanId: null,
       );
     }
     notifyListeners();

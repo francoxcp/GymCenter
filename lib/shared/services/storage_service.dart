@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path/path.dart' as path;
-import 'package:crypto/crypto.dart';
 
 /// Servicio para gestionar la subida y compresión de archivos multimedia
 class StorageService {
@@ -12,8 +11,6 @@ class StorageService {
   // Buckets de Supabase Storage
   static const String profilePhotosBucket = 'profile-photos';
   static const String exerciseVideosBucket = 'exercise-videos';
-  static const String exerciseThumbnailsBucket = 'exercise-thumbnails';
-
   // Límites de tamaño
   static const int _maxImageBytes = 5 * 1024 * 1024; // 5 MB
   static const int _maxVideoBytes = 50 * 1024 * 1024; // 50 MB
@@ -290,72 +287,6 @@ class StorageService {
     } catch (e) {
       debugPrint('Error al guardar metadata: $e');
     }
-  }
-
-  /// Elimina una foto de perfil anterior
-  Future<void> deleteProfilePhoto(String photoUrl) async {
-    try {
-      final fileName = _extractFileNameFromUrl(photoUrl, profilePhotosBucket);
-      if (fileName != null) {
-        await _supabase.storage.from(profilePhotosBucket).remove([fileName]);
-      }
-    } catch (e) {
-      debugPrint('Error al eliminar foto: $e');
-    }
-  }
-
-  /// Elimina un video de ejercicio
-  Future<void> deleteExerciseVideo(String videoUrl) async {
-    try {
-      final fileName = _extractFileNameFromUrl(videoUrl, exerciseVideosBucket);
-      if (fileName != null) {
-        await _supabase.storage.from(exerciseVideosBucket).remove([fileName]);
-      }
-    } catch (e) {
-      debugPrint('Error al eliminar video: $e');
-    }
-  }
-
-  /// Extrae el nombre del archivo de una URL pública de Supabase
-  String? _extractFileNameFromUrl(String url, String bucket) {
-    try {
-      final uri = Uri.parse(url);
-      final segments = uri.pathSegments;
-      final bucketIndex = segments.indexOf(bucket);
-      if (bucketIndex != -1 && bucketIndex < segments.length - 1) {
-        return segments.sublist(bucketIndex + 1).join('/');
-      }
-      return null;
-    } catch (e) {
-      debugPrint('Error al extraer nombre de archivo: $e');
-      return null;
-    }
-  }
-
-  /// Genera un hash MD5 de un archivo (para detectar duplicados)
-  Future<String> generateFileHash(Uint8List fileBytes) async {
-    final digest = md5.convert(fileBytes);
-    return digest.toString();
-  }
-
-  /// Valida el tamaño del archivo
-  bool validateFileSize(int sizeBytes, {int maxSizeMB = 100}) {
-    final sizeMB = sizeBytes / (1024 * 1024);
-    return sizeMB <= maxSizeMB;
-  }
-
-  /// Valida el formato de imagen
-  bool validateImageFormat(String fileName) {
-    final validExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
-    final extension = path.extension(fileName).toLowerCase();
-    return validExtensions.contains(extension);
-  }
-
-  /// Valida el formato de video
-  bool validateVideoFormat(String fileName) {
-    final validExtensions = ['.mp4', '.mov', '.avi', '.webm'];
-    final extension = path.extension(fileName).toLowerCase();
-    return validExtensions.contains(extension);
   }
 
   /// Detecta el tipo real de imagen por sus primeros bytes (en web la

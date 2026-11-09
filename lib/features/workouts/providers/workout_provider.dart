@@ -29,12 +29,6 @@ class WorkoutProvider extends ChangeNotifier {
   /// Mensaje de error de la última carga, null si no hubo error
   String? get errorMessage => _errorMessage;
 
-  /// Limpia el mensaje de error
-  void clearError() {
-    _errorMessage = null;
-    notifyListeners();
-  }
-
   /// Limpia todos los datos en memoria. Llamar al cerrar sesión para
   /// evitar que otro usuario vea datos del usuario anterior.
   void clearData() {
@@ -504,34 +498,4 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
-  Future<Workout?> loadWorkoutWithExercises(String workoutId) async {
-    try {
-      final response = await SupabaseConfig.client
-          .from('workouts')
-          .select('*, exercises(*)')
-          .eq('id', workoutId)
-          .single();
-
-      final exercisesJson = response['exercises'] as List?;
-      List<Exercise> exercises = [];
-      if (exercisesJson != null) {
-        exercises = exercisesJson.map((e) => Exercise.fromJson(e)).toList();
-        exercises.sort((a, b) => a.id.compareTo(b.id));
-      }
-
-      return Workout(
-        id: response['id'],
-        name: response['name'],
-        duration: response['duration'],
-        exerciseCount: response['exercise_count'] ?? 0,
-        level: response['level'] ?? 'Principiante',
-        imageUrl: response['image_url'] ?? '',
-        description: response['description'],
-        exercises: exercises,
-      );
-    } catch (e) {
-      debugPrint('Error loading workout details: $e');
-      return null;
-    }
-  }
 }

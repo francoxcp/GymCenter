@@ -4,5 +4,4 @@ class Brand {
   Brand._();
 
   static const platformName = 'GymCenter';
-  static const tagline = 'Rutinas y gestión para tu gimnasio';
 }

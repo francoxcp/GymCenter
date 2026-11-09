@@ -45,7 +45,6 @@ class User {
   final int activeDays;
   final int completedWorkouts;
   final String? assignedWorkoutId;
-  final String? assignedMealPlanId;
   // Datos de fitness para cálculo preciso de calorías
   final int? age;          // años
   final double? weightKg;  // kg
@@ -81,7 +80,6 @@ class User {
     this.activeDays = 0,
     this.completedWorkouts = 0,
     this.assignedWorkoutId,
-    this.assignedMealPlanId,
     this.age,
     this.weightKg,
     this.heightCm,
@@ -115,7 +113,6 @@ class User {
     int? activeDays,
     int? completedWorkouts,
     Object? assignedWorkoutId = _sentinel,
-    Object? assignedMealPlanId = _sentinel,
     Object? age = _sentinel,
     Object? weightKg = _sentinel,
     Object? heightCm = _sentinel,
@@ -139,9 +136,6 @@ class User {
       assignedWorkoutId: assignedWorkoutId == _sentinel
           ? this.assignedWorkoutId
           : assignedWorkoutId as String?,
-      assignedMealPlanId: assignedMealPlanId == _sentinel
-          ? this.assignedMealPlanId
-          : assignedMealPlanId as String?,
       age: age == _sentinel ? this.age : age as int?,
       weightKg: weightKg == _sentinel ? this.weightKg : weightKg as double?,
       heightCm: heightCm == _sentinel ? this.heightCm : heightCm as int?,
@@ -177,7 +171,6 @@ class User {
       completedWorkouts:
           json['completed_workouts'] ?? json['completedWorkouts'] ?? 0,
       assignedWorkoutId: json['assigned_workout_id'],
-      assignedMealPlanId: json['assigned_meal_plan_id'],
       age: json['age'] as int?,
       weightKg: (json['weight_kg'] as num?)?.toDouble(),
       heightCm: json['height_cm'] as int?,
@@ -204,7 +197,6 @@ class User {
       'activeDays': activeDays,
       'completedWorkouts': completedWorkouts,
       'assignedWorkoutId': assignedWorkoutId,
-      'assignedMealPlanId': assignedMealPlanId,
       'age': age,
       'weight_kg': weightKg,
       'height_cm': heightCm,

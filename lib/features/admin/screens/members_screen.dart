@@ -10,7 +10,6 @@ import '../../organization/widgets/invite_flow.dart';
 import '../../profile/providers/user_provider.dart';
 import '../models/member_status.dart';
 import '../services/member_status_service.dart';
-import '../widgets/members_status_section.dart';
 import '../widgets/membership_card.dart';
 import 'member_hub_screen.dart';
 
@@ -265,7 +264,7 @@ class _MemberRow extends StatelessWidget {
     final s = status;
     final light = s == null
         ? AppColors.textSecondary
-        : MembersStatusSectionState.colorOf(s.light);
+        : memberLightColor(s.light);
     final days = s?.daysSinceLast(DateTime.now());
     final attendance = s == null
         ? ''

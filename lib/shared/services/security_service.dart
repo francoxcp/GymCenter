@@ -102,45 +102,6 @@ class SecurityService {
     }
   }
 
-  /// Actualiza la contraseña con el token de recuperación
-  ///
-  /// [newPassword] - Nueva contraseña
-  Future<Map<String, dynamic>> resetPasswordWithToken(
-      String newPassword) async {
-    try {
-      // Validar nueva contraseña
-      final validation = _validatePassword(newPassword);
-      if (!validation['isValid']) {
-        return {
-          'success': false,
-          'message': validation['message'],
-        };
-      }
-
-      final response = await _supabase.auth.updateUser(
-        UserAttributes(password: newPassword),
-      );
-
-      if (response.user != null) {
-        return {
-          'success': true,
-          'message': 'password_reset_success',
-        };
-      } else {
-        return {
-          'success': false,
-          'message': 'password_reset_failed',
-        };
-      }
-    } catch (e) {
-      debugPrint('Error resetting password: $e');
-      return {
-        'success': false,
-        'message': 'error_reset_password',
-      };
-    }
-  }
-
   /// Elimina permanentemente la cuenta del usuario
   ///
   /// Requiere confirmar con contraseña por seguridad
@@ -350,26 +311,6 @@ class SecurityService {
         'success': false,
         'message': 'error_update_password',
       };
-    }
-  }
-
-  /// Verifica si la sesión actual es válida
-  Future<bool> isSessionValid() async {
-    try {
-      final session = _supabase.auth.currentSession;
-      if (session == null) return false;
-
-      // Verificar si el token ha expirado
-      final expiresAt = session.expiresAt;
-      if (expiresAt != null) {
-        final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        return expiresAt > now;
-      }
-
-      return true;
-    } catch (e) {
-      debugPrint('Error al verificar sesión: $e');
-      return false;
     }
   }
 

@@ -451,12 +451,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onTap: () => context.push('/workout-history'),
                 ),
                 const SizedBox(height: 10),
-                _MenuItem(
-                  icon: Icons.show_chart,
-                  title: AppL10n.of(context).myProgress,
-                  onTap: () => context.push('/progress'),
-                ),
-                const SizedBox(height: 10),
+                // Los socios ya tienen Progreso en la barra inferior
+                if (context.read<AuthProvider>().isStaff) ...[
+                  _MenuItem(
+                    icon: Icons.show_chart,
+                    title: AppL10n.of(context).myProgress,
+                    onTap: () => context.push('/progress'),
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 // Vínculo con el entrenador (socio) o código (entrenador)
                 const TrainerLinkCard(),
                 const SizedBox(height: 10),

@@ -108,7 +108,6 @@ class ProgressionSuggestion {
     required this.targetReps,
   });
 
-  double get lastWeightLbs => lastWeightKg * kKgToLbs;
   double get suggestedWeightLbs => suggestedWeightKg * kKgToLbs;
 }
 

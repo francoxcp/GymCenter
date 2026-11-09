@@ -96,12 +96,6 @@ class BiometricService {
     if (kIsWeb) await _secureStorage.delete(key: _kPasskeyCredentialId);
   }
 
-  /// Compatibilidad con código existente.
-  Future<void> setEnabled(bool value) async {
-    if (!value) return disable();
-    await _secureStorage.write(key: _kBiometricEnabled, value: 'true');
-  }
-
   /// Solicita autenticación biométrica al usuario.
   /// Retorna `true` si el usuario se autentica exitosamente.
   Future<bool> authenticate({

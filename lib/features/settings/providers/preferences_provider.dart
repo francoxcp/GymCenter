@@ -141,7 +141,6 @@ class PreferencesProvider with ChangeNotifier {
   UserPreferences? get preferences => _preferences;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  bool get hasCompletedOnboarding => _preferences?.onboardingCompleted ?? false;
   TimeOfDay get workoutReminderTime => _workoutReminderTime;
 
   /// Locale actual derivada del idioma guardado en preferencias.
@@ -359,17 +358,6 @@ class PreferencesProvider with ChangeNotifier {
     return await updatePreferences(updated);
   }
 
-  /// Alternar alertas de logros
-  Future<bool> toggleAchievementAlerts(bool enabled) async {
-    if (_preferences == null) return false;
-
-    final updated = _preferences!.copyWith(
-      achievementAlerts: enabled,
-    );
-
-    return await updatePreferences(updated);
-  }
-
   /// Alternar reportes de progreso
   Future<bool> toggleProgressReports(bool enabled) async {
     if (_preferences == null) return false;
@@ -387,14 +375,6 @@ class PreferencesProvider with ChangeNotifier {
       progressReports: enabled,
     );
 
-    return await updatePreferences(updated);
-  }
-
-  /// Cambiar tema
-  Future<bool> changeTheme(String theme) async {
-    if (_preferences == null) return false;
-
-    final updated = _preferences!.copyWith(theme: theme);
     return await updatePreferences(updated);
   }
 

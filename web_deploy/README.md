@@ -54,7 +54,7 @@ Después de publicar, actualiza estas URLs en tu código:
 
 ```dart
 // Línea ~187
-'• Email: privacy@chamosfitnesscenter.com\n'
+'• Email: https://gym-nine-sand.vercel.app\n'
 
 // Cambiar a tu email real:
 '• Email: TU_EMAIL@gmail.com\n'
@@ -103,10 +103,10 @@ h2 {
 Busca y reemplaza en ambos archivos:
 
 ```
-privacy@chamosfitnesscenter.com → tu-email@ejemplo.com
-support@chamosfitnesscenter.com → soporte@ejemplo.com
-legal@chamosfitnesscenter.com → legal@ejemplo.com
-https://chamosfitness.com → https://tu-sitio.com
+https://gym-nine-sand.vercel.app → tu-email@ejemplo.com
+https://gym-nine-sand.vercel.app → soporte@ejemplo.com
+https://gym-nine-sand.vercel.app → legal@ejemplo.com
+https://gym-nine-sand.vercel.app → https://tu-sitio.com
 ```
 
 ## 🆓 Alternativas a GitHub Pages
@@ -154,9 +154,9 @@ GitHub Pages automáticamente usa HTTPS, lo cual es **requerido** por Apple y Go
 **IMPORTANTE:** Actualiza los emails a direcciones reales que monitorees:
 
 ```
-privacy@chamosfitnesscenter.com → Crear email real
-support@chamosfitnesscenter.com → Crear email real
-legal@chamosfitnesscenter.com → Crear email real
+https://gym-nine-sand.vercel.app → Crear email real
+https://gym-nine-sand.vercel.app → Crear email real
+https://gym-nine-sand.vercel.app → Crear email real
 ```
 
 **Opciones:**

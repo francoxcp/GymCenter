@@ -122,7 +122,11 @@ set search_path = public
 as $$
 begin
   if NEW.workout_name is null and NEW.workout_id is not null then
-    select name into NEW.workout_name from public.workouts where id = NEW.workout_id;
+    -- Solo si quien entrena puede ver la rutina (no revela nombres ajenos)
+    select w.name into NEW.workout_name
+      from public.workouts w
+     where w.id = NEW.workout_id
+       and (auth.uid() is null or public.can_view_workout(w.id, w.created_by));
   end if;
   return NEW;
 end;

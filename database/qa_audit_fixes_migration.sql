@@ -375,7 +375,8 @@ create index if not exists idx_member_notes_author on public.member_notes(author
 create index if not exists idx_direct_messages_sender on public.direct_messages(sender_id);
 create index if not exists idx_direct_messages_session on public.direct_messages(session_id);
 create index if not exists idx_body_measurements_recorded_by on public.body_measurements(recorded_by);
-create index if not exists idx_workout_sessions_workout on public.workout_sessions(workout_id);
+-- (workout_sessions.workout_id ya tiene idx_workout_sessions_workout_id)
+drop index if exists public.idx_workout_sessions_workout;
 
 -- Políticas duplicadas en user_preferences (las up_* ya cubren lo mismo)
 drop policy if exists user_preferences_insert_own on public.user_preferences;
@@ -431,5 +432,9 @@ begin
   end loop;
 end;
 $$;
+
+-- Funciones de trigger: no deben poder llamarse por la API
+revoke execute on function public.notify_session_comment() from public, anon, authenticated;
+revoke execute on function public.notify_session_done() from public, anon, authenticated;
 
 commit;

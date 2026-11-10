@@ -30,11 +30,15 @@ class RoutineTotals {
   int get avgMinutes => sessions == 0 ? 0 : (minutes / sessions).round();
 }
 
+/// Clave de agrupación: el id de la rutina o, si se borró, su nombre.
+String routineKey(WorkoutSession s) =>
+    s.workoutId.isNotEmpty ? s.workoutId : 'name:${s.workoutName ?? ''}';
+
 List<RoutineTotals> totalsByRoutine(
     List<WorkoutSession> sessions, int Function(WorkoutSession) kcal) {
   final map = <String, List<WorkoutSession>>{};
   for (final s in sessions) {
-    map.putIfAbsent(s.workoutId, () => []).add(s);
+    map.putIfAbsent(routineKey(s), () => []).add(s);
   }
   final out = [
     for (final e in map.entries)
@@ -81,7 +85,12 @@ class _SessionsTimeSectionState extends State<SessionsTimeSection> {
             age: me?.age,
             sex: me?.sex,
           );
-    String name(String id) => workouts.getWorkoutById(id)?.name ?? 'Rutina';
+    final savedNames = {
+      for (final s in sessions)
+        if (s.workoutName != null) routineKey(s): s.workoutName!,
+    };
+    String name(String key) =>
+        workouts.getWorkoutById(key)?.name ?? savedNames[key] ?? 'Rutina';
 
     final totalMin = sessions.fold<int>(0, (a, s) => a + s.durationMinutes);
     final totalKcal = sessions.fold<int>(0, (a, s) => a + kcal(s));
@@ -132,7 +141,7 @@ class _SessionsTimeSectionState extends State<SessionsTimeSection> {
             if (_byDay) ...[
               for (final s in sessions.take(_showDays))
                 _Row(
-                  title: name(s.workoutId),
+                  title: name(routineKey(s)),
                   subtitle:
                       '${_wd[s.date.weekday - 1]} ${s.date.day} ${_mo[s.date.month - 1]}',
                   minutes: s.durationMinutes,

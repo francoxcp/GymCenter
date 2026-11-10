@@ -39,7 +39,10 @@ class WorkoutResult {
     required this.calories,
   });
 
-  int get durationMinutes => durationSeconds ~/ 60;
+  /// Minutos redondeados; un entreno de segundos cuenta como 1 minuto.
+  int get durationMinutes => durationSeconds <= 0
+      ? 0
+      : (durationSeconds / 60).round().clamp(1, 1 << 30);
 
   /// "52:18" o "1:05:09".
   static String clock(int seconds) {

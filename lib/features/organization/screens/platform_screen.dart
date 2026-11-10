@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/services/share_helper.dart';
+import '../../../shared/services/web_push_service.dart';
 import '../../../shared/web/web_bridge.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -51,6 +52,59 @@ class _PlatformScreenState extends State<PlatformScreen> {
     super.initState();
     _pendingOpen = widget.openOrgId;
     _load();
+    // Con permiso ya dado, asegura que este navegador reciba los avisos
+    // de pagos y altas (si la suscripción se perdió, se vuelve a crear).
+    WebPushService().ensureSubscribed();
+  }
+
+  Future<void> _enablePush() async {
+    final ok = await WebPushService().requestPermissionAndSubscribe();
+    if (!mounted) return;
+    setState(() {});
+    if (ok) {
+      AppSnackbar.success(context, 'Listo: te avisaremos de pagos y altas.');
+    } else {
+      AppSnackbar.error(context,
+          'Sin permiso. Actívalo en los ajustes del navegador o del teléfono.');
+    }
+  }
+
+  /// Aviso para activar notificaciones: sin ellas, el dueño de la
+  /// plataforma no se entera de los comprobantes de pago nuevos.
+  Widget? _pushNudge() {
+    final support = WebBridge.notificationSupport;
+    if (support == 'unsupported') return null;
+    final permission = WebBridge.notificationPermission;
+    if (support == 'supported' && permission == 'granted') return null;
+    final String text;
+    Widget? action;
+    if (support == 'ios-needs-install') {
+      text = 'Para recibir avisos de pagos en iPhone, instala GYMLAB en la '
+          'pantalla de inicio (Compartir → Agregar a inicio).';
+    } else if (permission == 'denied') {
+      text = 'Las notificaciones están bloqueadas: no te llegan los avisos de '
+          'pagos. Actívalas en los ajustes del navegador.';
+    } else {
+      text = 'Activa las notificaciones para enterarte al momento de cada '
+          'comprobante de pago.';
+      action = TextButton(onPressed: _enablePush, child: const Text('Activar'));
+    }
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(8),
+        border: Border(left: BorderSide(color: AppColors.primary, width: 3)),
+      ),
+      child: Row(children: [
+        Expanded(
+          child: Text(text,
+              style: TextStyle(color: AppColors.textPrimary, height: 1.35)),
+        ),
+        if (action != null) action,
+      ]),
+    );
   }
 
   void _openPending() {
@@ -152,6 +206,7 @@ class _PlatformScreenState extends State<PlatformScreen> {
                             fontSize: 32,
                             fontWeight: FontWeight.w900)),
                     const SizedBox(height: 16),
+                    if (_pushNudge() case final nudge?) nudge,
                     if (_error != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 12),

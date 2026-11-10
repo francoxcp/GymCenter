@@ -171,6 +171,10 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       if (isAuth && !authProvider.isStaff && path.startsWith('/admin')) {
         return '/home';
       }
+      // La biblioteca de rutinas es del equipo; el socio entrena lo asignado
+      if (isAuth && !authProvider.isStaff && path == '/workouts') {
+        return '/home';
+      }
       // La lista de chats es del entrenador; el socio tiene uno solo
       if (isAuth && !authProvider.isStaff && path.startsWith('/chats')) {
         return '/chat';

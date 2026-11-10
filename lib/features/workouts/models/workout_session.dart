@@ -1,7 +1,10 @@
 class WorkoutSession {
   final String id;
   final String userId;
+  /// Vacío si la rutina se borró (la sesión se conserva).
   final String workoutId;
+  /// Nombre de la rutina al momento de entrenar.
+  final String? workoutName;
   final DateTime date;
   final int durationMinutes;
   final int caloriesBurned;
@@ -13,6 +16,7 @@ class WorkoutSession {
     required this.id,
     required this.userId,
     required this.workoutId,
+    this.workoutName,
     required this.date,
     this.durationMinutes = 0,
     this.caloriesBurned = 0,
@@ -25,7 +29,8 @@ class WorkoutSession {
     return WorkoutSession(
       id: json['id'],
       userId: json['userId'],
-      workoutId: json['workoutId'],
+      workoutId: json['workoutId'] as String? ?? '',
+      workoutName: json['workoutName'] as String?,
       date: DateTime.tryParse(json['date'] ?? '') ?? DateTime.now(),
       durationMinutes: json['durationMinutes'] ?? 0,
       caloriesBurned: json['caloriesBurned'] ?? 0,
@@ -43,6 +48,7 @@ class WorkoutSession {
       'id': id,
       'userId': userId,
       'workoutId': workoutId,
+      'workoutName': workoutName,
       'date': date.toIso8601String(),
       'durationMinutes': durationMinutes,
       'caloriesBurned': caloriesBurned,

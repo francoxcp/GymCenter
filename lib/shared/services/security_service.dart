@@ -130,12 +130,25 @@ class SecurityService {
         };
       }
 
-      // Eliminar datos del usuario en cascada
-      await _deleteUserData(user.id);
+      // El dueño no puede borrar su cuenta: el gimnasio quedaría sin dueño.
+      // (El servidor también lo impide en delete_user_account.)
+      final me = await _supabase
+          .from('users')
+          .select('role, org_id')
+          .eq('id', user.id)
+          .maybeSingle();
+      if (me != null && me['role'] == 'admin' && me['org_id'] != null) {
+        return {
+          'success': false,
+          'message': 'owner_cannot_delete',
+        };
+      }
 
-      // Eliminar cuenta de auth
-      // Nota: Supabase no tiene método directo para eliminar usuario
-      // Se debe hacer mediante RPC o función de backend
+      // Fotos de perfil (Storage no se borra en cascada)
+      await _deleteProfilePhotos(user.id);
+
+      // Borra la cuenta y, en cascada, todos sus datos. Sus rutinas y socios
+      // (si es entrenador) pasan al dueño del gimnasio en el servidor.
       await _supabase.rpc('delete_user_account', params: {
         'user_id': user.id,
       });
@@ -156,37 +169,17 @@ class SecurityService {
     }
   }
 
-  /// Elimina todos los datos asociados al usuario
-  Future<void> _deleteUserData(String userId) async {
+  /// Borra las fotos de perfil del usuario (no fallan el borrado de cuenta).
+  Future<void> _deleteProfilePhotos(String userId) async {
     try {
-      // Eliminar archivos de storage (fotos de perfil)
-      try {
-        final files =
-            await _supabase.storage.from('profile-photos').list(path: userId);
-        if (files.isNotEmpty) {
-          final paths = files.map((f) => '$userId/${f.name}').toList();
-          await _supabase.storage.from('profile-photos').remove(paths);
-        }
-      } catch (e) {
-        debugPrint('Error deleting profile photos from storage: $e');
+      final files =
+          await _supabase.storage.from('profile-photos').list(path: userId);
+      if (files.isNotEmpty) {
+        final paths = files.map((f) => '$userId/${f.name}').toList();
+        await _supabase.storage.from('profile-photos').remove(paths);
       }
-
-      // Eliminar en orden para respetar foreign keys
-      await _supabase.from('user_achievements').delete().eq('user_id', userId);
-      await _supabase
-          .from('user_workout_schedule')
-          .delete()
-          .eq('user_id', userId);
-      await _supabase.from('workout_progress').delete().eq('user_id', userId);
-      await _supabase.from('body_measurements').delete().eq('user_id', userId);
-      await _supabase.from('workout_sessions').delete().eq('user_id', userId);
-      await _supabase.from('user_preferences').delete().eq('user_id', userId);
-      await _supabase.from('users').delete().eq('id', userId);
-
-      debugPrint('User data deleted');
     } catch (e) {
-      debugPrint('Error deleting user data: $e');
-      throw Exception('Could not delete user data');
+      debugPrint('Error deleting profile photos from storage: $e');
     }
   }
 

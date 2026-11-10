@@ -340,6 +340,15 @@ class WorkoutProvider extends ChangeNotifier {
                   // Peso sugerido por el entrenador (antes no se guardaba)
                   'weight_kg': entry.value.weightKgForDb,
                   'superset_group': entry.value.supersetGroup,
+                  'group_kind': entry.value.supersetGroup == null
+                      ? null
+                      : (entry.value.groupKind ?? 'superset'),
+                  'group_rest_seconds': entry.value.supersetGroup == null
+                      ? null
+                      : entry.value.groupRestSeconds,
+                  'duration_seconds': entry.value.isTimed
+                      ? entry.value.durationSeconds
+                      : null,
                 })
             .toList();
 
@@ -408,6 +417,8 @@ class WorkoutProvider extends ChangeNotifier {
         'exercise_count': workout.exercises.length,
         'image_url': workout.imageUrl,
         'description': workout.description,
+        // Antes la categoría no se guardaba al editar
+        'category': workout.category,
       }).eq('id', workoutId);
 
       // Insertar nuevos ejercicios PRIMERO.
@@ -429,6 +440,15 @@ class WorkoutProvider extends ChangeNotifier {
                   // Peso sugerido por el entrenador (antes no se guardaba)
                   'weight_kg': entry.value.weightKgForDb,
                   'superset_group': entry.value.supersetGroup,
+                  'group_kind': entry.value.supersetGroup == null
+                      ? null
+                      : (entry.value.groupKind ?? 'superset'),
+                  'group_rest_seconds': entry.value.supersetGroup == null
+                      ? null
+                      : entry.value.groupRestSeconds,
+                  'duration_seconds': entry.value.isTimed
+                      ? entry.value.durationSeconds
+                      : null,
                 })
             .toList();
 
@@ -466,7 +486,7 @@ class WorkoutProvider extends ChangeNotifier {
           imageUrl: workout.imageUrl,
           description: workout.description,
           createdBy: w.createdBy,
-          category: w.category,
+          category: workout.category,
           exercises: freshExercises,
         );
       }

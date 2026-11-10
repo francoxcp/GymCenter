@@ -59,7 +59,8 @@ class _WorkoutCalendarScreenState extends State<WorkoutCalendarScreen> {
       // Buscar el nombre del workout; si no está cargado, usar ID corto
       final workout =
           workouts.where((w) => w.id == session.workoutId).firstOrNull;
-      final name = workout?.name ?? l10n.workoutFallback;
+      final name =
+          workout?.name ?? session.workoutName ?? l10n.workoutFallback;
       events.putIfAbsent(key, () => []).add(
             WorkoutEvent(name, true, session.durationMinutes),
           );

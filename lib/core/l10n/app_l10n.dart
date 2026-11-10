@@ -1086,6 +1086,10 @@ class AppL10n {
       // ── SecurityService ──
       case 'no_active_session':
         return isEn ? 'No active session' : 'No hay sesión activa';
+      case 'owner_cannot_delete':
+        return isEn
+            ? 'You own this gym: it cannot be left without an owner. Contact GYMLAB support to close it.'
+            : 'Eres el dueño del gimnasio y no puede quedar sin dueño. Escribe a soporte de GYMLAB para cerrarlo.';
       case 'wrong_current_password':
         return isEn
             ? 'Current password is incorrect'

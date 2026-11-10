@@ -30,6 +30,8 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _durationController = TextEditingController();
+  // Categoría editable (antes no se podía cambiar al editar)
+  late String? _category = widget.workout.category;
 
   final List<Exercise> _exercises = [];
   bool _isLoading = false;
@@ -53,6 +55,10 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
 
   bool _hasChanges() {
     if (_nameController.text != widget.workout.name) return true;
+    if (_category != widget.workout.category ||
+        _descriptionController.text != (widget.workout.description ?? '')) {
+      return true;
+    }
     if (_durationController.text != widget.workout.duration.toString()) {
       return true;
     }
@@ -119,7 +125,8 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                l10n.adminPortal,
+                // El entrenador también edita sus rutinas: no es "admin"
+                l10n.isEn ? 'MY ROUTINES' : 'MIS RUTINAS',
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
@@ -189,7 +196,35 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      const SizedBox(height: 24),
+                      DropdownButtonFormField<String?>(
+                        initialValue: _category,
+                        decoration: InputDecoration(
+                          labelText: l10n.categoryLabel,
+                          border: const OutlineInputBorder(),
+                        ),
+                        items: [
+                          for (final c in {
+                            ...Workout.categories,
+                            if (_category != null) _category!,
+                          })
+                            DropdownMenuItem(value: c, child: Text(c)),
+                          DropdownMenuItem(
+                              value: null, child: Text(l10n.noCategory)),
+                        ],
+                        onChanged: (v) => setState(() => _category = v),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _descriptionController,
+                        maxLength: 300,
+                        maxLines: 3,
+                        minLines: 1,
+                        decoration: InputDecoration(
+                          labelText: l10n.descriptionLabel,
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -264,8 +299,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
                       key: ObjectKey(exercise),
                       exercises: _exercises,
                       index: index,
-                      onToggleLink: () =>
-                          _setExercises(toggleLinkWithNext(_exercises, index)),
+                      onToggleLink: () => _toggleGroup(index),
                       onEditGroup: () => _editSuperset(index),
                       card: _ExerciseCard(
                         exercise: exercise,
@@ -292,7 +326,10 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
     if (result.createCustom) {
       _showExerciseDialog();
     } else if (result.exercises.isNotEmpty) {
-      setState(() => _exercises.addAll(result.exercises));
+      // Desde la biblioteca se pueden agregar ya agrupados
+      _setExercises(result.groupKind != null
+          ? addAsGroup(_exercises, result.exercises, result.groupKind!)
+          : [..._exercises, ...result.exercises]);
     }
   }
 
@@ -314,9 +351,29 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
   Future<void> _editSuperset(int index) async {
     final e = _exercises[index];
     final r = await showSupersetSettings(context,
-        rounds: e.sets, rest: e.restSeconds);
+        kind: groupKindAt(_exercises, index) ?? kGroupSuperset,
+        rounds: e.sets,
+        rest: e.restSeconds,
+        innerRest: e.groupRestSeconds);
     if (r != null && mounted) {
-      _setExercises(applyRoundsAndRest(_exercises, index, r.rounds, r.rest));
+      _setExercises(applyGroupSettings(_exercises, index,
+          kind: r.kind,
+          rounds: r.rounds,
+          roundRest: r.rest,
+          innerRest: r.innerRest));
+    }
+  }
+
+  /// Agrupar con el siguiente: si es un grupo nuevo, se elige el tipo.
+  Future<void> _toggleGroup(int index) async {
+    if (isLinkedWithNext(_exercises, index) ||
+        !linkCreatesNewGroup(_exercises, index)) {
+      _setExercises(toggleLinkWithNext(_exercises, index));
+      return;
+    }
+    final kind = await showGroupKindPicker(context);
+    if (kind != null && mounted) {
+      _setExercises(toggleLinkWithNext(_exercises, index, kind: kind));
     }
   }
 
@@ -363,6 +420,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
       exerciseCount: _exercises.length,
       imageUrl: widget.workout.imageUrl,
       description: _descriptionController.text,
+      category: _category,
       exercises: _exercises,
     );
 
@@ -474,11 +532,11 @@ class _ExerciseCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
               alignment: Alignment.center,
               child: letter != null
@@ -499,6 +557,8 @@ class _ExerciseCard extends StatelessWidget {
                 children: [
                   Text(
                     exercise.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
@@ -507,8 +567,8 @@ class _ExerciseCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     letter != null
-                        ? '${exercise.reps} reps'
-                        : '${exercise.sets} series · ${exercise.reps} reps · ${exercise.restSeconds}s',
+                        ? exercise.amountLabel
+                        : '${exercise.sets} series · ${exercise.amountLabel} · ${exercise.restSeconds}s',
                     style: TextStyle(
                         color: AppColors.textSecondary, fontSize: 12),
                   ),
@@ -516,35 +576,36 @@ class _ExerciseCard extends StatelessWidget {
               ),
               ),
             ),
-            IconButton(
-              tooltip: 'Duplicar',
-              icon: Icon(Icons.copy_all_outlined,
-                  color: AppColors.textPrimary.withValues(alpha: 0.54), size: 20),
-              onPressed: onDuplicate,
-            ),
             ReorderableDragStartListener(
               index: dragIndex,
               child: Semantics(
                 label: 'Arrastrar para reordenar',
                 child: Padding(
-                  padding: EdgeInsets.all(12),
-                  child: Icon(Icons.drag_indicator, color: AppColors.textPrimary.withValues(alpha: 0.7)),
+                  padding: const EdgeInsets.all(10),
+                  child: Icon(Icons.drag_indicator,
+                      color: AppColors.textPrimary.withValues(alpha: 0.7)),
                 ),
               ),
             ),
-            IconButton(
- tooltip: 'Editar',
-              icon: Icon(Icons.edit, color: Colors.blue, size: 20),
-              onPressed: onEdit,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-            ),
-            IconButton(
- tooltip: 'Eliminar',
-              icon: Icon(Icons.delete, color: Colors.red, size: 20),
-              onPressed: onDelete,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+            // Editar, duplicar y eliminar en un solo menú: el nombre del
+            // ejercicio tiene espacio (antes se cortaba a mitad de palabra)
+            PopupMenuButton<String>(
+              tooltip: 'Más opciones',
+              icon: Icon(Icons.more_vert, color: AppColors.textSecondary),
+              color: AppColors.surface,
+              onSelected: (v) => switch (v) {
+                'edit' => onEdit(),
+                'duplicate' => onDuplicate(),
+                _ => onDelete(),
+              },
+              itemBuilder: (_) => [
+                const PopupMenuItem(value: 'edit', child: Text('Editar')),
+                const PopupMenuItem(value: 'duplicate', child: Text('Duplicar')),
+                PopupMenuItem(
+                    value: 'delete',
+                    child: Text('Eliminar',
+                        style: TextStyle(color: AppColors.error))),
+              ],
             ),
           ],
         ),
@@ -720,6 +781,8 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
       description: _descController.text.trim(),
       videoUrl: _videoUrl ?? '',
       weight: double.tryParse(_weightController.text.trim()) ?? 0,
+      // Conservar el modo por tiempo (se cambia en el editor rápido)
+      durationSeconds: widget.exercise?.durationSeconds ?? 0,
     );
 
     widget.onSave(newExercise);

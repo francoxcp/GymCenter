@@ -13,6 +13,14 @@ class Exercise {
   /// Ejercicios consecutivos con el mismo valor forman una superserie.
   /// En ellos `sets` son las rondas y `restSeconds` el descanso por ronda.
   final String? supersetGroup;
+  /// Tipo de grupo: 'superset' (sin descanso entre ejercicios) o
+  /// 'functional' (circuito con descanso corto entre ejercicios).
+  /// null en un grupo = superserie (lo creado antes de los funcionales).
+  final String? groupKind;
+  /// Descanso entre ejercicios dentro de un grupo funcional (segundos).
+  final int groupRestSeconds;
+  /// Si > 0, el ejercicio se hace por tiempo (p. ej. 40 s) y no por reps.
+  final int durationSeconds;
 
   Exercise({
     required this.id,
@@ -27,6 +35,9 @@ class Exercise {
     this.difficulty = 'Intermedio',
     this.weight = 0,
     this.supersetGroup,
+    this.groupKind,
+    this.groupRestSeconds = 0,
+    this.durationSeconds = 0,
   });
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
@@ -47,6 +58,15 @@ class Exercise {
           ? ((json['weight_kg'] as num).toDouble() * 2.20462 * 10).round() / 10
           : ((json['weight'] ?? 0) as num).toDouble(),
       supersetGroup: _nonEmpty(json['superset_group'] ?? json['supersetGroup']),
+      groupKind: _nonEmpty(json['group_kind'] ?? json['groupKind']),
+      groupRestSeconds:
+          ((json['group_rest_seconds'] ?? json['groupRestSeconds']) as num?)
+                  ?.toInt() ??
+              0,
+      durationSeconds:
+          ((json['duration_seconds'] ?? json['durationSeconds']) as num?)
+                  ?.toInt() ??
+              0,
     );
   }
 
@@ -64,8 +84,20 @@ class Exercise {
       'difficulty': difficulty,
       'weight': weight,
       'supersetGroup': supersetGroup,
+      'groupKind': groupKind,
+      'groupRestSeconds': groupRestSeconds,
+      'durationSeconds': durationSeconds,
     };
   }
+
+  /// Ejercicio por tiempo (p. ej. plancha 40 s) en lugar de repeticiones.
+  bool get isTimed => durationSeconds > 0;
+
+  /// Dentro de un grupo funcional (circuito).
+  bool get isFunctional => inSuperset && groupKind == 'functional';
+
+  /// "15 reps" o "40 s".
+  String get amountLabel => isTimed ? '$durationSeconds s' : '$reps reps';
 
   static String? _nonEmpty(dynamic v) {
     final s = v?.toString().trim();
@@ -83,6 +115,9 @@ class Exercise {
     double? weight,
     String? supersetGroup,
     bool clearSuperset = false,
+    String? groupKind,
+    int? groupRestSeconds,
+    int? durationSeconds,
   }) {
     return Exercise(
       id: id ?? this.id,
@@ -98,6 +133,11 @@ class Exercise {
       weight: weight ?? this.weight,
       supersetGroup:
           clearSuperset ? null : (supersetGroup ?? this.supersetGroup),
+      // Al salir de un grupo se limpian sus ajustes
+      groupKind: clearSuperset ? null : (groupKind ?? this.groupKind),
+      groupRestSeconds:
+          clearSuperset ? 0 : (groupRestSeconds ?? this.groupRestSeconds),
+      durationSeconds: durationSeconds ?? this.durationSeconds,
     );
   }
 

@@ -187,7 +187,10 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
     if (result.createCustom) {
       _addCustomExercise();
     } else if (result.exercises.isNotEmpty) {
-      setState(() => _exercises.addAll(result.exercises));
+      // Desde la biblioteca se pueden agregar ya agrupados
+      _setExercises(result.groupKind != null
+          ? addAsGroup(_exercises, result.exercises, result.groupKind!)
+          : [..._exercises, ...result.exercises]);
     }
   }
 
@@ -209,9 +212,29 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   Future<void> _editSuperset(int index) async {
     final e = _exercises[index];
     final r = await showSupersetSettings(context,
-        rounds: e.sets, rest: e.restSeconds);
+        kind: groupKindAt(_exercises, index) ?? kGroupSuperset,
+        rounds: e.sets,
+        rest: e.restSeconds,
+        innerRest: e.groupRestSeconds);
     if (r != null && mounted) {
-      _setExercises(applyRoundsAndRest(_exercises, index, r.rounds, r.rest));
+      _setExercises(applyGroupSettings(_exercises, index,
+          kind: r.kind,
+          rounds: r.rounds,
+          roundRest: r.rest,
+          innerRest: r.innerRest));
+    }
+  }
+
+  /// Agrupar con el siguiente: si es un grupo nuevo, se elige el tipo.
+  Future<void> _toggleGroup(int index) async {
+    if (isLinkedWithNext(_exercises, index) ||
+        !linkCreatesNewGroup(_exercises, index)) {
+      _setExercises(toggleLinkWithNext(_exercises, index));
+      return;
+    }
+    final kind = await showGroupKindPicker(context);
+    if (kind != null && mounted) {
+      _setExercises(toggleLinkWithNext(_exercises, index, kind: kind));
     }
   }
 
@@ -589,8 +612,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                 key: ObjectKey(exercise),
                 exercises: _exercises,
                 index: index,
-                onToggleLink: () =>
-                    _setExercises(toggleLinkWithNext(_exercises, index)),
+                onToggleLink: () => _toggleGroup(index),
                 onEditGroup: () => _editSuperset(index),
                 card: Card(
                 margin: const EdgeInsets.only(bottom: 8),
@@ -627,7 +649,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              '${span != null ? '' : '${exercise.sets} series · '}${exercise.reps} reps'
+                              '${span != null ? '' : '${exercise.sets} series · '}${exercise.amountLabel}'
                               '${exercise.weight > 0 ? ' · ${exercise.weight.toStringAsFixed(0)} lbs' : ''}'
                               ' · toca para ajustar',
                               style: TextStyle(
@@ -637,29 +659,33 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                         ),
                         ),
                       ),
-                      IconButton(
-                        tooltip: 'Duplicar',
-                        icon: Icon(Icons.copy_all_outlined,
-                            color: AppColors.textPrimary.withValues(alpha: 0.54)),
-                        onPressed: () => _setExercises(insertDuplicate(
-                            _exercises, index, duplicateExercise(exercise))),
-                      ),
                       ReorderableDragStartListener(
                         index: index,
                         child: Semantics(
                           label: 'Arrastrar para reordenar',
                           child: Padding(
-                            padding: EdgeInsets.all(12),
-                            child:
-                                Icon(Icons.drag_indicator, color: AppColors.textPrimary.withValues(alpha: 0.7)),
+                            padding: const EdgeInsets.all(10),
+                            child: Icon(Icons.drag_indicator,
+                                color: AppColors.textPrimary.withValues(alpha: 0.7)),
                           ),
                         ),
                       ),
-                      IconButton(
-                        icon:
-                            Icon(Icons.delete_outline, color: Colors.red),
-                        tooltip: 'Quitar',
-                        onPressed: () => _removeExercise(index),
+                      // Duplicar y quitar en un menú: más espacio al nombre
+                      PopupMenuButton<String>(
+                        tooltip: 'Más opciones',
+                        icon: Icon(Icons.more_vert, color: AppColors.textSecondary),
+                        color: AppColors.surface,
+                        onSelected: (v) => v == 'duplicate'
+                            ? _setExercises(insertDuplicate(
+                                _exercises, index, duplicateExercise(exercise)))
+                            : _removeExercise(index),
+                        itemBuilder: (_) => [
+                          const PopupMenuItem(value: 'duplicate', child: Text('Duplicar')),
+                          PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Quitar',
+                                  style: TextStyle(color: AppColors.error))),
+                        ],
                       ),
                     ],
                   ),

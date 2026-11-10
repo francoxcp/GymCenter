@@ -22,6 +22,7 @@ class ShareSummaryData {
   final int? repsDone;
   final int exercises;
   final int supersets;
+  final int functionals;
   final int newRecords;
   /// Mejor serie: ejercicio, peso (kg) y repeticiones.
   final String? bestExercise;
@@ -47,6 +48,7 @@ class ShareSummaryData {
     this.repsDone,
     required this.exercises,
     this.supersets = 0,
+    this.functionals = 0,
     required this.newRecords,
     this.bestExercise,
     this.bestWeightKg,
@@ -323,6 +325,8 @@ class SummaryShareCard extends StatelessWidget {
                     filled: true),
               if (data.supersets > 0)
                 _chip('${data.supersets} SUPERSERIE${data.supersets == 1 ? '' : 'S'}'),
+              if (data.functionals > 0)
+                _chip('${data.functionals} FUNCIONAL${data.functionals == 1 ? '' : 'ES'}'),
             ]),
             const Spacer(),
             Text(data.memberName,

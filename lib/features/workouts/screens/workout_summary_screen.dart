@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../core/utils/unit_converter.dart';
+import '../../../core/utils/uuid_v4.dart';
 import '../models/workout.dart';
 import '../widgets/share_summary_card.dart';
 import '../services/workout_result.dart';
@@ -47,6 +48,8 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
   bool _isLoadingNextWorkout = true;
   bool _isSaving = true; // bloquea el botón hasta que la sesión quede guardada
   late final int _motivationalIndex = math.Random().nextInt(8);
+  /// Id fijo de esta sesión: guardar dos veces no la duplica.
+  final String _sessionId = uuidV4();
 
   @override
   void initState() {
@@ -87,6 +90,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
 
       await progressProvider.completeWorkout(
         userId: userId,
+        sessionId: _sessionId,
         workoutId: widget.workout.id,
         durationMinutes: widget.durationMinutes,
         exercisesCompleted: widget.workout.exercises.length,
@@ -624,6 +628,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                               exercises: r?.exercisesDone ??
                                   widget.workout.exercises.length,
                               supersets: r?.supersets ?? 0,
+                              functionals: r?.functionals ?? 0,
                               newRecords: widget.newRecords,
                               bestExercise: r?.bestSet?.exercise,
                               bestWeightKg: r?.bestSet?.weightKg,

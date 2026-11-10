@@ -112,7 +112,11 @@ const kExerciseLibrary = <LibraryExercise>[
 class LibraryResult {
   final List<Exercise> exercises;
   final bool createCustom;
-  const LibraryResult(this.exercises, {this.createCustom = false});
+  /// Si no es null, agregar los ejercicios ya agrupados:
+  /// 'superset' o 'functional' (2 a 4 elegidos).
+  final String? groupKind;
+  const LibraryResult(this.exercises,
+      {this.createCustom = false, this.groupKind});
 }
 
 /// Biblioteca con buscador, filtro por músculo y selección múltiple.
@@ -239,7 +243,37 @@ class _LibrarySheetState extends State<_LibrarySheet> {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: SizedBox(
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                // Atajo: con 2 a 4 elegidos, agregarlos ya agrupados
+                if (_selected.length >= 2 && _selected.length <= 4) ...[
+                  Row(children: [
+                    for (final (kind, label) in const [
+                      ('superset', 'Como superserie'),
+                      ('functional', 'Como funcional'),
+                    ]) ...[
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(
+                            context,
+                            LibraryResult(
+                                _selected.map((e) => e.toExercise()).toList(),
+                                groupKind: kind),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size.fromHeight(48),
+                            foregroundColor: AppColors.primaryText,
+                            side: BorderSide(color: AppColors.primaryText),
+                          ),
+                          child: Text(label,
+                              style: const TextStyle(fontWeight: FontWeight.w800)),
+                        ),
+                      ),
+                      if (kind == 'superset') const SizedBox(width: 8),
+                    ],
+                  ]),
+                  const SizedBox(height: 8),
+                ],
+                SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _selected.isEmpty
@@ -266,6 +300,7 @@ class _LibrarySheetState extends State<_LibrarySheet> {
                   ),
                 ),
               ),
+              ]),
             ),
           ),
         ],
@@ -311,6 +346,35 @@ class _QuickEditorState extends State<_QuickEditor> {
   late int reps = widget.exercise.reps;
   late int rest = widget.exercise.restSeconds;
   late double weight = widget.exercise.weight;
+  // Por tiempo (p. ej. plancha o funcionales): segundos de trabajo
+  late bool timed = widget.exercise.isTimed;
+  late int seconds =
+      widget.exercise.isTimed ? widget.exercise.durationSeconds : 40;
+
+  Widget _modeChip(String label, bool selected, VoidCallback onTap) => Expanded(
+        child: Semantics(
+          button: true,
+          selected: selected,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              height: 44,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: selected ? AppColors.primary : AppColors.cardBackground,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(label,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: selected
+                          ? AppColors.onPrimary
+                          : AppColors.textSecondary)),
+            ),
+          ),
+        ),
+      );
 
   Widget _row(String label, String value, VoidCallback onMinus,
           VoidCallback onPlus) =>
@@ -362,14 +426,28 @@ class _QuickEditorState extends State<_QuickEditor> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
-                    'En superserie: rondas y descanso se aplican a todo el grupo',
+                    e.isFunctional
+                        ? 'En funcional: rondas y descansos se aplican a todo el grupo'
+                        : 'En superserie: rondas y descanso se aplican a todo el grupo',
                     style: TextStyle(
                         color: AppColors.textSecondary, fontSize: 13)),
               ),
+            const SizedBox(height: 4),
+            Row(children: [
+              _modeChip('Por reps', !timed, () => setState(() => timed = false)),
+              const SizedBox(width: 8),
+              _modeChip('Por tiempo', timed, () => setState(() => timed = true)),
+            ]),
+            const SizedBox(height: 4),
             _row(e.inSuperset ? 'Rondas' : 'Series', '$sets', () => setState(() => sets = (sets - 1).clamp(1, 20)),
                 () => setState(() => sets = (sets + 1).clamp(1, 20))),
-            _row('Reps', '$reps', () => setState(() => reps = (reps - 1).clamp(1, 200)),
-                () => setState(() => reps = (reps + 1).clamp(1, 200))),
+            if (timed)
+              _row('Tiempo', '${seconds}s',
+                  () => setState(() => seconds = (seconds - 5).clamp(5, 600)),
+                  () => setState(() => seconds = (seconds + 5).clamp(5, 600)))
+            else
+              _row('Reps', '$reps', () => setState(() => reps = (reps - 1).clamp(1, 200)),
+                  () => setState(() => reps = (reps + 1).clamp(1, 200))),
             _row(e.inSuperset ? 'Descanso por ronda' : 'Descanso', '${rest}s',
                 () => setState(() => rest = (rest - 15).clamp(0, 600)),
                 () => setState(() => rest = (rest + 15).clamp(0, 600))),
@@ -387,6 +465,7 @@ class _QuickEditorState extends State<_QuickEditor> {
                   reps: reps,
                   restSeconds: rest,
                   weight: weight,
+                  durationSeconds: timed ? seconds : 0,
                 ),
               ),
               style: ElevatedButton.styleFrom(
@@ -419,4 +498,5 @@ Exercise duplicateExercise(Exercise e) => Exercise(
       muscleGroup: e.muscleGroup,
       difficulty: e.difficulty,
       weight: e.weight,
+      durationSeconds: e.durationSeconds,
     );

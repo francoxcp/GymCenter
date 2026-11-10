@@ -37,6 +37,7 @@ class WorkoutSessionProvider extends ChangeNotifier {
           'id': json['id'],
           'userId': json['user_id'],
           'workoutId': json['workout_id'],
+          'workoutName': json['workout_name'],
           'date': json['completed_at'],
           'durationMinutes': json['duration_minutes'],
           'caloriesBurned': json['calories_burned'] ?? 0,

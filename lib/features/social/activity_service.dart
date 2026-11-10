@@ -37,7 +37,9 @@ class FeedItem {
       userId: j['user_id'] as String,
       userName: (user?['name'] as String?) ?? 'Socio',
       photoUrl: user?['photo_url'] as String?,
-      workoutName: (workout?['name'] as String?) ?? 'Rutina',
+      workoutName: (workout?['name'] as String?) ??
+          (j['workout_name'] as String?) ??
+          'Rutina',
       durationMinutes: (j['duration_minutes'] as num?)?.toInt() ?? 0,
       volumeKg: (j['total_volume_kg'] as num?)?.toDouble() ?? 0,
       completedAt:
@@ -68,9 +70,11 @@ class SessionComment {
   factory SessionComment.fromJson(Map<String, dynamic> j) => SessionComment(
         id: j['id'] as String,
         sessionId: j['session_id'] as String,
-        authorId: j['author_id'] as String,
+        // Sin autor: la cuenta que lo escribió se eliminó
+        authorId: j['author_id'] as String? ?? '',
         authorName:
-            ((j['users'] as Map<String, dynamic>?)?['name'] as String?) ?? '',
+            ((j['users'] as Map<String, dynamic>?)?['name'] as String?) ??
+                (j['author_id'] == null ? 'Cuenta eliminada' : ''),
         body: j['body'] as String? ?? '',
         createdAt:
             DateTime.tryParse(j['created_at'] as String? ?? '')?.toLocal() ??
@@ -85,6 +89,7 @@ class ActivityService {
 
   static const _feedSelect =
       'id, user_id, duration_minutes, total_volume_kg, completed_at, '
+      'workout_name, '
       'users(name, photo_url), '
       'workouts(name), session_comments(count)';
 

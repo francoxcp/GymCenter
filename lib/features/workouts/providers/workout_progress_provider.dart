@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/workout_progress.dart';
 import '../../../shared/services/offline_sync_queue.dart';
+import '../../../core/utils/uuid_v4.dart';
 
 class WorkoutProgressProvider with ChangeNotifier {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -158,6 +159,7 @@ class WorkoutProgressProvider with ChangeNotifier {
   // Completar workout y guardarlo en workout_sessions
   Future<void> completeWorkout({
     required String userId,
+    String? sessionId,
     required String workoutId,
     required int durationMinutes,
     required int exercisesCompleted,
@@ -167,7 +169,10 @@ class WorkoutProgressProvider with ChangeNotifier {
   }) async {
     try {
       // Guardar sesión en workout_sessions (se encola si no hay conexión)
-      await OfflineSyncQueue.instance.insert('workout_sessions', {
+      // Id generado en el dispositivo: si la red se corta después de que el
+      // servidor guardó la sesión, el reintento no la duplica.
+      await OfflineSyncQueue.instance.upsert('workout_sessions', {
+        'id': sessionId ?? uuidV4(),
         'user_id': userId,
         'workout_id': workoutId,
         'completed_at': DateTime.now().toIso8601String(),
@@ -175,7 +180,7 @@ class WorkoutProgressProvider with ChangeNotifier {
         'exercises_completed': exercisesData ?? exercisesCompleted,
         'calories_burned': caloriesBurned,
         'total_volume_kg': totalVolumeKg,
-      });
+      }, onConflict: 'id');
 
       debugPrint('✅ Workout session guardada en base de datos');
 

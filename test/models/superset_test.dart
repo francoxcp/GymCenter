@@ -51,13 +51,14 @@ void main() {
   });
 
   group('linkWithNext / unlinkFromNext', () {
-    test('une dos sueltos con rondas y descanso del primero', () {
+    test('une dos sueltos: rondas del primero y 120 s por ronda', () {
       final l = linkWithNext(
           [ex('A', sets: 4, rest: 90), ex('B', sets: 3, rest: 30)], 0);
       expect(l[0].supersetGroup, isNotNull);
       expect(l[0].supersetGroup, l[1].supersetGroup);
       expect(l.map((e) => e.sets), [4, 4]);
-      expect(l.map((e) => e.restSeconds), [90, 90]);
+      expect(l.map((e) => e.restSeconds), [120, 120]);
+      expect(l.map((e) => e.groupKind), [kGroupSuperset, kGroupSuperset]);
     });
 
     test('agrega un tercero y un cuarto, pero no un quinto', () {
@@ -216,6 +217,81 @@ void main() {
       expect(isLinkedWithNext(l, 0), isTrue);
       l = toggleLinkWithNext(l, 0);
       expect(isLinkedWithNext(l, 0), isFalse);
+    });
+  });
+
+  group('Funcionales', () {
+    test('crear funcional usa 15 s entre ejercicios y 60 s por ronda', () {
+      final l = linkWithNext([ex('A'), ex('B')], 0, kind: kGroupFunctional);
+      expect(groupKindAt(l, 0), kGroupFunctional);
+      expect(l.map((e) => e.groupRestSeconds), [15, 15]);
+      expect(l.map((e) => e.restSeconds), [60, 60]);
+      expect(linkCreatesNewGroup([ex('A'), ex('B')], 0), isTrue);
+    });
+
+    test('sumar un tercero conserva el tipo y los ajustes del grupo', () {
+      var l = linkWithNext([ex('A'), ex('B'), ex('C')], 0, kind: kGroupFunctional);
+      l = applyGroupSettings(l, 0,
+          kind: kGroupFunctional, rounds: 5, roundRest: 90, innerRest: 20);
+      expect(linkCreatesNewGroup(l, 1), isFalse);
+      l = linkWithNext(l, 1);
+      expect(supersetSpanAt(l, 0)!.size, 3);
+      expect(l.map((e) => e.groupKind).toSet(), {kGroupFunctional});
+      expect(l.map((e) => e.sets), [5, 5, 5]);
+      expect(l.map((e) => e.groupRestSeconds), [20, 20, 20]);
+    });
+
+    test('cambiar de funcional a superserie quita el descanso entre ejercicios', () {
+      var l = linkWithNext([ex('A'), ex('B')], 0, kind: kGroupFunctional);
+      l = applyGroupSettings(l, 1,
+          kind: kGroupSuperset, rounds: 3, roundRest: 120, innerRest: 15);
+      expect(l.map((e) => e.groupKind).toSet(), {kGroupSuperset});
+      expect(l.map((e) => e.groupRestSeconds), [0, 0]);
+    });
+
+    test('flujo: descanso corto entre ejercicios y largo al cerrar la ronda', () {
+      final l = linkWithNext([ex('A', sets: 2), ex('B', sets: 2), ex('X')], 0,
+          kind: kGroupFunctional);
+      expect(supersetStepAfterSet(l, 0, 0),
+          const SupersetStep(goTo: 1, rest: true, restSeconds: 15));
+      expect(supersetStepAfterSet(l, 1, 0),
+          const SupersetStep(goTo: 0, rest: true));
+    });
+
+    test('grupo viejo sin tipo se trata como superserie', () {
+      final l = [ex('A', group: 'g'), ex('B', group: 'g')];
+      expect(groupKindAt(l, 0), kGroupSuperset);
+      expect(supersetStepAfterSet(l, 0, 0),
+          const SupersetStep(goTo: 1, rest: false));
+    });
+
+    test('agregar desde la biblioteca como grupo', () {
+      final l = addAsGroup([ex('X')], [ex('A'), ex('B'), ex('C')], kGroupFunctional);
+      expect(supersetSpanAt(l, 1), const SupersetSpan(1, 3));
+      expect(l[0].supersetGroup, isNull);
+      expect(groupKindAt(l, 2), kGroupFunctional);
+    });
+
+    test('salir del grupo limpia sus ajustes; el tiempo se conserva', () {
+      final l = linkWithNext([ex('A'), ex('B')], 0, kind: kGroupFunctional);
+      final timed = l[0].copyWith(durationSeconds: 40);
+      final out = unlinkFromNext([timed, l[1]], 0);
+      expect(out[0].groupKind, isNull);
+      expect(out[0].groupRestSeconds, 0);
+      expect(out[0].durationSeconds, 40);
+      expect(out[0].isTimed, isTrue);
+      expect(out[0].amountLabel, '40 s');
+    });
+
+    test('se guarda y se lee del JSON', () {
+      final e = Exercise.fromJson({
+        'name': 'Burpees', 'superset_group': 'g', 'group_kind': 'functional',
+        'group_rest_seconds': 15, 'duration_seconds': 40,
+      });
+      expect(e.isFunctional, isTrue);
+      expect(e.groupRestSeconds, 15);
+      expect(e.durationSeconds, 40);
+      expect(Exercise.fromJson(e.toJson()).durationSeconds, 40);
     });
   });
 }

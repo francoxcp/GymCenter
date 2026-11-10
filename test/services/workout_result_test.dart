@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gymlab/features/workouts/models/exercise.dart';
 import 'package:gymlab/features/workouts/services/calorie_estimator.dart';
 import 'package:gymlab/features/workouts/services/workout_result.dart';
+import 'package:gymlab/features/workouts/screens/today_workout_screen.dart' show TodayWorkoutTimer;
+import 'package:gymlab/features/workouts/screens/workout_summary_screen.dart' show compactWeight;
 
 Exercise ex(String n, {int sets = 3, int reps = 10, double lbs = 0, String? group, String muscle = 'Piernas'}) =>
     Exercise(id: n, name: n, sets: sets, reps: reps, weight: lbs, muscleGroup: muscle, supersetGroup: group);
@@ -81,5 +83,40 @@ void main() {
       expect(WorkoutResult.clock(3909), '1:05:09');
       expect(res.calories, greaterThan(0));
     });
+  });
+
+  group('Cronómetro fuera de la app', () {
+    final now = DateTime(2026, 11, 10, 18, 0);
+    String saved(int acc, DateTime at, bool running) =>
+        '{"acc":$acc,"at":${at.millisecondsSinceEpoch},"running":$running}';
+
+    test('corriendo: suma el tiempo que estuvo fuera', () {
+      expect(
+          TodayWorkoutTimer.saved(
+              saved(600, now.subtract(const Duration(minutes: 5)), true), now),
+          900);
+    });
+
+    test('en pausa: no suma', () {
+      expect(
+          TodayWorkoutTimer.saved(
+              saved(600, now.subtract(const Duration(hours: 2)), false), now),
+          600);
+    });
+
+    test('tope de 3 horas fuera y formato anterior (int)', () {
+      expect(
+          TodayWorkoutTimer.saved(
+              saved(0, now.subtract(const Duration(days: 1)), true), now),
+          3 * 3600);
+      expect(TodayWorkoutTimer.saved(420, now), 420);
+      expect(TodayWorkoutTimer.saved(null, now), 0);
+    });
+  });
+
+  test('volumen corto en las tarjetas del resumen', () {
+    expect(compactWeight(17618 / 2.20462, 'imperial'), '17.6k');
+    expect(compactWeight(400, 'imperial'), '882');
+    expect(compactWeight(400, 'metric'), '400');
   });
 }

@@ -400,8 +400,10 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    // Estadísticas en tarjetas amarillas
-                    Row(
+                    // Estadísticas en tarjetas amarillas (misma altura)
+                    IntrinsicHeight(
+                      child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Expanded(
                           child: StatCard(
@@ -426,12 +428,12 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                           child: StatCard(
                             icon: Icons.fitness_center,
                             label: l10n.volumeStatLabel,
-                            value: UnitConverter.weightValue(
-                                widget.totalVolume, units),
+                            value: compactWeight(widget.totalVolume, units),
                             unit: UnitConverter.weightUnit(units),
                           ),
                         ),
                       ],
+                    ),
                     ),
 
                     const SizedBox(height: 32),
@@ -729,6 +731,13 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
 }
 
 // Widget StatCard
+/// Peso total corto para tarjetas: 860 · 9,450 → "9.4k" desde 10 mil.
+String compactWeight(double kg, String units) {
+  final v = UnitConverter.convertWeight(kg, units);
+  if (v >= 10000) return '${(v / 1000).toStringAsFixed(1)}k';
+  return v.round().toString();
+}
+
 class StatCard extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -751,15 +760,21 @@ class StatCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: AppColors.primaryText, size: 28),
             const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary),
+            // Una sola línea: si no cabe, se achica (antes "17618.0" se partía)
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                maxLines: 1,
+                style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary),
+              ),
             ),
             if (unit != null)
               Text(unit!,

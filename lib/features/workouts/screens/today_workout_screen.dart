@@ -31,6 +31,13 @@ import '../services/progression_engine.dart';
 import '../widgets/record_celebration.dart';
 import '../services/workout_result.dart';
 
+/// Lectura del cronómetro guardado (pública para tests).
+class TodayWorkoutTimer {
+  TodayWorkoutTimer._();
+  static int saved(Object? raw, DateTime now) =>
+      _TodayWorkoutScreenState.savedTimerSeconds(raw, now);
+}
+
 class TodayWorkoutScreen extends StatefulWidget {
   /// Si se pasa, se ejecuta esta rutina en lugar de la asignada (modo extra).
   final String? extraWorkoutId;
@@ -47,6 +54,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   List<List<bool>> _completedSets = [];
   bool _isResting = false;
   int _remainingSeconds = 0;
+  /// Hora en que termina el descanso: así sigue corriendo aunque la app
+  /// esté en segundo plano (el navegador congela los timers).
+  DateTime? _restEndsAt;
   Timer? _timer;
   bool _isPaused = false;
   int _accumulatedSeconds = 0; // segundos activos acumulados
@@ -133,14 +143,22 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     super.dispose();
   }
 
-  // -- Ciclo de vida de la app: auto-pausa al ir a segundo plano --------------
+  // -- Ciclo de vida de la app ----------------------------------------------
+  // Antes se pausaba solo al ir a segundo plano y nunca se reanudaba: el
+  // tiempo quedaba en 00:00, las calorías en 0 y el descanso se cortaba.
+  // Ahora el cronómetro y el descanso siguen con la hora real; solo se
+  // guarda el estado por si el sistema cierra la app.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (_workoutCompleted) return;
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.hidden) {
-      if (!_isPaused) _pauseWorkout(auto: true);
+      unawaited(_saveTimerLocally());
+      _saveProgressDebounced();
+    } else if (state == AppLifecycleState.resumed) {
+      _tickRest();
+      if (mounted) setState(() {});
     }
   }
 
@@ -182,14 +200,41 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     return 'workout_timer_${userId}_$workoutId';
   }
 
+  /// Máximo que se suma por tiempo fuera de la app si el sistema la cerró
+  /// con el cronómetro corriendo (evita entrenos de 10 horas).
+  static const _maxAwaySeconds = 3 * 3600;
+
   Future<void> _saveTimerLocally() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_timerKey(), _accumulatedSeconds);
+    await prefs.setString(
+        _timerKey(),
+        jsonEncode({
+          'acc': _getActiveDurationSeconds(),
+          'at': DateTime.now().millisecondsSinceEpoch,
+          'running': !_isPaused,
+        }));
+  }
+
+  /// Segundos guardados; si el cronómetro seguía corriendo, suma el tiempo
+  /// transcurrido desde que se guardó.
+  static int savedTimerSeconds(Object? raw, DateTime now) {
+    if (raw is int) return raw; // formato anterior
+    if (raw is! String) return 0;
+    try {
+      final j = jsonDecode(raw) as Map<String, dynamic>;
+      final acc = (j['acc'] as num?)?.toInt() ?? 0;
+      if (j['running'] != true) return acc;
+      final at = DateTime.fromMillisecondsSinceEpoch((j['at'] as num).toInt());
+      final away = now.difference(at).inSeconds.clamp(0, _maxAwaySeconds);
+      return acc + away;
+    } catch (_) {
+      return 0;
+    }
   }
 
   Future<void> _loadTimerLocally() async {
     final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getInt(_timerKey()) ?? 0;
+    final saved = savedTimerSeconds(prefs.get(_timerKey()), DateTime.now());
     // Solo aplicar si supera el acumulado actual (evita retroceder el timer
     // cuando se restaura progreso desde BD con un valor mayor).
     if (saved > _accumulatedSeconds) {
@@ -506,27 +551,34 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
   void _startRestTimer(int seconds) {
     HapticFeedback.mediumImpact();
+    _restEndsAt = DateTime.now().add(Duration(seconds: seconds));
     setState(() {
       _isResting = true;
       _remainingSeconds = seconds;
     });
 
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tickRest());
+  }
+
+  /// Recalcula lo que queda de descanso con la hora real (también al volver
+  /// a la app: si el descanso ya terminó afuera, se cierra al entrar).
+  void _tickRest() {
+    final end = _restEndsAt;
+    if (!_isResting || end == null || !mounted) return;
+    final left = (end.difference(DateTime.now()).inMilliseconds / 1000).ceil();
+    if (left > 0) {
+      if (left <= 3 && left != _remainingSeconds) HapticFeedback.selectionClick();
+      setState(() => _remainingSeconds = left);
+    } else {
+      _timer?.cancel();
+      _restEndsAt = null;
+      HapticFeedback.heavyImpact();
       setState(() {
-        if (_remainingSeconds > 0) {
-          _remainingSeconds--;
-          // Haptic feedback en los Últimos 3 segundos
-          if (_remainingSeconds <= 3 && _remainingSeconds > 0) {
-            HapticFeedback.selectionClick();
-          }
-        } else {
-          _isResting = false;
-          HapticFeedback.heavyImpact();
-          timer.cancel();
-        }
+        _remainingSeconds = 0;
+        _isResting = false;
       });
-    });
+    }
   }
 
   void _toggleSet(int exerciseIndex, int setIndex) {
@@ -758,6 +810,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   Future<void> _handleExitChoice(String? choice) async {
     if (!mounted) return;
     if (choice == 'save_later') {
+      // Al dejarlo para después, el tiempo fuera no cuenta
+      _pauseWorkout(auto: true);
       await _saveProgressToDatabase();
       await _savePartialWeights(); // guardar pesos ingresados hasta ahora
       if (mounted) context.go('/workouts');
@@ -2524,6 +2578,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   TextButton(
                     onPressed: () {
                       _timer?.cancel();
+                      _restEndsAt = null;
                       setState(() {
                         _isResting = false;
                         _remainingSeconds = 0;

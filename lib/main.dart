@@ -24,6 +24,7 @@ import 'shared/services/biometric_service.dart';
 import 'shared/services/notification_service.dart';
 import 'shared/services/offline_sync_queue.dart';
 import 'shared/web/web_bridge.dart';
+import 'shared/web/web_safe_area.dart';
 import 'features/organization/services/organization_service.dart';
 
 /// Tema y tamaño de texto del dispositivo (se carga antes del primer frame).
@@ -304,10 +305,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             // Web en pantallas anchas (tablet/PC): la app está diseñada para
             // el móvil, así que se centra en una columna de ancho de teléfono.
             // Tamaño de texto elegido en Ajustes (accesibilidad).
+            // En la PWA del iPhone se suman las zonas seguras (notch / barra
+            // de inicio) que Flutter web no informa.
             builder: (context, child) {
+              var mq = MediaQuery.of(context)
+                  .copyWith(textScaler: appearance.scalerFor(context));
+              if (kIsWeb) mq = withWebSafeArea(mq, WebBridge.safeAreaInsets());
               final scaled = MediaQuery(
-                data: MediaQuery.of(context)
-                    .copyWith(textScaler: appearance.scalerFor(context)),
+                data: mq,
                 child: child ?? const SizedBox.shrink(),
               );
               return kIsWeb ? _PhoneFrame(child: scaled) : scaled;

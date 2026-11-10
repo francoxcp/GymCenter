@@ -27,6 +27,7 @@ extension type _GcBridge._(JSObject _) implements JSObject {
   external JSPromise<JSBoolean> passkeyVerify(String credentialId);
   external void download(String fileName, String base64Data, String mimeType);
   external void openUrl(String url);
+  external JSArray<JSNumber> safeAreaInsets();
   external JSPromise<JSBoolean> copyText(String text);
   external JSPromise<JSString> shareText(String text);
   external JSPromise<JSString> shareFile(
@@ -184,6 +185,19 @@ class WebBridge {
   }
 
   static void openUrl(String url) => _bridge?.openUrl(url);
+
+  /// Zonas seguras del celular en px lógicos: [arriba, derecha, abajo,
+  /// izquierda]. Ceros si no hay (Android, navegador de escritorio).
+  static List<double> safeAreaInsets() {
+    final b = _bridge;
+    if (b == null) return const [0, 0, 0, 0];
+    try {
+      final l = b.safeAreaInsets().toDart.map((n) => n.toDartDouble).toList();
+      return l.length == 4 ? l : const [0, 0, 0, 0];
+    } catch (_) {
+      return const [0, 0, 0, 0];
+    }
+  }
 
   static Future<bool> copyText(String text) async {
     final b = _bridge;

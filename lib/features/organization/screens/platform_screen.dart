@@ -1205,20 +1205,20 @@ class _PlatformOrgScreenState extends State<PlatformOrgScreen> {
               onPressed: () async {
                 if (await showRegisterPaymentSheet(context, org)) _load();
               },
-              child: const Text('Registrar pago', style: TextStyle(fontWeight: FontWeight.w800)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.onPrimary,
                 minimumSize: const Size.fromHeight(48),
               ),
+              child: const Text('Registrar pago', style: TextStyle(fontWeight: FontWeight.w800)),
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: OutlinedButton(
               onPressed: _extend,
-              child: const Text('Dar más días'),
               style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+              child: const Text('Dar más días'),
             ),
           ),
         ]),

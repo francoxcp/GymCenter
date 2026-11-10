@@ -322,7 +322,31 @@
     },
 
     // Abrir un enlace (p. ej. comprobante firmado) en otra pestaña
+    // Zonas seguras del celular (notch / isla dinámica, barra de inicio,
+    // laterales en horizontal) en px CSS: [arriba, derecha, abajo, izquierda].
+    // Flutter web no las informa por su cuenta (MediaQuery.padding llega en 0).
+    safeAreaInsets: () => {
+      let probe = document.getElementById('gc-safe-probe');
+      if (!probe) {
+        probe = document.createElement('div');
+        probe.id = 'gc-safe-probe';
+        probe.style.cssText =
+          'position:fixed;top:0;left:0;width:0;height:0;visibility:hidden;pointer-events:none;' +
+          'padding-top:env(safe-area-inset-top,0px);padding-right:env(safe-area-inset-right,0px);' +
+          'padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);';
+        document.body.appendChild(probe);
+      }
+      const cs = getComputedStyle(probe);
+      return [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft]
+        .map((v) => parseFloat(v) || 0);
+    },
+
     openUrl: (url) => {
+      // Correo y teléfono: los abre la app del sistema
+      if (typeof url === 'string' && /^(mailto:|tel:)/.test(url)) {
+        window.location.href = url;
+        return;
+      }
       if (typeof url === 'string' && url.startsWith('https://')) {
         // En la PWA instalada del iPhone, window.open con noopener puede
         // fallar en silencio: se usa un enlace real como respaldo.

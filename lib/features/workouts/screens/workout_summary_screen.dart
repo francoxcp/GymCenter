@@ -8,6 +8,7 @@ import '../../../core/l10n/app_l10n.dart';
 import '../../../core/utils/unit_converter.dart';
 import '../models/workout.dart';
 import '../widgets/share_summary_card.dart';
+import '../services/workout_result.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/user_provider.dart';
 import '../providers/workout_provider.dart';
@@ -15,7 +16,6 @@ import '../providers/workout_progress_provider.dart';
 import '../providers/workout_session_provider.dart';
 import '../../progress/providers/achievements_provider.dart';
 import '../../progress/providers/body_measurement_provider.dart';
-import '../../settings/providers/preferences_provider.dart';
 
 class WorkoutSummaryScreen extends StatefulWidget {
   final Workout workout;
@@ -24,8 +24,11 @@ class WorkoutSummaryScreen extends StatefulWidget {
   final double totalVolume;
   final List<List<bool>>? completedSets;
   final int newRecords;
+  /// Resultado completo (segundos exactos, reps, mejor serie, superseries).
+  final WorkoutResult? result;
 
   const WorkoutSummaryScreen({
+    this.result,
     super.key,
     required this.workout,
     required this.durationMinutes,
@@ -297,10 +300,10 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final prefsProvider =
-        Provider.of<PreferencesProvider>(context, listen: false);
-    final units =
-        prefsProvider.preferences?.language == 'en' ? 'imperial' : 'metric';
+    // Las series se anotan en libras durante el entreno: el resumen y la
+    // tarjeta para compartir usan la misma unidad (antes, en español, el
+    // volumen salía en kg y no coincidía con lo anotado).
+    const units = 'imperial';
     final l10n = AppL10n.of(context);
     final motivationalMessages = l10n.motivationalMessages;
     final motivationalMessage =
@@ -404,7 +407,9 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                           child: StatCard(
                             icon: Icons.timer,
                             label: l10n.timeStatLabel,
-                            value: _formatDuration(widget.durationMinutes),
+                            value: widget.result != null
+                                ? WorkoutResult.clock(widget.result!.durationSeconds)
+                                : _formatDuration(widget.durationMinutes),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -592,7 +597,9 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         onPressed: () {
-                          final sets = widget.completedSets
+                          final r = widget.result;
+                          final sets = r?.setsDone ??
+                              widget.completedSets
                                   ?.expand((e) => e)
                                   .where((d) => d)
                                   .length ??
@@ -607,10 +614,19 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                                       ?.name ??
                                   '',
                               durationMinutes: widget.durationMinutes,
+                              durationSeconds: r?.durationSeconds,
+                              calories: widget.caloriesBurned,
                               volumeKg: widget.totalVolume,
                               setsDone: sets,
-                              exercises: widget.workout.exercises.length,
+                              repsDone: r?.repsDone,
+                              exercises: r?.exercisesDone ??
+                                  widget.workout.exercises.length,
+                              supersets: r?.supersets ?? 0,
                               newRecords: widget.newRecords,
+                              bestExercise: r?.bestSet?.exercise,
+                              bestWeightKg: r?.bestSet?.weightKg,
+                              bestReps: r?.bestSet?.reps,
+                              units: units,
                               date: DateTime.now(),
                               brandName: context
                                       .read<AuthProvider>()

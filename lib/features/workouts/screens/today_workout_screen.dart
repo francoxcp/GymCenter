@@ -29,7 +29,7 @@ import '../../../shared/services/offline_cache_service.dart';
 import '../../../shared/services/offline_sync_queue.dart';
 import '../services/progression_engine.dart';
 import '../widgets/record_celebration.dart';
-import '../services/calorie_estimator.dart';
+import '../services/workout_result.dart';
 
 class TodayWorkoutScreen extends StatefulWidget {
   /// Si se pasa, se ejecuta esta rutina en lugar de la asignada (modo extra).
@@ -62,9 +62,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   // Estado de resumen al completar rutina
   bool _workoutCompleted = false;
   Workout? _summaryWorkout;
-  int _summaryDurationMinutes = 0;
-  int _summaryCaloriesBurned = 0;
-  double _summaryTotalVolume = 0;
+  WorkoutResult? _summaryResult;
 
   // -- Historial de peso por ejercicio ---------------------------------------
   // [exerciseIndex][setIndex] → peso en kg (null = no ingresado)
@@ -1046,8 +1044,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   void _showWorkoutSummary(Workout workout) {
     HapticFeedback.heavyImpact();
 
-    // Tiempo activo real (excluye pausas)
-    final durationMinutes = _getActiveDurationSeconds() ~/ 60;
+    // Tiempo activo real (excluye pausas), en segundos
+    final durationSeconds = _getActiveDurationSeconds();
     _clearTimerLocally(); // limpiar timer guardado
 
     // Guardar pesos por serie en segundo plano
@@ -1060,63 +1058,33 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           workoutId: workoutId, userId: userId, workout: workout));
     }
 
-    // Obtener peso: medidas corporales ? perfil de usuario ? default 70kg
+    // Peso corporal: última medida → perfil → 70 kg
     final measurementProvider = context.read<BodyMeasurementProvider>();
-    final authUser = context.read<AuthProvider>().currentUser;
+    final authUser = authProvider.currentUser;
     final userWeightKg = measurementProvider.latestMeasurement?.weight ??
         authUser?.weightKg ??
         70.0;
 
-    // CÁlculo de calorías mejorado con datos del perfil de usuario
-    final caloriesBurned = _estimateCalories(
-      workout,
-      durationMinutes,
-      userWeightKg,
+    // Resultado con lo que se hizo de verdad: reps y pesos anotados,
+    // ritmo (series por minuto), superseries y cardio para las calorías
+    final result = WorkoutResult.compute(
+      exercises: workout.exercises,
+      completed: _completedSets,
+      weightsKg: _setWeights,
+      reps: _setReps,
+      durationSeconds: durationSeconds,
+      isCardio: _isCardioExercise,
+      bodyWeightKg: userWeightKg,
+      heightCm: authUser?.heightCm?.toDouble(),
+      age: authUser?.age,
+      sex: authUser?.sex,
     );
-
-    // Volumen real: solo series que el usuario completó × peso que realmente usó.
-    // Si no ingresó peso en una serie, se usa el peso programado como fallback.
-    double totalVolume = 0;
-    for (int i = 0; i < workout.exercises.length; i++) {
-      final exercise = workout.exercises[i];
-      final completedSetsList =
-          i < _completedSets.length ? _completedSets[i] : <bool>[];
-      for (int j = 0; j < completedSetsList.length; j++) {
-        if (completedSetsList[j]) {
-          final actualWeight = _setWeights[i]?[j] ??
-              (exercise.weight > 0
-                  ? exercise.weight /
-                      _kgToLbs // exercise.weight está en lbs, convertir a kg
-                  : _estimateWeight(exercise.name).toDouble());
-          totalVolume += actualWeight * exercise.reps;
-        }
-      }
-    }
 
     setState(() {
       _workoutCompleted = true;
       _summaryWorkout = workout;
-      _summaryDurationMinutes = durationMinutes;
-      _summaryCaloriesBurned = caloriesBurned;
-      _summaryTotalVolume = totalVolume;
+      _summaryResult = result;
     });
-  }
-
-  int _estimateCalories(Workout workout, int durationMinutes, double weightKg) {
-    if (durationMinutes == 0) return 0;
-
-    // -- Datos del usuario ------------------------------------------------------
-    final authUser = context.read<AuthProvider>().currentUser;
-    final exercises = workout.exercises;
-    final cardio = exercises.where(_isCardioExercise).length;
-    return CalorieEstimator.estimate(
-      minutes: durationMinutes,
-      weightKg: weightKg,
-      heightCm: authUser?.heightCm?.toDouble(),
-      age: authUser?.age,
-      sex: authUser?.sex,
-      cardioRatio: exercises.isEmpty ? 0 : cardio / exercises.length,
-    );
   }
 
   /// Detecta si un ejercicio es cardiovascular usando múltiples señales:
@@ -1143,17 +1111,6 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       'high knee', 'butt kick', 'sprint', 'treadmill',
     ];
     return keywords.any((k) => name.contains(k));
-  }
-
-  int _estimateWeight(String exerciseName) {
-    final name = exerciseName.toLowerCase();
-    if (name.contains('sentadilla') || name.contains('squat')) return 85;
-    if (name.contains('press') || name.contains('banco')) return 85;
-    if (name.contains('peso muerto') || name.contains('deadlift')) return 90;
-    if (name.contains('remo')) return 110;
-    if (name.contains('dominada') || name.contains('pull')) return 0;
-    if (name.contains('burpee') || name.contains('jumping')) return 0;
-    return 50;
   }
 
   // -- Peso por serie ----------------------------------------------------------------
@@ -1969,9 +1926,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     if (_workoutCompleted && _summaryWorkout != null) {
       return WorkoutSummaryScreen(
         workout: _summaryWorkout!,
-        durationMinutes: _summaryDurationMinutes,
-        caloriesBurned: _summaryCaloriesBurned,
-        totalVolume: _summaryTotalVolume,
+        durationMinutes: _summaryResult!.durationMinutes,
+        caloriesBurned: _summaryResult!.calories,
+        totalVolume: _summaryResult!.volumeKg,
+        result: _summaryResult,
         completedSets: _completedSets,
         newRecords: _newPRsThisSession.length,
       );

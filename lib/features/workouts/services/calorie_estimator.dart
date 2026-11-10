@@ -27,6 +27,47 @@ class CalorieEstimator {
     };
   }
 
+  /// MET de la sesión según cómo se entrenó de verdad (Compendio de
+  /// Actividad Física 2024):
+  ///  - Pesas con descansos largos (≤ 0,2 series/min) → 3,5 (ligero/moderado).
+  ///  - Ritmo alto (≥ 0,45 series/min) → 6,0 (vigoroso). Entre ambos, lineal.
+  ///  - Superseries: menos descanso, suben hasta +0,5 (máximo 6,0).
+  ///  - Cardio (8,0) se mezcla en proporción a los ejercicios de cardio.
+  static double metForSession({
+    required int setsDone,
+    required double minutes,
+    double cardioRatio = 0,
+    double supersetRatio = 0,
+  }) {
+    if (minutes <= 0) return metFor(cardioRatio: cardioRatio);
+    final density = setsDone / minutes;
+    final t = ((density - 0.2) / (0.45 - 0.2)).clamp(0.0, 1.0);
+    final strength =
+        (3.5 + 2.5 * t + 0.5 * supersetRatio.clamp(0.0, 1.0)).clamp(3.5, 6.0);
+    final c = cardioRatio.clamp(0.0, 1.0);
+    return strength * (1 - c) + 8.0 * c;
+  }
+
+  /// Igual que [estimate] pero con la duración en segundos y un MET ya
+  /// calculado (p. ej. con [metForSession]).
+  static int estimateSession({
+    required int seconds,
+    required double met,
+    double? weightKg,
+    double? heightCm,
+    int? age,
+    String? sex,
+  }) {
+    if (seconds <= 0) return 0;
+    final b = bmr(
+      weightKg: weightKg ?? 70,
+      heightCm: heightCm ?? 170,
+      age: age ?? 30,
+      sex: sex,
+    );
+    return ((b / 1440) * met * (seconds / 60)).round();
+  }
+
   static int estimate({
     required int minutes,
     double? weightKg,

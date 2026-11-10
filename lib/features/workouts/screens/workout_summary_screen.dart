@@ -8,6 +8,7 @@ import '../../../core/l10n/app_l10n.dart';
 import '../../../core/utils/unit_converter.dart';
 import '../models/workout.dart';
 import '../widgets/share_summary_card.dart';
+import '../services/workout_result.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/providers/user_provider.dart';
 import '../providers/workout_provider.dart';
@@ -15,7 +16,6 @@ import '../providers/workout_progress_provider.dart';
 import '../providers/workout_session_provider.dart';
 import '../../progress/providers/achievements_provider.dart';
 import '../../progress/providers/body_measurement_provider.dart';
-import '../../settings/providers/preferences_provider.dart';
 
 class WorkoutSummaryScreen extends StatefulWidget {
   final Workout workout;
@@ -24,8 +24,11 @@ class WorkoutSummaryScreen extends StatefulWidget {
   final double totalVolume;
   final List<List<bool>>? completedSets;
   final int newRecords;
+  /// Resultado completo (segundos exactos, reps, mejor serie, superseries).
+  final WorkoutResult? result;
 
   const WorkoutSummaryScreen({
+    this.result,
     super.key,
     required this.workout,
     required this.durationMinutes,
@@ -297,10 +300,10 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final prefsProvider =
-        Provider.of<PreferencesProvider>(context, listen: false);
-    final units =
-        prefsProvider.preferences?.language == 'en' ? 'imperial' : 'metric';
+    // Las series se anotan en libras durante el entreno: el resumen y la
+    // tarjeta para compartir usan la misma unidad (antes, en español, el
+    // volumen salía en kg y no coincidía con lo anotado).
+    const units = 'imperial';
     final l10n = AppL10n.of(context);
     final motivationalMessages = l10n.motivationalMessages;
     final motivationalMessage =
@@ -397,14 +400,18 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    // Estadísticas en tarjetas amarillas
-                    Row(
+                    // Estadísticas en tarjetas amarillas (misma altura)
+                    IntrinsicHeight(
+                      child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Expanded(
                           child: StatCard(
                             icon: Icons.timer,
                             label: l10n.timeStatLabel,
-                            value: _formatDuration(widget.durationMinutes),
+                            value: widget.result != null
+                                ? WorkoutResult.clock(widget.result!.durationSeconds)
+                                : _formatDuration(widget.durationMinutes),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -421,12 +428,12 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                           child: StatCard(
                             icon: Icons.fitness_center,
                             label: l10n.volumeStatLabel,
-                            value: UnitConverter.weightValue(
-                                widget.totalVolume, units),
+                            value: compactWeight(widget.totalVolume, units),
                             unit: UnitConverter.weightUnit(units),
                           ),
                         ),
                       ],
+                    ),
                     ),
 
                     const SizedBox(height: 32),
@@ -592,7 +599,9 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         onPressed: () {
-                          final sets = widget.completedSets
+                          final r = widget.result;
+                          final sets = r?.setsDone ??
+                              widget.completedSets
                                   ?.expand((e) => e)
                                   .where((d) => d)
                                   .length ??
@@ -607,10 +616,19 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                                       ?.name ??
                                   '',
                               durationMinutes: widget.durationMinutes,
+                              durationSeconds: r?.durationSeconds,
+                              calories: widget.caloriesBurned,
                               volumeKg: widget.totalVolume,
                               setsDone: sets,
-                              exercises: widget.workout.exercises.length,
+                              repsDone: r?.repsDone,
+                              exercises: r?.exercisesDone ??
+                                  widget.workout.exercises.length,
+                              supersets: r?.supersets ?? 0,
                               newRecords: widget.newRecords,
+                              bestExercise: r?.bestSet?.exercise,
+                              bestWeightKg: r?.bestSet?.weightKg,
+                              bestReps: r?.bestSet?.reps,
+                              units: units,
                               date: DateTime.now(),
                               brandName: context
                                       .read<AuthProvider>()
@@ -713,6 +731,13 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
 }
 
 // Widget StatCard
+/// Peso total corto para tarjetas: 860 · 9,450 → "9.4k" desde 10 mil.
+String compactWeight(double kg, String units) {
+  final v = UnitConverter.convertWeight(kg, units);
+  if (v >= 10000) return '${(v / 1000).toStringAsFixed(1)}k';
+  return v.round().toString();
+}
+
 class StatCard extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -735,15 +760,21 @@ class StatCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: AppColors.primaryText, size: 28),
             const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary),
+            // Una sola línea: si no cabe, se achica (antes "17618.0" se partía)
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                maxLines: 1,
+                style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary),
+              ),
             ),
             if (unit != null)
               Text(unit!,

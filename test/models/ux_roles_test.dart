@@ -130,7 +130,8 @@ void main() {
       'billing_status': 'approved',
     });
     final idle = OrgSummary(
-        org: org, ownerName: null, ownerEmail: null, trainers: 0,
+        // Con dueño: un cliente sin dueño cae en "Sin dueño", no en "Sin uso"
+        org: org, ownerName: 'Ana', ownerEmail: null, trainers: 0,
         members: 3, pendingReviews: 1,
         lastActivity: DateTime(2026, 10, 1), sessions30d: 0);
     expect(OrgFilter.review.matches(idle, now), isTrue);

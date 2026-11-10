@@ -223,6 +223,25 @@ class OrganizationService {
     int trialDays = 14,
     String plan = 'Mensual',
     int? maxMembers,
+  }) async =>
+      (await platformCreateOrgWithId(
+              name: name,
+              kind: kind,
+              monthlyFee: monthlyFee,
+              trialDays: trialDays,
+              plan: plan,
+              maxMembers: maxMembers))
+          .token;
+
+  /// Igual que [platformCreateOrg], pero también devuelve el id del cliente
+  /// (para abrir su ficha al terminar).
+  static Future<({String orgId, String token})> platformCreateOrgWithId({
+    required String name,
+    required String kind,
+    double? monthlyFee,
+    int trialDays = 14,
+    String plan = 'Mensual',
+    int? maxMembers,
   }) async {
     final rows = await _db.rpc('platform_create_org', params: {
       'p_name': name,
@@ -232,7 +251,8 @@ class OrganizationService {
       'p_plan': plan,
       'p_max_members': maxMembers,
     });
-    return ((rows as List).first as Map<String, dynamic>)['token'] as String;
+    final row = (rows as List).first as Map<String, dynamic>;
+    return (orgId: row['org_id'] as String, token: row['token'] as String);
   }
 
   static Future<PlatformStats?> platformStats() async {
@@ -256,6 +276,34 @@ class OrganizationService {
     final token = await _db.rpc('create_invitation',
         params: {'p_role': 'admin', 'p_org': orgId});
     return token as String;
+  }
+
+  /// Pago en efectivo / SINPE registrado a mano. Devuelve la nueva fecha
+  /// hasta la que queda pagado.
+  static Future<DateTime?> platformRegisterPayment(String orgId,
+      {required int months, double? amount, String? note}) async {
+    final r = await _db.rpc('platform_register_payment', params: {
+      'p_org': orgId,
+      'p_months': months,
+      'p_amount': amount,
+      'p_note': note,
+    });
+    return r is String ? DateTime.tryParse(r) : null;
+  }
+
+  /// Suma días a la prueba o a la suscripción.
+  static Future<DateTime?> platformExtendDays(String orgId, int days) async {
+    final r = await _db.rpc('platform_extend_days',
+        params: {'p_org': orgId, 'p_days': days});
+    return r is String ? DateTime.tryParse(r) : null;
+  }
+
+  /// Dueño y entrenadores de un cliente.
+  static Future<List<TeamMember>> platformOrgTeam(String orgId) async {
+    final rows = await _db.rpc('platform_org_team', params: {'p_org': orgId});
+    return (rows as List)
+        .map((r) => TeamMember.fromJson(r as Map<String, dynamic>))
+        .toList();
   }
 
   static Future<void> platformSetStatus(String orgId, String status) =>
@@ -296,6 +344,9 @@ class OrganizationService {
       return 'Este gimnasio alcanzó el máximo de socios de su plan. Avisa al dueño.';
     }
     if (m.contains('not_allowed')) return 'No tienes permiso para esta acción.';
+    if (m.contains('invalid_months')) return 'Elige entre 1 y 12 meses.';
+    if (m.contains('invalid_days')) return 'Elige entre 1 y 90 días.';
+    if (m.contains('invalid_amount')) return 'El monto no es válido.';
     if (m.contains('payment_already_in_review')) {
       return 'Ya tienes un comprobante en revisión.';
     }

@@ -22,8 +22,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   double _weight = 70.0;
   double _height = 170.0;
   int _age = 25;
-  String _sex = 'male'; // 'male' | 'female' | 'other'
-  String _goal = 'Perder peso';
+  // Sin valor por defecto: la persona elige (antes venía "Hombre" marcado
+  // y una socia que no lo cambiaba quedaba con calorías mal calculadas).
+  String? _sex; // 'male' | 'female' | 'other'
+  String? _goal;
   bool _statsModified = false;
 
   @override
@@ -111,8 +113,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           age: _age,
           weightKg: _weight,
           heightCm: _height.round(),
-          sex: _sex,
-          goal: _goal,
+          sex: _sex ?? 'other',
+          goal: _goal ?? '',
         );
       }
 
@@ -121,8 +123,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         'weight': _weight,
         'height': _height,
         'age': _age,
-        'sex': _sex,
-        'goal': _goal,
+        'sex': _sex ?? 'other',
+        'goal': _goal ?? '',
         'completed_at': DateTime.now().toIso8601String(),
       };
       await preferencesProvider.completeOnboarding(onboardingData);
@@ -208,7 +210,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       const Spacer(),
                       PrimaryButton(
                         text: _currentPage == 2 ? l10n.start : l10n.next,
-                        onPressed: _nextPage,
+                        // Hay que elegir sexo (o "Prefiero no decir") y objetivo
+                        onPressed: (_currentPage == 1 && _sex == null) ||
+                                (_currentPage == 2 && _goal == null)
+                            ? null
+                            : _nextPage,
                         width: 150,
                       ),
                     ],
@@ -240,7 +246,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
                 const SizedBox(height: 28),
                 Text(
-                  l10n.onboardingWelcome,
+                  l10n.onboardingWelcomeFor(
+                      context.read<AuthProvider>().organization?.name),
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,

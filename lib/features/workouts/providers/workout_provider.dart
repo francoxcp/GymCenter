@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/workout.dart';
 import '../models/exercise.dart';
+import '../models/superset.dart';
 import '../../../config/supabase_config.dart';
 import '../../../shared/services/offline_cache_service.dart';
 
@@ -323,7 +324,7 @@ class WorkoutProvider extends ChangeNotifier {
       // Insertar ejercicios y recuperarlos con sus IDs generados por la BD
       List<Exercise> freshExercises = [];
       if (workout.exercises.isNotEmpty) {
-        final exercisesData = workout.exercises
+        final exercisesData = normalizeSupersets(workout.exercises)
             .asMap()
             .entries
             .map((entry) => {
@@ -338,6 +339,7 @@ class WorkoutProvider extends ChangeNotifier {
                   'video_url': entry.value.videoUrl,
                   // Peso sugerido por el entrenador (antes no se guardaba)
                   'weight_kg': entry.value.weightKgForDb,
+                  'superset_group': entry.value.supersetGroup,
                 })
             .toList();
 
@@ -411,7 +413,7 @@ class WorkoutProvider extends ChangeNotifier {
       // Insertar nuevos ejercicios PRIMERO.
       // Si este paso falla, los ejercicios anteriores siguen en la BD (no se pierden).
       if (workout.exercises.isNotEmpty) {
-        final exercisesData = workout.exercises
+        final exercisesData = normalizeSupersets(workout.exercises)
             .asMap()
             .entries
             .map((entry) => {
@@ -426,6 +428,7 @@ class WorkoutProvider extends ChangeNotifier {
                   'video_url': entry.value.videoUrl,
                   // Peso sugerido por el entrenador (antes no se guardaba)
                   'weight_kg': entry.value.weightKgForDb,
+                  'superset_group': entry.value.supersetGroup,
                 })
             .toList();
 

@@ -114,7 +114,11 @@ class _TrainerTodayScreenState extends State<TrainerTodayScreen> {
   void _openMember(User u) {
     final s = _snap.status[u.id] ??
         MemberStatus.compute(
-            userId: u.id, plannedPerWeek: 0, sessions: const [], now: DateTime.now());
+            userId: u.id,
+            plannedPerWeek: 0,
+            sessions: const [],
+            now: DateTime.now(),
+            joinedAt: u.createdAt);
     Navigator.of(context)
         .push(MaterialPageRoute(
             builder: (_) => MemberHubScreen(member: u, status: s)))

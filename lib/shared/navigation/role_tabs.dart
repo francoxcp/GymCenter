@@ -153,6 +153,22 @@ final List<NavTabSpec> ownerTabs = [
   _profileTab,
 ];
 
+/// Administrador de GYMLAB: sus clientes primero. "Mi gimnasio" se abre desde
+/// la tarjeta del gimnasio interno en Clientes.
+final List<NavTabSpec> platformOwnerTabs = [
+  NavTabSpec(
+    path: '/platform',
+    icon: Icons.storefront_outlined,
+    activeIcon: Icons.storefront,
+    label: (_) => 'Clientes',
+    prefixes: const ['/platform', '/admin/organization'],
+  ),
+  ownerTabs[0],
+  _membersTab,
+  _workoutsTab,
+  _profileTab,
+];
+
 /// Socio con entrenador: Hoy · Progreso · Chat · Perfil.
 final List<NavTabSpec> memberWithTrainerTabs = [
   memberTabs[0],
@@ -161,11 +177,12 @@ final List<NavTabSpec> memberWithTrainerTabs = [
   memberTabs[2],
 ];
 
-List<NavTabSpec> tabsFor(NavRole role, {bool hasTrainer = false}) =>
+List<NavTabSpec> tabsFor(NavRole role,
+        {bool hasTrainer = false, bool isPlatformAdmin = false}) =>
     switch (role) {
       NavRole.member => hasTrainer ? memberWithTrainerTabs : memberTabs,
       NavRole.trainer => trainerTabs,
-      NavRole.owner => ownerTabs,
+      NavRole.owner => isPlatformAdmin ? platformOwnerTabs : ownerTabs,
     };
 
 /// Índice de la pestaña activa para [location] (prefijo más largo).

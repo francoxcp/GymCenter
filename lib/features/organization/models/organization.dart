@@ -98,6 +98,9 @@ class OrgPayment {
     required this.periodEnd,
   });
 
+  /// Pago registrado a mano por la plataforma (efectivo, SINPE): sin archivo.
+  bool get isManual => receiptPath.startsWith('manual/');
+
   String get statusLabel => switch (status) {
         'approved' => 'Aprobado',
         'rejected' => 'Rechazado',
@@ -132,9 +135,19 @@ class OrgSummary {
   final DateTime? createdAt;
   final DateTime? lastActivity;
   final int sessions30d;
+  /// Gimnasio propio de la plataforma (plan "Interno"): no es un cliente.
+  final bool isInternal;
+  final String? ownerPhone;
+  /// Invitación de dueño todavía usable (solo si aún no hay dueño).
+  final String? inviteToken;
+  final DateTime? inviteExpiresAt;
 
   const OrgSummary({
     this.inTrial = false,
+    this.isInternal = false,
+    this.ownerPhone,
+    this.inviteToken,
+    this.inviteExpiresAt,
     this.createdAt,
     this.lastActivity,
     this.sessions30d = 0,
@@ -158,7 +171,45 @@ class OrgSummary {
         lastActivity:
             DateTime.tryParse(j['last_activity'] as String? ?? '')?.toLocal(),
         sessions30d: (j['sessions_30d'] as num?)?.toInt() ?? 0,
+        isInternal: j['is_internal'] as bool? ??
+            (j['plan'] as String?) == 'Interno',
+        ownerPhone: j['owner_phone'] as String?,
+        inviteToken: j['invite_token'] as String?,
+        inviteExpiresAt:
+            DateTime.tryParse(j['invite_expires_at'] as String? ?? '')?.toLocal(),
       );
+
+  bool get hasOwner => ownerName != null;
+
+  /// Sin dueño y con una invitación vigente (falta que la acepte).
+  bool get invitePending => !hasOwner && inviteToken != null;
+
+  /// Sin dueño y sin invitación vigente: hay que generar otra.
+  bool get inviteExpired => !hasOwner && inviteToken == null;
+
+  /// Días hasta que vence lo pagado (o la prueba). Negativo = vencido.
+  int? daysLeft(DateTime now) => org.paidUntil == null
+      ? null
+      : DateTime(org.paidUntil!.year, org.paidUntil!.month, org.paidUntil!.day)
+          .difference(DateTime(now.year, now.month, now.day))
+          .inDays;
+
+  /// Activo y vence en los próximos 7 días (incluye hoy).
+  bool expiringSoon(DateTime now) {
+    final d = daysLeft(now);
+    return !org.isSuspended && !isInternal && d != null && d >= 0 && d <= 7;
+  }
+
+  /// Estado principal del cliente, con prioridad para lo que pide acción.
+  ClientState state(DateTime now) {
+    if (isInternal) return ClientState.internal;
+    if (org.isSuspended) return ClientState.suspended;
+    if (!hasOwner) return ClientState.noOwner;
+    if (pendingReviews > 0) return ClientState.review;
+    if (Billing.state(org) == BillingState.pending) return ClientState.pending;
+    if (inTrial) return ClientState.trial;
+    return ClientState.upToDate;
+  }
 
   /// Días desde el último entreno de cualquier socio (null = nunca).
   int? daysSinceActivity(DateTime now) => lastActivity == null
@@ -169,27 +220,138 @@ class OrgSummary {
           .inDays;
 }
 
-/// Filtros de la lista de clientes de la plataforma.
-enum OrgFilter { all, review, pending, trial, suspended, inactive }
+/// Estado de un cliente en la lista de la plataforma.
+enum ClientState { review, pending, noOwner, trial, upToDate, suspended, internal }
+
+extension ClientStateX on ClientState {
+  String get label => switch (this) {
+        ClientState.review => 'Comprobante por revisar',
+        ClientState.pending => 'Pago pendiente',
+        ClientState.noOwner => 'Invitación sin aceptar',
+        ClientState.trial => 'En prueba',
+        ClientState.upToDate => 'Al día',
+        ClientState.suspended => 'Suspendido',
+        ClientState.internal => 'Interno',
+      };
+}
+
+/// Filtros de la lista de clientes de la plataforma (los internos no cuentan).
+enum OrgFilter { all, review, pending, noOwner, expiring, trial, inactive, suspended }
 
 extension OrgFilterX on OrgFilter {
   String get label => switch (this) {
         OrgFilter.all => 'Todos',
         OrgFilter.review => 'Por revisar',
         OrgFilter.pending => 'Pago pendiente',
+        OrgFilter.noOwner => 'Sin dueño',
+        OrgFilter.expiring => 'Vencen en 7 días',
         OrgFilter.trial => 'En prueba',
-        OrgFilter.suspended => 'Suspendidos',
         OrgFilter.inactive => 'Sin uso 14 días',
+        OrgFilter.suspended => 'Suspendidos',
       };
 
-  bool matches(OrgSummary s, DateTime now) => switch (this) {
-        OrgFilter.all => true,
-        OrgFilter.review => s.pendingReviews > 0,
-        OrgFilter.pending => Billing.state(s.org) == BillingState.pending,
-        OrgFilter.trial => s.inTrial,
-        OrgFilter.suspended => s.org.isSuspended,
-        OrgFilter.inactive => (s.daysSinceActivity(now) ?? 999) >= 14,
-      };
+  bool matches(OrgSummary s, DateTime now) {
+    if (s.isInternal) return false;
+    final active = !s.org.isSuspended;
+    return switch (this) {
+      OrgFilter.all => true,
+      OrgFilter.review => s.pendingReviews > 0,
+      OrgFilter.pending =>
+        active && Billing.state(s.org) == BillingState.pending,
+      OrgFilter.noOwner => active && !s.hasOwner,
+      OrgFilter.expiring => s.expiringSoon(now),
+      OrgFilter.trial => active && s.inTrial,
+      OrgFilter.inactive =>
+        active && s.hasOwner && (s.daysSinceActivity(now) ?? 999) >= 14,
+      OrgFilter.suspended => s.org.isSuspended,
+    };
+  }
+}
+
+/// Algo que la plataforma debería atender hoy.
+enum TaskKind { review, noOwner, pending, expiring, inactive }
+
+class PlatformTask {
+  final TaskKind kind;
+  final OrgSummary client;
+  final String title;
+  final String detail;
+  const PlatformTask(this.kind, this.client, this.title, this.detail);
+}
+
+/// "Para atender hoy": una tarea por cliente (la más urgente), ordenadas
+/// por urgencia. Los internos y suspendidos no generan tareas (salvo un
+/// comprobante por revisar).
+List<PlatformTask> platformTasks(List<OrgSummary> clients, DateTime now) {
+  String fmt(DateTime d) {
+    const m = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep',
+      'oct', 'nov', 'dic'];
+    return '${d.day} ${m[d.month - 1]}';
+  }
+
+  final tasks = <PlatformTask>[];
+  for (final c in clients) {
+    if (c.isInternal) continue;
+    if (c.pendingReviews > 0) {
+      tasks.add(PlatformTask(TaskKind.review, c, c.org.name,
+          c.pendingReviews == 1
+              ? 'Subió un comprobante de pago'
+              : 'Subió ${c.pendingReviews} comprobantes de pago'));
+      continue;
+    }
+    if (c.org.isSuspended) continue;
+    if (!c.hasOwner) {
+      tasks.add(PlatformTask(TaskKind.noOwner, c, c.org.name,
+          c.invitePending
+              ? 'No ha aceptado la invitación (vence el ${fmt(c.inviteExpiresAt!)})'
+              : 'La invitación venció: envía una nueva'));
+      continue;
+    }
+    if (Billing.state(c.org) == BillingState.pending) {
+      tasks.add(PlatformTask(TaskKind.pending, c, c.org.name,
+          'Pago pendiente${c.org.paidUntil != null ? ' desde el ${fmt(c.org.paidUntil!)}' : ''}'));
+      continue;
+    }
+    if (c.expiringSoon(now)) {
+      final d = c.daysLeft(now)!;
+      final when = d == 0 ? 'hoy' : d == 1 ? 'mañana' : 'en $d días';
+      tasks.add(PlatformTask(TaskKind.expiring, c, c.org.name,
+          '${c.inTrial ? 'La prueba' : 'La suscripción'} vence $when'));
+      continue;
+    }
+    if ((c.daysSinceActivity(now) ?? 999) >= 14) {
+      final d = c.daysSinceActivity(now);
+      tasks.add(PlatformTask(TaskKind.inactive, c, c.org.name,
+          d == null ? 'Aún no hay entrenos' : 'Sin entrenos hace $d días'));
+    }
+  }
+  tasks.sort((a, b) => a.kind.index.compareTo(b.kind.index));
+  return tasks;
+}
+
+/// Persona del equipo de un cliente (dueño o entrenador).
+class TeamMember {
+  final String name;
+  final String role; // 'admin' | 'trainer'
+  final String? email;
+  final String? phone;
+  final int members;
+
+  const TeamMember({
+    required this.name,
+    required this.role,
+    this.email,
+    this.phone,
+    this.members = 0,
+  });
+
+  factory TeamMember.fromJson(Map<String, dynamic> j) => TeamMember(
+        name: j['name'] as String? ?? '',
+        role: j['role'] as String? ?? 'trainer',
+        email: j['email'] as String?,
+        phone: j['phone'] as String?,
+        members: (j['members'] as num?)?.toInt() ?? 0,
+      );
 }
 
 /// Datos públicos de una invitación (antes de iniciar sesión).

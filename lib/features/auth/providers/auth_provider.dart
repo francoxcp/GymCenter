@@ -57,6 +57,16 @@ class AuthProvider extends ChangeNotifier {
   Organization? get organization => _org;
   bool get isPlatformAdmin => _isPlatformAdmin;
   /// Usuario sin gimnasio/entrenador todavía (registro sin código).
+  /// Mientras se aplica una invitación pendiente tras registrarse o iniciar
+  /// sesión: evita mostrar "¿Con quién entrenas?" por unos segundos.
+  bool _joiningOrganization = false;
+  bool get isJoiningOrganization => _joiningOrganization;
+  void markJoiningOrganization(bool value, {bool notify = true}) {
+    if (_joiningOrganization == value) return;
+    _joiningOrganization = value;
+    if (notify) notifyListeners();
+  }
+
   bool get needsOrganization =>
       _isAuthenticated && _currentUser != null && _currentUser!.orgId == null;
   bool get isOrgSuspended => _org?.isSuspended ?? false;
@@ -96,7 +106,9 @@ class AuthProvider extends ChangeNotifier {
   bool get pendingEmailConfirmation => _pendingEmailConfirmation;
   /// Inicio según el rol: el dueño ve el panel, el entrenador su "Hoy"
   /// (quién entrenó y quién falta) y el socio su entreno del día.
-  String get initialRoute => isAdmin
+  String get initialRoute => isPlatformAdmin
+      ? '/platform'
+      : isAdmin
       ? AppConstants.adminRoute
       : isTrainer
           ? '/admin/today'

@@ -13,17 +13,54 @@ import 'assign_plans_screen.dart';
 import '../widgets/member_tools.dart';
 import '../../progress/screens/body_measurements_screen.dart';
 import '../../../shared/services/share_helper.dart';
+import '../../../config/supabase_config.dart';
 
 /// Ficha del socio: todo lo que el entrenador necesita en un solo lugar.
 /// - Estado (semáforo, última sesión, semana vs plan)
 /// - Asignar rutinas por día
 /// - Control de entrenamiento (progreso, pesos, volumen)
 /// - Restablecer contraseña / activar cuenta
-class MemberHubScreen extends StatelessWidget {
+class MemberHubScreen extends StatefulWidget {
   final User member;
   final MemberStatus status;
 
   const MemberHubScreen({super.key, required this.member, required this.status});
+
+  @override
+  State<MemberHubScreen> createState() => _MemberHubScreenState();
+}
+
+class _MemberHubScreenState extends State<MemberHubScreen> {
+  late MemberStatus status = widget.status;
+  User get member => widget.member;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshPlan();
+  }
+
+  /// Vuelve a contar los días con rutina (tras asignar o al abrir la ficha).
+  Future<void> _refreshPlan() async {
+    try {
+      final rows = await SupabaseConfig.client
+          .from('user_workout_schedule')
+          .select('day_of_week')
+          .eq('user_id', member.id)
+          .not('workout_id', 'is', null);
+      final planned = {for (final r in rows as List) r['day_of_week']}.length;
+      if (!mounted) return;
+      setState(() =>
+          status = status.withPlanned(planned, joinedAt: member.createdAt));
+    } catch (_) {
+      // Sin conexión: se mantiene el estado recibido
+    }
+  }
+
+  Future<void> _afterAssign(Future<Object?> action) async {
+    await action;
+    await _refreshPlan();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +71,7 @@ class MemberHubScreen extends StatelessWidget {
       MemberLight.red => isEn ? 'Not coming' : 'Sin venir',
       MemberLight.yellow => isEn ? 'Behind plan' : 'Atrasado',
       MemberLight.green => isEn ? 'On track' : 'Al día',
+      MemberLight.fresh => isEn ? 'New member' : 'Socio nuevo',
     };
 
     Widget action({
@@ -97,7 +135,11 @@ class MemberHubScreen extends StatelessWidget {
                       Text(
                         [
                           days == null
-                              ? (isEn ? 'Never trained' : 'Nunca ha entrenado')
+                              ? (status.light == MemberLight.fresh
+                                  ? (isEn
+                                      ? 'Joined recently, no workouts yet'
+                                      : 'Se unió hace poco, aún no entrena')
+                                  : (isEn ? 'Never trained' : 'Nunca ha entrenado'))
                               : days == 0
                                   ? (isEn ? 'Trained today' : 'Entrenó hoy')
                                   : (isEn
@@ -168,7 +210,7 @@ class MemberHubScreen extends StatelessWidget {
             subtitle: isEn
                 ? 'One day, one routine, filtered by goal'
                 : 'Un día y una rutina, filtrando por objetivo',
-            onTap: () => showQuickAssignSheet(context, member),
+            onTap: () => _afterAssign(showQuickAssignSheet(context, member)),
           ),
           action(
             icon: Icons.content_copy,
@@ -176,7 +218,7 @@ class MemberHubScreen extends StatelessWidget {
             subtitle: isEn
                 ? 'Reuse a full week that already works'
                 : 'Reutiliza una semana completa que ya funciona',
-            onTap: () => showCopyPlanSheet(context, member),
+            onTap: () => _afterAssign(showCopyPlanSheet(context, member)),
           ),
           action(
             icon: Icons.calendar_month,
@@ -184,8 +226,9 @@ class MemberHubScreen extends StatelessWidget {
             subtitle: isEn
                 ? 'Choose the routine for each day of the week'
                 : 'Elige la rutina de cada día de la semana',
-            onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => AssignPlansScreen(user: member))),
+            onTap: () => _afterAssign(Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (_) => AssignPlansScreen(user: member)))),
           ),
           action(
             icon: Icons.insights,

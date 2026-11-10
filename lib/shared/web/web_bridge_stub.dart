@@ -58,6 +58,7 @@ class WebBridge {
       '';
 
   static void openUrl(String url) {}
+  static List<double> safeAreaInsets() => const [0, 0, 0, 0];
 
   static Future<bool> copyText(String text) async => false;
   static Future<String> shareText(String text) async => '';

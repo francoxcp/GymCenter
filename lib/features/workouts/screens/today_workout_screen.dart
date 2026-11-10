@@ -17,6 +17,8 @@ import '../providers/workout_progress_provider.dart';
 import '../models/exercise.dart';
 import '../models/workout.dart';
 import '../models/workout_progress.dart';
+import '../models/superset.dart';
+import '../widgets/superset_editor.dart' show kSupersetRailWidth;
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/video_player_widget.dart';
 import 'workout_summary_screen.dart';
@@ -27,7 +29,18 @@ import '../../../shared/services/offline_cache_service.dart';
 import '../../../shared/services/offline_sync_queue.dart';
 import '../services/progression_engine.dart';
 import '../widgets/record_celebration.dart';
-import '../services/calorie_estimator.dart';
+import '../services/workout_result.dart';
+
+/// Lectura del cronómetro guardado (pública para tests).
+class TodayWorkoutTimer {
+  TodayWorkoutTimer._();
+  static int saved(Object? raw, DateTime now) =>
+      _TodayWorkoutScreenState.savedTimerSeconds(raw, now);
+  static DateTime? restEnd(Object? raw, DateTime now) =>
+      _TodayWorkoutScreenState.savedRestEnd(raw, now);
+  static bool recent(Object? raw, DateTime now) =>
+      _TodayWorkoutScreenState.savedRecently(raw, now);
+}
 
 class TodayWorkoutScreen extends StatefulWidget {
   /// Si se pasa, se ejecuta esta rutina en lugar de la asignada (modo extra).
@@ -45,6 +58,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   List<List<bool>> _completedSets = [];
   bool _isResting = false;
   int _remainingSeconds = 0;
+  /// Hora en que termina el descanso: así sigue corriendo aunque la app
+  /// esté en segundo plano (el navegador congela los timers).
+  DateTime? _restEndsAt;
   Timer? _timer;
   bool _isPaused = false;
   int _accumulatedSeconds = 0; // segundos activos acumulados
@@ -60,9 +76,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   // Estado de resumen al completar rutina
   bool _workoutCompleted = false;
   Workout? _summaryWorkout;
-  int _summaryDurationMinutes = 0;
-  int _summaryCaloriesBurned = 0;
-  double _summaryTotalVolume = 0;
+  WorkoutResult? _summaryResult;
 
   // -- Historial de peso por ejercicio ---------------------------------------
   // [exerciseIndex][setIndex] → peso en kg (null = no ingresado)
@@ -81,6 +95,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   final Set<int> _appliedSuggestions = {};
   // Ejercicios que superaron su PR en esta sesión
   final Set<int> _newPRsThisSession = {};
+  // Encabezado de las series de cada página: el flujo guiado lo deja a la vista
+  final Map<int, GlobalKey> _setsKeys = {};
+  final Map<int, GlobalKey> _stripKeys = {};
   // Pre-caché de videos: solo se lanza una vez por sesión
   bool _videosCacheStarted = false;
 
@@ -114,10 +131,33 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       final effectiveId =
           widget.extraWorkoutId ?? authProvider.currentUser?.assignedWorkoutId;
       if (effectiveId != null) {
-        workoutProvider.ensureExercisesLoaded(effectiveId);
+        _loadWorkoutIfNeeded(workoutProvider, authProvider, effectiveId);
       }
       _checkPendingProgress();
     });
+  }
+
+  /// Si se abre la pantalla directo (p. ej. el iPhone recargó la app en
+  /// medio del entreno), la lista de rutinas aún no está en memoria: se
+  /// carga antes de mostrar "Error al cargar la rutina".
+  bool _loadingWorkout = false;
+
+  Future<void> _loadWorkoutIfNeeded(WorkoutProvider workoutProvider,
+      AuthProvider authProvider, String workoutId) async {
+    if (workoutProvider.getWorkoutById(workoutId) == null) {
+      setState(() => _loadingWorkout = true);
+      try {
+        await workoutProvider.loadWorkouts(
+          userId: authProvider.currentUser?.id,
+          isAdmin: authProvider.isAdmin,
+        );
+      } catch (_) {}
+    }
+    try {
+      await workoutProvider.ensureExercisesLoaded(workoutId);
+    } finally {
+      if (mounted && _loadingWorkout) setState(() => _loadingWorkout = false);
+    }
   }
 
   @override
@@ -131,14 +171,24 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     super.dispose();
   }
 
-  // -- Ciclo de vida de la app: auto-pausa al ir a segundo plano --------------
+  // -- Ciclo de vida de la app ----------------------------------------------
+  // Antes se pausaba solo al ir a segundo plano y nunca se reanudaba: el
+  // tiempo quedaba en 00:00, las calorías en 0 y el descanso se cortaba.
+  // Ahora el cronómetro y el descanso siguen con la hora real; solo se
+  // guarda el estado por si el sistema cierra la app.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (_workoutCompleted) return;
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.hidden) {
-      if (!_isPaused) _pauseWorkout(auto: true);
+      // Guardar ya (sin esperar): el sistema puede cerrar la app
+      unawaited(_saveTimerLocally());
+      unawaited(_saveSetsLocally());
+      _saveProgressDebounced();
+    } else if (state == AppLifecycleState.resumed) {
+      _tickRest();
+      if (mounted) setState(() {});
     }
   }
 
@@ -180,14 +230,79 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     return 'workout_timer_${userId}_$workoutId';
   }
 
+  /// Máximo que se suma por tiempo fuera de la app si el sistema la cerró
+  /// con el cronómetro corriendo (evita entrenos de 10 horas).
+  static const _maxAwaySeconds = 3 * 3600;
+
   Future<void> _saveTimerLocally() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_timerKey(), _accumulatedSeconds);
+    await prefs.setString(
+        _timerKey(),
+        jsonEncode({
+          'acc': _getActiveDurationSeconds(),
+          'at': DateTime.now().millisecondsSinceEpoch,
+          'running': !_isPaused,
+          // Fin del descanso en curso: si el sistema recarga la app al
+          // volver (pasa en el iPhone), el descanso sigue donde iba
+          if (_isResting && _restEndsAt != null)
+            'restEnd': _restEndsAt!.millisecondsSinceEpoch,
+        }));
+  }
+
+  /// El cronómetro se guardó hace menos de 3 h (si no, es una sesión vieja).
+  static bool savedRecently(Object? raw, DateTime now) {
+    if (raw is! String) return false;
+    try {
+      final at = ((jsonDecode(raw) as Map<String, dynamic>)['at'] as num?)?.toInt();
+      if (at == null) return false;
+      return now.difference(DateTime.fromMillisecondsSinceEpoch(at)).inSeconds <
+          _maxAwaySeconds;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Fin del descanso guardado, si todavía no terminó.
+  static DateTime? savedRestEnd(Object? raw, DateTime now) {
+    if (raw is! String) return null;
+    try {
+      final ms = ((jsonDecode(raw) as Map<String, dynamic>)['restEnd'] as num?)?.toInt();
+      if (ms == null) return null;
+      final end = DateTime.fromMillisecondsSinceEpoch(ms);
+      return end.isAfter(now) ? end : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Segundos guardados; si el cronómetro seguía corriendo, suma el tiempo
+  /// transcurrido desde que se guardó.
+  static int savedTimerSeconds(Object? raw, DateTime now) {
+    if (raw is int) return raw; // formato anterior
+    if (raw is! String) return 0;
+    try {
+      final j = jsonDecode(raw) as Map<String, dynamic>;
+      final acc = (j['acc'] as num?)?.toInt() ?? 0;
+      if (j['running'] != true) return acc;
+      final at = DateTime.fromMillisecondsSinceEpoch((j['at'] as num).toInt());
+      final away = now.difference(at).inSeconds.clamp(0, _maxAwaySeconds);
+      return acc + away;
+    } catch (_) {
+      return 0;
+    }
   }
 
   Future<void> _loadTimerLocally() async {
     final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getInt(_timerKey()) ?? 0;
+    final raw = prefs.get(_timerKey());
+    final now = DateTime.now();
+    final restEnd = savedRestEnd(raw, now);
+    if (restEnd != null && mounted && !_isResting) {
+      // Retomar el descanso con lo que le falta de verdad
+      _startRestTimer((restEnd.difference(now).inMilliseconds / 1000).ceil(),
+          until: restEnd);
+    }
+    final saved = savedTimerSeconds(raw, now);
     // Solo aplicar si supera el acumulado actual (evita retroceder el timer
     // cuando se restaura progreso desde BD con un valor mayor).
     if (saved > _accumulatedSeconds) {
@@ -223,8 +338,15 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             for (final e in _setReps.entries)
               '${e.key}': {for (final x in e.value.entries) '${x.key}': x.value}
           },
+          // Series marcadas y ejercicio en pantalla (para retomar si la app
+          // se recarga, también en rutinas propias del entrenador)
+          'c': _completedSets,
+          'i': _currentExerciseIndex,
         }));
   }
+
+  List<List<bool>>? _resumedCompleted;
+  int? _resumedIndex;
 
   Future<void> _loadSetsLocally() async {
     final prefs = await SharedPreferences.getInstance();
@@ -247,11 +369,28 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               int.parse(x.key as String): (x.value as num).toInt()
           }
       };
+      final c = j['c'];
+      if (c is List) {
+        _resumedCompleted = [
+          for (final row in c) [for (final v in row as List) v == true]
+        ];
+      }
+      _resumedIndex = (j['i'] as num?)?.toInt();
       if (mounted) setState(_applyResumedSets);
     } catch (_) {}
   }
 
   void _applyResumedSets() {
+    final c = _resumedCompleted;
+    if (c != null && c.isNotEmpty && c.any((row) => row.contains(true)) &&
+        !_completedSets.any((row) => row.contains(true))) {
+      _completedSets = c;
+      final i = _resumedIndex;
+      if (i != null && i >= 0 && i < c.length) {
+        _currentExerciseIndex = i;
+        _jumpWhenReady(i);
+      }
+    }
     for (final e in _resumedWeights.entries) {
       _setWeights[e.key] ??= {};
       _setWeights[e.key]!.addAll(e.value);
@@ -296,8 +435,19 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       unawaited(_loadLastWeights(workoutId: effectiveId, userId: userId));
     }
 
-    // Si es rutina extra, no restaurar progreso guardado de la rutina asignada
-    if (widget.extraWorkoutId != null) return;
+    // Rutina extra (p. ej. la propia del entrenador): no hay progreso en la
+    // BD, pero sí lo guardado en el teléfono hoy. Si la app se recargó
+    // (pasa en el iPhone al volver), se retoma: series, pesos, tiempo y
+    // descanso.
+    if (widget.extraWorkoutId != null) {
+      await _loadSetsLocally();
+      final prefs = await SharedPreferences.getInstance();
+      if (savedRecently(prefs.get(_timerKey()), DateTime.now())) {
+        await _loadTimerLocally();
+        if (mounted) setState(() => _resumeTime = DateTime.now());
+      }
+      return;
+    }
 
     if (authProvider.currentUser?.assignedWorkoutId == null) return;
 
@@ -485,9 +635,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       setState(() => _resumeTime = DateTime.now());
     });
 
-    if (_pageController.hasClients) {
-      _pageController.jumpToPage(_currentExerciseIndex);
-    }
+    _jumpWhenReady(_currentExerciseIndex);
 
     HapticFeedback.mediumImpact();
   }
@@ -502,29 +650,39 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     }
   }
 
-  void _startRestTimer(int seconds) {
+  void _startRestTimer(int seconds, {DateTime? until}) {
     HapticFeedback.mediumImpact();
+    _restEndsAt = until ?? DateTime.now().add(Duration(seconds: seconds));
+    // Guardar ya: si el usuario sale y el sistema cierra la app, al volver
+    // el descanso continúa
+    unawaited(_saveTimerLocally());
     setState(() {
       _isResting = true;
       _remainingSeconds = seconds;
     });
 
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tickRest());
+  }
+
+  /// Recalcula lo que queda de descanso con la hora real (también al volver
+  /// a la app: si el descanso ya terminó afuera, se cierra al entrar).
+  void _tickRest() {
+    final end = _restEndsAt;
+    if (!_isResting || end == null || !mounted) return;
+    final left = (end.difference(DateTime.now()).inMilliseconds / 1000).ceil();
+    if (left > 0) {
+      if (left <= 3 && left != _remainingSeconds) HapticFeedback.selectionClick();
+      setState(() => _remainingSeconds = left);
+    } else {
+      _timer?.cancel();
+      _restEndsAt = null;
+      HapticFeedback.heavyImpact();
       setState(() {
-        if (_remainingSeconds > 0) {
-          _remainingSeconds--;
-          // Haptic feedback en los Últimos 3 segundos
-          if (_remainingSeconds <= 3 && _remainingSeconds > 0) {
-            HapticFeedback.selectionClick();
-          }
-        } else {
-          _isResting = false;
-          HapticFeedback.heavyImpact();
-          timer.cancel();
-        }
+        _remainingSeconds = 0;
+        _isResting = false;
       });
-    });
+    }
   }
 
   void _toggleSet(int exerciseIndex, int setIndex) {
@@ -583,17 +741,64 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       final isLastExercise = exerciseIndex == _completedSets.length - 1;
       final isLastSet = setIndex == totalSets - 1;
 
-      if (!(isLastExercise && isLastSet)) {
-        final effectiveId = widget.extraWorkoutId ??
-            context.read<AuthProvider>().currentUser?.assignedWorkoutId;
-        final workout = effectiveId != null
-            ? context.read<WorkoutProvider>().getWorkoutById(effectiveId)
-            : null;
-        final restSeconds = workout?.exercises[exerciseIndex].restSeconds ?? 60;
+      final effectiveId = widget.extraWorkoutId ??
+          context.read<AuthProvider>().currentUser?.assignedWorkoutId;
+      final workout = effectiveId != null
+          ? context.read<WorkoutProvider>().getWorkoutById(effectiveId)
+          : null;
+      final restSeconds = workout?.exercises[exerciseIndex].restSeconds ?? 60;
+
+      // Superserie: A → B → (C) sin pausa; descanso al cerrar la ronda
+      final step = workout == null
+          ? null
+          : supersetStepAfterSet(workout.exercises, exerciseIndex, setIndex);
+      if (step != null) {
+        if (step.rest) _startRestTimer(restSeconds);
+        if (step.goTo != null) _guideTo(step.goTo!, from: exerciseIndex);
+      } else if (!(isLastExercise && isLastSet)) {
         _startRestTimer(restSeconds);
       }
     } else {
       HapticFeedback.lightImpact();
+    }
+  }
+
+  /// Lleva al socio al siguiente ejercicio de la superserie, con una pausa
+  /// corta para que vea marcada la serie. No lo mueve si ya cambió de página.
+  void _guideTo(int index, {required int from}) {
+    Future.delayed(const Duration(milliseconds: 450), () {
+      if (!mounted || _currentExerciseIndex != from) return;
+      if (index < 0 || index >= _completedSets.length) return;
+      setState(() => _currentExerciseIndex = index);
+      if (!_pageController.hasClients) return;
+      _pageController
+          .animateToPage(
+            index,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic,
+          )
+          .then((_) {
+        // Deja arriba la franja de la superserie (ejercicio y ronda); debajo
+        // quedan el nombre y las rondas, sin tener que desplazarse
+        final ctx = (_stripKeys[index] ?? _setsKeys[index])?.currentContext;
+        if (ctx != null && ctx.mounted) {
+          Scrollable.ensureVisible(ctx,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              alignment: 0.0);
+        }
+      });
+    });
+  }
+
+  /// Ir a un ejercicio aunque la vista todavía no exista (al retomar, la
+  /// rutina puede seguir cargando): se aplica en cuanto se dibuja.
+  int? _pendingJump;
+  void _jumpWhenReady(int index) {
+    if (_pageController.hasClients) {
+      _pageController.jumpToPage(index);
+    } else {
+      _pendingJump = index;
     }
   }
 
@@ -721,6 +926,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   Future<void> _handleExitChoice(String? choice) async {
     if (!mounted) return;
     if (choice == 'save_later') {
+      // Al dejarlo para después, el tiempo fuera no cuenta
+      _pauseWorkout(auto: true);
       await _saveProgressToDatabase();
       await _savePartialWeights(); // guardar pesos ingresados hasta ahora
       if (mounted) context.go('/workouts');
@@ -1007,8 +1214,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   void _showWorkoutSummary(Workout workout) {
     HapticFeedback.heavyImpact();
 
-    // Tiempo activo real (excluye pausas)
-    final durationMinutes = _getActiveDurationSeconds() ~/ 60;
+    // Tiempo activo real (excluye pausas), en segundos
+    final durationSeconds = _getActiveDurationSeconds();
     _clearTimerLocally(); // limpiar timer guardado
 
     // Guardar pesos por serie en segundo plano
@@ -1021,63 +1228,33 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           workoutId: workoutId, userId: userId, workout: workout));
     }
 
-    // Obtener peso: medidas corporales ? perfil de usuario ? default 70kg
+    // Peso corporal: última medida → perfil → 70 kg
     final measurementProvider = context.read<BodyMeasurementProvider>();
-    final authUser = context.read<AuthProvider>().currentUser;
+    final authUser = authProvider.currentUser;
     final userWeightKg = measurementProvider.latestMeasurement?.weight ??
         authUser?.weightKg ??
         70.0;
 
-    // CÁlculo de calorías mejorado con datos del perfil de usuario
-    final caloriesBurned = _estimateCalories(
-      workout,
-      durationMinutes,
-      userWeightKg,
+    // Resultado con lo que se hizo de verdad: reps y pesos anotados,
+    // ritmo (series por minuto), superseries y cardio para las calorías
+    final result = WorkoutResult.compute(
+      exercises: workout.exercises,
+      completed: _completedSets,
+      weightsKg: _setWeights,
+      reps: _setReps,
+      durationSeconds: durationSeconds,
+      isCardio: _isCardioExercise,
+      bodyWeightKg: userWeightKg,
+      heightCm: authUser?.heightCm?.toDouble(),
+      age: authUser?.age,
+      sex: authUser?.sex,
     );
-
-    // Volumen real: solo series que el usuario completó × peso que realmente usó.
-    // Si no ingresó peso en una serie, se usa el peso programado como fallback.
-    double totalVolume = 0;
-    for (int i = 0; i < workout.exercises.length; i++) {
-      final exercise = workout.exercises[i];
-      final completedSetsList =
-          i < _completedSets.length ? _completedSets[i] : <bool>[];
-      for (int j = 0; j < completedSetsList.length; j++) {
-        if (completedSetsList[j]) {
-          final actualWeight = _setWeights[i]?[j] ??
-              (exercise.weight > 0
-                  ? exercise.weight /
-                      _kgToLbs // exercise.weight está en lbs, convertir a kg
-                  : _estimateWeight(exercise.name).toDouble());
-          totalVolume += actualWeight * exercise.reps;
-        }
-      }
-    }
 
     setState(() {
       _workoutCompleted = true;
       _summaryWorkout = workout;
-      _summaryDurationMinutes = durationMinutes;
-      _summaryCaloriesBurned = caloriesBurned;
-      _summaryTotalVolume = totalVolume;
+      _summaryResult = result;
     });
-  }
-
-  int _estimateCalories(Workout workout, int durationMinutes, double weightKg) {
-    if (durationMinutes == 0) return 0;
-
-    // -- Datos del usuario ------------------------------------------------------
-    final authUser = context.read<AuthProvider>().currentUser;
-    final exercises = workout.exercises;
-    final cardio = exercises.where(_isCardioExercise).length;
-    return CalorieEstimator.estimate(
-      minutes: durationMinutes,
-      weightKg: weightKg,
-      heightCm: authUser?.heightCm?.toDouble(),
-      age: authUser?.age,
-      sex: authUser?.sex,
-      cardioRatio: exercises.isEmpty ? 0 : cardio / exercises.length,
-    );
   }
 
   /// Detecta si un ejercicio es cardiovascular usando múltiples señales:
@@ -1104,17 +1281,6 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       'high knee', 'butt kick', 'sprint', 'treadmill',
     ];
     return keywords.any((k) => name.contains(k));
-  }
-
-  int _estimateWeight(String exerciseName) {
-    final name = exerciseName.toLowerCase();
-    if (name.contains('sentadilla') || name.contains('squat')) return 85;
-    if (name.contains('press') || name.contains('banco')) return 85;
-    if (name.contains('peso muerto') || name.contains('deadlift')) return 90;
-    if (name.contains('remo')) return 110;
-    if (name.contains('dominada') || name.contains('pull')) return 0;
-    if (name.contains('burpee') || name.contains('jumping')) return 0;
-    return 50;
   }
 
   // -- Peso por serie ----------------------------------------------------------------
@@ -1930,9 +2096,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     if (_workoutCompleted && _summaryWorkout != null) {
       return WorkoutSummaryScreen(
         workout: _summaryWorkout!,
-        durationMinutes: _summaryDurationMinutes,
-        caloriesBurned: _summaryCaloriesBurned,
-        totalVolume: _summaryTotalVolume,
+        durationMinutes: _summaryResult!.durationMinutes,
+        caloriesBurned: _summaryResult!.calories,
+        totalVolume: _summaryResult!.volumeKg,
+        result: _summaryResult,
         completedSets: _completedSets,
         newRecords: _newPRsThisSession.length,
       );
@@ -1993,7 +2160,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           title: Text(AppL10n.of(context).myTodayWorkout),
         ),
         body: Center(
-          child: Text(
+          child: _loadingWorkout || workoutProvider.isLoading
+              ? const CircularProgressIndicator()
+              : Text(
             AppL10n.of(context).loadingWorkoutError,
             style: TextStyle(color: AppColors.textPrimary),
           ),
@@ -2001,11 +2170,26 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       );
     }
 
-    // Inicializar sets completados
-    if (_completedSets.isEmpty) {
+    // Inicializar sets completados (o rehacer si lo retomado no coincide
+    // con la rutina, p. ej. si el entrenador la editó)
+    if (_completedSets.isEmpty ||
+        _completedSets.length != workout.exercises.length) {
       _completedSets = workout.exercises
           .map((e) => List.generate(e.sets, (_) => false))
           .toList();
+    }
+
+    final jump = _pendingJump;
+    if (jump != null) {
+      _pendingJump = null;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (_pageController.hasClients) {
+          _pageController.jumpToPage(jump);
+        } else {
+          _pendingJump = jump;
+        }
+      });
     }
 
     // Pre-descargar todos los videos en background una sola vez
@@ -2015,7 +2199,6 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     }
 
     final currentExercise = workout.exercises[_currentExerciseIndex];
-    final progress = (_currentExerciseIndex + 1) / workout.exercises.length;
 
     // Calcular sets totales completados
     int totalCompletedSets = 0;
@@ -2024,6 +2207,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       totalCompletedSets += sets.where((s) => s).length;
       totalSets += sets.length;
     }
+    // La barra avanza con las series hechas (antes, con el ejercicio en
+    // pantalla: marcaba 33 % sin haber hecho nada)
+    final progress = totalSets == 0 ? 0.0 : totalCompletedSets / totalSets;
 
     return PopScope(
       canPop: _workoutCompleted,
@@ -2192,6 +2378,95 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     ); // PopScope
   }
 
+  /// Franja "SUPERSERIE · B de 3 · RONDA 2/4" con lo que sigue.
+  Widget _buildSupersetStrip(List<Exercise> exercises, int exerciseIndex) {
+    final span = supersetSpanAt(exercises, exerciseIndex);
+    if (span == null) return const SizedBox.shrink();
+    final done = _completedSets[exerciseIndex];
+    final rounds = done.length;
+    final pending = done.indexWhere((s) => !s);
+    final round = pending == -1 ? rounds : pending + 1;
+    final isLastOfGroup = exerciseIndex == span.end;
+    final next = isLastOfGroup
+        ? (pending == -1 || pending == rounds - 1
+            ? 'Al terminar: descanso y sigue la rutina'
+            : 'Luego: descanso ${exercises[exerciseIndex].restSeconds}s y vuelve a ${exercises[span.start].name}')
+        : 'Sin descanso, sigue: ${exercises[exerciseIndex + 1].name}';
+    final kind = switch (span.size) {
+      2 => 'SUPERSERIE',
+      3 => 'TRISERIE',
+      _ => 'CIRCUITO',
+    };
+
+    return Padding(
+      key: _stripKeys.putIfAbsent(exerciseIndex, GlobalKey.new),
+      padding: const EdgeInsets.only(top: AppSpacing.md),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+                color: AppColors.primary, width: kSupersetRailWidth),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '$kind · ${span.labelFor(exerciseIndex)} DE ${span.size}',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  'RONDA ',
+                  style: TextStyle(
+                    color: AppColors.primaryText,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                Text(
+                  '$round',
+                  style: TextStyle(
+                    color: AppColors.primaryText,
+                    fontSize: 24,
+                    height: 1,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                Text(
+                  '/$rounds',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              next,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildExerciseContent(Exercise exercise, int exerciseIndex, workout) {
     final completedSets = _completedSets[exerciseIndex];
     final allSetsCompleted = completedSets.every((s) => s);
@@ -2246,6 +2521,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 ),
             ],
           ),
+
+          _buildSupersetStrip(workout.exercises as List<Exercise>, exerciseIndex),
 
           const SizedBox(height: 16),
 
@@ -2347,44 +2624,20 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 thumbnailUrl: exercise.thumbnailUrl,
                 showFullscreenButton: true,
               ),
-            )
-          else
-            Container(
-              height: 220,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.videocam_off_outlined,
-                      size: 64,
-                      color: AppColors.textSecondary,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      AppL10n.of(context).videoUnavailable,
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
 
-          const SizedBox(height: 24),
+          // Sin video no se reserva espacio: las series quedan a la vista
+          if (exercise.videoUrl != null && exercise.videoUrl!.isNotEmpty)
+            const SizedBox(height: 24),
 
           // Sets Info
           Row(
             children: [
               _InfoCard(
                 icon: Icons.fitness_center,
-                label: AppL10n.of(context).setsLabel,
+                label: exercise.inSuperset
+                    ? AppL10n.of(context).roundsLabel
+                    : AppL10n.of(context).setsLabel,
                 value: exercise.sets.toString(),
               ),
               const SizedBox(width: 12),
@@ -2396,7 +2649,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               const SizedBox(width: 12),
               _InfoCard(
                 icon: Icons.timer,
-                label: AppL10n.of(context).restLabel,
+                label: exercise.inSuperset
+                    ? AppL10n.of(context).restPerRoundLabel
+                    : AppL10n.of(context).restLabel,
                 value: '${exercise.restSeconds}s',
               ),
             ],
@@ -2457,6 +2712,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   TextButton(
                     onPressed: () {
                       _timer?.cancel();
+                      _restEndsAt = null;
                       setState(() {
                         _isResting = false;
                         _remainingSeconds = 0;
@@ -2489,7 +2745,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
           // Sets Checklist con animaciones
           Text(
-            AppL10n.of(context).markCompletedSets,
+            key: _setsKeys.putIfAbsent(exerciseIndex, GlobalKey.new),
+            exercise.inSuperset
+                ? AppL10n.of(context).markCompletedRounds
+                : AppL10n.of(context).markCompletedSets,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -2511,7 +2770,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 child: Semantics(
                   button: true,
                   checked: isCompleted,
-                  label: 'Serie ${setIndex + 1}, '
+                  label: '${exercise.inSuperset ? 'Ronda' : 'Serie'} ${setIndex + 1}, '
                       '${isCompleted ? 'hecha' : 'pendiente'}'
                       '${_setWeights[exerciseIndex]?[setIndex] == null ? ', sin peso' : _setWeights[exerciseIndex]![setIndex] == 0 ? ', peso corporal' : ', ${_fmtWeight(_setWeights[exerciseIndex]![setIndex]!)}'}',
                   onTapHint: isCompleted ? 'desmarcar' : 'marcar como hecha',
@@ -2565,7 +2824,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         ),
                         const SizedBox(width: 16),
                         Text(
-                          AppL10n.of(context).setNumber(setIndex + 1),
+                          exercise.inSuperset
+                              ? AppL10n.of(context).roundNumber(setIndex + 1)
+                              : AppL10n.of(context).setNumber(setIndex + 1),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,

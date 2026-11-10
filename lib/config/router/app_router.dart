@@ -65,6 +65,27 @@ class DeepLinkMemory {
     _pending = null;
     return p;
   }
+
+  /// Destino al que ya se llegó desde /cargando. Al terminar de cargar la
+  /// sesión, el router vuelve a evaluar /cargando una vez más (ya estando en
+  /// el destino); sin esto esa segunda vez mandaba al panel y, al recargar
+  /// la app en medio de un entreno, se perdían la rutina y el descanso.
+  static String? _landed;
+
+  /// Adónde ir desde /cargando (sin borrar).
+  static String? target() => _pending ?? _landed;
+
+  /// Llamado en cada redirección con sesión: al llegar al destino se pasa
+  /// a [_landed]; al navegar a cualquier otra pantalla se olvida.
+  static void arrivedAt(String location) {
+    if (location.startsWith('/cargando')) return;
+    if (_pending == location) {
+      _pending = null;
+      _landed = location;
+    } else if (_landed != location) {
+      _landed = null;
+    }
+  }
 }
 
 GoRouter createAppRouter(AuthProvider authProvider) {
@@ -75,6 +96,7 @@ GoRouter createAppRouter(AuthProvider authProvider) {
     redirect: (context, state) {
       final isAuth = authProvider.isAuthenticated;
       final path = state.uri.path;
+      if (isAuth) DeepLinkMemory.arrivedAt(state.uri.toString());
       const publicRoutes = {
         '/login',
         '/register',
@@ -93,8 +115,12 @@ GoRouter createAppRouter(AuthProvider authProvider) {
 
       // Mientras se restaura la sesión guardada: pantalla de carga con la
       // marca (antes se veía el formulario de inicio de sesión unos segundos)
+      final joining = isAuth &&
+          authProvider.needsOrganization &&
+          authProvider.isJoiningOrganization;
       if (path == '/cargando') {
-        if (isAuth) return DeepLinkMemory.take() ?? authProvider.initialRoute;
+        if (joining) return null;
+        if (isAuth) return DeepLinkMemory.target() ?? authProvider.initialRoute;
         return authProvider.isInitializing ? null : '/login';
       }
       if (!isAuth && authProvider.isInitializing && !publicRoutes.contains(path)) {
@@ -117,6 +143,7 @@ GoRouter createAppRouter(AuthProvider authProvider) {
         return '/change-password';
       }
       // Multi-cliente: cuenta sin gimnasio → pantalla para unirse
+      if (joining) return '/cargando';
       if (isAuth && authProvider.needsOrganization) {
         return path == '/unirme' ? null : '/unirme';
       }
@@ -183,11 +210,6 @@ GoRouter createAppRouter(AuthProvider authProvider) {
             TrainerChatScreen(memberId: state.pathParameters['memberId']!),
       ),
       GoRoute(
-        path: '/platform',
-        builder: (context, state) =>
-            PlatformScreen(openOrgId: state.uri.queryParameters['org']),
-      ),
-      GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
       ),
@@ -218,6 +240,12 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           return _AppShell(location: state.uri.path, child: child);
         },
         routes: [
+          // Administrador de GYMLAB: clientes (con barra inferior)
+          GoRoute(
+            path: '/platform',
+            builder: (context, state) =>
+                PlatformScreen(openOrgId: state.uri.queryParameters['org']),
+          ),
           // Main routes
           GoRoute(
             path: '/home',
@@ -425,7 +453,8 @@ class _AppShellState extends State<_AppShell> {
       ChatService.startListening(
           userId: me.id, asTrainer: role != NavRole.member);
     }
-    final tabs = tabsFor(role, hasTrainer: hasTrainer);
+    final tabs = tabsFor(role,
+        hasTrainer: hasTrainer, isPlatformAdmin: auth.isPlatformAdmin);
     final index = tabIndexFor(tabs, widget.location);
     if (index != _currentIndex) {
       _previousIndex = _currentIndex;

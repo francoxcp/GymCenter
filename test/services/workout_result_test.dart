@@ -114,6 +114,31 @@ void main() {
     });
   });
 
+  group('Descanso al volver a la app', () {
+    final now = DateTime(2026, 11, 10, 18, 0);
+    String saved({required DateTime at, DateTime? restEnd}) =>
+        '{"acc":300,"at":${at.millisecondsSinceEpoch},"running":true'
+        '${restEnd != null ? ',"restEnd":${restEnd.millisecondsSinceEpoch}' : ''}}';
+
+    test('si falta descanso, se retoma con la hora de fin', () {
+      final end = now.add(const Duration(seconds: 47));
+      expect(TodayWorkoutTimer.restEnd(saved(at: now, restEnd: end), now), end);
+    });
+
+    test('si ya terminó o no había, no hay descanso', () {
+      expect(
+          TodayWorkoutTimer.restEnd(
+              saved(at: now, restEnd: now.subtract(const Duration(seconds: 1))), now),
+          isNull);
+      expect(TodayWorkoutTimer.restEnd(saved(at: now), now), isNull);
+    });
+
+    test('sesión guardada hace más de 3 h no se retoma', () {
+      expect(TodayWorkoutTimer.recent(saved(at: now.subtract(const Duration(minutes: 20))), now), isTrue);
+      expect(TodayWorkoutTimer.recent(saved(at: now.subtract(const Duration(hours: 4))), now), isFalse);
+    });
+  });
+
   test('volumen corto en las tarjetas del resumen', () {
     expect(compactWeight(17618 / 2.20462, 'imperial'), '17.6k');
     expect(compactWeight(400, 'imperial'), '882');

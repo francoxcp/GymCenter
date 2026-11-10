@@ -65,6 +65,27 @@ class DeepLinkMemory {
     _pending = null;
     return p;
   }
+
+  /// Destino al que ya se llegó desde /cargando. Al terminar de cargar la
+  /// sesión, el router vuelve a evaluar /cargando una vez más (ya estando en
+  /// el destino); sin esto esa segunda vez mandaba al panel y, al recargar
+  /// la app en medio de un entreno, se perdían la rutina y el descanso.
+  static String? _landed;
+
+  /// Adónde ir desde /cargando (sin borrar).
+  static String? target() => _pending ?? _landed;
+
+  /// Llamado en cada redirección con sesión: al llegar al destino se pasa
+  /// a [_landed]; al navegar a cualquier otra pantalla se olvida.
+  static void arrivedAt(String location) {
+    if (location.startsWith('/cargando')) return;
+    if (_pending == location) {
+      _pending = null;
+      _landed = location;
+    } else if (_landed != location) {
+      _landed = null;
+    }
+  }
 }
 
 GoRouter createAppRouter(AuthProvider authProvider) {
@@ -75,6 +96,7 @@ GoRouter createAppRouter(AuthProvider authProvider) {
     redirect: (context, state) {
       final isAuth = authProvider.isAuthenticated;
       final path = state.uri.path;
+      if (isAuth) DeepLinkMemory.arrivedAt(state.uri.toString());
       const publicRoutes = {
         '/login',
         '/register',
@@ -98,7 +120,7 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           authProvider.isJoiningOrganization;
       if (path == '/cargando') {
         if (joining) return null;
-        if (isAuth) return DeepLinkMemory.take() ?? authProvider.initialRoute;
+        if (isAuth) return DeepLinkMemory.target() ?? authProvider.initialRoute;
         return authProvider.isInitializing ? null : '/login';
       }
       if (!isAuth && authProvider.isInitializing && !publicRoutes.contains(path)) {

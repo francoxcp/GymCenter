@@ -36,6 +36,10 @@ class TodayWorkoutTimer {
   TodayWorkoutTimer._();
   static int saved(Object? raw, DateTime now) =>
       _TodayWorkoutScreenState.savedTimerSeconds(raw, now);
+  static DateTime? restEnd(Object? raw, DateTime now) =>
+      _TodayWorkoutScreenState.savedRestEnd(raw, now);
+  static bool recent(Object? raw, DateTime now) =>
+      _TodayWorkoutScreenState.savedRecently(raw, now);
 }
 
 class TodayWorkoutScreen extends StatefulWidget {
@@ -93,6 +97,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   final Set<int> _newPRsThisSession = {};
   // Encabezado de las series de cada página: el flujo guiado lo deja a la vista
   final Map<int, GlobalKey> _setsKeys = {};
+  final Map<int, GlobalKey> _stripKeys = {};
   // Pre-caché de videos: solo se lanza una vez por sesión
   bool _videosCacheStarted = false;
 
@@ -126,10 +131,33 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       final effectiveId =
           widget.extraWorkoutId ?? authProvider.currentUser?.assignedWorkoutId;
       if (effectiveId != null) {
-        workoutProvider.ensureExercisesLoaded(effectiveId);
+        _loadWorkoutIfNeeded(workoutProvider, authProvider, effectiveId);
       }
       _checkPendingProgress();
     });
+  }
+
+  /// Si se abre la pantalla directo (p. ej. el iPhone recargó la app en
+  /// medio del entreno), la lista de rutinas aún no está en memoria: se
+  /// carga antes de mostrar "Error al cargar la rutina".
+  bool _loadingWorkout = false;
+
+  Future<void> _loadWorkoutIfNeeded(WorkoutProvider workoutProvider,
+      AuthProvider authProvider, String workoutId) async {
+    if (workoutProvider.getWorkoutById(workoutId) == null) {
+      setState(() => _loadingWorkout = true);
+      try {
+        await workoutProvider.loadWorkouts(
+          userId: authProvider.currentUser?.id,
+          isAdmin: authProvider.isAdmin,
+        );
+      } catch (_) {}
+    }
+    try {
+      await workoutProvider.ensureExercisesLoaded(workoutId);
+    } finally {
+      if (mounted && _loadingWorkout) setState(() => _loadingWorkout = false);
+    }
   }
 
   @override
@@ -154,7 +182,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.hidden) {
+      // Guardar ya (sin esperar): el sistema puede cerrar la app
       unawaited(_saveTimerLocally());
+      unawaited(_saveSetsLocally());
       _saveProgressDebounced();
     } else if (state == AppLifecycleState.resumed) {
       _tickRest();
@@ -212,7 +242,37 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           'acc': _getActiveDurationSeconds(),
           'at': DateTime.now().millisecondsSinceEpoch,
           'running': !_isPaused,
+          // Fin del descanso en curso: si el sistema recarga la app al
+          // volver (pasa en el iPhone), el descanso sigue donde iba
+          if (_isResting && _restEndsAt != null)
+            'restEnd': _restEndsAt!.millisecondsSinceEpoch,
         }));
+  }
+
+  /// El cronómetro se guardó hace menos de 3 h (si no, es una sesión vieja).
+  static bool savedRecently(Object? raw, DateTime now) {
+    if (raw is! String) return false;
+    try {
+      final at = ((jsonDecode(raw) as Map<String, dynamic>)['at'] as num?)?.toInt();
+      if (at == null) return false;
+      return now.difference(DateTime.fromMillisecondsSinceEpoch(at)).inSeconds <
+          _maxAwaySeconds;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Fin del descanso guardado, si todavía no terminó.
+  static DateTime? savedRestEnd(Object? raw, DateTime now) {
+    if (raw is! String) return null;
+    try {
+      final ms = ((jsonDecode(raw) as Map<String, dynamic>)['restEnd'] as num?)?.toInt();
+      if (ms == null) return null;
+      final end = DateTime.fromMillisecondsSinceEpoch(ms);
+      return end.isAfter(now) ? end : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Segundos guardados; si el cronómetro seguía corriendo, suma el tiempo
@@ -234,7 +294,15 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
   Future<void> _loadTimerLocally() async {
     final prefs = await SharedPreferences.getInstance();
-    final saved = savedTimerSeconds(prefs.get(_timerKey()), DateTime.now());
+    final raw = prefs.get(_timerKey());
+    final now = DateTime.now();
+    final restEnd = savedRestEnd(raw, now);
+    if (restEnd != null && mounted && !_isResting) {
+      // Retomar el descanso con lo que le falta de verdad
+      _startRestTimer((restEnd.difference(now).inMilliseconds / 1000).ceil(),
+          until: restEnd);
+    }
+    final saved = savedTimerSeconds(raw, now);
     // Solo aplicar si supera el acumulado actual (evita retroceder el timer
     // cuando se restaura progreso desde BD con un valor mayor).
     if (saved > _accumulatedSeconds) {
@@ -270,8 +338,15 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             for (final e in _setReps.entries)
               '${e.key}': {for (final x in e.value.entries) '${x.key}': x.value}
           },
+          // Series marcadas y ejercicio en pantalla (para retomar si la app
+          // se recarga, también en rutinas propias del entrenador)
+          'c': _completedSets,
+          'i': _currentExerciseIndex,
         }));
   }
+
+  List<List<bool>>? _resumedCompleted;
+  int? _resumedIndex;
 
   Future<void> _loadSetsLocally() async {
     final prefs = await SharedPreferences.getInstance();
@@ -294,11 +369,28 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               int.parse(x.key as String): (x.value as num).toInt()
           }
       };
+      final c = j['c'];
+      if (c is List) {
+        _resumedCompleted = [
+          for (final row in c) [for (final v in row as List) v == true]
+        ];
+      }
+      _resumedIndex = (j['i'] as num?)?.toInt();
       if (mounted) setState(_applyResumedSets);
     } catch (_) {}
   }
 
   void _applyResumedSets() {
+    final c = _resumedCompleted;
+    if (c != null && c.isNotEmpty && c.any((row) => row.contains(true)) &&
+        !_completedSets.any((row) => row.contains(true))) {
+      _completedSets = c;
+      final i = _resumedIndex;
+      if (i != null && i >= 0 && i < c.length) {
+        _currentExerciseIndex = i;
+        _jumpWhenReady(i);
+      }
+    }
     for (final e in _resumedWeights.entries) {
       _setWeights[e.key] ??= {};
       _setWeights[e.key]!.addAll(e.value);
@@ -343,8 +435,19 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       unawaited(_loadLastWeights(workoutId: effectiveId, userId: userId));
     }
 
-    // Si es rutina extra, no restaurar progreso guardado de la rutina asignada
-    if (widget.extraWorkoutId != null) return;
+    // Rutina extra (p. ej. la propia del entrenador): no hay progreso en la
+    // BD, pero sí lo guardado en el teléfono hoy. Si la app se recargó
+    // (pasa en el iPhone al volver), se retoma: series, pesos, tiempo y
+    // descanso.
+    if (widget.extraWorkoutId != null) {
+      await _loadSetsLocally();
+      final prefs = await SharedPreferences.getInstance();
+      if (savedRecently(prefs.get(_timerKey()), DateTime.now())) {
+        await _loadTimerLocally();
+        if (mounted) setState(() => _resumeTime = DateTime.now());
+      }
+      return;
+    }
 
     if (authProvider.currentUser?.assignedWorkoutId == null) return;
 
@@ -532,9 +635,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       setState(() => _resumeTime = DateTime.now());
     });
 
-    if (_pageController.hasClients) {
-      _pageController.jumpToPage(_currentExerciseIndex);
-    }
+    _jumpWhenReady(_currentExerciseIndex);
 
     HapticFeedback.mediumImpact();
   }
@@ -549,9 +650,12 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     }
   }
 
-  void _startRestTimer(int seconds) {
+  void _startRestTimer(int seconds, {DateTime? until}) {
     HapticFeedback.mediumImpact();
-    _restEndsAt = DateTime.now().add(Duration(seconds: seconds));
+    _restEndsAt = until ?? DateTime.now().add(Duration(seconds: seconds));
+    // Guardar ya: si el usuario sale y el sistema cierra la app, al volver
+    // el descanso continúa
+    unawaited(_saveTimerLocally());
     setState(() {
       _isResting = true;
       _remainingSeconds = seconds;
@@ -674,16 +778,28 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
             curve: Curves.easeOutCubic,
           )
           .then((_) {
-        // Deja las rondas a la vista (sin tener que desplazarse)
-        final ctx = _setsKeys[index]?.currentContext;
+        // Deja arriba la franja de la superserie (ejercicio y ronda); debajo
+        // quedan el nombre y las rondas, sin tener que desplazarse
+        final ctx = (_stripKeys[index] ?? _setsKeys[index])?.currentContext;
         if (ctx != null && ctx.mounted) {
           Scrollable.ensureVisible(ctx,
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeOutCubic,
-              alignment: 0.3);
+              alignment: 0.0);
         }
       });
     });
+  }
+
+  /// Ir a un ejercicio aunque la vista todavía no exista (al retomar, la
+  /// rutina puede seguir cargando): se aplica en cuanto se dibuja.
+  int? _pendingJump;
+  void _jumpWhenReady(int index) {
+    if (_pageController.hasClients) {
+      _pageController.jumpToPage(index);
+    } else {
+      _pendingJump = index;
+    }
   }
 
   void _saveProgressDebounced() {
@@ -2044,7 +2160,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           title: Text(AppL10n.of(context).myTodayWorkout),
         ),
         body: Center(
-          child: Text(
+          child: _loadingWorkout || workoutProvider.isLoading
+              ? const CircularProgressIndicator()
+              : Text(
             AppL10n.of(context).loadingWorkoutError,
             style: TextStyle(color: AppColors.textPrimary),
           ),
@@ -2052,11 +2170,26 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       );
     }
 
-    // Inicializar sets completados
-    if (_completedSets.isEmpty) {
+    // Inicializar sets completados (o rehacer si lo retomado no coincide
+    // con la rutina, p. ej. si el entrenador la editó)
+    if (_completedSets.isEmpty ||
+        _completedSets.length != workout.exercises.length) {
       _completedSets = workout.exercises
           .map((e) => List.generate(e.sets, (_) => false))
           .toList();
+    }
+
+    final jump = _pendingJump;
+    if (jump != null) {
+      _pendingJump = null;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (_pageController.hasClients) {
+          _pageController.jumpToPage(jump);
+        } else {
+          _pendingJump = jump;
+        }
+      });
     }
 
     // Pre-descargar todos los videos en background una sola vez
@@ -2266,6 +2399,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     };
 
     return Padding(
+      key: _stripKeys.putIfAbsent(exerciseIndex, GlobalKey.new),
       padding: const EdgeInsets.only(top: AppSpacing.md),
       child: Container(
         padding: const EdgeInsets.fromLTRB(

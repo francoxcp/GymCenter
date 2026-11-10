@@ -40,6 +40,8 @@ class TodayWorkoutTimer {
       _TodayWorkoutScreenState.savedRestEnd(raw, now);
   static bool recent(Object? raw, DateTime now) =>
       _TodayWorkoutScreenState.savedRecently(raw, now);
+  static ({DateTime end, int exercise, int set})? work(Object? raw) =>
+      _TodayWorkoutScreenState.savedWork(raw);
 }
 
 class TodayWorkoutScreen extends StatefulWidget {
@@ -61,6 +63,14 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   /// Hora en que termina el descanso: así sigue corriendo aunque la app
   /// esté en segundo plano (el navegador congela los timers).
   DateTime? _restEndsAt;
+
+  // -- Trabajo por tiempo (p. ej. 40 s en un funcional) ----------------------
+  // Con hora de fin real: sigue fuera de la app y se retoma al recargar.
+  DateTime? _workEndsAt;
+  int? _workExercise;
+  int? _workSet;
+  int _workRemaining = 0;
+  Timer? _workTimer;
   Timer? _timer;
   bool _isPaused = false;
   int _accumulatedSeconds = 0; // segundos activos acumulados
@@ -165,6 +175,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     UnsavedChangesGuard.unregister();
     WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
+    _workTimer?.cancel();
     _saveDebouncer?.cancel();
     _pageController.dispose();
     _celebrationController.dispose();
@@ -188,6 +199,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       _saveProgressDebounced();
     } else if (state == AppLifecycleState.resumed) {
       _tickRest();
+      _tickWork();
       if (mounted) setState(() {});
     }
   }
@@ -202,6 +214,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   void _pauseWorkout({bool auto = false}) {
     if (_isPaused) return;
     _timer?.cancel();
+    _workTimer?.cancel();
+    _workEndsAt = null;
+    _workExercise = null;
+    _workSet = null;
     setState(() {
       _accumulatedSeconds = _getActiveDurationSeconds();
       _isPaused = true;
@@ -246,6 +262,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           // volver (pasa en el iPhone), el descanso sigue donde iba
           if (_isResting && _restEndsAt != null)
             'restEnd': _restEndsAt!.millisecondsSinceEpoch,
+          if (_workEndsAt != null) ...{
+            'workEnd': _workEndsAt!.millisecondsSinceEpoch,
+            'workEx': _workExercise,
+            'workSet': _workSet,
+          },
         }));
   }
 
@@ -259,6 +280,21 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           _maxAwaySeconds;
     } catch (_) {
       return false;
+    }
+  }
+
+  /// Trabajo por tiempo guardado (ejercicio, serie y hora de fin).
+  static ({DateTime end, int exercise, int set})? savedWork(Object? raw) {
+    if (raw is! String) return null;
+    try {
+      final j = jsonDecode(raw) as Map<String, dynamic>;
+      final end = (j['workEnd'] as num?)?.toInt();
+      final ex = (j['workEx'] as num?)?.toInt();
+      final st = (j['workSet'] as num?)?.toInt();
+      if (end == null || ex == null || st == null) return null;
+      return (end: DateTime.fromMillisecondsSinceEpoch(end), exercise: ex, set: st);
+    } catch (_) {
+      return null;
     }
   }
 
@@ -301,6 +337,16 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       // Retomar el descanso con lo que le falta de verdad
       _startRestTimer((restEnd.difference(now).inMilliseconds / 1000).ceil(),
           until: restEnd);
+    }
+    // Trabajo por tiempo en curso: seguir, o marcarlo si terminó afuera
+    final work = savedWork(raw);
+    if (work != null && mounted && _workEndsAt == null) {
+      if (work.end.isAfter(now)) {
+        _startWork(work.exercise, work.set, until: work.end);
+      } else {
+        WidgetsBinding.instance.addPostFrameCallback(
+            (_) => _finishWork(work.exercise, work.set));
+      }
     }
     final saved = savedTimerSeconds(raw, now);
     // Solo aplicar si supera el acumulado actual (evita retroceder el timer
@@ -682,7 +728,162 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         _remainingSeconds = 0;
         _isResting = false;
       });
+      // Funcional por tiempo: al terminar el descanso arranca solo el
+      // siguiente ejercicio (el circuito fluye sin tocar el teléfono)
+      final i = _currentExerciseIndex;
+      final ex = _exerciseAt(i);
+      if (ex != null && ex.isFunctional && ex.isTimed && _workEndsAt == null &&
+          i < _completedSets.length) {
+        final next = _completedSets[i].indexWhere((d) => !d);
+        if (next != -1) _startWork(i, next);
+      }
     }
+  }
+
+  /// Empieza el trabajo por tiempo de la serie [setIndex] (cancela el
+  /// descanso si estaba corriendo).
+  void _startWork(int exerciseIndex, int setIndex, {DateTime? until}) {
+    final ex = _exerciseAt(exerciseIndex);
+    final secs = ex?.durationSeconds ?? 0;
+    if (until == null && secs <= 0) return;
+    HapticFeedback.mediumImpact();
+    _timer?.cancel();
+    _restEndsAt = null;
+    _workEndsAt = until ?? DateTime.now().add(Duration(seconds: secs));
+    setState(() {
+      _isResting = false;
+      _workExercise = exerciseIndex;
+      _workSet = setIndex;
+      _workRemaining =
+          (_workEndsAt!.difference(DateTime.now()).inMilliseconds / 1000).ceil();
+    });
+    unawaited(_saveTimerLocally());
+    _workTimer?.cancel();
+    _workTimer = Timer.periodic(const Duration(seconds: 1), (_) => _tickWork());
+  }
+
+  void _tickWork() {
+    final end = _workEndsAt;
+    if (end == null || !mounted) return;
+    final left = (end.difference(DateTime.now()).inMilliseconds / 1000).ceil();
+    if (left > 0) {
+      if (left <= 3 && left != _workRemaining) HapticFeedback.selectionClick();
+      setState(() => _workRemaining = left);
+    } else {
+      final ex = _workExercise, st = _workSet;
+      if (ex != null && st != null) _finishWork(ex, st);
+    }
+  }
+
+  /// Termina el trabajo: marca la serie (sigue el flujo del grupo).
+  void _finishWork(int exerciseIndex, int setIndex) {
+    _workTimer?.cancel();
+    _workEndsAt = null;
+    if (!mounted) return;
+    setState(() {
+      _workExercise = null;
+      _workSet = null;
+      _workRemaining = 0;
+    });
+    if (exerciseIndex < _completedSets.length &&
+        setIndex < _completedSets[exerciseIndex].length &&
+        !_completedSets[exerciseIndex][setIndex]) {
+      _toggleSet(exerciseIndex, setIndex);
+    } else {
+      unawaited(_saveTimerLocally());
+    }
+  }
+
+  void _cancelWork() {
+    _workTimer?.cancel();
+    _workEndsAt = null;
+    setState(() {
+      _workExercise = null;
+      _workSet = null;
+    });
+    unawaited(_saveTimerLocally());
+  }
+
+  Exercise? _exerciseAt(int i) {
+    final effectiveId = widget.extraWorkoutId ??
+        context.read<AuthProvider>().currentUser?.assignedWorkoutId;
+    final w = effectiveId == null
+        ? null
+        : context.read<WorkoutProvider>().getWorkoutById(effectiveId);
+    if (w == null || i < 0 || i >= w.exercises.length) return null;
+    return w.exercises[i];
+  }
+
+  /// Panel de trabajo por tiempo: botón para empezar la próxima serie o
+  /// cuenta regresiva grande mientras corre.
+  Widget _buildWorkPanel(Exercise exercise, int exerciseIndex) {
+    if (!exercise.isTimed) return const SizedBox.shrink();
+    final done = exerciseIndex < _completedSets.length
+        ? _completedSets[exerciseIndex]
+        : const <bool>[];
+    final next = done.indexWhere((d) => !d);
+    final running = _workExercise == exerciseIndex && _workEndsAt != null;
+    if (!running && next == -1) return const SizedBox.shrink();
+    final label = exercise.inSuperset ? 'Ronda' : 'Serie';
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+              color: running ? AppColors.primaryText : Colors.transparent,
+              width: 2),
+        ),
+        child: running
+            ? Column(children: [
+                Text('TRABAJA · $label ${(_workSet ?? 0) + 1}',
+                    style: TextStyle(
+                        color: AppColors.primaryText,
+                        fontSize: 13,
+                        letterSpacing: 1.5,
+                        fontWeight: FontWeight.w800)),
+                Text('$_workRemaining',
+                    style: TextStyle(
+                        color: AppColors.primaryText,
+                        fontSize: 72,
+                        height: 1.05,
+                        fontWeight: FontWeight.w900,
+                        fontFeatures: const [FontFeature.tabularFigures()])),
+                Text('segundos',
+                    style: TextStyle(color: AppColors.textSecondary)),
+                const SizedBox(height: 8),
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  TextButton(
+                      onPressed: _cancelWork, child: const Text('Cancelar')),
+                  const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: () => _finishWork(exerciseIndex, _workSet ?? 0),
+                    child: const Text('Terminé',
+                        style: TextStyle(fontWeight: FontWeight.w800)),
+                  ),
+                ]),
+              ])
+            : SizedBox(
+                height: 52,
+                child: ElevatedButton.icon(
+                  onPressed: () => _startWork(exerciseIndex, next),
+                  icon: const Icon(Icons.play_arrow),
+                  label: Text(
+                      'Empezar ${exercise.durationSeconds} s · $label ${next + 1}',
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w800)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.onPrimary,
+                    minimumSize: const Size.fromHeight(52),
+                  ),
+                ),
+              ),
+      ),
+    );
   }
 
   void _toggleSet(int exerciseIndex, int setIndex) {
@@ -753,7 +954,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           ? null
           : supersetStepAfterSet(workout.exercises, exerciseIndex, setIndex);
       if (step != null) {
-        if (step.rest) _startRestTimer(restSeconds);
+        // Funcional: descanso corto entre ejercicios; si no, el de la ronda
+        if (step.rest) _startRestTimer(step.restSeconds ?? restSeconds);
         if (step.goTo != null) _guideTo(step.goTo!, from: exerciseIndex);
       } else if (!(isLastExercise && isLastSet)) {
         _startRestTimer(restSeconds);
@@ -1051,8 +1253,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         names: workout.exercises.map((e) => e.name).toList(),
         completed: _completedSets,
         weights: _setWeights,
-        weightRequired:
-            workout.exercises.map((e) => !_isCardioExercise(e)).toList(),
+        // Ejercicios por tiempo (plancha, funcionales) no piden peso
+        weightRequired: workout.exercises
+            .map((e) => !_isCardioExercise(e) && !e.isTimed)
+            .toList(),
       );
 
   /// Solo deja terminar con todas las series hechas y sus pesos anotados.
@@ -2391,12 +2595,11 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         ? (pending == -1 || pending == rounds - 1
             ? 'Al terminar: descanso y sigue la rutina'
             : 'Luego: descanso ${exercises[exerciseIndex].restSeconds}s y vuelve a ${exercises[span.start].name}')
-        : 'Sin descanso, sigue: ${exercises[exerciseIndex + 1].name}';
-    final kind = switch (span.size) {
-      2 => 'SUPERSERIE',
-      3 => 'TRISERIE',
-      _ => 'CIRCUITO',
-    };
+        : (exercises[span.start].isFunctional &&
+                exercises[span.start].groupRestSeconds > 0
+            ? 'Descanso ${exercises[span.start].groupRestSeconds}s y sigue: ${exercises[exerciseIndex + 1].name}'
+            : 'Sin descanso, sigue: ${exercises[exerciseIndex + 1].name}');
+    final kind = groupTitle(groupKindAt(exercises, exerciseIndex), span.size);
 
     return Padding(
       key: _stripKeys.putIfAbsent(exerciseIndex, GlobalKey.new),
@@ -2643,8 +2846,12 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               const SizedBox(width: 12),
               _InfoCard(
                 icon: Icons.repeat,
-                label: AppL10n.of(context).repsLabel,
-                value: exercise.reps.toString(),
+                label: exercise.isTimed
+                    ? 'Tiempo'
+                    : AppL10n.of(context).repsLabel,
+                value: exercise.isTimed
+                    ? '${exercise.durationSeconds}s'
+                    : exercise.reps.toString(),
               ),
               const SizedBox(width: 12),
               _InfoCard(
@@ -2743,6 +2950,9 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
           ),
           const SizedBox(height: 16),
 
+          // Trabajo por tiempo (si el ejercicio va por segundos)
+          _buildWorkPanel(exercise, exerciseIndex),
+
           // Sets Checklist con animaciones
           Text(
             key: _setsKeys.putIfAbsent(exerciseIndex, GlobalKey.new),
@@ -2839,11 +3049,13 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                           weight: _setWeights[exerciseIndex]?[setIndex],
                           suggested: isCompleted ||
                                   _isCardioExercise(exercise) ||
+                                  exercise.isTimed ||
                                   _setWeights[exerciseIndex]?[setIndex] != null
                               ? null
                               : _autoWeightFor(exerciseIndex, setIndex),
                           reps: _setReps[exerciseIndex]?[setIndex] ??
                               exercise.reps,
+                          seconds: exercise.durationSeconds,
                           belowTarget: (_setReps[exerciseIndex]?[setIndex] ??
                                   exercise.reps) <
                               exercise.reps,
@@ -2852,6 +3064,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                                   _exercisePRs[exerciseIndex],
                           missing: isCompleted &&
                               !_isCardioExercise(exercise) &&
+                              !exercise.isTimed &&
                               _setWeights[exerciseIndex]?[setIndex] == null,
                           onTap: () => _showWeightDialog(
                               exerciseIndex, setIndex, exercise),
@@ -3021,6 +3234,8 @@ class _WeightChip extends StatelessWidget {
   /// Peso sugerido (kg) que se usará al marcar la serie con un toque.
   final double? suggested;
   final int reps;
+  /// > 0 si la serie va por tiempo (se muestra "40 s" en vez de reps).
+  final int seconds;
   final bool isNewPR;
   final bool belowTarget;
   final bool missing;
@@ -3030,6 +3245,7 @@ class _WeightChip extends StatelessWidget {
     required this.weight,
     this.suggested,
     required this.reps,
+    this.seconds = 0,
     required this.onTap,
     this.isNewPR = false,
     this.belowTarget = false,
@@ -3054,10 +3270,12 @@ class _WeightChip extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          '$reps reps',
+          seconds > 0 ? '$seconds s' : '$reps reps',
           style: TextStyle(
             fontSize: 14,
-            color: belowTarget ? Colors.orangeAccent : AppColors.textSecondary,
+            color: belowTarget && seconds == 0
+                ? Colors.orangeAccent
+                : AppColors.textSecondary,
             fontWeight: belowTarget ? FontWeight.w600 : FontWeight.normal,
           ),
         ),

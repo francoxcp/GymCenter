@@ -144,4 +144,41 @@ void main() {
     expect(compactWeight(400, 'imperial'), '882');
     expect(compactWeight(400, 'metric'), '400');
   });
+
+  group('Funcionales en el resultado', () {
+    test('cuenta funcionales aparte, sin reps en ejercicios por tiempo', () {
+      final ex = [
+        Exercise(id: 'a', name: 'Burpees', sets: 2, reps: 10, muscleGroup: 'Full',
+            supersetGroup: 'f', groupKind: 'functional', groupRestSeconds: 15,
+            durationSeconds: 40),
+        Exercise(id: 'b', name: 'Sentadilla', sets: 2, reps: 12, muscleGroup: 'Piernas',
+            supersetGroup: 'f', groupKind: 'functional', groupRestSeconds: 15),
+        Exercise(id: 'c', name: 'Prensa', sets: 1, reps: 10, muscleGroup: 'Piernas'),
+      ];
+      final r = WorkoutResult.compute(
+        exercises: ex,
+        completed: [[true, true], [true, true], [true]],
+        weightsKg: const {},
+        reps: const {},
+        durationSeconds: 900,
+        isCardio: (_) => false,
+      );
+      expect(r.functionals, 1);
+      expect(r.supersets, 0);
+      expect(r.repsDone, 12 * 2 + 10);
+      // El circuito sube el MET frente a solo pesas
+      final soloPesas = CalorieEstimator.metForSession(setsDone: 5, minutes: 15, supersetRatio: 2 / 3);
+      expect(r.met, greaterThan(soloPesas));
+    });
+  });
+
+  test('trabajo por tiempo guardado se lee para retomarlo', () {
+    final end = DateTime(2026, 11, 10, 18, 0, 30);
+    final raw = '{"acc":0,"at":0,"running":true,"workEnd":${end.millisecondsSinceEpoch},"workEx":2,"workSet":1}';
+    final w = TodayWorkoutTimer.work(raw)!;
+    expect(w.exercise, 2);
+    expect(w.set, 1);
+    expect(w.end, end);
+    expect(TodayWorkoutTimer.work('{"acc":0}'), isNull);
+  });
 }

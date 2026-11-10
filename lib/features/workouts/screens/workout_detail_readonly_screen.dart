@@ -379,6 +379,7 @@ class _WorkoutDetailReadonlyScreenState
                               name: exercise.name,
                               sets: exercise.sets,
                               reps: exercise.reps,
+                              seconds: exercise.durationSeconds,
                               restTime: exercise.restSeconds,
                             );
                             if (span == null) {
@@ -397,8 +398,10 @@ class _WorkoutDetailReadonlyScreenState
                                   if (index == span.start)
                                     SupersetHeader(
                                       size: span.size,
+                                      kind: groupKindAt(workout.exercises, index),
                                       rounds: exercise.sets,
                                       restSeconds: exercise.restSeconds,
+                                      innerRestSeconds: exercise.groupRestSeconds,
                                     ),
                                   Container(
                                     padding: EdgeInsets.only(
@@ -475,6 +478,8 @@ class _ExerciseCard extends StatelessWidget {
   final String name;
   final int sets;
   final int reps;
+  /// > 0 si el ejercicio va por tiempo.
+  final int seconds;
   final int restTime;
 
   const _ExerciseCard({
@@ -483,6 +488,7 @@ class _ExerciseCard extends StatelessWidget {
     required this.name,
     required this.sets,
     required this.reps,
+    this.seconds = 0,
     required this.restTime,
   });
 
@@ -539,7 +545,9 @@ class _ExerciseCard extends StatelessWidget {
                       const SizedBox(width: 16),
                     ],
                     _buildDetail(Icons.fitness_center,
-                        AppL10n.of(context).repsCount(reps)),
+                        seconds > 0
+                            ? '$seconds s'
+                            : AppL10n.of(context).repsCount(reps)),
                     if (letter == null) ...[
                       const SizedBox(width: 16),
                       _buildDetail(Icons.timer, '${restTime}s'),

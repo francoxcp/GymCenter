@@ -54,8 +54,10 @@ class SupersetEditorItem extends StatelessWidget {
         if (isHead)
           SupersetHeader(
             size: span.size,
+            kind: groupKindAt(exercises, index),
             rounds: exercises[index].sets,
             restSeconds: exercises[index].restSeconds,
+            innerRestSeconds: exercises[index].groupRestSeconds,
             onTap: onEditGroup,
           ),
         body,
@@ -69,23 +71,24 @@ class SupersetEditorItem extends StatelessWidget {
 /// "SUPERSERIE · 4 RONDAS" — también se usa en la vista de solo lectura.
 class SupersetHeader extends StatelessWidget {
   final int size;
+  final String? kind;
   final int rounds;
   final int restSeconds;
+  final int innerRestSeconds;
   final VoidCallback? onTap;
 
   const SupersetHeader({
     super.key,
     required this.size,
+    this.kind,
     required this.rounds,
     required this.restSeconds,
+    this.innerRestSeconds = 0,
     this.onTap,
   });
 
-  String get _kind => switch (size) {
-        2 => 'SUPERSERIE',
-        3 => 'TRISERIE',
-        _ => 'CIRCUITO',
-      };
+  bool get _functional => kind == kGroupFunctional;
+  String get _kind => groupTitle(kind, size);
 
   @override
   Widget build(BuildContext context) {
@@ -136,7 +139,9 @@ class SupersetHeader extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 2),
             child: Text(
-              'descanso ${restSeconds}s',
+              _functional
+                  ? '${innerRestSeconds}s · ${restSeconds}s'
+                  : 'descanso ${restSeconds}s',
               style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
             ),
           ),
@@ -151,7 +156,9 @@ class SupersetHeader extends StatelessWidget {
     if (onTap == null) return content;
     return Semantics(
       button: true,
-      label: '$_kind de $rounds rondas. Toca para ajustar rondas y descanso',
+      label: _functional
+          ? '$_kind de $rounds rondas, ${innerRestSeconds}s entre ejercicios y ${restSeconds}s por ronda. Toca para ajustar'
+          : '$_kind de $rounds rondas. Toca para ajustar rondas y descanso',
       child: InkWell(onTap: onTap, child: content),
     );
   }
@@ -190,7 +197,7 @@ class _LinkToggle extends StatelessWidget {
         icon: Icon(linked ? Icons.link_off : Icons.link,
             size: AppSpacing.iconXs),
         label: Text(
-          linked ? 'Separar' : 'Unir en superserie',
+          linked ? 'Separar' : 'Agrupar',
           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
         ),
       ),
@@ -198,31 +205,112 @@ class _LinkToggle extends StatelessWidget {
   }
 }
 
-/// Hoja para ajustar rondas y descanso de toda la superserie.
-Future<({int rounds, int rest})?> showSupersetSettings(
-    BuildContext context, {required int rounds, required int rest}) {
-  return showModalBottomSheet<({int rounds, int rest})>(
+/// Elegir el tipo de un grupo nuevo: superserie o funcional.
+Future<String?> showGroupKindPicker(BuildContext context) {
+  Widget option(BuildContext ctx, String kind, String title, String sub) =>
+      Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+        child: Material(
+          color: AppColors.cardBackground,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            onTap: () => Navigator.pop(ctx, kind),
+            child: Container(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                border: Border(
+                    left: BorderSide(
+                        color: AppColors.primary, width: kSupersetRailWidth)),
+              ),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(title,
+                    style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800)),
+                const SizedBox(height: 2),
+                Text(sub,
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              ]),
+            ),
+          ),
+        ),
+      );
+  return showModalBottomSheet<String>(
     context: context,
     backgroundColor: AppColors.surface,
     shape: const RoundedRectangleBorder(
         borderRadius:
             BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl))),
-    builder: (_) => _SupersetSettingsSheet(rounds: rounds, rest: rest),
+    builder: (ctx) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl, AppSpacing.lg, AppSpacing.xl, AppSpacing.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('¿Qué tipo de grupo?',
+                style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold)),
+            const SizedBox(height: AppSpacing.md),
+            option(ctx, kGroupSuperset, 'Superserie',
+                'Seguidos, sin descanso entre ejercicios. Descanso al cerrar la ronda.'),
+            option(ctx, kGroupFunctional, 'Funcional',
+                'Circuito: descanso corto entre ejercicios, por reps o por tiempo.'),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// Hoja para ajustar todo el grupo: tipo, rondas y descansos.
+Future<({String kind, int rounds, int rest, int innerRest})?> showSupersetSettings(
+  BuildContext context, {
+  String kind = kGroupSuperset,
+  required int rounds,
+  required int rest,
+  int innerRest = 0,
+}) {
+  return showModalBottomSheet<({String kind, int rounds, int rest, int innerRest})>(
+    context: context,
+    backgroundColor: AppColors.surface,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl))),
+    builder: (_) => _SupersetSettingsSheet(
+        kind: kind, rounds: rounds, rest: rest, innerRest: innerRest),
   );
 }
 
 class _SupersetSettingsSheet extends StatefulWidget {
+  final String kind;
   final int rounds;
   final int rest;
-  const _SupersetSettingsSheet({required this.rounds, required this.rest});
+  final int innerRest;
+  const _SupersetSettingsSheet(
+      {required this.kind,
+      required this.rounds,
+      required this.rest,
+      required this.innerRest});
 
   @override
   State<_SupersetSettingsSheet> createState() => _SupersetSettingsSheetState();
 }
 
 class _SupersetSettingsSheetState extends State<_SupersetSettingsSheet> {
+  late String kind = widget.kind;
   late int rounds = widget.rounds;
   late int rest = widget.rest;
+  late int innerRest =
+      widget.innerRest > 0 ? widget.innerRest : kFunctionalInnerRest;
+
+  bool get functional => kind == kGroupFunctional;
 
   Widget _stepper(String label, String value, VoidCallback onMinus,
           VoidCallback onPlus) =>
@@ -254,6 +342,39 @@ class _SupersetSettingsSheetState extends State<_SupersetSettingsSheet> {
         ]),
       );
 
+  Widget _kindChip(String value, String label) {
+    final sel = kind == value;
+    return Expanded(
+      child: Semantics(
+        button: true,
+        selected: sel,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          onTap: () => setState(() {
+            if (kind == value) return;
+            kind = value;
+            // Al cambiar de tipo, descanso por ronda sugerido del tipo
+            rest = value == kGroupFunctional
+                ? kFunctionalRoundRest
+                : kSupersetRoundRest;
+          }),
+          child: Container(
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: sel ? AppColors.primary : AppColors.cardBackground,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            ),
+            child: Text(label,
+                style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: sel ? AppColors.onPrimary : AppColors.textSecondary)),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -264,27 +385,43 @@ class _SupersetSettingsSheetState extends State<_SupersetSettingsSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Superserie',
+            Text('Grupo',
                 style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold)),
-            const SizedBox(height: AppSpacing.xs),
+            const SizedBox(height: AppSpacing.sm),
+            Row(children: [
+              _kindChip(kGroupSuperset, 'Superserie'),
+              const SizedBox(width: AppSpacing.sm),
+              _kindChip(kGroupFunctional, 'Funcional'),
+            ]),
+            const SizedBox(height: AppSpacing.sm),
             Text(
-              'Se hacen todos los ejercicios seguidos y se descansa al terminar cada ronda.',
+              functional
+                  ? 'Circuito: descanso corto entre ejercicios y descanso al terminar cada ronda.'
+                  : 'Se hacen todos los ejercicios seguidos y se descansa al terminar cada ronda.',
               style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
             const SizedBox(height: AppSpacing.sm),
             _stepper('Rondas', '$rounds',
                 () => setState(() => rounds = (rounds - 1).clamp(1, 20)),
                 () => setState(() => rounds = (rounds + 1).clamp(1, 20))),
-            _stepper('Descanso', '${rest}s',
+            if (functional)
+              _stepper('Entre ejercicios', '${innerRest}s',
+                  () => setState(() => innerRest = (innerRest - 5).clamp(0, 300)),
+                  () => setState(() => innerRest = (innerRest + 5).clamp(0, 300))),
+            _stepper('Por ronda', '${rest}s',
                 () => setState(() => rest = (rest - 15).clamp(0, 600)),
                 () => setState(() => rest = (rest + 15).clamp(0, 600))),
             const SizedBox(height: AppSpacing.md),
             ElevatedButton(
-              onPressed: () =>
-                  Navigator.pop(context, (rounds: rounds, rest: rest)),
+              onPressed: () => Navigator.pop(context, (
+                kind: kind,
+                rounds: rounds,
+                rest: rest,
+                innerRest: functional ? innerRest : 0,
+              )),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.onPrimary,

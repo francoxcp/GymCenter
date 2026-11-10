@@ -624,6 +624,7 @@ class _WorkoutSummaryScreenState extends State<WorkoutSummaryScreen> {
                               exercises: r?.exercisesDone ??
                                   widget.workout.exercises.length,
                               supersets: r?.supersets ?? 0,
+                              functionals: r?.functionals ?? 0,
                               newRecords: widget.newRecords,
                               bestExercise: r?.bestSet?.exercise,
                               bestWeightKg: r?.bestSet?.weightKg,

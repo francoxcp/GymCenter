@@ -1,10 +1,38 @@
 import 'exercise.dart';
 
-/// Superseries: 2 a 4 ejercicios seguidos que se hacen sin descanso entre
-/// ellos. Comparten `supersetGroup`; sus `sets` son las rondas y su
-/// `restSeconds` el descanso al terminar cada ronda.
+/// Grupos de 2 a 4 ejercicios seguidos que comparten `supersetGroup`:
+///  - Superserie: sin descanso entre ejercicios.
+///  - Funcional (circuito): descanso corto entre ejercicios
+///    (`groupRestSeconds`) y ejercicios por reps o por tiempo.
+/// En ambos, `sets` son las rondas y `restSeconds` el descanso al cerrar
+/// cada ronda. Todo lo ajusta el entrenador.
 const int kSupersetMinSize = 2;
 const int kSupersetMaxSize = 4;
+
+const String kGroupSuperset = 'superset';
+const String kGroupFunctional = 'functional';
+
+/// Valores por defecto al crear un grupo nuevo.
+const int kSupersetRoundRest = 120;
+const int kFunctionalRoundRest = 60;
+const int kFunctionalInnerRest = 15;
+
+/// Tipo del grupo de [i] (null si va suelto). Sin tipo = superserie.
+String? groupKindAt(List<Exercise> list, int i) {
+  final span = supersetSpanAt(list, i);
+  if (span == null) return null;
+  return list[span.start].groupKind ?? kGroupSuperset;
+}
+
+/// Nombre del grupo para mostrar: SUPERSERIE / TRISERIE / CIRCUITO o
+/// FUNCIONAL.
+String groupTitle(String? kind, int size) => kind == kGroupFunctional
+    ? 'FUNCIONAL'
+    : switch (size) {
+        2 => 'SUPERSERIE',
+        3 => 'TRISERIE',
+        _ => 'CIRCUITO',
+      };
 
 /// Tramo [start, end] (ambos incluidos) de una superserie en la lista.
 class SupersetSpan {
@@ -74,11 +102,15 @@ List<Exercise> normalizeSupersets(List<Exercise> input) {
       if (usedIds.contains(id)) id = newSupersetGroupId();
       usedIds.add(id);
       final head = input[s];
+      final kind = head.groupKind ?? kGroupSuperset;
       for (var k = s; k <= e; k++) {
         out.add(input[k].copyWith(
           supersetGroup: id,
           sets: head.sets,
           restSeconds: head.restSeconds,
+          groupKind: kind,
+          groupRestSeconds:
+              kind == kGroupFunctional ? head.groupRestSeconds : 0,
         ));
       }
     }
@@ -103,18 +135,44 @@ bool canLinkWithNext(List<Exercise> list, int i) {
   return a + b <= kSupersetMaxSize;
 }
 
-/// Une [i] con el siguiente (y con sus grupos, si ya tenían). El grupo
-/// resultante toma las rondas y el descanso del primer ejercicio.
-List<Exercise> linkWithNext(List<Exercise> list, int i) {
+/// ¿Unir [i] con el siguiente crea un grupo nuevo (ninguno de los dos
+/// estaba agrupado)? Entonces hay que preguntar el tipo.
+bool linkCreatesNewGroup(List<Exercise> list, int i) =>
+    canLinkWithNext(list, i) &&
+    supersetSpanAt(list, i) == null &&
+    supersetSpanAt(list, i + 1) == null;
+
+/// Une [i] con el siguiente (y con sus grupos, si ya tenían). Si se crea un
+/// grupo nuevo se usa [kind] con sus descansos por defecto; si se suma a un
+/// grupo existente, se conservan sus ajustes (los del primero).
+List<Exercise> linkWithNext(List<Exercise> list, int i,
+    {String kind = kGroupSuperset}) {
   if (!canLinkWithNext(list, i)) return list;
   final a = supersetSpanAt(list, i) ?? SupersetSpan(i, i);
   final b = supersetSpanAt(list, i + 1) ?? SupersetSpan(i + 1, i + 1);
+  final isNew = a.size == 1 && b.size == 1;
   final id = list[a.start].supersetGroup ??
       list[b.start].supersetGroup ??
       newSupersetGroupId();
   final out = [...list];
+  // Si el primero va suelto y el segundo ya era grupo, manda el grupo
+  final headKind = isNew
+      ? kind
+      : (a.size > 1 ? list[a.start].groupKind : list[b.start].groupKind) ??
+          kGroupSuperset;
+  final source = a.size > 1 || isNew ? list[a.start] : list[b.start];
   for (var k = a.start; k <= b.end; k++) {
-    out[k] = out[k].copyWith(supersetGroup: id);
+    out[k] = out[k].copyWith(
+      supersetGroup: id,
+      groupKind: headKind,
+      sets: source.sets,
+      restSeconds: isNew
+          ? (kind == kGroupFunctional ? kFunctionalRoundRest : kSupersetRoundRest)
+          : source.restSeconds,
+      groupRestSeconds: isNew
+          ? (kind == kGroupFunctional ? kFunctionalInnerRest : 0)
+          : source.groupRestSeconds,
+    );
   }
   return normalizeSupersets(out);
 }
@@ -142,6 +200,49 @@ List<Exercise> applyRoundsAndRest(
   return out;
 }
 
+/// Ajustes completos del grupo de [i]: tipo, rondas, descanso por ronda y
+/// (funcional) descanso entre ejercicios.
+List<Exercise> applyGroupSettings(List<Exercise> list, int i,
+    {required String kind,
+    required int rounds,
+    required int roundRest,
+    int innerRest = 0}) {
+  final span = supersetSpanAt(list, i);
+  if (span == null) return applyRoundsAndRest(list, i, rounds, roundRest);
+  final out = [...list];
+  for (var k = span.start; k <= span.end; k++) {
+    out[k] = out[k].copyWith(
+      groupKind: kind,
+      sets: rounds,
+      restSeconds: roundRest,
+      groupRestSeconds: kind == kGroupFunctional ? innerRest : 0,
+    );
+  }
+  return out;
+}
+
+/// Agrega [items] (2 a 4) al final como un grupo nuevo de tipo [kind].
+List<Exercise> addAsGroup(
+    List<Exercise> list, List<Exercise> items, String kind) {
+  if (items.length < kSupersetMinSize) return [...list, ...items];
+  final out = [...list];
+  final id = newSupersetGroupId();
+  final head = items.first;
+  for (final e in items.take(kSupersetMaxSize)) {
+    out.add(e.copyWith(
+      supersetGroup: id,
+      groupKind: kind,
+      sets: head.sets,
+      restSeconds:
+          kind == kGroupFunctional ? kFunctionalRoundRest : kSupersetRoundRest,
+      groupRestSeconds: kind == kGroupFunctional ? kFunctionalInnerRest : 0,
+    ));
+  }
+  // Si eligió más de 4, el resto va suelto
+  out.addAll(items.skip(kSupersetMaxSize));
+  return normalizeSupersets(out);
+}
+
 /// Índice donde insertar la copia de [i]: tras su grupo, para no romperlo.
 int duplicateInsertIndex(List<Exercise> list, int i) =>
     (supersetSpanAt(list, i)?.end ?? i) + 1;
@@ -152,20 +253,28 @@ class SupersetStep {
   /// Página a la que llevar al socio (null = quedarse).
   final int? goTo;
 
-  /// Si empieza el descanso (solo al cerrar una ronda).
+  /// Si empieza un descanso.
   final bool rest;
 
-  const SupersetStep({this.goTo, required this.rest});
+  /// Segundos del descanso; null = el del ejercicio (descanso por ronda).
+  /// En un funcional, entre ejercicios es el descanso corto del grupo.
+  final int? restSeconds;
+
+  const SupersetStep({this.goTo, required this.rest, this.restSeconds});
 
   @override
   bool operator ==(Object other) =>
-      other is SupersetStep && other.goTo == goTo && other.rest == rest;
+      other is SupersetStep &&
+      other.goTo == goTo &&
+      other.rest == rest &&
+      other.restSeconds == restSeconds;
 
   @override
-  int get hashCode => Object.hash(goTo, rest);
+  int get hashCode => Object.hash(goTo, rest, restSeconds);
 
   @override
-  String toString() => 'SupersetStep(goTo: $goTo, rest: $rest)';
+  String toString() =>
+      'SupersetStep(goTo: $goTo, rest: $rest, restSeconds: $restSeconds)';
 }
 
 /// Flujo guiado: A → B → (C) → descanso → A… Devuelve null si el ejercicio
@@ -175,7 +284,13 @@ SupersetStep? supersetStepAfterSet(
   final span = supersetSpanAt(list, exIndex);
   if (span == null) return null;
   if (exIndex < span.end) {
-    return SupersetStep(goTo: exIndex + 1, rest: false);
+    // Funcional: descanso corto entre ejercicios (si el entrenador puso uno)
+    final head = list[span.start];
+    final inner =
+        head.groupKind == kGroupFunctional ? head.groupRestSeconds : 0;
+    return inner > 0
+        ? SupersetStep(goTo: exIndex + 1, rest: true, restSeconds: inner)
+        : SupersetStep(goTo: exIndex + 1, rest: false);
   }
   final rounds = list[exIndex].sets;
   if (setIndex < rounds - 1) {
@@ -200,7 +315,11 @@ List<Exercise> replaceKeepingSuperset(
     out[i] = updated;
     return out;
   }
-  out[i] = updated.copyWith(supersetGroup: old.supersetGroup);
+  out[i] = updated.copyWith(
+    supersetGroup: old.supersetGroup,
+    groupKind: old.groupKind,
+    groupRestSeconds: old.groupRestSeconds,
+  );
   return applyRoundsAndRest(out, i, out[i].sets, out[i].restSeconds);
 }
 
@@ -221,6 +340,9 @@ List<Exercise> insertDuplicate(List<Exercise> list, int i, Exercise copy) =>
     [...list]..insert(duplicateInsertIndex(list, i),
         copy.copyWith(clearSuperset: true));
 
-/// Une o separa [i] con el siguiente.
-List<Exercise> toggleLinkWithNext(List<Exercise> list, int i) =>
-    isLinkedWithNext(list, i) ? unlinkFromNext(list, i) : linkWithNext(list, i);
+/// Une o separa [i] con el siguiente ([kind] solo si se crea un grupo).
+List<Exercise> toggleLinkWithNext(List<Exercise> list, int i,
+        {String kind = kGroupSuperset}) =>
+    isLinkedWithNext(list, i)
+        ? unlinkFromNext(list, i)
+        : linkWithNext(list, i, kind: kind);

@@ -1,5 +1,6 @@
 ﻿import 'dart:io';
 import '../widgets/exercise_library.dart';
+import '../services/exercise_library_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
@@ -826,6 +827,11 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
       videoUrl: _videoUrl ?? '',
       thumbnailUrl: '',
     );
+
+    // Video subido: queda en la biblioteca del gimnasio para reutilizarlo
+    if ((_videoUrl ?? '').isNotEmpty) {
+      ExerciseLibraryService.instance.saveFromExercise(exercise);
+    }
 
     widget.onAdd(exercise);
     Navigator.pop(context);

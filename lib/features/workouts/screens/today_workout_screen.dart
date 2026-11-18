@@ -20,7 +20,7 @@ import '../models/workout_progress.dart';
 import '../models/superset.dart';
 import '../widgets/superset_editor.dart' show kSupersetRailWidth;
 import '../../../shared/widgets/primary_button.dart';
-import '../../../shared/widgets/video_player_widget.dart';
+import '../../../shared/widgets/exercise_media.dart';
 import 'workout_summary_screen.dart';
 import '../services/workout_completion.dart';
 import '../../../features/progress/providers/body_measurement_provider.dart';
@@ -2817,15 +2817,13 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
               // Corto y en bucle, sin sonido: se ve la técnica sin tocar
               // nada. "Ver en grande" lo abre a pantalla completa.
               constraints: const BoxConstraints(maxHeight: 260),
-              child: VideoPlayerWidget(
-                videoUrl: exercise.videoUrl!,
+              // Video subido o GIF de la biblioteca de ejercicios
+              child: ExerciseMedia(
+                url: exercise.videoUrl!,
                 // Solo se reproduce el del ejercicio en pantalla
                 autoPlay: exerciseIndex == _currentExerciseIndex,
-                muted: true,
-                looping: true,
                 exerciseName: exercise.name,
                 thumbnailUrl: exercise.thumbnailUrl,
-                showFullscreenButton: true,
               ),
             ),
 

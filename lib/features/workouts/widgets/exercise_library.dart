@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/exercise_media.dart';
 import '../models/exercise.dart';
+import '../services/exercise_library_service.dart';
 
 /// Ejercicio del catálogo con valores por defecto razonables.
 class LibraryExercise {
@@ -11,8 +13,33 @@ class LibraryExercise {
   final int reps;
   final int rest;
 
+  /// GIF o video de la técnica (tabla `exercise_library`).
+  final String? mediaUrl;
+  final String? instructions;
+
+  /// true si es de la organización (p. ej. video subido por el gimnasio).
+  final bool isOwn;
+
   const LibraryExercise(this.name, this.muscle,
-      {this.sets = 3, this.reps = 12, this.rest = 60});
+      {this.sets = 3,
+      this.reps = 12,
+      this.rest = 60,
+      this.mediaUrl,
+      this.instructions,
+      this.isOwn = false});
+
+  factory LibraryExercise.fromRow(Map<String, dynamic> r) => LibraryExercise(
+        (r['name'] as String? ?? '').trim(),
+        r['muscle_group'] as String? ?? 'General',
+        sets: (r['default_sets'] as num?)?.toInt() ?? 3,
+        reps: (r['default_reps'] as num?)?.toInt() ?? 12,
+        rest: (r['default_rest'] as num?)?.toInt() ?? 60,
+        mediaUrl: _blankToNull(r['media_url'] as String?),
+        instructions: _blankToNull(r['instructions'] as String?),
+        isOwn: r['org_id'] != null,
+      );
+
+  bool get hasMedia => mediaUrl != null;
 
   Exercise toExercise() => Exercise(
         id: '',
@@ -21,8 +48,13 @@ class LibraryExercise {
         reps: reps,
         restSeconds: rest,
         muscleGroup: muscle,
+        videoUrl: mediaUrl,
+        description: instructions,
       );
 }
+
+String? _blankToNull(String? s) =>
+    (s == null || s.trim().isEmpty) ? null : s.trim();
 
 const kMuscleGroups = [
   'Pecho',
@@ -142,22 +174,110 @@ class _LibrarySheet extends StatefulWidget {
 class _LibrarySheetState extends State<_LibrarySheet> {
   String _query = '';
   String? _muscle;
+  bool _onlyWithMedia = false;
   final List<LibraryExercise> _selected = [];
+  List<LibraryExercise> _all = kExerciseLibrary;
 
-  static String _norm(String s) => s
-      .toLowerCase()
-      .replaceAll('á', 'a')
-      .replaceAll('é', 'e')
-      .replaceAll('í', 'i')
-      .replaceAll('ó', 'o')
-      .replaceAll('ú', 'u');
+  @override
+  void initState() {
+    super.initState();
+    // Catálogo local al instante; luego el de Supabase (con videos/GIFs)
+    ExerciseLibraryService.instance.load().then((list) {
+      if (!mounted) return;
+      setState(() {
+        // Conservar lo ya marcado aunque cambie la instancia
+        final names = _selected.map((e) => e.name).toSet();
+        _all = list;
+        _selected
+          ..clear()
+          ..addAll(list.where((e) => names.contains(e.name)));
+      });
+    });
+  }
+
+  void _preview(LibraryExercise e) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: AppColors.surface,
+        insetPadding: const EdgeInsets.all(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(e.name,
+                  style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 320),
+                child: ExerciseMedia(
+                    url: e.mediaUrl!, autoPlay: true, exerciseName: e.name),
+              ),
+              if (e.instructions != null) ...[
+                const SizedBox(height: 12),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Text(e.instructions!,
+                        style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                            height: 1.5)),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cerrar'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Miniatura: el GIF en pequeño o una marca de "video".
+  Widget _thumb(LibraryExercise e) {
+    final image = isImageMediaUrl(e.mediaUrl!);
+    return Semantics(
+      button: true,
+      label: 'Ver técnica de ${e.name}',
+      child: InkWell(
+        onTap: () => _preview(e),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: image ? Colors.white : AppColors.cardBackground,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: image
+              ? Image.network(e.mediaUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Icon(Icons.play_arrow,
+                      color: AppColors.primaryText))
+              : Icon(Icons.play_arrow, color: AppColors.primaryText),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final q = _norm(_query.trim());
-    final items = kExerciseLibrary
+    final q = normalizeExerciseName(_query);
+    final withMedia = _all.where((e) => e.hasMedia).length;
+    final items = _all
         .where((e) => _muscle == null || e.muscle == _muscle)
-        .where((e) => q.isEmpty || _norm(e.name).contains(q))
+        .where((e) => !_onlyWithMedia || e.hasMedia)
+        .where((e) => q.isEmpty || normalizeExerciseName(e.name).contains(q))
         .toList();
 
     return SizedBox(
@@ -200,6 +320,21 @@ class _LibrarySheetState extends State<_LibrarySheet> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               children: [
+                if (withMedia > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text('Con video ($withMedia)'),
+                      selected: _onlyWithMedia,
+                      onSelected: (v) => setState(() => _onlyWithMedia = v),
+                      selectedColor: AppColors.primary,
+                      checkmarkColor: Colors.black,
+                      labelStyle: TextStyle(
+                          color: _onlyWithMedia
+                              ? Colors.black
+                              : AppColors.textPrimary),
+                    ),
+                  ),
                 _filterChip('Todos', null),
                 for (final m in kMuscleGroups) _filterChip(m, m),
               ],
@@ -230,6 +365,7 @@ class _LibrarySheetState extends State<_LibrarySheet> {
                   onChanged: (_) => setState(() {
                     selected ? _selected.remove(e) : _selected.add(e);
                   }),
+                  secondary: e.hasMedia ? _thumb(e) : null,
                   title: Text(e.name,
                       style: TextStyle(color: AppColors.textPrimary)),
                   subtitle: Text(

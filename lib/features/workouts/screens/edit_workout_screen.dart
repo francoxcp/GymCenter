@@ -1,5 +1,6 @@
 ﻿import 'dart:io';
 import '../widgets/exercise_library.dart';
+import '../services/exercise_library_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
@@ -784,6 +785,12 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
       // Conservar el modo por tiempo (se cambia en el editor rápido)
       durationSeconds: widget.exercise?.durationSeconds ?? 0,
     );
+
+    // Video nuevo: queda en la biblioteca del gimnasio para reutilizarlo
+    final url = _videoUrl ?? '';
+    if (url.isNotEmpty && url != (widget.exercise?.videoUrl ?? '')) {
+      ExerciseLibraryService.instance.saveFromExercise(newExercise);
+    }
 
     widget.onSave(newExercise);
     Navigator.pop(context);

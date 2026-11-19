@@ -636,3 +636,155 @@ Exercise duplicateExercise(Exercise e) => Exercise(
       weight: e.weight,
       durationSeconds: e.durationSeconds,
     );
+
+/// Elegir el video/GIF de un ejercicio de la biblioteca (para un
+/// ejercicio que ya existe en la rutina). Devuelve el elegido o null.
+Future<LibraryExercise?> showLibraryVideoPicker(BuildContext context,
+    {String initialQuery = ''}) {
+  return showModalBottomSheet<LibraryExercise>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    backgroundColor: AppColors.surface,
+    shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+    builder: (_) => _VideoPickerSheet(initialQuery: initialQuery),
+  );
+}
+
+class _VideoPickerSheet extends StatefulWidget {
+  final String initialQuery;
+  const _VideoPickerSheet({required this.initialQuery});
+
+  @override
+  State<_VideoPickerSheet> createState() => _VideoPickerSheetState();
+}
+
+class _VideoPickerSheetState extends State<_VideoPickerSheet> {
+  late final _search = TextEditingController(text: widget.initialQuery);
+  List<LibraryExercise>? _items;
+
+  @override
+  void initState() {
+    super.initState();
+    ExerciseLibraryService.instance.load().then((list) {
+      if (mounted) {
+        setState(() => _items = list.where((e) => e.hasMedia).toList());
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final q = normalizeExerciseName(_search.text);
+    final all = _items;
+    final items = all
+        ?.where((e) => q.isEmpty || normalizeExerciseName(e.name).contains(q))
+        .toList();
+
+    Widget body;
+    if (items == null) {
+      body = Center(
+        child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
+      );
+    } else if (all!.isEmpty) {
+      body = _message('La biblioteca todavía no tiene videos',
+          'Cada video que subas a un ejercicio queda guardado aquí para reutilizarlo.');
+    } else if (items.isEmpty) {
+      body = _message('Sin resultados',
+          'Prueba con otra palabra, por ejemplo "remo" o "jalón".');
+    } else {
+      body = ListView.builder(
+        itemCount: items.length,
+        itemBuilder: (_, i) {
+          final e = items[i];
+          final image = isImageMediaUrl(e.mediaUrl!);
+          return ListTile(
+            minVerticalPadding: 8,
+            leading: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: image ? Colors.white : AppColors.cardBackground,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: image
+                  ? Image.network(e.mediaUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Icon(Icons.play_arrow,
+                          color: AppColors.primaryText))
+                  : Icon(Icons.play_arrow, color: AppColors.primaryText),
+            ),
+            title: Text(e.name,
+                style: TextStyle(color: AppColors.textPrimary)),
+            subtitle: Text(e.isOwn ? '${e.muscle} · del gimnasio' : e.muscle,
+                style: TextStyle(color: AppColors.textSecondary)),
+            onTap: () => Navigator.pop(context, e),
+          );
+        },
+      );
+    }
+
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.85,
+      child: Column(children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 8, 0),
+          child: Row(children: [
+            Expanded(
+              child: Semantics(
+                header: true,
+                child: Text('Elegir video de la biblioteca',
+                    style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold)),
+              ),
+            ),
+            IconButton(
+              tooltip: 'Cerrar',
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.close),
+            ),
+          ]),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: TextField(
+            controller: _search,
+            onChanged: (_) => setState(() {}),
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.search),
+              hintText: 'Buscar ejercicio…',
+            ),
+          ),
+        ),
+        Expanded(child: body),
+      ]),
+    );
+  }
+
+  Widget _message(String title, String text) => Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text(title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text(text,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textSecondary)),
+        ]),
+      );
+}

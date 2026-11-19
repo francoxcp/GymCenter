@@ -728,6 +728,9 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
   final ImagePicker _picker = ImagePicker();
   XFile? _videoFile;
   String? _videoUrl;
+  /// Video e instrucciones elegidos de la biblioteca.
+  bool _videoFromLibrary = false;
+  String? _libraryInstructions;
   bool _isUploadingVideo = false;
 
   @override
@@ -740,6 +743,17 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
     super.dispose();
   }
 
+  Future<void> _pickFromLibrary() async {
+    final picked = await showLibraryVideoPicker(context);
+    if (picked == null || !mounted) return;
+    setState(() {
+      _videoFile = null;
+      _videoUrl = picked.mediaUrl;
+      _videoFromLibrary = true;
+      _libraryInstructions = picked.instructions;
+    });
+  }
+
   Future<void> _pickVideo() async {
     try {
       final XFile? video = await _picker.pickVideo(
@@ -750,6 +764,9 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
       if (video != null) {
         setState(() {
           _videoFile = video;
+          _videoUrl = null;
+          _videoFromLibrary = false;
+          _libraryInstructions = null;
         });
       }
     } catch (e) {
@@ -822,14 +839,14 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
       restSeconds: int.tryParse(_restController.text) ?? 60,
       muscleGroup: _selectedMuscleGroup,
       difficulty: 'Intermedio',
-      description: null,
+      description: _videoFromLibrary ? _libraryInstructions : null,
       weight: double.tryParse(_weightController.text.trim()) ?? 0,
       videoUrl: _videoUrl ?? '',
       thumbnailUrl: '',
     );
 
     // Video subido: queda en la biblioteca del gimnasio para reutilizarlo
-    if ((_videoUrl ?? '').isNotEmpty) {
+    if ((_videoUrl ?? '').isNotEmpty && !_videoFromLibrary) {
       ExerciseLibraryService.instance.saveFromExercise(exercise);
     }
 
@@ -1013,14 +1030,25 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                   ),
                   const SizedBox(height: 12),
                   if (_videoFile == null && _videoUrl == null)
-                    OutlinedButton.icon(
-                      onPressed: _pickVideo,
-                      icon: const Icon(Icons.upload_file),
-                      label: Text(AppL10n.of(context).selectVideo),
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 44),
+                    Column(children: [
+                      OutlinedButton.icon(
+                        onPressed: _pickVideo,
+                        icon: const Icon(Icons.upload_file),
+                        label: Text(AppL10n.of(context).selectVideo),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 44),
+                        ),
                       ),
-                    )
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        onPressed: _pickFromLibrary,
+                        icon: const Icon(Icons.video_library_outlined),
+                        label: const Text('Elegir de la biblioteca'),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 44),
+                        ),
+                      ),
+                    ])
                   else if (_videoFile != null && _videoUrl == null)
                     Column(
                       children: [
@@ -1106,6 +1134,8 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                               setState(() {
                                 _videoFile = null;
                                 _videoUrl = null;
+                                _videoFromLibrary = false;
+                                _libraryInstructions = null;
                               });
                             },
                           ),

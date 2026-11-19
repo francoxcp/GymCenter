@@ -1,3 +1,5 @@
+import '../../../core/utils/weight_units.dart';
+
 class Exercise {
   final String id;
   final String name;
@@ -9,7 +11,10 @@ class Exercise {
   final String? thumbnailUrl;
   final String muscleGroup; // grupo muscular
   final String difficulty;
-  final double weight; // peso sugerido en lbs (0 = sin peso / peso corporal)
+  /// Peso sugerido en [weightUnit] (0 = sin peso / peso corporal).
+  final double weight;
+  /// Unidad en que se carga este ejercicio (mancuernas en lbs, máquinas en kg).
+  final WeightUnit weightUnit;
   /// Ejercicios consecutivos con el mismo valor forman una superserie.
   /// En ellos `sets` son las rondas y `restSeconds` el descanso por ronda.
   final String? supersetGroup;
@@ -34,6 +39,7 @@ class Exercise {
     required this.muscleGroup,
     this.difficulty = 'Intermedio',
     this.weight = 0,
+    this.weightUnit = WeightUnit.lbs,
     this.supersetGroup,
     this.groupKind,
     this.groupRestSeconds = 0,
@@ -41,6 +47,7 @@ class Exercise {
   });
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
+    final unit = WeightUnit.parse(json['weight_unit'] ?? json['weightUnit']);
     return Exercise(
       id: json['id']?.toString() ?? '',
       name: json['name'] as String? ?? 'Unknown',
@@ -52,11 +59,14 @@ class Exercise {
       thumbnailUrl: json['thumbnailUrl'],
       muscleGroup: json['muscle_group'] ?? json['muscleGroup'] ?? 'General',
       difficulty: json['difficulty'] ?? 'Intermedio',
-      // En la BD el peso sugerido se guarda en kg (columna weight_kg); la app
-      // lo maneja en lbs. 'weight' (lbs) se usa en la caché local antigua.
+      // En la BD el peso sugerido se guarda en kg (columna weight_kg) y se
+      // muestra en la unidad del ejercicio. 'weight' (ya en esa unidad; lbs
+      // en cachés antiguas sin 'weightUnit') viene de la caché local.
       weight: json['weight_kg'] != null
-          ? ((json['weight_kg'] as num).toDouble() * 2.20462 * 10).round() / 10
+          ? (unit.fromKg((json['weight_kg'] as num).toDouble()) * 10).round() /
+              10
           : ((json['weight'] ?? 0) as num).toDouble(),
+      weightUnit: unit,
       supersetGroup: _nonEmpty(json['superset_group'] ?? json['supersetGroup']),
       groupKind: _nonEmpty(json['group_kind'] ?? json['groupKind']),
       groupRestSeconds:
@@ -83,6 +93,7 @@ class Exercise {
       'muscleGroup': muscleGroup,
       'difficulty': difficulty,
       'weight': weight,
+      'weightUnit': weightUnit.name,
       'supersetGroup': supersetGroup,
       'groupKind': groupKind,
       'groupRestSeconds': groupRestSeconds,
@@ -113,6 +124,7 @@ class Exercise {
     int? reps,
     int? restSeconds,
     double? weight,
+    WeightUnit? weightUnit,
     String? supersetGroup,
     bool clearSuperset = false,
     String? groupKind,
@@ -131,6 +143,7 @@ class Exercise {
       muscleGroup: muscleGroup,
       difficulty: difficulty,
       weight: weight ?? this.weight,
+      weightUnit: weightUnit ?? this.weightUnit,
       supersetGroup:
           clearSuperset ? null : (supersetGroup ?? this.supersetGroup),
       // Al salir de un grupo se limpian sus ajustes
@@ -141,7 +154,13 @@ class Exercise {
     );
   }
 
+  /// Peso sugerido en kg (0 = sin peso).
+  double get weightKg => weight > 0 ? weightUnit.toKg(weight) : 0;
+
   /// Peso sugerido convertido a kg para la columna `weight_kg` (null = sin peso).
   double? get weightKgForDb =>
-      weight > 0 ? double.parse((weight / 2.20462).toStringAsFixed(2)) : null;
+      weight > 0 ? double.parse(weightKg.toStringAsFixed(2)) : null;
+
+  /// "45 kg" / "20 lbs", o null sin peso.
+  String? get weightLabel => weight > 0 ? weightUnit.format(weight) : null;
 }

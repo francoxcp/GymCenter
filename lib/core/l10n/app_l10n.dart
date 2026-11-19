@@ -636,6 +636,7 @@ class AppL10n {
   String get restSecondsLabel =>
       isEn ? 'Rest (seconds)' : 'Descanso (segundos)';
   String get weightLbs => isEn ? 'Weight (lbs)' : 'Peso (lbs)';
+  String get weightSuggested => isEn ? 'Suggested weight' : 'Peso sugerido';
   String get weightLbsHint => isEn
       ? 'E.g.: 20 — leave empty for bodyweight'
       : 'Ej: 20  —  dejar vacío si es peso corporal';

@@ -1,6 +1,8 @@
 ﻿import 'dart:io';
 import '../widgets/exercise_library.dart';
 import '../services/exercise_library_service.dart';
+import '../../../core/utils/weight_units.dart';
+import '../../../shared/widgets/weight_unit_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
@@ -75,6 +77,7 @@ class _EditWorkoutScreenState extends State<EditWorkoutScreen> {
           a.description != b.description ||
           a.videoUrl != b.videoUrl ||
           a.weight != b.weight ||
+          a.weightUnit != b.weightUnit ||
           a.supersetGroup != b.supersetGroup) {
         return true;
       }
@@ -635,6 +638,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
   late TextEditingController _repsController;
   late TextEditingController _restController;
   late TextEditingController _weightController;
+  late WeightUnit _weightUnit = widget.exercise?.weightUnit ?? WeightUnit.lbs;
   late TextEditingController _descController;
   bool _showDescription = false;
 
@@ -659,7 +663,8 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
     _restController = TextEditingController(
         text: widget.exercise?.restSeconds.toString() ?? '60');
     final w = widget.exercise?.weight ?? 0;
-    _weightController = TextEditingController(text: w > 0 ? w.toString() : '');
+    _weightController = TextEditingController(
+        text: w > 0 ? (w == w.roundToDouble() ? w.toInt().toString() : w.toString()) : '');
     _descController =
         TextEditingController(text: widget.exercise?.description ?? '');
     _showDescription = _descController.text.isNotEmpty;
@@ -798,7 +803,8 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
       muscleGroup: _muscleGroup,
       description: _descController.text.trim(),
       videoUrl: _videoUrl ?? '',
-      weight: double.tryParse(_weightController.text.trim()) ?? 0,
+      weight: double.tryParse(_weightController.text.trim().replaceAll(',', '.')) ?? 0,
+      weightUnit: _weightUnit,
       // Conservar el modo por tiempo (se cambia en el editor rápido)
       durationSeconds: widget.exercise?.durationSeconds ?? 0,
     );
@@ -900,16 +906,26 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                 decoration: InputDecoration(labelText: l10n.restSecsLabel),
               ),
               const SizedBox(height: 12),
-              TextField(
-                controller: _weightController,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  labelText: l10n.weightLbs,
-                  hintText: l10n.weightLbsHint,
-                  suffixText: 'kg',
+              Row(children: [
+                Expanded(
+                  child: TextField(
+                    controller: _weightController,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      labelText: l10n.weightSuggested,
+                      hintText: l10n.weightLbsHint,
+                      suffixText: _weightUnit.label,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                WeightUnitToggle(
+                  dense: true,
+                  unit: _weightUnit,
+                  onChanged: (u) => setState(() => _weightUnit = u),
+                ),
+              ]),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _muscleGroup,

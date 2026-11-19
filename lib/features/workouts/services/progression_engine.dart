@@ -3,16 +3,19 @@
 /// A partir del historial de series de UN ejercicio decide qué peso conviene
 /// usar hoy:
 /// - **Subir**: en la última sesión se completaron todas las series con las
-///   repeticiones objetivo usando el mismo peso → +5 lbs (tren superior) o
-///   +10 lbs (tren inferior).
+///   repeticiones objetivo usando el mismo peso → +5 lbs / +2.5 kg (tren
+///   superior) o +10 lbs / +5 kg (tren inferior), según la unidad del
+///   ejercicio.
 /// - **Mantener**: faltaron series o repeticiones → repetir el peso hasta
 ///   completarlas.
 /// - **Descarga**: dos sesiones seguidas sin completar con el mismo peso →
 ///   bajar ~10 % para recuperar técnica y volver a progresar.
 ///
-/// Internamente los pesos se guardan en kg y la app los muestra en lbs, por
-/// eso los incrementos y redondeos se calculan en lbs.
+/// Internamente los pesos se guardan en kg; los incrementos y redondeos se
+/// calculan en la unidad del ejercicio (lbs o kg).
 library;
+
+import '../../../core/utils/weight_units.dart';
 
 const double kKgToLbs = 2.20462;
 
@@ -169,6 +172,7 @@ class ProgressionEngine {
     required int targetSets,
     required int targetReps,
     required bool lowerBody,
+    WeightUnit unit = WeightUnit.lbs,
   }) {
     final sessions =
         groupSessions(logs).where((s) => s.topWeightKg != null).toList();
@@ -181,12 +185,12 @@ class ProgressionEngine {
     final lastOk = _isSuccessful(last, lastWeight, targetSets, targetReps);
 
     if (lastOk) {
-      final inc = lowerBody ? lowerBodyIncrementLbs : upperBodyIncrementLbs;
-      final nextLbs = roundLbs(lastWeight * kKgToLbs + inc);
+      final inc = unit.increment(lowerBody: lowerBody);
+      final next = unit.roundToPlates(unit.fromKg(lastWeight) + inc);
       return ProgressionSuggestion(
         action: ProgressionAction.increase,
         lastWeightKg: lastWeight,
-        suggestedWeightKg: nextLbs / kKgToLbs,
+        suggestedWeightKg: unit.toKg(next),
         lastCompletedSets: _setsMeetingTarget(last, lastWeight, targetReps),
         lastTargetSets: targetSets,
         targetReps: targetReps,
@@ -200,11 +204,12 @@ class ProgressionEngine {
       final sameWeight = (prevWeight - lastWeight).abs() <= lastWeight * 0.02;
       if (sameWeight &&
           !_isSuccessful(prev, prevWeight, targetSets, targetReps)) {
-        final deloadLbs = roundLbs(lastWeight * kKgToLbs * deloadFactor);
+        final deload =
+            unit.roundToPlates(unit.fromKg(lastWeight) * deloadFactor);
         return ProgressionSuggestion(
           action: ProgressionAction.deload,
           lastWeightKg: lastWeight,
-          suggestedWeightKg: deloadLbs / kKgToLbs,
+          suggestedWeightKg: unit.toKg(deload),
           lastCompletedSets: _setsMeetingTarget(last, lastWeight, targetReps),
           lastTargetSets: targetSets,
           targetReps: targetReps,

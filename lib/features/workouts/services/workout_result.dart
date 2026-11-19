@@ -79,8 +79,8 @@ class WorkoutResult {
         // Por tiempo no suma repeticiones (ni volumen sin peso)
         final r = e.isTimed ? 0 : (reps[i]?[j] ?? e.reps);
         totalReps += r;
-        // Peso anotado; si no, el que indicó el entrenador (lbs → kg)
-        final w = weightsKg[i]?[j] ?? (e.weight > 0 ? e.weight / 2.20462 : 0.0);
+        // Peso anotado; si no, el que indicó el entrenador (en kg)
+        final w = weightsKg[i]?[j] ?? e.weightKg;
         if (w > 0 && !e.isTimed) {
           volume += w * r;
           if (best == null ||

@@ -1,5 +1,6 @@
 ﻿import 'dart:io';
 import '../widgets/exercise_library.dart';
+import '../services/exercise_library_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
@@ -643,6 +644,8 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
   final ImagePicker _picker = ImagePicker();
   XFile? _videoFile;
   String? _videoUrl;
+  /// El video vino de la biblioteca (no se vuelve a guardar allí).
+  bool _videoFromLibrary = false;
   bool _isUploadingVideo = false;
 
   @override
@@ -689,6 +692,20 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
     super.dispose();
   }
 
+  Future<void> _pickFromLibrary() async {
+    final picked = await showLibraryVideoPicker(context);
+    if (picked == null || !mounted) return;
+    setState(() {
+      _videoFile = null;
+      _videoUrl = picked.mediaUrl;
+      _videoFromLibrary = true;
+      if (_descController.text.trim().isEmpty && picked.instructions != null) {
+        _descController.text = picked.instructions!;
+        _showDescription = true;
+      }
+    });
+  }
+
   Future<void> _pickVideo() async {
     try {
       final XFile? video = await _picker.pickVideo(
@@ -700,6 +717,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
         setState(() {
           _videoFile = video;
           _videoUrl = null; // Clear existing URL
+          _videoFromLibrary = false;
         });
       }
     } catch (e) {
@@ -784,6 +802,14 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
       // Conservar el modo por tiempo (se cambia en el editor rápido)
       durationSeconds: widget.exercise?.durationSeconds ?? 0,
     );
+
+    // Video nuevo: queda en la biblioteca del gimnasio para reutilizarlo
+    final url = _videoUrl ?? '';
+    if (url.isNotEmpty &&
+        !_videoFromLibrary &&
+        url != (widget.exercise?.videoUrl ?? '')) {
+      ExerciseLibraryService.instance.saveFromExercise(newExercise);
+    }
 
     widget.onSave(newExercise);
     Navigator.pop(context);
@@ -954,14 +980,25 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
 
               if (_videoFile == null &&
                   (_videoUrl == null || _videoUrl!.isEmpty))
-                OutlinedButton.icon(
-                  onPressed: _pickVideo,
-                  icon: const Icon(Icons.upload_file),
-                  label: Text(l10n.selectVideo),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 40),
+                Column(children: [
+                  OutlinedButton.icon(
+                    onPressed: _pickVideo,
+                    icon: const Icon(Icons.upload_file),
+                    label: Text(l10n.selectVideo),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 44),
+                    ),
                   ),
-                )
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: _pickFromLibrary,
+                    icon: const Icon(Icons.video_library_outlined),
+                    label: const Text('Elegir de la biblioteca'),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 44),
+                    ),
+                  ),
+                ])
               else if (_videoFile != null)
                 Column(
                   children: [
@@ -1041,9 +1078,15 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                         ),
                       ),
                       IconButton(
- tooltip: 'Editar',
-                        icon: Icon(Icons.edit,
-                            size: 18, color: Colors.blue),
+                        tooltip: 'Elegir de la biblioteca',
+                        icon: Icon(Icons.video_library_outlined,
+                            size: 20, color: AppColors.primaryText),
+                        onPressed: _pickFromLibrary,
+                      ),
+                      IconButton(
+                        tooltip: 'Subir otro video',
+                        icon: Icon(Icons.upload_file,
+                            size: 20, color: AppColors.primaryText),
                         onPressed: _pickVideo,
                       ),
                     ],

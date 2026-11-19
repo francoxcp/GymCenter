@@ -339,6 +339,7 @@ class WorkoutProvider extends ChangeNotifier {
                   'video_url': entry.value.videoUrl,
                   // Peso sugerido por el entrenador (antes no se guardaba)
                   'weight_kg': entry.value.weightKgForDb,
+                  'weight_unit': entry.value.weightUnit.name,
                   'superset_group': entry.value.supersetGroup,
                   'group_kind': entry.value.supersetGroup == null
                       ? null
@@ -439,6 +440,7 @@ class WorkoutProvider extends ChangeNotifier {
                   'video_url': entry.value.videoUrl,
                   // Peso sugerido por el entrenador (antes no se guardaba)
                   'weight_kg': entry.value.weightKgForDb,
+                  'weight_unit': entry.value.weightUnit.name,
                   'superset_group': entry.value.supersetGroup,
                   'group_kind': entry.value.supersetGroup == null
                       ? null

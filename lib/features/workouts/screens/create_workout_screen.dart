@@ -1,6 +1,8 @@
 ﻿import 'dart:io';
 import '../widgets/exercise_library.dart';
 import '../services/exercise_library_service.dart';
+import '../../../core/utils/weight_units.dart';
+import '../../../shared/widgets/weight_unit_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
@@ -651,7 +653,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                             ),
                             Text(
                               '${span != null ? '' : '${exercise.sets} series · '}${exercise.amountLabel}'
-                              '${exercise.weight > 0 ? ' · ${exercise.weight.toStringAsFixed(0)} lbs' : ''}'
+                              '${exercise.weightLabel != null ? ' · ${exercise.weightLabel}' : ''}'
                               ' · toca para ajustar',
                               style: TextStyle(
                                   color: AppColors.textSecondary),
@@ -721,6 +723,7 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
   final _repsController = TextEditingController(text: '12');
   final _restController = TextEditingController(text: '60');
   final _weightController = TextEditingController(text: '');
+  WeightUnit _weightUnit = WeightUnit.lbs;
 
   final String _selectedMuscleGroup = 'General';
 
@@ -840,7 +843,8 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
       muscleGroup: _selectedMuscleGroup,
       difficulty: 'Intermedio',
       description: _videoFromLibrary ? _libraryInstructions : null,
-      weight: double.tryParse(_weightController.text.trim()) ?? 0,
+      weight: double.tryParse(_weightController.text.trim().replaceAll(',', '.')) ?? 0,
+      weightUnit: _weightUnit,
       videoUrl: _videoUrl ?? '',
       thumbnailUrl: '',
     );
@@ -989,23 +993,40 @@ class _AddExerciseDialogState extends State<_AddExerciseDialog> {
                   },
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
-                  controller: _weightController,
-                  decoration: InputDecoration(
-                    labelText: AppL10n.of(context).weightLbs,
-                    hintText: AppL10n.of(context).weightLbsHint,
-                    suffixText: 'kg',
-                  ),
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  validator: (value) {
-                    if (value != null && value.isNotEmpty) {
-                      if (double.tryParse(value) == null) {
-                        return AppL10n.of(context).invalidNumber;
-                      }
-                    }
-                    return null;
-                  },
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _weightController,
+                        decoration: InputDecoration(
+                          labelText: AppL10n.of(context).weightSuggested,
+                          hintText: AppL10n.of(context).weightLbsHint,
+                          suffixText: _weightUnit.label,
+                        ),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        validator: (value) {
+                          if (value != null && value.isNotEmpty) {
+                            if (double.tryParse(value.replaceAll(',', '.')) ==
+                                null) {
+                              return AppL10n.of(context).invalidNumber;
+                            }
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: WeightUnitToggle(
+                        dense: true,
+                        unit: _weightUnit,
+                        onChanged: (u) => setState(() => _weightUnit = u),
+                      ),
+                    ),
+                  ],
                 ),
 
                 // Video upload section - Solo para admins

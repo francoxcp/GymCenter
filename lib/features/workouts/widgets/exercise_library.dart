@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/exercise_media.dart';
+import '../../../core/utils/weight_units.dart';
+import '../../../shared/widgets/weight_unit_toggle.dart';
 import '../models/exercise.dart';
 import '../services/exercise_library_service.dart';
 
@@ -482,6 +484,7 @@ class _QuickEditorState extends State<_QuickEditor> {
   late int reps = widget.exercise.reps;
   late int rest = widget.exercise.restSeconds;
   late double weight = widget.exercise.weight;
+  late WeightUnit unit = widget.exercise.weightUnit;
   // Por tiempo (p. ej. plancha o funcionales): segundos de trabajo
   late bool timed = widget.exercise.isTimed;
   late int seconds =
@@ -589,9 +592,20 @@ class _QuickEditorState extends State<_QuickEditor> {
                 () => setState(() => rest = (rest + 15).clamp(0, 600))),
             _row(
                 'Peso',
-                weight <= 0 ? '—' : '${weight.toStringAsFixed(0)} lbs',
-                () => setState(() => weight = (weight - 5).clamp(0, 1000)),
-                () => setState(() => weight = (weight + 5).clamp(0, 1000))),
+                weight <= 0 ? '—' : unit.format(weight),
+                () => setState(
+                    () => weight = (weight - unit.step).clamp(0, 1000)),
+                () => setState(
+                    () => weight = (weight + unit.step).clamp(0, 1000))),
+            Align(
+              alignment: Alignment.centerRight,
+              child: WeightUnitToggle(
+                dense: true,
+                unit: unit,
+                // Solo cambia la unidad: el número es el del equipo
+                onChanged: (u) => setState(() => unit = u),
+              ),
+            ),
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () => Navigator.pop(
@@ -601,6 +615,7 @@ class _QuickEditorState extends State<_QuickEditor> {
                   reps: reps,
                   restSeconds: rest,
                   weight: weight,
+                  weightUnit: unit,
                   durationSeconds: timed ? seconds : 0,
                 ),
               ),
@@ -634,6 +649,7 @@ Exercise duplicateExercise(Exercise e) => Exercise(
       muscleGroup: e.muscleGroup,
       difficulty: e.difficulty,
       weight: e.weight,
+      weightUnit: e.weightUnit,
       durationSeconds: e.durationSeconds,
     );
 

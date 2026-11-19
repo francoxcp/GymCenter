@@ -28,6 +28,8 @@ import '../../../shared/services/unsaved_changes_guard.dart';
 import '../../../shared/services/offline_cache_service.dart';
 import '../../../shared/services/offline_sync_queue.dart';
 import '../services/progression_engine.dart';
+import '../../../core/utils/weight_units.dart';
+import '../../../shared/widgets/weight_unit_toggle.dart';
 import '../widgets/record_celebration.dart';
 import '../services/workout_result.dart';
 
@@ -97,6 +99,10 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
 
   // PR histórico por ejercicio (max weight ever logged)
   Map<int, double> _exercisePRs = {};
+  /// Unidad elegida por el socio para un ejercicio (por id), si la cambió
+  /// en el registro de peso. Se recuerda en el dispositivo.
+  final Map<String, WeightUnit> _unitChoice = {};
+  bool _unitChoiceLoaded = false;
   // Repeticiones REALES por serie: [exerciseIndex][setIndex] → reps
   final Map<int, Map<int, int>> _setReps = {};
   // Historial completo por ejercicio (para la progresión inteligente)
@@ -479,6 +485,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     final userId = authProvider.currentUser?.id;
     if (effectiveId != null && userId != null) {
       unawaited(_loadLastWeights(workoutId: effectiveId, userId: userId));
+      unawaited(_loadUnitChoices());
     }
 
     // Rutina extra (p. ej. la propia del entrenador): no hay progreso en la
@@ -926,8 +933,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         showRecordCelebration(
           context,
           exerciseName: name,
-          weightLabel: _fmtWeight(autoWeight),
-          previousLabel: _fmtWeight(prevPr),
+          weightLabel: _fmtWeight(autoWeight, exerciseIndex),
+          previousLabel: _fmtWeight(prevPr, exerciseIndex),
         );
       }
     }
@@ -1607,16 +1614,61 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     }
   }
 
-  // Internamente los pesos se almacenan en kg; la UI los muestra en lbs.
-  static const double _kgToLbs = 2.20462;
-  static double _toLbs(double kg) => kg * _kgToLbs;
-  static double _toKg(double lbs) => lbs / _kgToLbs;
+  // Internamente los pesos se almacenan en kg; la UI los muestra en la
+  // unidad del ejercicio (lbs o kg).
+  static const _unitPrefPrefix = 'weight_unit_';
 
-  String _fmtWeight(double kg) {
-    final lbs = _toLbs(kg);
-    return lbs == lbs.roundToDouble()
-        ? '${lbs.toInt()} lbs'
-        : '${lbs.toStringAsFixed(1)} lbs';
+  Exercise? _exerciseAt(int exerciseIndex) {
+    final id = widget.extraWorkoutId ??
+        context.read<AuthProvider>().currentUser?.assignedWorkoutId;
+    final w = id != null ? context.read<WorkoutProvider>().getWorkoutById(id) : null;
+    if (w == null || exerciseIndex >= w.exercises.length) return null;
+    return w.exercises[exerciseIndex];
+  }
+
+  /// Unidad con la que se muestra y anota el peso de un ejercicio.
+  WeightUnit _unitAt(int exerciseIndex) {
+    final e = _exerciseAt(exerciseIndex);
+    if (e == null) return WeightUnit.lbs;
+    return _unitChoice[e.id] ?? e.weightUnit;
+  }
+
+  Future<void> _loadUnitChoices() async {
+    if (_unitChoiceLoaded) return;
+    _unitChoiceLoaded = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final found = <String, WeightUnit>{};
+      for (final k in prefs.getKeys()) {
+        if (!k.startsWith(_unitPrefPrefix)) continue;
+        found[k.substring(_unitPrefPrefix.length)] =
+            WeightUnit.parse(prefs.getString(k));
+      }
+      if (found.isNotEmpty && mounted) {
+        setState(() => _unitChoice.addAll(found));
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _setUnitChoice(Exercise e, WeightUnit unit) async {
+    if (e.id.isEmpty) return;
+    setState(() => _unitChoice[e.id] = unit);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (unit == e.weightUnit) {
+        await prefs.remove('$_unitPrefPrefix${e.id}');
+      } else {
+        await prefs.setString('$_unitPrefPrefix${e.id}', unit.name);
+      }
+    } catch (_) {}
+  }
+
+  String _fmtWeight(double kg, int exerciseIndex) =>
+      _unitAt(exerciseIndex).formatKg(kg);
+
+  static String _numText(double v) {
+    final r = (v * 10).round() / 10;
+    return r == r.roundToDouble() ? r.toInt().toString() : r.toStringAsFixed(1);
   }
 
   void _showWeightDialog(int exerciseIndex, int setIndex, Exercise exercise) {
@@ -1625,18 +1677,16 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     final lastSessionWeight = _lastSessionWeights[exerciseIndex]?[setIndex];
     final currentWeight = _setWeights[exerciseIndex]?[setIndex];
     final pr = _exercisePRs[exerciseIndex];
-    final adminWeight = exercise.weight > 0 ? exercise.weight : null;
+    final adminWeightKg = exercise.weight > 0 ? exercise.weightKg : null;
 
     // Pre-rellenar: peso ya ingresado en esta sesión > último de esta serie > vacío
     final suggestion = currentWeight ??
         lastSessionWeight ??
         _autoWeightFor(exerciseIndex, setIndex);
-    final suggestionLbs = suggestion != null ? _toLbs(suggestion) : null;
-    final suggestionText = suggestionLbs != null
-        ? (suggestionLbs == suggestionLbs.roundToDouble()
-            ? suggestionLbs.toInt().toString()
-            : suggestionLbs.toStringAsFixed(1))
-        : '';
+    // Unidad del ejercicio; el socio la puede cambiar en el registro
+    var unit = _unitAt(exerciseIndex);
+    final suggestionText =
+        suggestion != null ? _numText(unit.fromKg(suggestion)) : '';
 
     final controller = TextEditingController(text: suggestionText);
     // Repeticiones reales de esta serie (por defecto, las planificadas)
@@ -1645,18 +1695,18 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
     void saveWeight(String rawText, void Function() closeSheet,
         {bool bodyweight = false}) {
       if (bodyweight) rawText = '';
-      final inputLbs = double.tryParse(rawText.replaceAll(',', '.'));
-      if (rawText.trim().isNotEmpty && inputLbs == null) {
+      final input = double.tryParse(rawText.replaceAll(',', '.'));
+      if (rawText.trim().isNotEmpty && input == null) {
         AppSnackbar.error(context, AppL10n.of(context).enterValidNumber);
         return;
       }
-      if (inputLbs != null && inputLbs <= 0) {
+      if (input != null && input <= 0) {
         AppSnackbar.error(context, AppL10n.of(context).weightMustBePositive);
         return;
       }
       // 0 = peso corporal (cuenta como registrado, no como récord)
       final double? weight =
-          bodyweight ? 0.0 : (inputLbs != null ? _toKg(inputLbs) : null);
+          bodyweight ? 0.0 : (input != null ? unit.toKg(input) : null);
       final isNewPR =
           weight != null && weight > 0 && (pr == null || weight > pr);
       final alreadyCelebrated = _newPRsThisSession.contains(exerciseIndex);
@@ -1677,8 +1727,8 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         showRecordCelebration(
           context,
           exerciseName: exercise.name,
-          weightLabel: _fmtWeight(weight),
-          previousLabel: _fmtWeight(pr),
+          weightLabel: _fmtWeight(weight, exerciseIndex),
+          previousLabel: _fmtWeight(pr, exerciseIndex),
         );
       }
     }
@@ -1731,27 +1781,24 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                       if (lastSessionWeight != null)
                         _CompactRef(
                           icon: Icons.history,
-                          value: _fmtWeight(lastSessionWeight),
+                          value: _fmtWeight(lastSessionWeight, exerciseIndex),
                           color: AppColors.primaryText,
                         ),
                       if (pr != null && pr != lastSessionWeight) ...[
                         const SizedBox(width: 8),
                         _CompactRef(
                           icon: Icons.emoji_events,
-                          value: _fmtWeight(pr),
+                          value: _fmtWeight(pr, exerciseIndex),
                           color: Colors.amber,
                         ),
                       ],
-                      if (adminWeight != null &&
+                      if (adminWeightKg != null &&
                           lastSessionWeight == null &&
                           pr == null) ...[
                         const SizedBox(width: 8),
                         _CompactRef(
                           icon: Icons.fitness_center,
-                          // adminWeight ya está en lbs (ingresado por el admin)
-                          value: adminWeight == adminWeight.roundToDouble()
-                              ? '${adminWeight.toInt()} lbs'
-                              : '${adminWeight.toStringAsFixed(1)} lbs',
+                          value: _fmtWeight(adminWeightKg, exerciseIndex),
                           color: AppColors.textSecondary,
                         ),
                       ],
@@ -1760,7 +1807,12 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                 ),
                 const SizedBox(height: 20),
 
-                // Campo principal — grande, centrado, texto pre-seleccionado
+                // Campo principal — grande, centrado, texto pre-seleccionado.
+                // Debajo, la unidad (lbs/kg) según el equipo que se usa.
+                StatefulBuilder(
+                  builder: (ctxUnit, setUnitState) => Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: TextField(
@@ -1791,7 +1843,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         fontSize: 40,
                         fontWeight: FontWeight.bold,
                       ),
-                      suffixText: 'lbs',
+                      suffixText: unit.label,
                       suffixStyle: TextStyle(
                         color: AppColors.primaryText,
                         fontSize: 20,
@@ -1807,6 +1859,26 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                             BorderSide(color: AppColors.primaryText, width: 2),
                       ),
                     ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                WeightUnitToggle(
+                  unit: unit,
+                  onChanged: (u) {
+                    if (u == unit) return;
+                    // Mismo peso, expresado en la otra unidad
+                    final v = double.tryParse(
+                        controller.text.replaceAll(',', '.'));
+                    setUnitState(() {
+                      if (v != null && v > 0) {
+                        controller.text = _numText(u.fromKg(unit.toKg(v)));
+                      }
+                      unit = u;
+                    });
+                    _setUnitChoice(exercise, u);
+                  },
+                ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -1962,11 +2034,12 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
         targetReps: exercise.reps,
         lowerBody:
             ProgressionEngine.isLowerBody(exercise.muscleGroup, exercise.name),
+        unit: _unitAt(exerciseIndex),
       );
       if (s != null) return s.suggestedWeightKg;
     }
-    // 3. Peso indicado por el entrenador (en lbs)
-    if (exercise.weight > 0) return exercise.weight / kKgToLbs;
+    // 3. Peso indicado por el entrenador
+    if (exercise.weight > 0) return exercise.weightKg;
     return null;
   }
 
@@ -1984,12 +2057,13 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
       targetReps: exercise.reps,
       lowerBody: ProgressionEngine.isLowerBody(
           exercise.muscleGroup, exercise.name),
+      unit: _unitAt(exerciseIndex),
     );
     if (suggestion == null) return const SizedBox.shrink();
 
     final isEn = AppL10n.of(context).isEn;
-    final next = _fmtWeight(suggestion.suggestedWeightKg);
-    final last = _fmtWeight(suggestion.lastWeightKg);
+    final next = _fmtWeight(suggestion.suggestedWeightKg, exerciseIndex);
+    final last = _fmtWeight(suggestion.lastWeightKg, exerciseIndex);
     final done =
         '${suggestion.lastCompletedSets}/${suggestion.lastTargetSets}';
 
@@ -2186,7 +2260,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                             const Icon(Icons.emoji_events, color: Color(0xFFFFB800), size: 16),
                             const SizedBox(width: 4),
                             Text(
-                              _fmtWeight(_exercisePRs[exerciseIndex]!),
+                              _fmtWeight(_exercisePRs[exerciseIndex]!, exerciseIndex),
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -2259,7 +2333,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                                             ),
                                             child: Text(
                                               w != null
-                                                  ? '${_fmtWeight(w)}${r != null ? ' × $r' : ''}'
+                                                  ? '${_fmtWeight(w, exerciseIndex)}${r != null ? ' × $r' : ''}'
                                                   : '–',
                                               style: TextStyle(
                                                 fontSize: 12,
@@ -2274,7 +2348,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                                 ),
                                 if (maxW > 0)
                                   Text(
-                                    _fmtWeight(maxW),
+                                    _fmtWeight(maxW, exerciseIndex),
                                     style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
@@ -2980,7 +3054,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                   checked: isCompleted,
                   label: '${exercise.inSuperset ? 'Ronda' : 'Serie'} ${setIndex + 1}, '
                       '${isCompleted ? 'hecha' : 'pendiente'}'
-                      '${_setWeights[exerciseIndex]?[setIndex] == null ? ', sin peso' : _setWeights[exerciseIndex]![setIndex] == 0 ? ', peso corporal' : ', ${_fmtWeight(_setWeights[exerciseIndex]![setIndex]!)}'}',
+                      '${_setWeights[exerciseIndex]?[setIndex] == null ? ', sin peso' : _setWeights[exerciseIndex]![setIndex] == 0 ? ', peso corporal' : ', ${_fmtWeight(_setWeights[exerciseIndex]![setIndex]!, exerciseIndex)}'}',
                   onTapHint: isCompleted ? 'desmarcar' : 'marcar como hecha',
                   child: InkWell(
                   onTap: () => _toggleSet(exerciseIndex, setIndex),
@@ -3044,6 +3118,7 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
                         ),
                         const Spacer(),
                         _WeightChip(
+                          unit: _unitAt(exerciseIndex),
                           weight: _setWeights[exerciseIndex]?[setIndex],
                           suggested: isCompleted ||
                                   _isCardioExercise(exercise) ||
@@ -3228,6 +3303,7 @@ class _CompactRef extends StatelessWidget {
 }
 
 class _WeightChip extends StatelessWidget {
+  final WeightUnit unit;
   final double? weight;
   /// Peso sugerido (kg) que se usará al marcar la serie con un toque.
   final double? suggested;
@@ -3240,6 +3316,7 @@ class _WeightChip extends StatelessWidget {
   final VoidCallback onTap;
 
   const _WeightChip({
+    required this.unit,
     required this.weight,
     this.suggested,
     required this.reps,
@@ -3254,15 +3331,12 @@ class _WeightChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasWeight = weight != null;
     final shown = weight ?? suggested;
-    // weight está en kg internamente; mostrar en lbs
-    final lbs = shown != null ? shown * 2.20462 : null;
+    // weight está en kg internamente; se muestra en la unidad del ejercicio
     final weightLabel = shown == 0
         ? 'corporal'
-        : lbs != null
-        ? (lbs == lbs.roundToDouble()
-            ? '${lbs.toInt()} lbs'
-            : '${lbs.toStringAsFixed(1)} lbs')
-        : '+ peso';
+        : shown != null
+            ? unit.formatKg(shown)
+            : '+ peso';
 
     return Row(
       mainAxisSize: MainAxisSize.min,

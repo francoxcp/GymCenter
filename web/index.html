@@ -29,6 +29,8 @@
       background: #0A0A0A;
       overscroll-behavior: none;
       -webkit-tap-highlight-color: transparent;
+      /* La página no se desplaza: el scroll lo maneja Flutter */
+      overflow: hidden;
     }
     #gc-splash {
       position: fixed;
@@ -85,6 +87,7 @@
     <div class="bar"></div>
     <p>GYMLAB</p>
   </div>
+  <script src="ios_viewport_fix.js"></script>
   <script src="gc_bridge.js"></script>
   <script src="flutter_bootstrap.js" async></script>
 </body>

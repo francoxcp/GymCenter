@@ -6,7 +6,7 @@
 // - Recibe notificaciones Web Push enviadas por la Edge Function de Supabase.
 // - Al tocar una notificación, enfoca la app y navega a la ruta indicada.
 
-const CACHE = 'gymlab-app-v3';
+const CACHE = 'gymlab-app-v4';
 const FONT_CACHE = 'gymlab-fonts-v1';
 const NETWORK_TIMEOUT_MS = 4000;
 
@@ -17,6 +17,7 @@ const CORE = [
   'flutter_bootstrap.js',
   'main.dart.js',
   'gc_bridge.js',
+  'ios_viewport_fix.js',
   'manifest.json',
   'favicon.png',
   'icons/Icon-192.png',

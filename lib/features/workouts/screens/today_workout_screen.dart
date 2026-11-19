@@ -1618,14 +1618,6 @@ class _TodayWorkoutScreenState extends State<TodayWorkoutScreen>
   // unidad del ejercicio (lbs o kg).
   static const _unitPrefPrefix = 'weight_unit_';
 
-  Exercise? _exerciseAt(int exerciseIndex) {
-    final id = widget.extraWorkoutId ??
-        context.read<AuthProvider>().currentUser?.assignedWorkoutId;
-    final w = id != null ? context.read<WorkoutProvider>().getWorkoutById(id) : null;
-    if (w == null || exerciseIndex >= w.exercises.length) return null;
-    return w.exercises[exerciseIndex];
-  }
-
   /// Unidad con la que se muestra y anota el peso de un ejercicio.
   WeightUnit _unitAt(int exerciseIndex) {
     final e = _exerciseAt(exerciseIndex);

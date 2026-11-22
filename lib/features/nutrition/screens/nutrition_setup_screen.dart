@@ -264,7 +264,7 @@ class _NutritionSetupFormState extends State<NutritionSetupForm> {
           onPlus: () => setState(() => _age = (_age + 1).clamp(12, 99)),
         ),
         const SizedBox(height: 8),
-        _Label('Sexo'),
+        const _Label('Sexo'),
         _Segmented<String>(
           values: const ['male', 'female', 'other'],
           labels: const ['Hombre', 'Mujer', 'Otro'],
@@ -272,7 +272,7 @@ class _NutritionSetupFormState extends State<NutritionSetupForm> {
           onSelect: (v) => setState(() => _sex = v),
         ),
         const SizedBox(height: 24),
-        _Label('Objetivo'),
+        const _Label('Objetivo'),
         const _Why('Define si comes un poco más, igual o un poco menos.'),
         const SizedBox(height: 8),
         _Choice(

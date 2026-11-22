@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gymlab/features/nutrition/data/foods.dart';
-import 'package:gymlab/features/nutrition/data/meal_catalog.dart';
 import 'package:gymlab/features/nutrition/services/meal_scaler.dart';
 import 'package:gymlab/features/nutrition/services/nutrition_calculator.dart';
 

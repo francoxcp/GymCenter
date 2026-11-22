@@ -13,6 +13,7 @@ import '../../features/auth/screens/register_screen.dart';
 import '../../features/auth/screens/forgot_password_screen.dart';
 import '../../features/auth/screens/reset_password_link_screen.dart';
 import '../../features/home/screens/home_screen.dart';
+import '../../features/nutrition/screens/nutrition_screen.dart';
 import '../../features/workouts/screens/workout_list_screen.dart';
 import '../../features/workouts/screens/today_workout_screen.dart';
 import '../../features/workouts/screens/workout_detail_readonly_screen.dart';
@@ -342,7 +343,7 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           ),
           GoRoute(
             path: '/comida',
-            builder: (context, state) => const SizedBox.shrink(),
+            builder: (context, state) => const NutritionScreen(),
           ),
           GoRoute(
             path: '/chat',

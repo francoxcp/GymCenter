@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gymlab/features/nutrition/models/nutrition_profile.dart';
 import 'package:gymlab/features/nutrition/services/nutrition_calculator.dart';
 
 NutritionProfile p({
@@ -89,7 +88,7 @@ void main() {
     final seven = computeTargets(p(act: ActivityLevel.physical, days: 7)).kcal;
     expect(seven, six);
     // physical 1,55 + 0,21 = 1,76 < 1,9; con 1,9 de tope no se supera
-    final bmr = 10 * 70 + 6.25 * 170 - 5 * 30 + 5;
+    const bmr = 10 * 70 + 6.25 * 170 - 5 * 30 + 5;
     expect(six, lessThanOrEqualTo(bmr * 1.9 + 50));
   });
 

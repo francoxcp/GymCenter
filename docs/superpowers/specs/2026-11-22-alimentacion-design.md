@@ -82,10 +82,16 @@ Paso 3 — **Lo que no comes** (multi): Lácteos · Huevo · Mariscos y pescado 
 Carne roja · Cerdo. **Comidas al día**: 3 · 4 · 5. Texto: "Para no recomendarte
 lo que no puedes o no quieres comer" / "Repartimos tu plan en esas comidas".
 
-Mapeo del objetivo existente (`users.goal` del registro): `lose_weight → bajar
-grasa`, `gain_muscle → subir masa`, `maintain` e `improve_health → mantener`.
-Si el socio cambia el objetivo en el cuestionario, se guarda en `users.goal`
-con el valor equivalente.
+Mapeo del objetivo existente (`users.goal` guarda las etiquetas de `kGoals` en
+`lib/features/auth/models/user.dart`): 'Perder peso' → bajar grasa, 'Ganar
+músculo' → subir masa, 'Mantener peso' y 'Mejorar salud' → mantener. Si el
+socio cambia el objetivo, se guarda la etiqueta equivalente; confirmar
+"mantener" no sobrescribe 'Mejorar salud'.
+
+Peso (decisión del builder): se usa la medida más reciente de
+`body_measurements` y, si no hay, `users.weight_kg`. Si el socio edita su peso
+en el paso 1, se guarda en `users.weight_kg` **y** como medida nueva, para que
+no lo pise una medida vieja y aparezca en Progreso.
 
 Días de entreno por semana: se leen de `user_workout_schedule` (días distintos
 con rutina). Sin plan semanal: 3.

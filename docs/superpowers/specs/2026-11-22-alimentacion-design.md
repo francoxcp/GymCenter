@@ -1,6 +1,6 @@
 # Alimentación tica para el socio — diseño
 
-Fecha: 2026-11-22 · Estado: borrador para aprobación
+Fecha: 2026-11-22 · Estado: listo para aprobación
 
 ## Intención
 
@@ -54,6 +54,7 @@ en la cabecera de la pantalla Hoy.
 - Cuestionario de 3 pasos (abajo) basta.
 - Variedad: el socio **elige** entre opciones en cada comida.
 - Recetario dentro de la app (enfoque 1).
+- Menores de 18: solo mantener o subir masa suave (+5 %), con aviso.
 
 ## Navegación
 
@@ -124,6 +125,15 @@ Plan sin conexión: las respuestas también se guardan en el dispositivo.
    4 → 25 · 35 · merienda 10 · 30;
    5 → 25 · merienda AM 10 · 30 · merienda PM 10 · 25.
    La proteína se reparte igual que las kcal.
+
+### Menores de 18 años (decisión del dueño: opción A)
+
+- Sin "bajar grasa": el objetivo se trata como mantener (×1,00) y esa opción no
+  aparece en el cuestionario.
+- "Subir masa" limitado a ×1,05.
+- Aviso fijo: "A tu edad, consulta con un nutricionista y tu encargado antes de
+  cambiar tu alimentación".
+- Ven la sección y todas las opciones de comida igual que un adulto.
 
 ## Recetario (lib/features/nutrition/data/)
 
@@ -203,7 +213,8 @@ Guía orientativa; no reemplaza a un nutricionista.
 
 ## Pruebas
 
-- Unitarias: cálculo (casos hombre/mujer/otro, pisos de seguridad, topes),
+- Unitarias: cálculo (casos hombre/mujer/otro, pisos de seguridad, topes,
+  menores de 18 sin déficit),
   reparto por comidas, escalado y redondeo, filtro de exclusiones, coherencia
   del catálogo (todo ingrediente existe, kcal base > 0, ≥3 opciones por tiempo
   sin exclusiones).

@@ -77,13 +77,12 @@ final _workoutsTab = NavTabSpec(
   prefixes: const [..._workoutPrefixes, '/admin/create-workout'],
 );
 
-final _memberChatTab = NavTabSpec(
-  path: '/chat',
-  icon: Icons.chat_bubble_outline,
-  activeIcon: Icons.chat_bubble,
-  label: (_) => 'Chat',
-  prefixes: const ['/chat'],
-  badge: ChatService.unread,
+final _nutritionTab = NavTabSpec(
+  path: '/comida',
+  icon: Icons.restaurant_outlined,
+  activeIcon: Icons.restaurant,
+  label: (_) => 'Comida',
+  prefixes: const ['/comida'],
 );
 
 final _trainerChatsTab = NavTabSpec(
@@ -116,6 +115,7 @@ final List<NavTabSpec> memberTabs = [
       '/personal-records',
     ],
   ),
+  _nutritionTab,
   _profileTab,
 ];
 
@@ -170,12 +170,9 @@ final List<NavTabSpec> platformOwnerTabs = [
 ];
 
 /// Socio con entrenador: Hoy · Progreso · Chat · Perfil.
-final List<NavTabSpec> memberWithTrainerTabs = [
-  memberTabs[0],
-  memberTabs[1],
-  _memberChatTab,
-  memberTabs[2],
-];
+/// El chat del socio está en la cabecera de Hoy; las pestañas son las mismas
+/// con o sin entrenador.
+final List<NavTabSpec> memberWithTrainerTabs = memberTabs;
 
 List<NavTabSpec> tabsFor(NavRole role,
         {bool hasTrainer = false, bool isPlatformAdmin = false}) =>

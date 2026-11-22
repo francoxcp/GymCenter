@@ -341,6 +341,10 @@ GoRouter createAppRouter(AuthProvider authProvider) {
             builder: (context, state) => const NotificationsScreen(),
           ),
           GoRoute(
+            path: '/comida',
+            builder: (context, state) => const SizedBox.shrink(),
+          ),
+          GoRoute(
             path: '/chat',
             builder: (context, state) => const MemberChatScreen(),
           ),

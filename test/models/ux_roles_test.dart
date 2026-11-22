@@ -30,12 +30,14 @@ User _u(String id,
 
 void main() {
   group('pestañas por rol', () {
-    test('socio: Hoy · Progreso · Perfil', () {
-      expect(memberTabs.map((t) => t.path), ['/home', '/progress', '/profile']);
+    test('socio: Hoy · Progreso · Comida · Perfil', () {
+      expect(memberTabs.map((t) => t.path),
+          ['/home', '/progress', '/comida', '/profile']);
       expect(tabIndexFor(memberTabs, '/today-workout'), 0);
       expect(tabIndexFor(memberTabs, '/workout-detail/abc'), 0);
       expect(tabIndexFor(memberTabs, '/achievements'), 1);
-      expect(tabIndexFor(memberTabs, '/settings'), 2);
+      expect(tabIndexFor(memberTabs, '/comida'), 2);
+      expect(tabIndexFor(memberTabs, '/settings'), 3);
     });
 
     test('entrenador: /admin/members no cae en Hoy', () {

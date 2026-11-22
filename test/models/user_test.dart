@@ -138,4 +138,38 @@ void main() {
       expect(user.assignedWorkoutId, isNull);
     });
   });
+
+  group('perfil alimentario', () {
+    test('fromJson lee actividad, exclusiones y comidas al día', () {
+      final u = User.fromJson({
+        'id': 'u1',
+        'email': 'a@b.c',
+        'name': 'Ana',
+        'activity_level': 'standing',
+        'food_avoid': ['egg', 'dairy'],
+        'meals_per_day': 4,
+      });
+      expect(u.activityLevel, 'standing');
+      expect(u.foodAvoid, ['egg', 'dairy']);
+      expect(u.mealsPerDay, 4);
+    });
+
+    test('food_avoid nulo queda como lista vacía', () {
+      final u = User.fromJson({'id': 'u1', 'email': 'a@b.c', 'name': 'Ana'});
+      expect(u.foodAvoid, isEmpty);
+      expect(u.activityLevel, isNull);
+      expect(u.mealsPerDay, isNull);
+    });
+
+    test('toJson y copyWith conservan los campos', () {
+      final u = User.fromJson({'id': 'u1', 'email': 'a@b.c', 'name': 'Ana'})
+          .copyWith(
+              activityLevel: 'physical', foodAvoid: ['pork'], mealsPerDay: 5);
+      final j = u.toJson();
+      expect(j['activity_level'], 'physical');
+      expect(j['food_avoid'], ['pork']);
+      expect(j['meals_per_day'], 5);
+      expect(User.fromJson(j).mealsPerDay, 5);
+    });
+  });
 }

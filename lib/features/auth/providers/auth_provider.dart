@@ -11,6 +11,8 @@ import '../../../core/constants/app_constants.dart';
 import '../../../shared/services/offline_cache_service.dart';
 import '../../../shared/services/web_push_service.dart';
 import '../../chat/chat_service.dart';
+import '../../nutrition/services/nutrition_calculator.dart';
+import '../../nutrition/services/nutrition_prefs.dart';
 import '../../../shared/services/offline_sync_queue.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -450,6 +452,50 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error clearing session data: $e');
+    }
+  }
+
+  /// Guarda el cuestionario de alimentación. Sin conexión, queda en el
+  /// dispositivo y el plan se muestra igual (no lanza).
+  Future<void> saveNutritionProfile({
+    required double weightKg,
+    required int heightCm,
+    required int age,
+    required String sex,
+    required NutritionGoal goal,
+    required ActivityLevel activity,
+    required Set<String> avoid,
+    required int mealsPerDay,
+  }) async {
+    final user = _currentUser;
+    if (user == null) return;
+    final goalLabel = goalToLabel(goal, current: user.goal);
+    final data = <String, dynamic>{
+      'weight_kg': weightKg,
+      'height_cm': heightCm,
+      'age': age,
+      'sex': sex,
+      'goal': goalLabel,
+      'activity_level': activity.db,
+      'food_avoid': avoid.toList(),
+      'meals_per_day': mealsPerDay,
+    };
+    _currentUser = user.copyWith(
+      weightKg: weightKg,
+      heightCm: heightCm,
+      age: age,
+      sex: sex,
+      goal: goalLabel,
+      activityLevel: activity.db,
+      foodAvoid: avoid.toList(),
+      mealsPerDay: mealsPerDay,
+    );
+    notifyListeners();
+    await NutritionPrefs.save(user.id, data);
+    try {
+      await SupabaseConfig.client.from('users').update(data).eq('id', user.id);
+    } catch (e) {
+      debugPrint('Perfil alimentario guardado solo en el dispositivo: $e');
     }
   }
 

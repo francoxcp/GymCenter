@@ -54,6 +54,11 @@ class User {
   final double? weightKg;  // kg
   final int? heightCm;     // centimetros
   final String? sex;       // 'male' | 'female' | 'other'
+
+  // Plan de alimentación
+  final String? activityLevel; // 'sedentary' | 'standing' | 'physical'
+  final List<String> foodAvoid; // dairy, egg, seafood, red_meat, pork
+  final int? mealsPerDay; // 3 a 5
   // Entrenador asignado (socios) y código para vincular socios (personal)
   final String? trainerId;
   final String? trainerCode;
@@ -88,6 +93,9 @@ class User {
     this.weightKg,
     this.heightCm,
     this.sex,
+    this.activityLevel,
+    this.foodAvoid = const [],
+    this.mealsPerDay,
     this.trainerId,
     this.trainerCode,
     this.orgId,
@@ -121,6 +129,9 @@ class User {
     Object? weightKg = _sentinel,
     Object? heightCm = _sentinel,
     Object? sex = _sentinel,
+    Object? activityLevel = _sentinel,
+    List<String>? foodAvoid,
+    Object? mealsPerDay = _sentinel,
     Object? trainerId = _sentinel,
     Object? trainerCode = _sentinel,
     Object? membershipPlan = _sentinel,
@@ -144,6 +155,12 @@ class User {
       weightKg: weightKg == _sentinel ? this.weightKg : weightKg as double?,
       heightCm: heightCm == _sentinel ? this.heightCm : heightCm as int?,
       sex: sex == _sentinel ? this.sex : sex as String?,
+      activityLevel: activityLevel == _sentinel
+          ? this.activityLevel
+          : activityLevel as String?,
+      foodAvoid: foodAvoid ?? this.foodAvoid,
+      mealsPerDay:
+          mealsPerDay == _sentinel ? this.mealsPerDay : mealsPerDay as int?,
       trainerId:
           trainerId == _sentinel ? this.trainerId : trainerId as String?,
       trainerCode:
@@ -179,6 +196,11 @@ class User {
       weightKg: (json['weight_kg'] as num?)?.toDouble(),
       heightCm: json['height_cm'] as int?,
       sex: json['sex'] as String?,
+      activityLevel: json['activity_level'] as String?,
+      foodAvoid: [
+        for (final v in (json['food_avoid'] as List?) ?? const []) '$v',
+      ],
+      mealsPerDay: (json['meals_per_day'] as num?)?.toInt(),
       trainerId: json['trainer_id'] as String?,
       trainerCode: json['trainer_code'] as String?,
       orgId: json['org_id'] as String?,
@@ -205,6 +227,9 @@ class User {
       'weight_kg': weightKg,
       'height_cm': heightCm,
       'sex': sex,
+      'activity_level': activityLevel,
+      'food_avoid': foodAvoid,
+      'meals_per_day': mealsPerDay,
       'trainer_id': trainerId,
       'trainer_code': trainerCode,
       'org_id': orgId,

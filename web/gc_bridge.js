@@ -388,3 +388,18 @@
     },
   };
 })();
+
+// iPhone (app instalada): si iOS desplaza la página por debajo de Flutter
+// (al abrir/cerrar el teclado o girar), los toques llegan corridos y los
+// botones "no responden". Se devuelve la página a su lugar.
+(function () {
+  function reset() {
+    if (window.scrollX || window.scrollY) window.scrollTo(0, 0);
+  }
+  window.addEventListener('focusout', function () { setTimeout(reset, 50); });
+  window.addEventListener('orientationchange', function () { setTimeout(reset, 300); });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', reset);
+  }
+  window.addEventListener('scroll', reset, { passive: true });
+})();

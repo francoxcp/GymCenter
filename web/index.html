@@ -94,20 +94,6 @@
     <p>GYMLAB</p>
   </div>
   <script src="gc_bridge.js"></script>
-  <script>
-    // Devuelve la página a su lugar si iOS la desplazó (teclado, giro).
-    (function () {
-      function reset() {
-        if (window.scrollX || window.scrollY) window.scrollTo(0, 0);
-      }
-      window.addEventListener('focusout', function () { setTimeout(reset, 50); });
-      window.addEventListener('orientationchange', function () { setTimeout(reset, 300); });
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', reset);
-      }
-      window.addEventListener('scroll', reset, { passive: true });
-    })();
-  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

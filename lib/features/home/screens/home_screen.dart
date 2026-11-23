@@ -2,6 +2,7 @@
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../chat/widgets/chat_header_button.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/models/user.dart';
@@ -202,6 +203,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
+                    // Chat con el entrenador (antes era una pestaña)
+                    if (currentUser.trainerId != null) const ChatHeaderButton(),
                   ],
                 ),
 

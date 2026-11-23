@@ -53,11 +53,11 @@ void main() {
     expect(dayLabel(DateTime(2026, 10, 1), now: now), '1/10');
   });
 
-  test('el socio con entrenador tiene pestaña Chat', () {
-    final tabs = tabsFor(NavRole.member, hasTrainer: true);
-    expect(tabs.map((t) => t.path), ['/home', '/progress', '/chat', '/profile']);
-    expect(tabIndexFor(tabs, '/chat'), 2);
-    expect(tabsFor(NavRole.member).any((t) => t.path == '/chat'), isFalse);
+  test('socio con y sin entrenador tienen Comida en lugar de Chat', () {
+    expect(tabsFor(NavRole.member, hasTrainer: true).map((t) => t.path),
+        ['/home', '/progress', '/comida', '/profile']);
+    expect(tabsFor(NavRole.member).map((t) => t.path),
+        ['/home', '/progress', '/comida', '/profile']);
     expect(trainerTabs.map((t) => t.path), contains('/chats'));
   });
 }

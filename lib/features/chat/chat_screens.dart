@@ -48,8 +48,14 @@ class _MemberChatScreenState extends State<MemberChatScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        automaticallyImplyLeading: false,
-        titleSpacing: 20,
+        // El chat se abre desde la cabecera de Hoy: siempre hay salida
+        // (en la PWA de iPhone no existe el atrás del navegador).
+        leading: IconButton(
+          tooltip: 'Volver',
+          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => context.popOrGo('/home'),
+        ),
+        titleSpacing: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

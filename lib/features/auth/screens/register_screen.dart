@@ -103,6 +103,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _showError(AppL10n.of(context).passwordNeedsSpecial);
       return;
     }
+    if (AppValidators.isCommonPassword(password, email: email)) {
+      _showError(AppValidators.commonPasswordMessage);
+      return;
+    }
 
     // Validar que coincidan
     if (password != confirmPassword) {

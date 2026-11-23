@@ -709,6 +709,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         setDialogState(() => error = nameError);
                         return;
                       }
+                      if (AppValidators.isCommonPassword(passCtrl.text,
+                          email: emailCtrl.text)) {
+                        setDialogState(() =>
+                            error = AppValidators.commonPasswordMessage);
+                        return;
+                      }
                       setDialogState(() {
                         saving = true;
                         error = null;

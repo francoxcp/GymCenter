@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/utils/app_validators.dart';
 import '../../config/supabase_config.dart';
 
 /// Servicio para gestionar funciones de seguridad de la cuenta
@@ -225,6 +226,14 @@ class SecurityService {
       return {
         'isValid': false,
         'message': 'password_needs_special',
+      };
+    }
+
+    if (AppValidators.isCommonPassword(password,
+        email: _supabase.auth.currentUser?.email)) {
+      return {
+        'isValid': false,
+        'message': 'password_common',
       };
     }
 

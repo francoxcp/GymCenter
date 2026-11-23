@@ -18,7 +18,7 @@ App de gestión de rutinas para gimnasio. **Flutter Web PWA** (se usa desde el m
 `provider` (estado) · `go_router` (rutas en `lib/config/router/`) · `supabase_flutter` (auth PKCE + datos) · Sentry · Web Push (VAPID, Edge Function `send-push`).
 
 ## Estructura (Feature-First)
-- `lib/features/<dominio>/{models,providers,screens,widgets,services}` — dominios: admin, auth, home, legal, onboarding, profile, progress, settings, workouts.
+- `lib/features/<dominio>/{models,providers,screens,widgets,services}` — dominios: admin, auth, home, legal, nutrition, onboarding, profile, progress, settings, workouts.
 - `lib/shared/services/` — biometría, caché offline (`offline_cache_service`, `offline_sync_queue`), web push, seguridad.
 - `lib/shared/widgets/`, `lib/core/` (tema oscuro, constantes, localización es/en).
 - `lib/features/workouts/services/progression_engine.dart` — progresión inteligente de pesos.
@@ -26,7 +26,7 @@ App de gestión de rutinas para gimnasio. **Flutter Web PWA** (se usa desde el m
 
 ## Dominio
 - Roles: **dueño / entrenador / socio**. El socio se vincula con código del entrenador; el dueño puede reasignar. Cada entrenador ve solo a sus socios y sus propias rutinas; los entrenadores pueden dar de alta socios.
-- Foco: rutinas y ejercicios por semana. **No hay** planes de alimentación (eliminados).
+- Foco: rutinas y ejercicios por semana. Hay una guía de alimentación con recetario fijo en la app (`features/nutrition`, pestaña Comida del socio); no hay planes asignados por el entrenador.
 - Toda tabla nueva necesita **RLS** coherente con esos roles.
 
 ## Diseño (que no parezca hecho con IA)

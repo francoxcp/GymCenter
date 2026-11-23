@@ -46,6 +46,15 @@ void main() {
       expect(tabIndexFor(trainerTabs, '/admin/user-progress/1'), 1);
       expect(tabIndexFor(trainerTabs, '/admin/create-workout'), 3);
       expect(tabIndexFor(trainerTabs, '/chats'), 2);
+      expect(trainerTabs.map((t) => t.path), [
+        '/admin/today',
+        '/admin/members',
+        '/chats',
+        '/workouts',
+        '/comida',
+        '/profile',
+      ]);
+      expect(tabIndexFor(trainerTabs, '/comida'), 4);
     });
 
     test('dueño: Gimnasio y Panel por prefijo más largo', () {

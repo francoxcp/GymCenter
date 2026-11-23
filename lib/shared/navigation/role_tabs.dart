@@ -129,6 +129,7 @@ final List<NavTabSpec> trainerTabs = [
   _membersTab,
   _trainerChatsTab,
   _workoutsTab,
+  _nutritionTab,
   _profileTab,
 ];
 

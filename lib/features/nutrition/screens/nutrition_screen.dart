@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -5,7 +7,6 @@ import '../../../config/supabase_config.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/models/user.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../progress/models/body_measurement.dart';
 import '../../progress/providers/body_measurement_provider.dart';
 import '../services/meal_choice_store.dart';
 import '../services/meal_scaler.dart';
@@ -58,6 +59,8 @@ class NutritionScreen extends StatefulWidget {
 
 class _NutritionScreenState extends State<NutritionScreen> {
   int _trainingDays = 3;
+  Map<String, dynamic>? _local;
+  double? _planWeight;
   Map<MealSlot, String> _choices = const {};
   bool _loading = true;
 
@@ -72,20 +75,20 @@ class _NutritionScreenState extends State<NutritionScreen> {
     final measures = context.read<BodyMeasurementProvider>();
     var user = auth.currentUser;
     if (user == null) return;
-    // Sin conexión, el cuestionario puede estar solo en el dispositivo
-    if (needsNutritionSetup(user,
-        latestWeight: measures.latestOf(MeasureField.weight))) {
-      final local = await NutritionPrefs.load(user.id);
-      if (local != null) {
-        user = User.fromJson({...user.toJson(), ...local});
-        auth.updateUser(user);
-      }
+    // Cuestionario guardado sin conexión: se aplica y se reintenta subir
+    final local = await NutritionPrefs.load(user.id);
+    if (local != null &&
+        (local['_pending'] == true || needsNutritionSetup(user))) {
+      user = applyNutritionPrefs(user, local);
+      auth.updateUser(user);
+      if (local['_pending'] == true) unawaited(auth.syncPendingNutrition());
     }
     if (measures.measurements.isEmpty) await measures.loadMeasurements();
     final days = await loadTrainingDays(user.id);
     final choices = await MealChoiceStore.today(user.id);
     if (!mounted) return;
     setState(() {
+      _local = local;
       _trainingDays = days;
       _choices = choices;
       _loading = false;
@@ -94,15 +97,29 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   Future<void> _adjust() async {
     final saved = await Navigator.of(context).push<bool>(MaterialPageRoute(
-        builder: (_) => const NutritionSetupScreen(editing: true)));
-    if (saved == true && mounted) setState(() {});
+        builder: (_) => NutritionSetupScreen(weightKg: _planWeight)));
+    if (saved != true || !mounted) return;
+    final uid = context.read<AuthProvider>().currentUser?.id;
+    final local = uid == null ? null : await NutritionPrefs.load(uid);
+    if (mounted) setState(() => _local = local);
   }
 
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().currentUser;
-    final weight =
-        context.watch<BodyMeasurementProvider>().latestOf(MeasureField.weight);
+    final measured = context
+        .watch<BodyMeasurementProvider>()
+        .measurements
+        .where((m) => m.weight != null)
+        .firstOrNull;
+    final weight = user == null
+        ? null
+        : effectiveWeight(
+            measuredKg: measured?.weight,
+            measuredAt: measured?.date,
+            local: _local,
+            userKg: user.weightKg);
+    _planWeight = weight;
     if (user == null || _loading) {
       return Scaffold(
         backgroundColor: AppColors.background,

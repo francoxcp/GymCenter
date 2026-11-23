@@ -150,4 +150,58 @@ void main() {
     expect(result!.weightKg, 78.5);
     expect(result!.weightChanged, isTrue);
   });
+
+  testWidgets('datos faltantes: no inventa valores ni deja avanzar',
+      (tester) async {
+    NutritionSetupResult? result;
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await tester.pumpWidget(MaterialApp(
+      home: NutritionSetupForm(
+        initial: NutritionSetupInitial.fromUser(
+            _user(age: null, height: null, weight: null)),
+        onDone: (r) async => result = r,
+      ),
+    ));
+    expect(find.text('—'), findsNWidgets(3));
+    await tester.tap(find.text('Siguiente'));
+    await tester.pumpAndSettle();
+    expect(find.text('Paso 1 de 3'), findsOneWidget);
+
+    // Escribir los valores tocando el número
+    Future<void> type(int index, String v) async {
+      await tester.tap(find.text('—').first);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), v);
+      await tester.tap(find.text('Aceptar'));
+      await tester.pumpAndSettle();
+    }
+
+    await type(0, '92.5');
+    await type(0, '181');
+    await type(0, '34');
+    expect(find.text('92.5 kg'), findsOneWidget);
+    expect(find.text('181 cm'), findsOneWidget);
+    expect(find.text('34 años'), findsOneWidget);
+    for (var i = 0; i < 2; i++) {
+      await tester.tap(find.text('Siguiente'));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.text('Listo'));
+    await tester.pumpAndSettle();
+    expect(result!.weightKg, 92.5);
+    expect(result!.heightCm, 181);
+    expect(result!.age, 34);
+    expect(result!.weightChanged, isTrue);
+  });
+
+  testWidgets('un valor escrito fuera de rango se ajusta al límite',
+      (tester) async {
+    await _pump(tester, _user());
+    await tester.tap(find.text('78 kg'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '900');
+    await tester.tap(find.text('Aceptar'));
+    await tester.pumpAndSettle();
+    expect(find.text('250 kg'), findsOneWidget);
+  });
 }

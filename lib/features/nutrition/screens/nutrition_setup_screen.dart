@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/models/user.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../progress/models/body_measurement.dart';
+import '../../../shared/services/offline_sync_queue.dart';
 import '../../progress/providers/body_measurement_provider.dart';
 import '../data/foods.dart';
 import '../services/nutrition_calculator.dart';
@@ -24,9 +24,9 @@ const kMinorNotice =
 
 /// Valores con los que arranca el cuestionario.
 class NutritionSetupInitial {
-  final double weightKg;
-  final int heightCm;
-  final int age;
+  final double? weightKg;
+  final int? heightCm;
+  final int? age;
   final String? sex;
   final NutritionGoal goal;
   final ActivityLevel? activity;
@@ -46,9 +46,9 @@ class NutritionSetupInitial {
 
   factory NutritionSetupInitial.fromUser(User u, {double? latestWeight}) =>
       NutritionSetupInitial(
-        weightKg: latestWeight ?? u.weightKg ?? 70,
-        heightCm: u.heightCm ?? 165,
-        age: u.age ?? 25,
+        weightKg: latestWeight ?? u.weightKg,
+        heightCm: u.heightCm,
+        age: u.age,
         sex: u.sex,
         goal: goalFromLabel(u.goal),
         activity: ActivityLevel.fromDb(u.activityLevel),
@@ -84,16 +84,20 @@ class NutritionSetupResult {
 
 /// Cuestionario conectado a los datos del socio. Devuelve `true` al guardar.
 class NutritionSetupScreen extends StatelessWidget {
-  const NutritionSetupScreen({super.key, this.editing = false});
+  const NutritionSetupScreen({super.key, this.weightKg});
 
-  final bool editing;
+  /// Peso con el que arranca (el que usa el plan); si es null, la última
+  /// medida o el de `users`.
+  final double? weightKg;
 
   @override
   Widget build(BuildContext context) {
     final auth = context.read<AuthProvider>();
     final measures = context.read<BodyMeasurementProvider>();
     final user = auth.currentUser!;
-    final latest = measures.latestOf(MeasureField.weight);
+    final measured =
+        measures.measurements.where((m) => m.weight != null).firstOrNull;
+    final latest = weightKg ?? measured?.weight;
     return NutritionSetupForm(
       initial: NutritionSetupInitial.fromUser(user, latestWeight: latest),
       onDone: (r) async {
@@ -108,8 +112,18 @@ class NutritionSetupScreen extends StatelessWidget {
           mealsPerDay: r.mealsPerDay,
         );
         if (r.weightChanged) {
-          await measures.saveMeasurement(BodyMeasurement(
-              id: '', userId: user.id, date: DateTime.now(), weight: r.weightKg));
+          // Por la cola: sin conexión se reintenta solo y no deja un error
+          // suelto en Progreso.
+          try {
+            await OfflineSyncQueue.instance.insert('body_measurements', {
+              'user_id': user.id,
+              'date': DateTime.now().toIso8601String(),
+              'weight': r.weightKg,
+            });
+            await measures.loadMeasurements();
+          } catch (e) {
+            debugPrint('No se pudo guardar la medida de peso: $e');
+          }
         }
         if (context.mounted) Navigator.of(context).pop(true);
       },
@@ -132,19 +146,20 @@ class NutritionSetupForm extends StatefulWidget {
 class _NutritionSetupFormState extends State<NutritionSetupForm> {
   int _step = 0;
   bool _saving = false;
-  late double _weight = widget.initial.weightKg;
-  late int _height = widget.initial.heightCm;
-  late int _age = widget.initial.age;
+  // Nulo = el socio aún no lo indicó (no se inventa un valor)
+  late double? _weight = widget.initial.weightKg;
+  late int? _height = widget.initial.heightCm;
+  late int? _age = widget.initial.age;
   late String? _sex = widget.initial.sex;
   late NutritionGoal _goal = widget.initial.goal;
   late ActivityLevel? _activity = widget.initial.activity;
   late final Set<String> _avoid = {...widget.initial.avoid};
   late int _meals = widget.initial.mealsPerDay;
 
-  bool get _minor => _age < 18;
+  bool get _minor => (_age ?? 99) < 18;
 
   bool get _canContinue => switch (_step) {
-        0 => _sex != null,
+        0 => _sex != null && _weight != null && _height != null && _age != null,
         1 => _activity != null,
         _ => !_saving,
       };
@@ -157,9 +172,9 @@ class _NutritionSetupFormState extends State<NutritionSetupForm> {
     }
     setState(() => _saving = true);
     await widget.onDone(NutritionSetupResult(
-      weightKg: _weight,
-      heightCm: _height,
-      age: _age,
+      weightKg: _weight!,
+      heightCm: _height!,
+      age: _age!,
       sex: _sex!,
       goal: _minor && _goal == NutritionGoal.cut ? NutritionGoal.maintain : _goal,
       activity: _activity!,
@@ -244,24 +259,36 @@ class _NutritionSetupFormState extends State<NutritionSetupForm> {
         const SizedBox(height: 16),
         _Stepper(
           label: 'Peso',
-          value: '${_fmt(_weight)} kg',
+          value: _weight == null ? null : '${_fmt(_weight!)} kg',
           what: 'peso',
-          onMinus: () => setState(() => _weight = (_weight - 0.5).clamp(30, 250)),
-          onPlus: () => setState(() => _weight = (_weight + 0.5).clamp(30, 250)),
+          unit: 'kg',
+          onMinus: () => setState(
+              () => _weight = ((_weight ?? 70.5) - 0.5).clamp(30, 250)),
+          onPlus: () => setState(
+              () => _weight = ((_weight ?? 69.5) + 0.5).clamp(30, 250)),
+          onTyped: (v) => setState(() => _weight =
+              ((v * 2).roundToDouble() / 2).clamp(30, 250).toDouble()),
         ),
         _Stepper(
           label: 'Estatura',
-          value: '$_height cm',
+          value: _height == null ? null : '$_height cm',
           what: 'estatura',
-          onMinus: () => setState(() => _height = (_height - 1).clamp(120, 230)),
-          onPlus: () => setState(() => _height = (_height + 1).clamp(120, 230)),
+          unit: 'cm',
+          onMinus: () =>
+              setState(() => _height = ((_height ?? 166) - 1).clamp(120, 230)),
+          onPlus: () =>
+              setState(() => _height = ((_height ?? 164) + 1).clamp(120, 230)),
+          onTyped: (v) =>
+              setState(() => _height = v.round().clamp(120, 230).toInt()),
         ),
         _Stepper(
           label: 'Edad',
-          value: '$_age años',
+          value: _age == null ? null : '$_age años',
           what: 'edad',
-          onMinus: () => setState(() => _age = (_age - 1).clamp(12, 99)),
-          onPlus: () => setState(() => _age = (_age + 1).clamp(12, 99)),
+          unit: 'años',
+          onMinus: () => setState(() => _age = ((_age ?? 26) - 1).clamp(12, 99)),
+          onPlus: () => setState(() => _age = ((_age ?? 24) + 1).clamp(12, 99)),
+          onTyped: (v) => setState(() => _age = v.round().clamp(12, 99).toInt()),
         ),
         const SizedBox(height: 8),
         const _Label('Sexo'),
@@ -405,20 +432,53 @@ class _Notice extends StatelessWidget {
       );
 }
 
-/// Fila con valor grande y botones −/+ (sin teclado: más rápido en el gym).
+/// Fila con valor grande y botones −/+; tocando el número se escribe.
+/// Sin valor muestra "—" (el socio debe indicarlo).
 class _Stepper extends StatelessWidget {
   const _Stepper({
     required this.label,
     required this.value,
     required this.what,
+    required this.unit,
     required this.onMinus,
     required this.onPlus,
+    required this.onTyped,
   });
   final String label;
-  final String value;
+  final String? value;
   final String what;
+  final String unit;
   final VoidCallback onMinus;
   final VoidCallback onPlus;
+  final ValueChanged<double> onTyped;
+
+  Future<void> _type(BuildContext context) async {
+    final ctrl = TextEditingController();
+    final v = await showDialog<double>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('$label ($unit)'),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(hintText: 'Escribe tu $what'),
+          onSubmitted: (t) =>
+              Navigator.pop(ctx, double.tryParse(t.replaceAll(',', '.'))),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar')),
+          TextButton(
+              onPressed: () => Navigator.pop(
+                  ctx, double.tryParse(ctrl.text.replaceAll(',', '.'))),
+              child: const Text('Aceptar')),
+        ],
+      ),
+    );
+    if (v != null) onTyped(v);
+  }
 
   @override
   Widget build(BuildContext context) => Container(
@@ -435,14 +495,23 @@ class _Stepper extends StatelessWidget {
               tooltip: 'Bajar $what',
               onPressed: onMinus,
               icon: Icon(Icons.remove, color: AppColors.textPrimary)),
-          SizedBox(
-            width: 104,
-            child: Text(value,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900)),
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () => _type(context),
+            child: SizedBox(
+              width: 104,
+              height: 48,
+              child: Center(
+                child: Text(value ?? '—',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: value == null
+                            ? AppColors.primaryText
+                            : AppColors.textPrimary,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900)),
+              ),
+            ),
           ),
           IconButton(
               tooltip: 'Subir $what',

@@ -491,11 +491,27 @@ class AuthProvider extends ChangeNotifier {
       mealsPerDay: mealsPerDay,
     );
     notifyListeners();
-    await NutritionPrefs.save(user.id, data);
+    await NutritionPrefs.save(user.id, data, pending: true);
+    await syncPendingNutrition();
+  }
+
+  /// Sube el cuestionario guardado sin conexión. Devuelve true si quedó en
+  /// el servidor (o no había nada pendiente).
+  Future<bool> syncPendingNutrition() async {
+    final user = _currentUser;
+    if (user == null) return false;
+    final local = await NutritionPrefs.load(user.id);
+    if (local == null || local['_pending'] != true) return true;
     try {
-      await SupabaseConfig.client.from('users').update(data).eq('id', user.id);
+      await SupabaseConfig.client.from('users').update({
+        for (final k in kNutritionColumns)
+          if (local.containsKey(k)) k: local[k],
+      }).eq('id', user.id);
+      await NutritionPrefs.markSynced(user.id);
+      return true;
     } catch (e) {
-      debugPrint('Perfil alimentario guardado solo en el dispositivo: $e');
+      debugPrint('Perfil alimentario pendiente de subir: $e');
+      return false;
     }
   }
 

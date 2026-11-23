@@ -3,6 +3,7 @@ import '../../auth/providers/auth_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/l10n/app_l10n.dart';
+import '../../../core/utils/app_validators.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 import '../../auth/models/user.dart';
@@ -320,6 +321,11 @@ Future<void> showResetPasswordDialog(BuildContext context, User member) async {
             onPressed: saving
                 ? null
                 : () async {
+                    if (AppValidators.isCommonPassword(ctrl.text,
+                        email: member.email)) {
+                      setState(() => error = AppValidators.commonPasswordMessage);
+                      return;
+                    }
                     setState(() {
                       saving = true;
                       error = null;

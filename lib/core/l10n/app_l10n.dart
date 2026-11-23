@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../features/settings/providers/preferences_provider.dart';
+import '../utils/app_validators.dart';
 
 /// Clase de internacionalización ligera.
 /// Uso: final l10n = AppL10n.of(context);
@@ -1138,6 +1139,10 @@ class AppL10n {
         return isEn
             ? 'Password must contain at least one number'
             : 'La contraseña debe contener al menos un número';
+      case 'password_common':
+        return isEn
+            ? 'That password is too common or easy to guess. Use another one.'
+            : AppValidators.commonPasswordMessage;
       case 'password_needs_special':
         return isEn
             ? 'Password must contain at least one special character (!@#\$%...)'

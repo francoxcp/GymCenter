@@ -40,7 +40,6 @@ const _workoutPrefixes = [
 
 const _profilePrefixes = [
   '/profile',
-  '/edit-profile',
   '/settings',
   '/privacy-settings',
   '/terms-and-conditions',

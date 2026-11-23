@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/utils/app_validators.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/app_l10n.dart';
 import '../../../shared/widgets/app_snackbar.dart';
@@ -413,10 +414,16 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             onPressed: () async {
               final userProvider =
                   Provider.of<UserProvider>(dialogContext, listen: false);
+              final nameError =
+                  AppValidators.fullNameError(nameController.text);
+              if (nameError != null) {
+                AppSnackbar.error(dialogContext, nameError);
+                return;
+              }
               try {
                 await userProvider.updateUser(
                   user.id,
-                  name: nameController.text,
+                  name: AppValidators.normalizeName(nameController.text),
                 );
                 if (dialogContext.mounted) {
                   Navigator.pop(dialogContext);
@@ -696,12 +703,18 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               onPressed: saving
                   ? null
                   : () async {
+                      final nameError =
+                          AppValidators.fullNameError(nameCtrl.text);
+                      if (nameError != null) {
+                        setDialogState(() => error = nameError);
+                        return;
+                      }
                       setDialogState(() {
                         saving = true;
                         error = null;
                       });
                       final code = await userProvider.createMember(
-                        name: nameCtrl.text,
+                        name: AppValidators.normalizeName(nameCtrl.text),
                         email: emailCtrl.text,
                         password: passCtrl.text,
                         trainerId: trainerId,

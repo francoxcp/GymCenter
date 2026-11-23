@@ -25,6 +25,21 @@ class NameInputFormatter extends TextInputFormatter {
 class AppValidators {
   AppValidators._();
 
+  /// Quita espacios de más: "  ana   pérez " → "ana pérez".
+  static String normalizeName(String v) =>
+      v.trim().replaceAll(RegExp(r'\s+'), ' ');
+
+  /// El nombre no se puede cambiar después: exige nombre y apellido.
+  /// Devuelve el mensaje de error, o null si es válido.
+  static String? fullNameError(String? value) {
+    final v = normalizeName(value ?? '');
+    final parts = v.split(' ').where((p) => p.length >= 2).toList();
+    if (parts.length < 2) return 'Escribe nombre y apellido.';
+    if (RegExp(r'[0-9]').hasMatch(v)) return 'El nombre no lleva números.';
+    if (v.length > 60) return 'Máximo 60 caracteres.';
+    return null;
+  }
+
   static final _emailRegex =
       RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
 

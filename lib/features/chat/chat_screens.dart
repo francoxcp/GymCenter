@@ -222,12 +222,10 @@ class _ChatRow extends StatelessWidget {
       leading: CircleAvatar(
         radius: 22,
         backgroundColor: AppColors.cardBackground,
-        backgroundImage: (c.photoUrl ?? '').isNotEmpty ? NetworkImage(c.photoUrl!) : null,
-        child: (c.photoUrl ?? '').isNotEmpty
-            ? null
-            : Text(c.name.isNotEmpty ? c.name[0].toUpperCase() : '?',
-                style: TextStyle(
-                    color: AppColors.primaryText, fontWeight: FontWeight.w800)),
+        // Sin fotos de perfil: solo la inicial
+        child: Text(c.name.isNotEmpty ? c.name[0].toUpperCase() : '?',
+            style: TextStyle(
+                color: AppColors.primaryText, fontWeight: FontWeight.w800)),
       ),
       title: Text(c.name,
           maxLines: 1,

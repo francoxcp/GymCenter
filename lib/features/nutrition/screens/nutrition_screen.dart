@@ -266,33 +266,33 @@ class _NutritionPlanViewState extends State<NutritionPlanView> {
                 const _Note(kMinorNotice),
               ],
               const SizedBox(height: 20),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(children: [
-                  for (final s in slots) ...[
-                    ChoiceChip(
-                      label: Text(s.label),
-                      selected: s == slot,
-                      showCheckmark: false,
-                      avatar: _choices.containsKey(s)
-                          ? Icon(Icons.check,
-                              size: 16, color: AppColors.primaryText)
-                          : null,
-                      selectedColor: AppColors.primary,
-                      labelStyle: TextStyle(
-                          color: s == slot
-                              ? AppColors.onPrimary
-                              : AppColors.textPrimary,
-                          fontWeight: FontWeight.w700),
-                      onSelected: (_) => setState(() {
-                        _slot = s;
-                        _open = null;
-                      }),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ]),
-              ),
+              Wrap(spacing: 8, runSpacing: 8, children: [
+                for (final s in slots)
+                  ChoiceChip(
+                    label: Text(s.label),
+                    selected: s == slot,
+                    showCheckmark: false,
+                    visualDensity: VisualDensity.compact,
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                    avatar: _choices.containsKey(s)
+                        ? Icon(Icons.check,
+                            size: 16,
+                            color: s == slot
+                                ? AppColors.onPrimary
+                                : AppColors.primaryText)
+                        : null,
+                    selectedColor: AppColors.primary,
+                    labelStyle: TextStyle(
+                        color: s == slot
+                            ? AppColors.onPrimary
+                            : AppColors.textPrimary,
+                        fontWeight: FontWeight.w700),
+                    onSelected: (_) => setState(() {
+                      _slot = s;
+                      _open = null;
+                    }),
+                  ),
+              ]),
               const SizedBox(height: 16),
               Text(
                   '${_thousands(target.kcal)} kcal · ${target.proteinG} g proteína · elige una',
@@ -497,6 +497,8 @@ class _OptionTile extends StatelessWidget {
                                         icon: const Icon(Icons.check),
                                         label: const Text('Elegido'),
                                         style: OutlinedButton.styleFrom(
+                                          minimumSize:
+                                              const Size.fromHeight(48),
                                           foregroundColor:
                                               AppColors.primaryText,
                                           side: BorderSide(
@@ -507,6 +509,8 @@ class _OptionTile extends StatelessWidget {
                                         key: const ValueKey('choose'),
                                         onPressed: onChoose,
                                         style: FilledButton.styleFrom(
+                                          minimumSize:
+                                              const Size.fromHeight(48),
                                           backgroundColor: AppColors.primary,
                                           foregroundColor: AppColors.onPrimary,
                                         ),

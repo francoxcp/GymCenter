@@ -12,7 +12,6 @@ class StorageService {
   static const String profilePhotosBucket = 'profile-photos';
   static const String exerciseVideosBucket = 'exercise-videos';
   // Límites de tamaño
-  static const int _maxImageBytes = 5 * 1024 * 1024; // 5 MB
   static const int _maxVideoBytes = 50 * 1024 * 1024; // 50 MB
 
   // Extensiones de video permitidas
@@ -73,61 +72,6 @@ class StorageService {
       return result;
     } catch (e) {
       debugPrint('Error al comprimir imagen: $e');
-      return null;
-    }
-  }
-
-  /// Sube una foto de perfil a Supabase Storage
-  ///
-  /// [userId] - ID del usuario
-  /// [imageFile] - Archivo de imagen (null para web, usar imageBytes)
-  /// [imageBytes] - Bytes de imagen (para web)
-  /// Returns URL pública de la imagen subida
-  Future<String?> uploadProfilePhoto({
-    required String userId,
-    File? imageFile,
-    Uint8List? imageBytes,
-  }) async {
-    try {
-      Uint8List? compressedData;
-
-      // Comprimir según la plataforma
-      if (kIsWeb && imageBytes != null) {
-        compressedData = await compressImageBytes(imageBytes);
-      } else if (imageFile != null) {
-        compressedData = await compressImage(imageFile);
-      }
-
-      if (compressedData == null) {
-        throw Exception('Image compression failed');
-      }
-
-      // Validar tamaño después de compresión
-      if (compressedData.length > _maxImageBytes) {
-        throw Exception('Image exceeds maximum size of 5 MB');
-      }
-
-      // Generar nombre único para el archivo
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final extension = _imageExtension(compressedData);
-      final fileName = '$userId/$timestamp.$extension';
-
-      // Subir a Supabase Storage
-      await _supabase.storage
-          .from(profilePhotosBucket)
-          .uploadBinary(fileName, compressedData,
-              fileOptions: FileOptions(
-                contentType: _imageMimeType(compressedData),
-                upsert: true,
-              ));
-
-      // Obtener URL pública
-      final publicUrl =
-          _supabase.storage.from(profilePhotosBucket).getPublicUrl(fileName);
-
-      return publicUrl;
-    } catch (e) {
-      // Error al subir foto de perfil: log seguro, sin datos sensibles
       return null;
     }
   }
@@ -289,38 +233,4 @@ class StorageService {
     }
   }
 
-  /// Detecta el tipo real de imagen por sus primeros bytes (en web la
-  /// imagen no se recomprime a JPEG y puede ser PNG o WebP).
-  static String _imageMimeType(Uint8List bytes) {
-    if (bytes.length >= 8 &&
-        bytes[0] == 0x89 &&
-        bytes[1] == 0x50 &&
-        bytes[2] == 0x4E &&
-        bytes[3] == 0x47) {
-      return 'image/png';
-    }
-    if (bytes.length >= 12 &&
-        bytes[0] == 0x52 &&
-        bytes[1] == 0x49 &&
-        bytes[2] == 0x46 &&
-        bytes[3] == 0x46 &&
-        bytes[8] == 0x57 &&
-        bytes[9] == 0x45 &&
-        bytes[10] == 0x42 &&
-        bytes[11] == 0x50) {
-      return 'image/webp';
-    }
-    return 'image/jpeg';
-  }
-
-  static String _imageExtension(Uint8List bytes) {
-    switch (_imageMimeType(bytes)) {
-      case 'image/png':
-        return 'png';
-      case 'image/webp':
-        return 'webp';
-      default:
-        return 'jpg';
-    }
-  }
 }

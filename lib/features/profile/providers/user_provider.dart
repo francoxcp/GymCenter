@@ -168,13 +168,11 @@ class UserProvider extends ChangeNotifier {
   Future<void> updateUser(
     String userId, {
     String? name,
-    String? photoUrl,
     String? role,
   }) async {
     try {
       final Map<String, dynamic> updates = {};
       if (name != null) updates['name'] = name;
-      if (photoUrl != null) updates['photo_url'] = photoUrl;
       if (role != null) updates['role'] = role;
 
       if (updates.isEmpty) return;

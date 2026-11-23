@@ -67,11 +67,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    // Nombre: el entrenador lo necesita para identificar al socio
-    if (name.length < 2 || name.length > 60) {
-      _showError(AppL10n.of(context).isEn
-          ? 'Enter your name (2 to 60 characters).'
-          : 'Escribe tu nombre (de 2 a 60 caracteres).');
+    // Nombre y apellido: quedan fijos, no se pueden cambiar después
+    final nameError = AppValidators.fullNameError(name);
+    if (nameError != null) {
+      _showError(nameError);
       return;
     }
 
@@ -248,7 +247,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               // Nombre completo
               Text(
-                AppL10n.of(context).isEn ? 'FULL NAME' : 'NOMBRE COMPLETO',
+                AppL10n.of(context).isEn
+                    ? 'FIRST AND LAST NAME'
+                    : 'NOMBRE Y APELLIDO',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
@@ -259,8 +260,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 8),
               CustomTextField(
                 controller: _nameController,
-                hintText: AppL10n.of(context).isEn ? 'Your name' : 'Tu nombre',
+                hintText: AppL10n.of(context).isEn
+                    ? 'e.g. Ana Pérez'
+                    : 'Ej.: Ana Pérez',
                 prefixIcon: Icons.person_outline,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                AppL10n.of(context).isEn
+                    ? 'It can\'t be changed later.'
+                    : 'No se puede cambiar después.',
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
 
               const SizedBox(height: 20),

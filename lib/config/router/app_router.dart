@@ -20,7 +20,6 @@ import '../../features/workouts/screens/workout_detail_readonly_screen.dart';
 import '../../features/workouts/screens/workout_history_screen.dart';
 import '../../features/workouts/screens/workout_calendar_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
-import '../../features/profile/screens/edit_profile_screen.dart';
 import '../../features/profile/screens/personal_records_screen.dart';
 import '../../features/progress/screens/progress_screen.dart';
 import '../../features/progress/screens/body_measurements_screen.dart';
@@ -289,10 +288,6 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           GoRoute(
             path: '/profile',
             builder: (context, state) => const ProfileScreen(),
-          ),
-          GoRoute(
-            path: '/edit-profile',
-            builder: (context, state) => const EditProfileScreen(),
           ),
           GoRoute(
             path: '/personal-records',

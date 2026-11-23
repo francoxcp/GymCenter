@@ -169,15 +169,11 @@ class _FeedCard extends StatelessWidget {
                     child: CircleAvatar(
                       radius: 22,
                       backgroundColor: AppColors.primary,
-                      backgroundImage: item.photoUrl != null
-                          ? NetworkImage(item.photoUrl!)
-                          : null,
-                      child: item.photoUrl == null
-                          ? Text(initial,
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold))
-                          : null,
+                      // Sin fotos de perfil: solo la inicial
+                      child: Text(initial,
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold)),
                     ),
                   ),
                   const SizedBox(width: 12),

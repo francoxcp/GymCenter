@@ -9,7 +9,6 @@ import 'package:gymlab/features/notifications/notifications_screen.dart';
 import 'package:gymlab/features/notifications/notifications_service.dart';
 import 'package:gymlab/features/organization/models/organization.dart';
 import 'package:gymlab/features/organization/screens/platform_screen.dart';
-import 'package:gymlab/features/profile/screens/edit_profile_screen.dart';
 import 'package:gymlab/shared/navigation/role_tabs.dart';
 import 'package:gymlab/shared/widgets/top_actions.dart';
 
@@ -141,11 +140,7 @@ void main() {
     expect(activityLabel(idle, now: now), 'Último entreno hace 42 días · 0 en 30 días');
   });
 
-  test('teléfono y búsqueda sin tildes', () {
-    expect(validPhone(''), isTrue);
-    expect(validPhone('8888 8888'), isTrue);
-    expect(validPhone('+506 8888 8888'), isTrue);
-    expect(validPhone('abc'), isFalse);
+  test('búsqueda sin tildes', () {
     expect(foldText('  María José '), 'maria jose');
   });
 }

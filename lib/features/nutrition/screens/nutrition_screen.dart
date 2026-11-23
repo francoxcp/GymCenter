@@ -7,7 +7,6 @@ import '../../auth/models/user.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../progress/models/body_measurement.dart';
 import '../../progress/providers/body_measurement_provider.dart';
-import '../data/foods.dart';
 import '../services/meal_choice_store.dart';
 import '../services/meal_scaler.dart';
 import '../services/nutrition_calculator.dart';
@@ -223,7 +222,7 @@ class _NutritionPlanViewState extends State<NutritionPlanView> {
         : p.goal;
 
     // Suma de lo elegido hoy
-    var kcal = 0, protein = 0, price = 0, chosen = 0;
+    var kcal = 0, protein = 0, chosen = 0;
     for (final m in t.meals) {
       final id = _choices[m.slot];
       if (id == null) continue;
@@ -232,7 +231,6 @@ class _NutritionPlanViewState extends State<NutritionPlanView> {
       final s = scaleOption(o, m);
       kcal += s.kcal;
       protein += s.proteinG;
-      price += s.priceCrc;
       chosen++;
     }
 
@@ -317,7 +315,7 @@ class _NutritionPlanViewState extends State<NutritionPlanView> {
                   onChoose: () => _choose(slot, s.option.id),
                 ),
               const SizedBox(height: 16),
-              Text('$kNutritionDisclaimer Precios aprox. $kPricesAsOf.',
+              Text(kNutritionDisclaimer,
                   style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 12,
@@ -335,7 +333,7 @@ class _NutritionPlanViewState extends State<NutritionPlanView> {
         ),
         child: Text(
           'Tu día: $chosen de ${slots.length} comidas elegidas'
-          '${chosen > 0 ? ' · ${_thousands(kcal)} kcal · $protein g proteína · ~₡${_thousands(price)}' : ''}',
+          '${chosen > 0 ? ' · ${_thousands(kcal)} kcal · $protein g proteína' : ''}',
           style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 13,
@@ -451,7 +449,7 @@ class _OptionTile extends StatelessWidget {
                               fontWeight: FontWeight.w800)),
                       const SizedBox(height: 4),
                       Text(
-                          '${option.proteinG} g proteína · ${option.kcal} kcal'
+                          '${option.kcal} kcal'
                           '${option.option.quick ? ' · rápida' : ''}',
                           style: TextStyle(
                               color: AppColors.textSecondary, fontSize: 13)),
@@ -459,11 +457,16 @@ class _OptionTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text('~₡${_thousands(option.priceCrc)}',
-                    style: TextStyle(
-                        color: AppColors.primaryText,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900)),
+                Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  Text('${option.proteinG} g',
+                      style: TextStyle(
+                          color: AppColors.primaryText,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900)),
+                  Text('proteína',
+                      style: TextStyle(
+                          color: AppColors.textSecondary, fontSize: 12)),
+                ]),
               ]),
               AnimatedSize(
                 duration: const Duration(milliseconds: 200),

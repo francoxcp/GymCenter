@@ -50,13 +50,12 @@ void main() {
       expect(find.text(l), findsWidgets);
     }
     expect(find.text('Gallo pinto con huevo'), findsOneWidget);
-    expect(find.textContaining('~₡'), findsWidgets);
+    expect(find.textContaining('₡', skipOffstage: false), findsNothing);
     expect(
         find.textContaining('Guía orientativa; no reemplaza a un nutricionista',
             skipOffstage: false),
         findsOneWidget);
-    expect(find.textContaining('Precios aprox. nov 2026', skipOffstage: false),
-        findsOneWidget);
+    expect(find.textContaining('Precios', skipOffstage: false), findsNothing);
   });
 
   testWidgets('con todas las exclusiones avisa que hay pocas opciones',
@@ -92,6 +91,7 @@ void main() {
     expect(id, 'pinto_huevo');
     expect(find.textContaining('Tu día: 1 de 4 comidas elegidas'),
         findsOneWidget);
+    expect(find.textContaining('₡'), findsNothing);
     expect(find.text('Elegido'), findsOneWidget);
   });
 

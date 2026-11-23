@@ -30,6 +30,14 @@
       overscroll-behavior: none;
       -webkit-tap-highlight-color: transparent;
     }
+    /* iPhone (app instalada): la página no debe desplazarse por debajo de
+       Flutter. Si iOS la corre (p. ej. al abrir/cerrar el teclado), los
+       toques llegan desplazados y los botones "no responden". */
+    body {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+    }
     #gc-splash {
       position: fixed;
       inset: 0;

@@ -245,7 +245,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   Expanded(
                     child: InkWell(
-                      onTap: () => context.push('/register'),
+                      onTap: () => context.go('/register'),
                       child: Container(
                         decoration: BoxDecoration(
                           border: Border(
@@ -384,7 +384,30 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: _isLoading ? () {} : _handleLogin,
               ),
 
-              const SizedBox(height: 40),
+              const SizedBox(height: 16),
+
+              // Segundo acceso al registro, grande y fácil de tocar (en la
+              // app instalada del iPhone la pestaña de arriba es un blanco chico)
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: OutlinedButton(
+                  onPressed: () => context.go('/register'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primaryText,
+                    side: BorderSide(color: AppColors.primary, width: 1.5),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    textStyle: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                  child: Text(AppL10n.of(context).isEn
+                      ? 'Create account'
+                      : 'Crear cuenta'),
+                ),
+              ),
+
+              const SizedBox(height: 32),
 
               Center(
                 child: RichText(

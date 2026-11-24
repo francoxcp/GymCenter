@@ -12,6 +12,7 @@ import '../services/meal_choice_store.dart';
 import '../services/meal_scaler.dart';
 import '../services/nutrition_calculator.dart';
 import '../services/nutrition_prefs.dart';
+import '../services/portions.dart';
 import 'nutrition_setup_screen.dart';
 
 const kNutritionDisclaimer =
@@ -227,10 +228,17 @@ class _NutritionPlanViewState extends State<NutritionPlanView> {
 
   Widget _plan(NutritionProfile p) {
     final t = computeTargets(p);
-    final slots = [for (final m in t.meals) m.slot];
+    // Cada comida con sus porciones (sistema de intercambio)
+    final day = dayPortions(p);
+    final meals = [
+      for (final e in day.meals.entries)
+        MealTarget(e.key, e.value.kcal.round(), e.value.proteinG.round(),
+            portions: e.value),
+    ];
+    final slots = [for (final m in meals) m.slot];
     final slot =
         slots.contains(_slot) ? _slot! : defaultSlot(widget.now, slots);
-    final target = t.meals.firstWhere((m) => m.slot == slot);
+    final target = meals.firstWhere((m) => m.slot == slot);
     final options = [
       for (final o in optionsFor(slot, p.avoid)) scaleOption(o, target),
     ];
@@ -240,7 +248,7 @@ class _NutritionPlanViewState extends State<NutritionPlanView> {
 
     // Suma de lo elegido hoy
     var kcal = 0, protein = 0, chosen = 0;
-    for (final m in t.meals) {
+    for (final m in meals) {
       final id = _choices[m.slot];
       if (id == null) continue;
       final o = kMealCatalog.where((o) => o.id == id).firstOrNull;
@@ -310,7 +318,7 @@ class _NutritionPlanViewState extends State<NutritionPlanView> {
               ]),
               const SizedBox(height: 16),
               Text(
-                  '${_thousands(target.kcal)} kcal · ${target.proteinG} g proteína · elige una',
+                  '${target.portions!.label} · elige una',
                   style:
                       TextStyle(color: AppColors.textSecondary, fontSize: 14)),
               const SizedBox(height: 8),
@@ -331,6 +339,8 @@ class _NutritionPlanViewState extends State<NutritionPlanView> {
                       () => _open = _open == s.option.id ? null : s.option.id),
                   onChoose: () => _choose(slot, s.option.id),
                 ),
+              const SizedBox(height: 16),
+              const _Tips(),
               const SizedBox(height: 16),
               Text(kNutritionDisclaimer,
                   style: TextStyle(
@@ -549,4 +559,45 @@ class _OptionTile extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Hábitos que acompañan el plan (los de un plan de nutricionista).
+class _Tips extends StatelessWidget {
+  const _Tips();
+
+  static const _items = [
+    'Toma 2 L de agua al día.',
+    'Camina 10–15 minutos después de comer: ayuda a usar mejor el azúcar.',
+    'Pesa la proteína ya cocinada.',
+    'Cocina a la plancha, al horno, al vapor o en freidora de aire; poca grasa.',
+    'La fruta de la tarde sirve como pre-entreno.',
+  ];
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        decoration: BoxDecoration(
+          color: AppColors.cardBackground,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('HÁBITOS',
+                style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2)),
+            const SizedBox(height: 8),
+            for (final t in _items)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text('· $t',
+                    style: TextStyle(
+                        color: AppColors.textPrimary, fontSize: 14, height: 1.35)),
+              ),
+          ],
+        ),
+      );
 }

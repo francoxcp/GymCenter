@@ -3,10 +3,11 @@ import 'dart:math' as math;
 import '../data/foods.dart';
 import '../data/meal_catalog.dart';
 import '../models/nutrition_profile.dart';
+import 'portions.dart';
 
 export '../data/meal_catalog.dart';
 
-/// Un ingrediente con su cantidad ajustada y cómo decirla en casa.
+/// Un alimento con su cantidad y cómo decirla en casa.
 class ScaledItem {
   final Food food;
   final double grams;
@@ -14,7 +15,7 @@ class ScaledItem {
   const ScaledItem(this.food, this.grams, this.label);
 }
 
-/// Una opción con porciones ajustadas al objetivo de esa comida.
+/// Un plato con las cantidades de esta persona en esta comida.
 class ScaledOption {
   final MealOption option;
   final List<ScaledItem> items;
@@ -25,87 +26,82 @@ class ScaledOption {
       this.option, this.items, this.kcal, this.proteinG, this.priceCrc);
 }
 
-/// Opciones de un tiempo de comida sin lo que el socio no come.
-/// Las dos meriendas comparten opciones.
+/// Platos de un tiempo de comida sin lo que el socio no come.
 List<MealOption> optionsFor(MealSlot slot, Set<String> avoid) => [
       for (final o in kMealCatalog)
         if (o.slots.contains(slot) && o.tags.intersection(avoid).isEmpty) o,
     ];
 
-const _minFactor = 0.6;
-const _maxFactor = 1.8;
+/// Alimento que se agrega si la comida pide un grupo que el plato no trae.
+const _defaults = {
+  FoodGroup.grasa: 'aceite',
+  FoodGroup.vegetal: 'ensalada',
+  FoodGroup.fruta: 'fruta',
+};
 
-/// Ajusta las porciones de [o] a las calorías y proteína de [t].
-///
-/// Escala todo por igual (0,6–1,8×). Si la proteína queda bajo el 80 % del
-/// objetivo, sube los ingredientes proteicos (hasta 1,8× su base) y baja los
-/// carbohidratos para no pasarse de calorías. Redondea a medidas caseras.
+/// Cantidades del plato [o] para las porciones de [t]: cada alimento recibe
+/// porciones del grupo × su parte × gramos por porción, en medidas caseras.
 ScaledOption scaleOption(MealOption o, MealTarget t) {
-  final base = [for (final i in o.ingredients) i.grams];
-  double kcalOf(List<double> g) => _sum(o, g, (f) => f.kcal100);
-  double proteinOf(List<double> g) => _sum(o, g, (f) => f.protein100);
-
-  final factor = (t.kcal / kcalOf(base)).clamp(_minFactor, _maxFactor);
-  final grams = [for (final b in base) b * factor];
-
-  final wanted = t.proteinG * 0.8;
-  final protein = proteinOf(grams);
-  if (protein < wanted) {
-    final kcalBefore = kcalOf(grams);
-    var missing = wanted - protein;
-    for (var i = 0; i < grams.length && missing > 0; i++) {
-      if (o.ingredients[i].role != IngredientRole.protein) continue;
-      final food = kFoods[o.ingredients[i].foodId]!;
-      final room = math.max(0.0, base[i] * _maxFactor - grams[i]);
-      final add = math.min(room, missing / food.protein100 * 100);
-      grams[i] += add;
-      missing -= add * food.protein100 / 100;
-    }
-    // Compensar calorías bajando carbohidratos (no menos de la mitad)
-    var extra = kcalOf(grams) - kcalBefore;
-    for (var i = 0; i < grams.length && extra > 0; i++) {
-      if (o.ingredients[i].role != IngredientRole.carb) continue;
-      final food = kFoods[o.ingredients[i].foodId]!;
-      final cut = math.min(grams[i] * 0.5, extra / food.kcal100 * 100);
-      grams[i] -= cut;
-      extra -= cut * food.kcal100 / 100;
-    }
-  }
+  final pz = t.portions ?? const Portions({});
+  final present = {for (final c in o.components) c.group};
+  final parts = [
+    for (final c in o.components) (kFoods[c.foodId]!, pz[c.group] * c.share),
+    for (final e in _defaults.entries)
+      if (!present.contains(e.key) && pz[e.key] > 0)
+        (kFoods[e.value]!, pz[e.key]),
+  ];
 
   final items = <ScaledItem>[];
-  for (var i = 0; i < grams.length; i++) {
-    final food = kFoods[o.ingredients[i].foodId]!;
-    final g = _round(food, grams[i]);
+  for (final (food, portions) in parts) {
+    if (portions <= 0) continue;
+    final g = _round(food, portions * food.portionGrams);
     items.add(ScaledItem(food, g, _label(food, g)));
   }
-  final rounded = [for (final it in items) it.grams];
-  final price = items.fold<double>(
-      0, (a, it) => a + it.grams / 1000 * it.food.priceCrcPerKg);
-  return ScaledOption(o, items, kcalOf(rounded).round(),
-      proteinOf(rounded).round(), price.round());
+  double sum(double Function(Food) per100) =>
+      items.fold(0.0, (a, it) => a + per100(it.food) * it.grams / 100);
+  return ScaledOption(
+    o,
+    items,
+    sum((f) => f.kcal100).round(),
+    sum((f) => f.protein100).round(),
+    items
+        .fold<double>(0, (a, it) => a + it.grams / 1000 * it.food.priceCrcPerKg)
+        .round(),
+  );
 }
 
-double _sum(MealOption o, List<double> grams, double Function(Food) per100) {
-  var total = 0.0;
-  for (var i = 0; i < grams.length; i++) {
-    total += per100(kFoods[o.ingredients[i].foodId]!) * grams[i] / 100;
+/// Fracciones de taza admitidas (en doceavos): ¼ ⅓ ½ ⅔ ¾.
+bool _niceTwelfth(int k) => k % 3 == 0 || k % 4 == 0;
+
+/// ¿[grams] es una medida casera válida para [f]? Tercios y cuartos en
+/// medidas grandes (taza, plátano), medias unidades en las pequeñas
+/// (huevo, tortilla) y gramos de 10 sin medida.
+bool isHouseholdMeasure(Food f, double grams) {
+  final unit = f.unitGrams;
+  if (unit == null) return grams > 0 && (grams % 10).abs() < 1e-6;
+  final units = grams / unit;
+  if (unit >= 100) {
+    final k = units * 12;
+    return (k - k.round()).abs() < 1e-6 && k.round() > 0 && _niceTwelfth(k.round());
   }
-  return total;
+  final h = units * 2;
+  return (h - h.round()).abs() < 1e-6 && h.round() > 0;
 }
 
-/// Paso de redondeo en unidades: cuartos para medidas grandes (taza,
-/// plátano), medias para las pequeñas (huevo, tortilla).
-double unitStep(Food f) => (f.unitGrams ?? 0) >= 100 ? 0.25 : 0.5;
-
-/// Medida casera redondeada; sin medida, gramos de 10.
+/// Lleva [grams] a la medida casera más cercana.
 double _round(Food f, double grams) {
   final unit = f.unitGrams;
-  if (unit != null) {
-    final step = unitStep(f);
-    final steps = math.max(1, (grams / unit / step).round());
-    return steps * step * unit;
+  if (unit == null) return math.max(10, (grams / 10).round() * 10).toDouble();
+  final units = grams / unit;
+  if (unit >= 100) {
+    var best = 3; // ¼ como mínimo
+    for (var k = 3; k <= 12 * 20; k++) {
+      if (!_niceTwelfth(k)) continue;
+      if ((k / 12 - units).abs() < (best / 12 - units).abs()) best = k;
+    }
+    return best / 12 * unit;
   }
-  return math.max(10, (grams / 10).round() * 10).toDouble();
+  return math.max(1, (units * 2).round()) / 2 * unit;
 }
 
 String _label(Food f, double grams) {
@@ -113,10 +109,12 @@ String _label(Food f, double grams) {
   if (unit == null) return '${grams.round()} g de ${f.name}';
   final units = grams / unit;
   final whole = units.floor();
-  final frac = switch (((units - whole) * 4).round()) {
-    1 => '¼',
-    2 => '½',
-    3 => '¾',
+  final frac = switch (((units - whole) * 12).round()) {
+    3 => '¼',
+    4 => '⅓',
+    6 => '½',
+    8 => '⅔',
+    9 => '¾',
     _ => '',
   };
   final qty = whole == 0 ? frac : '$whole$frac';

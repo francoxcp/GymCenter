@@ -178,10 +178,9 @@ class _MembersScreenState extends State<MembersScreen> {
                           const PopupMenuItem(
                               value: '/admin/users',
                               child: Text('Alta manual y roles')),
-                          if (isOwner)
-                            const PopupMenuItem(
-                                value: '/admin/memberships',
-                                child: Text('Historial de membresías')),
+                          const PopupMenuItem(
+                              value: '/admin/memberships',
+                              child: Text('Membresías')),
                         ],
                       ),
                     ],
@@ -253,7 +252,8 @@ class _MembersScreenState extends State<MembersScreen> {
                     itemBuilder: (_, i) => _MemberRow(
                       member: list[i],
                       status: _snap.status[list[i].id],
-                      canCharge: isOwner,
+                      canCharge:
+                          Membership.canCharge(auth.currentUser, list[i]),
                       onChanged: _reload,
                     ),
                   ),

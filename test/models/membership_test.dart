@@ -42,4 +42,27 @@ void main() {
     expect(back.membershipPlan, 'Mensual');
     expect(back.membershipEnd, DateTime(2026, 12, 1));
   });
+
+  group('Membership.canCharge', () {
+    User u(String id, String role, {String? trainer}) =>
+        User(id: id, email: '$id@x.com', name: id, role: role, trainerId: trainer);
+
+    final owner = u('owner', 'admin');
+    final coach = u('coach', 'trainer');
+    final otherCoach = u('coach2', 'trainer');
+    final member = u('m1', 'user', trainer: 'coach');
+
+    test('el dueño cobra a cualquier socio', () {
+      expect(Membership.canCharge(owner, member), isTrue);
+    });
+    test('el entrenador cobra solo a sus socios', () {
+      expect(Membership.canCharge(coach, member), isTrue);
+      expect(Membership.canCharge(otherCoach, member), isFalse);
+    });
+    test('un socio no cobra, y no se cobra a personal', () {
+      expect(Membership.canCharge(member, member), isFalse);
+      expect(Membership.canCharge(owner, coach), isFalse);
+      expect(Membership.canCharge(null, member), isFalse);
+    });
+  });
 }

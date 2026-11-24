@@ -23,6 +23,13 @@ class Membership {
     return MembershipStatus.active;
   }
 
+  /// Puede registrar pagos y corregir el vencimiento de [member]: el dueño,
+  /// o el entrenador al que está vinculado el socio.
+  static bool canCharge(User? me, User member) =>
+      me != null &&
+      member.role == 'user' &&
+      (me.isAdmin || (me.isTrainer && member.trainerId == me.id));
+
   /// Texto corto en español: "Vence hoy", "Vence en 3 días", "Vencida hace 2 días".
   static String label(DateTime? end, {DateTime? today}) {
     final d = daysLeft(end, today: today);

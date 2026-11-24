@@ -36,9 +36,13 @@ class _MembershipsScreenState extends State<MembershipsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isOwner = context.watch<AuthProvider>().currentUser?.isAdmin ?? false;
+    final me = context.watch<AuthProvider>().currentUser;
     final provider = context.watch<UserProvider>();
-    final members = provider.users.where((u) => u.role == 'user').toList();
+    // El entrenador ve y cobra solo a sus socios; el dueño a todos
+    final members = provider.users
+        .where((u) => u.role == 'user')
+        .where((u) => !(me?.isTrainer ?? false) || u.trainerId == me!.id)
+        .toList();
     final groups = {
       for (final s in _labels.keys)
         s: members.where((u) => u.membershipStatus == s).toList()
@@ -127,11 +131,11 @@ class _MembershipsScreenState extends State<MembershipsScreen> {
                       style: TextStyle(
                           color: membershipColor(u.membershipStatus)),
                     ),
-                    trailing: isOwner
+                    trailing: Membership.canCharge(me, u)
                         ? Icon(Icons.payments_outlined,
                             color: AppColors.primaryText)
                         : null,
-                    onTap: isOwner
+                    onTap: Membership.canCharge(me, u)
                         ? () => showRenewMembershipDialog(context, u)
                         : null,
                   ),

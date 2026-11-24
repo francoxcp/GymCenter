@@ -35,9 +35,11 @@ class MembershipCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOwner = context.watch<AuthProvider>().currentUser?.isAdmin ?? false;
+    final me = context.watch<AuthProvider>().currentUser;
     final member = context.watch<UserProvider>().userById(memberId);
     if (member == null) return const SizedBox.shrink();
+    // Dueño, o entrenador del socio
+    final isOwner = Membership.canCharge(me, member);
     final status = member.membershipStatus;
     final color = membershipColor(status);
 

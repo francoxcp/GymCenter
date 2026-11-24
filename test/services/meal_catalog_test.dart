@@ -2,127 +2,159 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gymlab/features/nutrition/data/foods.dart';
 import 'package:gymlab/features/nutrition/services/meal_scaler.dart';
 import 'package:gymlab/features/nutrition/services/nutrition_calculator.dart';
+import 'package:gymlab/features/nutrition/services/portions.dart';
 
 const _all = {'dairy', 'egg', 'seafood', 'red_meat', 'pork'};
 
-double _baseKcal(MealOption o) => o.ingredients.fold(
-    0.0, (a, i) => a + kFoods[i.foodId]!.kcal100 * i.grams / 100);
+const _lunch = Portions({
+  FoodGroup.harina: 2,
+  FoodGroup.proteina: 5,
+  FoodGroup.vegetal: 1,
+  FoodGroup.grasa: 1,
+});
+
+MealTarget _t(MealSlot s, Portions p) =>
+    MealTarget(s, p.kcal.round(), p.proteinG.round(), portions: p);
+
+NutritionProfile _prof(NutritionGoal g, double w) => NutritionProfile(
+      weightKg: w,
+      heightCm: w < 70 ? 160 : 178,
+      age: 30,
+      sex: w < 70 ? 'female' : 'male',
+      goal: g,
+      activity: ActivityLevel.standing,
+      trainingDays: 4,
+      mealsPerDay: 5,
+    );
 
 void main() {
-  test('todo ingrediente existe en kFoods y cada opción tiene kcal base > 0',
-      () {
+  test('cada componente usa un alimento con porción de ese grupo', () {
     for (final o in kMealCatalog) {
-      for (final i in o.ingredients) {
-        expect(kFoods.containsKey(i.foodId), isTrue,
-            reason: '${o.id}: ${i.foodId}');
+      for (final c in o.components) {
+        final f = kFoods[c.foodId];
+        expect(f, isNotNull, reason: '${o.id}: ${c.foodId}');
+        expect(f!.group, c.group, reason: '${o.id}: ${c.foodId}');
+        expect(f.portionGrams, greaterThan(0), reason: c.foodId);
       }
-      expect(_baseKcal(o), greaterThan(0), reason: o.id);
     }
   });
 
-  test('ids de opciones únicos', () {
+  test('ids únicos y partes de cada grupo que suman 1', () {
     final ids = kMealCatalog.map((o) => o.id).toList();
     expect(ids.toSet().length, ids.length);
+    for (final o in kMealCatalog) {
+      final byGroup = <FoodGroup, double>{};
+      for (final c in o.components) {
+        byGroup[c.group] = (byGroup[c.group] ?? 0) + c.share;
+      }
+      byGroup.forEach((g, sum) =>
+          expect(sum, closeTo(1, 1e-9), reason: '${o.id} $g'));
+    }
   });
 
-  test('8 a 10 opciones por desayuno, almuerzo y cena; ≥ 7 meriendas', () {
+  test('platos principales y meriendas traen harina y proteína; merienda AM fruta', () {
+    for (final o in kMealCatalog) {
+      final groups = o.components.map((c) => c.group).toSet();
+      for (final s in o.slots) {
+        if (s == MealSlot.snackAm) {
+          expect(groups, {FoodGroup.fruta}, reason: o.id);
+        } else {
+          expect(groups, containsAll([FoodGroup.harina, FoodGroup.proteina]),
+              reason: '${o.id} en ${s.name}');
+        }
+      }
+    }
+  });
+
+  test('variedad: 10–12 por desayuno, almuerzo y cena; ≥8 meriendas; ≥6 frutas', () {
     for (final s in [MealSlot.breakfast, MealSlot.lunch, MealSlot.dinner]) {
-      expect(optionsFor(s, const {}).length, inInclusiveRange(8, 10),
+      expect(optionsFor(s, const {}).length, inInclusiveRange(10, 12),
           reason: s.name);
     }
     expect(optionsFor(MealSlot.snackPm, const {}).length,
-        greaterThanOrEqualTo(7));
-    expect(optionsFor(MealSlot.snackAm, const {}).map((o) => o.id),
-        optionsFor(MealSlot.snackPm, const {}).map((o) => o.id));
+        greaterThanOrEqualTo(8));
+    expect(optionsFor(MealSlot.snackAm, const {}).length,
+        greaterThanOrEqualTo(6));
   });
 
-  test('excluir huevo quita gallo pinto con huevo del desayuno', () {
-    expect(optionsFor(MealSlot.breakfast, const {})
-        .any((o) => o.id == 'pinto_huevo'), isTrue);
-    expect(optionsFor(MealSlot.breakfast, {'egg'})
-        .any((o) => o.id == 'pinto_huevo'), isFalse);
-  });
-
-  test('excluir todo deja al menos 1 opción por tiempo', () {
+  test('excluir todo deja al menos 2 opciones por comida', () {
     for (final s in MealSlot.values) {
-      expect(optionsFor(s, _all), isNotEmpty, reason: s.name);
+      expect(optionsFor(s, _all).length, greaterThanOrEqualTo(2),
+          reason: s.name);
     }
   });
 
-  test('escalado acerca las kcal al objetivo (±15 %)', () {
-    final o = kMealCatalog.firstWhere((o) => o.id == 'pinto_huevo');
-    final s = scaleOption(o, const MealTarget(MealSlot.breakfast, 650, 40));
-    expect(s.kcal, inInclusiveRange(552, 748));
+  test('casado medido: cantidades exactas según las porciones', () {
+    final o = kMealCatalog.firstWhere((o) => o.id == 'casado_pollo');
+    final s = scaleOption(o, _t(MealSlot.lunch, _lunch));
+    String label(String id) =>
+        s.items.firstWhere((i) => i.food.id == id).label;
+    expect(label('arroz'), '⅓ taza de arroz');
+    expect(label('frijoles'), '⅓ taza de frijoles');
+    expect(label('pollo'), '150 g de pechuga de pollo (cocida)');
+    expect(s.items.any((i) => i.food.id == 'ensalada'), isTrue);
+    expect(s.items.any((i) => i.food.id == 'aceite'), isTrue);
   });
 
-  test('proteína baja sube primero el ingrediente protein', () {
-    final o = kMealCatalog.firstWhere((o) => o.id == 'avena_banano');
-    final s = scaleOption(o, const MealTarget(MealSlot.breakfast, 600, 40));
-    // Proporcional daría ~25 g; la leche sube hasta 1,8× su base (≈ 26 g tras redondear).
-    // Un plato con poca proteína no llega al 80 % sin cantidades absurdas.
-    expect(s.proteinG, greaterThanOrEqualTo(26));
-    expect(s.kcal, inInclusiveRange(480, 720));
+  test('si el plato no trae grasa, vegetal o fruta, se agregan por defecto', () {
+    final o = kMealCatalog.firstWhere((o) => o.id == 'galletas_queso');
+    final p = const Portions({
+      FoodGroup.harina: 1,
+      FoodGroup.proteina: 3,
+      FoodGroup.fruta: 1,
+    });
+    final s = scaleOption(o, _t(MealSlot.snackPm, p));
+    expect(s.items.map((i) => i.food.id), contains('fruta'));
+    expect(s.items.map((i) => i.food.id), isNot(contains('aceite')));
   });
 
-  test('objetivo enorme se limita a 1,8× la base', () {
-    final o = kMealCatalog.firstWhere((o) => o.id == 'pinto_huevo');
-    final s = scaleOption(o, const MealTarget(MealSlot.breakfast, 5000, 40));
-    expect(s.kcal, lessThanOrEqualTo(_baseKcal(o) * 1.8 * 1.1));
+  test('calorías y proteína reales cerca de las de las porciones', () {
+    for (final g in NutritionGoal.values) {
+      for (final w in [60.0, 80.0, 105.0]) {
+        final day = dayPortions(_prof(g, w));
+        day.meals.forEach((slot, pz) {
+          for (final o in optionsFor(slot, const {})) {
+            final s = scaleOption(o, _t(slot, pz));
+            expect(s.kcal, closeTo(pz.kcal, pz.kcal * 0.35 + 40),
+                reason: '${o.id} $g $w kcal');
+            expect(s.proteinG, closeTo(pz.proteinG, pz.proteinG * 0.35 + 5),
+                reason: '${o.id} $g $w proteína');
+          }
+        });
+      }
+    }
   });
 
-  test('objetivo mínimo se limita a 0,6× la base', () {
-    final o = kMealCatalog.firstWhere((o) => o.id == 'pinto_huevo');
-    final s = scaleOption(o, const MealTarget(MealSlot.breakfast, 50, 2));
-    // El redondeo a medidas caseras puede bajar hasta ~20 % en porciones chicas
-    expect(s.kcal, greaterThanOrEqualTo(_baseKcal(o) * 0.6 * 0.8));
-  });
-
-  test('cantidades en medidas caseras: cuartos/medios por unidad o gramos de 10', () {
+  test('medidas caseras: tercios/cuartos de taza, medias unidades o gramos de 10', () {
     for (final o in kMealCatalog) {
-      final s = scaleOption(o, const MealTarget(MealSlot.lunch, 777, 47));
-      for (final it in s.items) {
-        final unit = it.food.unitGrams;
-        if (unit != null) {
-          final steps = it.grams / unit / unitStep(it.food);
-          expect((steps - steps.round()).abs(), lessThan(1e-6),
-              reason: '${o.id} ${it.food.id}');
-        } else {
-          expect(it.grams % 10, 0, reason: '${o.id} ${it.food.id}');
+      for (final slot in o.slots) {
+        final s = scaleOption(o, _t(slot, _lunch));
+        for (final it in s.items) {
+          expect(isHouseholdMeasure(it.food, it.grams), isTrue,
+              reason: '${o.id} ${it.food.id} ${it.grams}');
+          expect(it.grams, greaterThan(0));
+          expect(it.label, isNotEmpty);
         }
-        expect(it.grams, greaterThan(0));
-        expect(it.label, isNotEmpty);
       }
     }
   });
 
-  test('precio = suma de gramos × precio/kg, entero', () {
-    final o = kMealCatalog.firstWhere((o) => o.id == 'pinto_huevo');
-    final s = scaleOption(o, const MealTarget(MealSlot.breakfast, 650, 40));
-    final expected = s.items
-        .fold(0.0, (a, it) => a + it.grams / 1000 * it.food.priceCrcPerKg)
-        .round();
-    expect(s.priceCrc, expected);
-    expect(s.priceCrc, greaterThan(0));
+  test('excluir huevo quita los platos con huevo', () {
+    for (final o in optionsFor(MealSlot.breakfast, {'egg'})) {
+      expect(o.components.any((c) => c.foodId == 'huevo'), isFalse,
+          reason: o.id);
+    }
   });
 
-  test('pesos extremos: porciones razonables para 40 y 150 kg', () {
-    for (final w in [40.0, 150.0]) {
-      final t = computeTargets(NutritionProfile(
-          weightKg: w,
-          heightCm: w < 100 ? 150 : 190,
-          age: 30,
-          sex: w < 100 ? 'female' : 'male',
-          goal: NutritionGoal.maintain,
-          activity: ActivityLevel.sedentary,
-          trainingDays: 3,
-          mealsPerDay: 4));
-      for (final m in t.meals) {
-        for (final o in optionsFor(m.slot, const {})) {
-          final s = scaleOption(o, m);
-          expect(s.kcal, greaterThan(0));
-          expect(s.kcal, lessThan(2000), reason: '${o.id} $w');
-        }
-      }
-    }
+  test('medidas caseras admitidas', () {
+    final arroz = kFoods['arroz']!;
+    expect(isHouseholdMeasure(arroz, arroz.unitGrams! / 3), isTrue);
+    expect(isHouseholdMeasure(arroz, arroz.unitGrams! * 0.75), isTrue);
+    expect(isHouseholdMeasure(arroz, arroz.unitGrams! * 0.4), isFalse);
+    final huevo = kFoods['huevo']!;
+    expect(isHouseholdMeasure(huevo, 75), isTrue);
+    expect(isHouseholdMeasure(huevo, 60), isFalse);
+    expect(isHouseholdMeasure(kFoods['pollo']!, 150), isTrue);
+    expect(isHouseholdMeasure(kFoods['pollo']!, 155), isFalse);
   });
 }

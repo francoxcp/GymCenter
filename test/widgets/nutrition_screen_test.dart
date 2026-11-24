@@ -49,7 +49,13 @@ void main() {
     for (final l in ['Desayuno', 'Almuerzo', 'Merienda', 'Cena']) {
       expect(find.text(l), findsWidgets);
     }
-    expect(find.text('Gallo pinto con huevo'), findsOneWidget);
+    expect(find.text('Tostada integral con aguacate y huevos'), findsOneWidget);
+    // Porciones de la comida y consejos de la nutricionista
+    expect(find.textContaining('harina'), findsWidgets);
+    expect(find.textContaining('proteínas'), findsWidgets);
+    expect(find.textContaining('2 L de agua', skipOffstage: false), findsOneWidget);
+    expect(find.textContaining('Camina 10–15 minutos', skipOffstage: false),
+        findsOneWidget);
     expect(find.textContaining('₡', skipOffstage: false), findsNothing);
     expect(
         find.textContaining('Guía orientativa; no reemplaza a un nutricionista',
@@ -82,13 +88,15 @@ void main() {
     });
     expect(find.textContaining('Tu día: 0 de 4 comidas elegidas'),
         findsOneWidget);
-    await tester.tap(find.text('Gallo pinto con huevo'));
+    await tester.tap(find.text('Tostada integral con aguacate y huevos'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('huevos'), findsWidgets);
+    expect(find.textContaining('pan integral'), findsWidgets);
+    await tester.ensureVisible(find.text('Elegir').first);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Elegir').first);
     await tester.pumpAndSettle();
     expect(slot, MealSlot.breakfast);
-    expect(id, 'pinto_huevo');
+    expect(id, 'tostada_aguacate_huevos');
     expect(find.textContaining('Tu día: 1 de 4 comidas elegidas'),
         findsOneWidget);
     expect(find.textContaining('₡'), findsNothing);
@@ -99,6 +107,6 @@ void main() {
     await _pump(tester, _p());
     await tester.tap(find.text('Almuerzo'));
     await tester.pumpAndSettle();
-    expect(find.text('Casado de pollo'), findsOneWidget);
+    expect(find.text('Casado medido de pollo a la plancha'), findsOneWidget);
   });
 }

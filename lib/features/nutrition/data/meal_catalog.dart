@@ -1,243 +1,235 @@
 import '../models/nutrition_profile.dart';
+import '../services/portions.dart';
 import 'foods.dart';
 
-/// Para qué sirve el ingrediente al ajustar porciones.
-enum IngredientRole { protein, carb, fat, veg }
-
-class Ingredient {
+/// Un alimento del plato y qué parte de las porciones de su grupo cubre
+/// (p. ej. en el casado, el arroz cubre ½ de las harinas y los frijoles ½).
+class Component {
   final String foodId;
-  final double grams;
-  final IngredientRole role;
-  const Ingredient(this.foodId, this.grams, this.role);
+  final FoodGroup group;
+  final double share;
+  const Component(this.foodId, this.group, [this.share = 1]);
 }
 
-/// Una opción de comida, con cantidades base para una persona promedio.
+/// Un plato armado. Las cantidades salen de las porciones de cada socio.
 class MealOption {
   final String id;
   final String name;
   final Set<MealSlot> slots;
-  final List<Ingredient> ingredients;
+  final List<Component> components;
 
-  /// Lista en 10 minutos o menos.
+  /// Listo en 10 minutos o menos.
   final bool quick;
 
   const MealOption({
     required this.id,
     required this.name,
     required this.slots,
-    required this.ingredients,
+    required this.components,
     this.quick = false,
   });
 
   /// Exclusiones (lácteos, huevo…) que contiene.
   Set<String> get tags => {
-        for (final i in ingredients) ...?kFoods[i.foodId]?.tags,
+        for (final c in components) ...?kFoods[c.foodId]?.tags,
       };
 }
 
-const _p = IngredientRole.protein;
-const _c = IngredientRole.carb;
-const _f = IngredientRole.fat;
-const _v = IngredientRole.veg;
+const _h = FoodGroup.harina;
+const _p = FoodGroup.proteina;
+const _g = FoodGroup.grasa;
+const _f = FoodGroup.fruta;
+const _v = FoodGroup.vegetal;
 
 const _b = {MealSlot.breakfast};
 const _l = {MealSlot.lunch};
-const _s = {MealSlot.snackAm, MealSlot.snackPm};
 const _d = {MealSlot.dinner};
+const _s = {MealSlot.snackPm};
+const _am = {MealSlot.snackAm};
 
-/// Recetario: comida tica, de pulpería o feria, presupuesto estándar.
+/// Recetario por porciones: comida tica, preparaciones bajas en grasa
+/// (plancha, horno, vapor, freidora de aire) y proteína pesada cocinada.
 const List<MealOption> kMealCatalog = [
-  // ── Desayuno ──
-  MealOption(id: 'pinto_huevo', name: 'Gallo pinto con huevo', quick: true,
-      slots: {MealSlot.breakfast, MealSlot.dinner}, ingredients: [
-    Ingredient('gallo_pinto', 160, _c),
-    Ingredient('huevo', 100, _p),
-    Ingredient('tortilla', 30, _c),
+  // ── Desayuno: harina + proteína + grasa ──
+  MealOption(id: 'tortiricas_huevo_jamon', name: 'Tortiricas con huevo, jamón de pavo, hongos y cebollino',
+      quick: true, slots: _b, components: [
+    Component('tortirica', _h), Component('huevo', _p, .6), Component('jamon', _p, .4), Component('aceite', _g),
   ]),
-  MealOption(id: 'avena_banano', name: 'Avena con leche y banano', quick: true, slots: _b, ingredients: [
-    Ingredient('avena', 40, _c),
-    Ingredient('leche', 240, _p),
-    Ingredient('banano', 120, _c),
+  MealOption(id: 'pinto_huevos_rancheros', name: 'Gallo pinto con huevos en salsa ranchera y queso', slots: _b,
+      components: [
+    Component('gallo_pinto', _h), Component('huevo', _p, .6), Component('queso', _p, .4), Component('aceite', _g),
   ]),
-  MealOption(id: 'tortilla_queso_huevo', name: 'Tortillas con queso tierno y huevo', quick: true,
-      slots: _b, ingredients: [
-    Ingredient('tortilla', 60, _c),
-    Ingredient('queso', 40, _p),
-    Ingredient('huevo', 50, _p),
+  MealOption(id: 'tostada_aguacate_huevos', name: 'Tostada integral con aguacate y huevos', quick: true, slots: _b,
+      components: [
+    Component('pan', _h), Component('huevo', _p), Component('aguacate', _g),
   ]),
-  MealOption(id: 'pan_huevo_aguacate', name: 'Pan integral con huevo y aguacate', quick: true,
-      slots: _b, ingredients: [
-    Ingredient('pan', 56, _c),
-    Ingredient('huevo', 100, _p),
-    Ingredient('aguacate', 50, _f),
+  MealOption(id: 'tortilla_huevo_queso', name: 'Tortilla casera con huevo y queso', quick: true, slots: _b,
+      components: [
+    Component('tortilla', _h), Component('huevo', _p, .6), Component('queso', _p, .4), Component('aceite', _g),
   ]),
-  MealOption(id: 'batido_avena', name: 'Batido de avena, leche, banano y maní', quick: true,
-      slots: _b, ingredients: [
-    Ingredient('avena', 40, _c),
-    Ingredient('leche', 240, _p),
-    Ingredient('banano', 120, _c),
-    Ingredient('mani', 15, _f),
+  MealOption(id: 'revueltos_tomate', name: 'Huevos revueltos con tomate y cebollino, con tortilla', quick: true,
+      slots: _b, components: [
+    Component('tortilla', _h), Component('huevo', _p), Component('aceite', _g),
   ]),
-  MealOption(id: 'pinto_natilla_maduro', name: 'Gallo pinto con natilla y maduro', slots: _b, ingredients: [
-    Ingredient('gallo_pinto', 160, _c),
-    Ingredient('natilla', 30, _f),
-    Ingredient('platano', 100, _c),
-    Ingredient('huevo', 50, _p),
+  MealOption(id: 'emparedado_pavo_queso', name: 'Emparedado integral de pavo, queso, tomate y aguacate', quick: true,
+      slots: _b, components: [
+    Component('pan', _h), Component('jamon', _p, .5), Component('queso', _p, .5), Component('aguacate', _g),
   ]),
-  MealOption(id: 'papaya_queso_huevo', name: 'Papaya con queso tierno y huevo duro', quick: true,
-      slots: _b, ingredients: [
-    Ingredient('papaya', 200, _v),
-    Ingredient('queso', 40, _p),
-    Ingredient('huevo', 50, _p),
-    Ingredient('tortilla', 30, _c),
+  MealOption(id: 'avena_yogur_mani', name: 'Avena con yogur griego y maní', quick: true, slots: _b, components: [
+    Component('avena', _h), Component('yogur', _p), Component('mani', _g),
   ]),
-  MealOption(id: 'yogur_granola', name: 'Yogur con granola y piña', quick: true, slots: _b, ingredients: [
-    Ingredient('yogur', 200, _p),
-    Ingredient('granola', 40, _c),
-    Ingredient('pina', 100, _v),
+  MealOption(id: 'pancakes_avena', name: 'Pancakes de avena con huevo y yogur griego', slots: _b, components: [
+    Component('avena', _h), Component('huevo', _p, .5), Component('yogur', _p, .5), Component('aceite', _g),
   ]),
-  MealOption(id: 'pinto_pollo', name: 'Gallo pinto con pollo desmenuzado y maduro', slots: _b, ingredients: [
-    Ingredient('gallo_pinto', 160, _c),
-    Ingredient('pollo', 60, _p),
-    Ingredient('platano', 100, _c),
+  MealOption(id: 'maduro_huevo_queso', name: 'Plátano maduro al horno con huevo y queso', slots: _b, components: [
+    Component('platano', _h), Component('huevo', _p, .6), Component('queso', _p, .4), Component('aceite', _g),
+  ]),
+  MealOption(id: 'galletas_atun_aguacate', name: 'Galletas integrales con atún y aguacate', quick: true, slots: _b,
+      components: [
+    Component('galletas', _h), Component('atun', _p), Component('aguacate', _g),
+  ]),
+  MealOption(id: 'pinto_pollo', name: 'Gallo pinto con pollo desmenuzado y aguacate', slots: _b, components: [
+    Component('gallo_pinto', _h), Component('pollo', _p), Component('aguacate', _g),
   ]),
 
-  // ── Almuerzo ──
-  MealOption(id: 'casado_pollo', name: 'Casado de pollo', slots: _l, ingredients: [
-    Ingredient('arroz', 160, _c),
-    Ingredient('frijoles', 85, _c),
-    Ingredient('pollo', 100, _p),
-    Ingredient('ensalada', 80, _v),
-    Ingredient('platano', 100, _c),
-  ]),
-  MealOption(id: 'casado_res', name: 'Casado de res', slots: _l, ingredients: [
-    Ingredient('arroz', 160, _c),
-    Ingredient('frijoles', 85, _c),
-    Ingredient('res', 100, _p),
-    Ingredient('ensalada', 80, _v),
-    Ingredient('platano', 100, _c),
-  ]),
-  MealOption(id: 'arroz_pollo', name: 'Arroz con pollo y ensalada', slots: _l, ingredients: [
-    Ingredient('arroz', 200, _c),
-    Ingredient('pollo', 90, _p),
-    Ingredient('ensalada', 80, _v),
-    Ingredient('aceite', 5, _f),
-  ]),
-  MealOption(id: 'olla_carne', name: 'Olla de carne', slots: _l, ingredients: [
-    Ingredient('res', 100, _p),
-    Ingredient('papa', 100, _c),
-    Ingredient('yuca', 100, _c),
-    Ingredient('chayote', 80, _v),
-    Ingredient('arroz', 100, _c),
-  ]),
-  MealOption(id: 'picadillo_papa', name: 'Picadillo de papa con carne molida', slots: _l, ingredients: [
-    Ingredient('molida', 80, _p),
-    Ingredient('papa', 150, _c),
-    Ingredient('arroz', 160, _c),
-    Ingredient('tortilla', 30, _c),
-  ]),
-  MealOption(id: 'arroz_frijoles_atun', name: 'Arroz, frijoles y atún con ensalada', quick: true,
-      slots: _l, ingredients: [
-    Ingredient('arroz', 160, _c),
-    Ingredient('frijoles', 85, _c),
-    Ingredient('atun', 120, _p),
-    Ingredient('ensalada', 80, _v),
-  ]),
-  MealOption(id: 'sopa_negra', name: 'Sopa negra con huevo', slots: _l, ingredients: [
-    Ingredient('frijoles', 200, _c),
-    Ingredient('huevo', 100, _p),
-    Ingredient('arroz', 100, _c),
-  ]),
-  MealOption(id: 'tilapia_arroz', name: 'Tilapia con arroz y ensalada', slots: _l, ingredients: [
-    Ingredient('tilapia', 120, _p),
-    Ingredient('arroz', 160, _c),
-    Ingredient('ensalada', 80, _v),
-    Ingredient('aceite', 5, _f),
-  ]),
-  MealOption(id: 'arroz_frijoles_huevo_maduro', name: 'Arroz, frijoles, huevo y maduro', slots: _l, ingredients: [
-    Ingredient('arroz', 160, _c),
-    Ingredient('frijoles', 85, _c),
-    Ingredient('huevo', 100, _p),
-    Ingredient('platano', 100, _c),
-  ]),
-  MealOption(id: 'chuleta_cerdo', name: 'Chuleta de cerdo con arroz y frijoles', slots: _l, ingredients: [
-    Ingredient('cerdo', 100, _p),
-    Ingredient('arroz', 160, _c),
-    Ingredient('frijoles', 85, _c),
-    Ingredient('ensalada', 80, _v),
+  MealOption(id: 'tortilla_pollo_aguacate', name: 'Tortilla casera con pollo desmenuzado y aguacate', quick: true,
+      slots: _b, components: [
+    Component('tortilla', _h), Component('pollo', _p), Component('aguacate', _g),
   ]),
 
-  // ── Merienda ──
-  MealOption(id: 'banano_mani', name: 'Banano con maní', quick: true, slots: _s, ingredients: [
-    Ingredient('banano', 120, _c),
-    Ingredient('mani', 25, _p),
+  // ── Almuerzo: harinas + proteína + vegetal + grasa ──
+  MealOption(id: 'casado_pollo', name: 'Casado medido de pollo a la plancha', slots: _l, components: [
+    Component('arroz', _h, .5), Component('frijoles', _h, .5), Component('pollo', _p),
+    Component('ensalada', _v), Component('aceite', _g),
   ]),
-  MealOption(id: 'yogur_fruta', name: 'Yogur natural con piña', quick: true, slots: _s, ingredients: [
-    Ingredient('yogur', 200, _p),
-    Ingredient('pina', 100, _c),
+  MealOption(id: 'casado_res', name: 'Casado medido de bistec a la plancha', slots: _l, components: [
+    Component('arroz', _h, .5), Component('frijoles', _h, .5), Component('res', _p),
+    Component('ensalada', _v), Component('aceite', _g),
   ]),
-  MealOption(id: 'pan_atun', name: 'Pan integral con atún', quick: true, slots: _s, ingredients: [
-    Ingredient('pan', 56, _c),
-    Ingredient('atun', 60, _p),
+  MealOption(id: 'pasta_atun', name: 'Pasta integral en salsa de tomate natural con atún', slots: _l, components: [
+    Component('pasta', _h), Component('atun', _p), Component('vegetales', _v), Component('aceite', _g),
   ]),
-  MealOption(id: 'huevo_fruta', name: 'Huevos duros y banano', quick: true, slots: _s, ingredients: [
-    Ingredient('huevo', 100, _p),
-    Ingredient('banano', 120, _c),
+  MealOption(id: 'papas_fajitas', name: 'Papas en freidora de aire con fajitas de res', slots: _l, components: [
+    Component('papa', _h), Component('res', _p), Component('ensalada', _v), Component('aceite', _g),
   ]),
-  MealOption(id: 'pinto_pequeno', name: 'Gallo pinto pequeño con tortilla', quick: true, slots: _s, ingredients: [
-    Ingredient('gallo_pinto', 80, _c),
-    Ingredient('tortilla', 30, _c),
-    Ingredient('pollo', 30, _p),
+  MealOption(id: 'lentejas_pollo', name: 'Lentejas con arroz y pollo mechado', slots: _l, components: [
+    Component('lentejas', _h, .5), Component('arroz', _h, .5), Component('pollo', _p), Component('ensalada', _v), Component('aceite', _g),
   ]),
-  MealOption(id: 'batido_leche_fruta', name: 'Batido de leche con fruta', quick: true, slots: _s, ingredients: [
-    Ingredient('leche', 240, _p),
-    Ingredient('papaya', 150, _c),
+  MealOption(id: 'garbanzos_carne', name: 'Garbanzos con arroz y carne en trocitos', slots: _l, components: [
+    Component('garbanzos', _h, .5), Component('arroz', _h, .5), Component('res', _p), Component('ensalada', _v), Component('aceite', _g),
   ]),
-  MealOption(id: 'galletas_queso', name: 'Galletas de soda con queso tierno', quick: true, slots: _s,
-      ingredients: [
-    Ingredient('galletas', 26, _c),
-    Ingredient('queso', 30, _p),
+  MealOption(id: 'arroz_pollo', name: 'Arroz con pollo y vegetales', slots: _l, components: [
+    Component('arroz', _h), Component('pollo', _p), Component('vegetales', _v), Component('aceite', _g),
+  ]),
+  MealOption(id: 'pescado_camote', name: 'Pescado al horno con camote', slots: _l, components: [
+    Component('camote', _h), Component('pescado', _p), Component('ensalada', _v), Component('aceite', _g),
+  ]),
+  MealOption(id: 'picadillo_papa', name: 'Picadillo de papa con carne molida y arroz', slots: _l, components: [
+    Component('papa', _h, .5), Component('arroz', _h, .5), Component('molida', _p),
+    Component('chayote', _v), Component('aceite', _g),
+  ]),
+  MealOption(id: 'olla_carne', name: 'Olla de carne', slots: _l, components: [
+    Component('papa', _h, .5), Component('yuca', _h, .5), Component('res', _p),
+    Component('chayote', _v), Component('aceite', _g),
+  ]),
+  MealOption(id: 'chuleta_cerdo', name: 'Lomo de cerdo a la plancha con arroz y frijoles', slots: _l, components: [
+    Component('arroz', _h, .5), Component('frijoles', _h, .5), Component('cerdo', _p),
+    Component('ensalada', _v), Component('aceite', _g),
+  ]),
+  MealOption(id: 'arroz_frijoles_huevo', name: 'Arroz, frijoles y maduro con huevo y queso (sin carne)', slots: _l,
+      components: [
+    Component('arroz', _h, .4), Component('frijoles', _h, .3), Component('platano', _h, .3),
+    Component('huevo', _p, .4),
+    Component('queso', _p, .6), Component('ensalada', _v), Component('aceite', _g),
   ]),
 
-  // ── Cena ──
-  MealOption(id: 'tortillas_pollo', name: 'Tortillas con pollo desmenuzado', quick: true, slots: _d,
-      ingredients: [
-    Ingredient('tortilla', 60, _c),
-    Ingredient('pollo', 90, _p),
-    Ingredient('ensalada', 80, _v),
+  // ── Merienda de la tarde: harina + proteína (+ fruta) ──
+  MealOption(id: 'galletas_queso', name: 'Galletas integrales con queso y jamón de pavo', quick: true, slots: _s,
+      components: [
+    Component('galletas', _h), Component('queso', _p, .4), Component('jamon', _p, .6),
   ]),
-  MealOption(id: 'picadillo_chayote', name: 'Picadillo de chayote con carne molida', slots: _d, ingredients: [
-    Ingredient('chayote', 150, _v),
-    Ingredient('molida', 80, _p),
-    Ingredient('arroz', 120, _c),
-    Ingredient('tortilla', 30, _c),
+  MealOption(id: 'tortilla_queso', name: 'Tortilla casera con queso y pollo desmenuzado', quick: true, slots: _s,
+      components: [
+    Component('tortilla', _h), Component('queso', _p, .4), Component('pollo', _p, .6),
   ]),
-  MealOption(id: 'huevos_vainica', name: 'Huevos revueltos con vainica', quick: true, slots: _d, ingredients: [
-    Ingredient('huevo', 150, _p),
-    Ingredient('vainica', 100, _v),
-    Ingredient('tortilla', 60, _c),
+  MealOption(id: 'yogur_granola', name: 'Yogur griego con granola', quick: true, slots: _s, components: [
+    Component('granola', _h), Component('yogur', _p),
   ]),
-  MealOption(id: 'ensalada_atun', name: 'Ensalada de atún con aguacate', quick: true, slots: _d, ingredients: [
-    Ingredient('atun', 120, _p),
-    Ingredient('aguacate', 50, _f),
-    Ingredient('ensalada', 100, _v),
-    Ingredient('galletas', 26, _c),
+  MealOption(id: 'pancakes_merienda', name: 'Pancakes de avena con huevo', slots: _s, components: [
+    Component('avena', _h), Component('huevo', _p),
   ]),
-  MealOption(id: 'pescado_yuca', name: 'Tilapia con yuca y ensalada', slots: _d, ingredients: [
-    Ingredient('tilapia', 120, _p),
-    Ingredient('yuca', 150, _c),
-    Ingredient('ensalada', 80, _v),
+  MealOption(id: 'tortilla_harina_jamon', name: 'Tortilla de harina con queso y jamón de pavo', quick: true, slots: _s,
+      components: [
+    Component('tortilla_harina', _h), Component('queso', _p, .5), Component('jamon', _p, .5),
   ]),
-  MealOption(id: 'arroz_frijoles_queso', name: 'Arroz con frijoles y queso tierno', quick: true, slots: _d,
-      ingredients: [
-    Ingredient('arroz', 160, _c),
-    Ingredient('frijoles', 85, _c),
-    Ingredient('queso', 40, _p),
+  MealOption(id: 'pan_atun', name: 'Pan integral con atún', quick: true, slots: _s, components: [
+    Component('pan', _h), Component('atun', _p),
   ]),
-  MealOption(id: 'pollo_papa_vainica', name: 'Pollo a la plancha con papa y vainica', slots: _d, ingredients: [
-    Ingredient('pollo', 100, _p),
-    Ingredient('papa', 150, _c),
-    Ingredient('vainica', 80, _v),
-    Ingredient('aceite', 5, _f),
+  MealOption(id: 'huevos_galletas', name: 'Huevos duros con galletas integrales', quick: true, slots: _s,
+      components: [
+    Component('galletas', _h), Component('huevo', _p),
   ]),
+  MealOption(id: 'tostada_pavo', name: 'Tostada integral con jamón de pavo', quick: true, slots: _s, components: [
+    Component('pan', _h), Component('jamon', _p),
+  ]),
+
+  MealOption(id: 'galletas_pollo', name: 'Galletas integrales con pollo mechado', quick: true, slots: _s,
+      components: [
+    Component('galletas', _h), Component('pollo', _p),
+  ]),
+
+  // ── Cena: harina + proteína + vegetal + grasa ──
+  MealOption(id: 'galletas_pollo_aguacate', name: 'Galletas integrales con pollo mechado y aguacate', quick: true,
+      slots: _d, components: [
+    Component('galletas', _h), Component('pollo', _p), Component('ensalada', _v), Component('aguacate', _g),
+  ]),
+  MealOption(id: 'emparedado_pollo', name: 'Emparedado integral de pollo con lechuga y tomate', quick: true, slots: _d,
+      components: [
+    Component('pan', _h), Component('pollo', _p, .7), Component('queso', _p, .3),
+    Component('ensalada', _v), Component('aguacate', _g),
+  ]),
+  MealOption(id: 'burrito_pollo', name: 'Burrito de pollo con vegetales', slots: _d, components: [
+    Component('tortilla_harina', _h), Component('pollo', _p), Component('ensalada', _v), Component('aceite', _g),
+  ]),
+  MealOption(id: 'galletas_atun_huevo', name: 'Galletas con atún, huevo duro y aguacate', quick: true, slots: _d,
+      components: [
+    Component('galletas', _h), Component('atun', _p, .7), Component('huevo', _p, .3),
+    Component('ensalada', _v), Component('aguacate', _g),
+  ]),
+  MealOption(id: 'garbanzos_pollo', name: 'Garbanzos con pollo mechado y aguacate', slots: _d, components: [
+    Component('garbanzos', _h), Component('pollo', _p), Component('ensalada', _v), Component('aguacate', _g),
+  ]),
+  MealOption(id: 'ceviche', name: 'Ceviche de pescado con galletas', slots: _d, components: [
+    Component('galletas', _h), Component('pescado', _p), Component('ensalada', _v), Component('aguacate', _g),
+  ]),
+  MealOption(id: 'chalupas', name: 'Tortillas con frijoles molidos y carne molida', slots: _d, components: [
+    Component('tortilla', _h, .5), Component('frijoles', _h, .5), Component('molida', _p),
+    Component('ensalada', _v), Component('aceite', _g),
+  ]),
+  MealOption(id: 'tortiricas_pollo', name: 'Tortiricas con pollo asado y ensalada', quick: true, slots: _d,
+      components: [
+    Component('tortirica', _h), Component('pollo', _p), Component('ensalada', _v), Component('aceite', _g),
+  ]),
+  MealOption(id: 'huevos_vainica', name: 'Huevos revueltos con vainica y tortilla', quick: true, slots: _d,
+      components: [
+    Component('tortilla', _h), Component('huevo', _p, .6), Component('queso', _p, .4),
+    Component('vainica', _v), Component('aceite', _g),
+  ]),
+  MealOption(id: 'tostitos_guacamole', name: 'Tostitos con carne molida, guacamole y pico de gallo', slots: _d,
+      components: [
+    Component('tostitos', _h), Component('molida', _p), Component('ensalada', _v), Component('aguacate', _g),
+  ]),
+  MealOption(id: 'pollo_camote', name: 'Pollo a la plancha con camote y vainicas', slots: _d, components: [
+    Component('camote', _h), Component('pollo', _p), Component('vainica', _v), Component('aceite', _g),
+  ]),
+
+  // ── Merienda de la mañana: fruta ──
+  MealOption(id: 'fruta_manzana', name: 'Manzana', quick: true, slots: _am, components: [Component('manzana', _f)]),
+  MealOption(id: 'fruta_mandarina', name: 'Mandarina', quick: true, slots: _am,
+      components: [Component('mandarina', _f)]),
+  MealOption(id: 'fruta_guayaba', name: 'Guayaba', quick: true, slots: _am, components: [Component('guayaba', _f)]),
+  MealOption(id: 'fruta_papaya', name: 'Papaya', quick: true, slots: _am, components: [Component('papaya', _f)]),
+  MealOption(id: 'fruta_pina', name: 'Piña', quick: true, slots: _am, components: [Component('pina', _f)]),
+  MealOption(id: 'fruta_banano', name: 'Banano', quick: true, slots: _am, components: [Component('banano', _f)]),
+  MealOption(id: 'fruta_sandia', name: 'Sandía', quick: true, slots: _am, components: [Component('sandia', _f)]),
 ];

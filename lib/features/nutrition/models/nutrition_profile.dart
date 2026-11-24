@@ -1,3 +1,5 @@
+import '../services/portions.dart';
+
 /// Objetivo del plan de alimentación.
 enum NutritionGoal { maintain, gain, cut }
 
@@ -79,7 +81,10 @@ class MealTarget {
   final MealSlot slot;
   final int kcal;
   final int proteinG;
-  const MealTarget(this.slot, this.kcal, this.proteinG);
+
+  /// Porciones de intercambio de esta comida (las usa el recetario).
+  final Portions? portions;
+  const MealTarget(this.slot, this.kcal, this.proteinG, {this.portions});
 }
 
 /// Objetivos del día completo.

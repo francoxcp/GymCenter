@@ -261,7 +261,8 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Registra un pago y extiende la membresía (solo dueño, vía RPC).
+  /// Registra un pago y extiende la membresía (dueño o entrenador del
+  /// socio, vía RPC).
   /// Devuelve null si fue bien o un mensaje de error.
   Future<String?> renewMembership({
     required String userId,
@@ -284,14 +285,16 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  /// Corrige manualmente la fecha de vencimiento (solo dueño).
+  /// Corrige manualmente la fecha de vencimiento (dueño o entrenador del
+  /// socio, vía RPC).
   Future<String?> setMembershipEnd(String userId, DateTime? end) async {
     try {
-      await SupabaseConfig.client.from(AppConstants.usersTable).update({
-        'membership_end': end == null
+      await SupabaseConfig.client.rpc('set_membership_end', params: {
+        'p_user': userId,
+        'p_end': end == null
             ? null
             : '${end.year}-${end.month.toString().padLeft(2, '0')}-${end.day.toString().padLeft(2, '0')}',
-      }).eq('id', userId);
+      });
       await _refreshUser(userId);
       return null;
     } catch (e) {
